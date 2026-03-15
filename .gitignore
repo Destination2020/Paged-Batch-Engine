@@ -1,0 +1,28 @@
+# Build directories
+build/
+test/build/
+demo/build/
+
+# CMake
+cmake_install.cmake
+CMakeCache.txt
+CMakeFiles/
+_deps/
+
+# IDE
+.vscode/
+.idea/
+
+# Python
+__pycache__/
+*.pyc
+
+# Models and binaries
+*.bin
+*.model
+models/
+Qwen/
+
+# Libraries
+lib/
+

@@ -1,0 +1,175 @@
+/**
+ * CUDA Graph 性能基准测试
+ * 
+ * 使用方法:
+ *   export KUIPER_MODEL_PATH=/path/to/model.bin
+ *   export KUIPER_TOKEN_PATH=/path/to/tokenizer.model
+ *   ./test_cuda_graph_benchmark
+ */
+
+#include <glog/logging.h>
+#include <chrono>
+#include <vector>
+#include <iomanip>
+#include "model/llama3.h"
+#include "tensor/tensor.h"
+#include <cuda_runtime.h>
+
+using namespace std::chrono;
+
+struct BenchmarkResult {
+  double total_time_us;
+  double avg_time_us;
+  double throughput;
+  int iterations;
+};
+
+BenchmarkResult benchmark_forward(model::LLama2Model& model, 
+                                  const tensor::Tensor& input,
+                                  const tensor::Tensor& pos,
+                                  int iterations,
+                                  bool use_graph,
+                                  const std::string& name) {
+  int next = 0;
+  
+  // 预热
+  int warmup = 10;
+  for (int i = 0; i < warmup; ++i) {
+    model.predict(input, pos, false, next);
+  }
+  cudaDeviceSynchronize();
+  
+  // 实际测试
+  auto start = high_resolution_clock::now();
+  for (int i = 0; i < iterations; ++i) {
+    model.predict(input, pos, false, next);
+  }
+  cudaDeviceSynchronize();
+  auto end = high_resolution_clock::now();
+  
+  auto total_us = duration_cast<microseconds>(end - start).count();
+  double avg_us = (double)total_us / iterations;
+  double throughput = 1000000.0 / avg_us;  // tokens per second
+  
+  BenchmarkResult result;
+  result.total_time_us = total_us;
+  result.avg_time_us = avg_us;
+  result.throughput = throughput;
+  result.iterations = iterations;
+  
+  std::cout << std::fixed << std::setprecision(2);
+  std::cout << name << ":\n";
+  std::cout << "  Total time:    " << total_us / 1000.0 << " ms\n";
+  std::cout << "  Avg time:      " << avg_us << " us/iter\n";
+  std::cout << "  Throughput:    " << throughput << " tokens/s\n";
+  std::cout << "\n";
+  
+  return result;
+}
+
+int main(int argc, char** argv) {
+  google::InitGoogleLogging("CUDAGraphBenchmark");
+  FLAGS_logtostderr = true;
+  FLAGS_minloglevel = 1;  // 减少日志输出
+  
+  const char* model_path = std::getenv("KUIPER_MODEL_PATH");
+  const char* token_path = std::getenv("KUIPER_TOKEN_PATH");
+  
+  if (!model_path || !token_path) {
+    std::cerr << "Error: Please set KUIPER_MODEL_PATH and KUIPER_TOKEN_PATH\n";
+    std::cerr << "Example:\n";
+    std::cerr << "  export KUIPER_MODEL_PATH=/path/to/model.bin\n";
+    std::cerr << "  export KUIPER_TOKEN_PATH=/path/to/tokenizer.model\n";
+    return 1;
+  }
+  
+  std::cout << "========================================\n";
+  std::cout << "CUDA Graph Performance Benchmark\n";
+  std::cout << "========================================\n";
+  std::cout << "Model: " << model_path << "\n";
+  std::cout << "Tokenizer: " << token_path << "\n\n";
+  
+  // 创建模型
+  model::LLama2Model model(
+      base::TokenizerType::kEncodeSpe,
+      token_path,
+      model_path,
+      false
+  );
+  
+  // 初始化
+  std::cout << "Initializing model...\n";
+  auto status = model.init(base::DeviceType::kDeviceCUDA);
+  if (!status) {
+    std::cerr << "Failed to initialize model, error code: " << status.get_err_code() << "\n";
+    return 1;
+  }
+  std::cout << "Model initialized.\n\n";
+  
+  // 准备测试数据
+  int batch_size = 1;
+  std::vector<int32_t> input_shape = {batch_size, 1};
+  
+  tensor::Tensor input(base::DataType::kDataTypeFp32, input_shape, true);
+  input.to_cuda(nullptr);
+  
+  tensor::Tensor pos(base::DataType::kDataTypeInt32, {batch_size}, true);
+  pos.to_cuda(nullptr);
+  
+  // 初始化 dummy 数据
+  cudaMemset(input.ptr<void>(), 0, input.size() * sizeof(float));
+  cudaMemset(pos.ptr<void>(), 0, pos.size() * sizeof(int32_t));
+  cudaDeviceSynchronize();
+  
+  int test_iterations = 1000;
+  
+  std::cout << "Running benchmark with " << test_iterations << " iterations...\n\n";
+  
+  // 测试 1: 不使用 CUDA Graph
+  model.EnableCUDAGraph(false);
+  auto result_no_graph = benchmark_forward(
+      model, input, pos, test_iterations, false, "Without CUDA Graph");
+  
+  // 测试 2: 捕获并使用 CUDA Graph
+  std::cout << "Capturing CUDA Graph...\n";
+  model.EnableCUDAGraph(true);
+  status = model.CaptureDecodeGraph(batch_size, input_shape);
+  
+  if (!status) {
+    std::cerr << "Warning: Failed to capture CUDA Graph, error code: " << status.get_err_code() << "\n";
+    std::cerr << "Continuing with normal execution...\n\n";
+  } else {
+    std::cout << "CUDA Graph captured successfully.\n\n";
+    
+    auto result_with_graph = benchmark_forward(
+        model, input, pos, test_iterations, true, "With CUDA Graph");
+    
+    // 计算加速比
+    double speedup = result_no_graph.avg_time_us / result_with_graph.avg_time_us;
+    double throughput_improvement = result_with_graph.throughput / result_no_graph.throughput;
+    
+    std::cout << "========================================\n";
+    std::cout << "Performance Summary\n";
+    std::cout << "========================================\n";
+    std::cout << std::fixed << std::setprecision(2);
+    std::cout << "Speedup:              " << speedup << "x\n";
+    std::cout << "Throughput improvement: " << throughput_improvement << "x\n";
+    std::cout << "Time reduction:        " 
+              << (1.0 - 1.0/speedup) * 100.0 << "%\n";
+    std::cout << "========================================\n";
+    
+    // 评估结果
+    if (speedup > 1.1) {
+      std::cout << "\n✅ CUDA Graph provides significant speedup!\n";
+    } else if (speedup > 0.95) {
+      std::cout << "\n⚠️  CUDA Graph provides minimal speedup.\n";
+      std::cout << "    This may indicate that kernel launch overhead is not the bottleneck.\n";
+    } else {
+      std::cout << "\n❌ CUDA Graph is slower. This is unexpected.\n";
+      std::cout << "    Please check the implementation.\n";
+    }
+  }
+  
+  return 0;
+}
+*/
