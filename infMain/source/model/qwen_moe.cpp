@@ -1167,7 +1167,7 @@ void QwenMoeModel::moe_router_topk(int32_t layer_idx, const tensor::Tensor& ffn_
 
   void QwenMoeModel::moe_accum_zero() const {
     tensor::Tensor moe_accum = get_buffer(ModelBufferType::kMoeAccum);
-    CHECK_EQ(moe_accum.device_type(), device_type_);
+    CHECK(moe_accum.device_type() == device_type_);
     if (device_type_ == base::DeviceType::kDeviceCUDA) {
       CHECK_NE(cuda_config_, nullptr);
       cudaMemsetAsync(moe_accum.ptr<float>(), 0, moe_accum.byte_size(), cuda_config_->stream);
