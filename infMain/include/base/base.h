@@ -10,7 +10,7 @@
   } while (0)
 
 namespace model {
-enum class ModelBufferType {
+enum class ModelBufferType : int32_t {
   kInputTokens = 0,
   kInputEmbeddings = 1,
   kOutputRMSNorm = 2,
@@ -30,6 +30,15 @@ enum class ModelBufferType {
 
   kSinCache = 17,
   kCosCache = 18,
+
+  kRouterLogits = 19,
+  kTopKValue = 20,
+  kTopKIndex = 21,
+  kMoeAccum = 22,
+  kExpertH1 = 23,
+  kExpertH2 = 24,
+  kExpertOutput = 25,
+  kSharedGateOutput = 26,
 };
 }
 

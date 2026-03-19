@@ -8,6 +8,7 @@ struct RawModelData {
   ~RawModelData();
   int32_t fd = -1;
   size_t file_size = 0;
+  int32_t header_extra_bytes = 0; // The extra bytes for the header (e.g., MoE header) at the beginning of the model file
   void* data = nullptr;
   void* weight_data = nullptr;
 

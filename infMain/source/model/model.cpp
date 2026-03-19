@@ -3,7 +3,42 @@
 #include <fcntl.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
+
 namespace model {
+
+static bool ReadMoeHeaderIfExists(FILE* file, TransformerConfig* cfg,  
+                          std::shared_ptr<RawModelData> raw) {
+  long pos_before = ftell(file);
+  if (pos_before < 0) {
+    return false;
+  }
+  MoeHeader header{};
+  size_t read_count = fread(&header, sizeof(MoeHeader), 1, file);
+  if (read_count != 1) {
+    fseek(file, pos_before, SEEK_SET);
+    return false;
+  }
+  if (header.magic != kMoeMagic) {
+    fseek(file, pos_before, SEEK_SET);
+    return false;
+  }
+  if (cfg) {
+    cfg->moe_expert_num_ = header.moe_expert_num;
+    cfg->moe_topk_ = header.moe_topk;
+    cfg->moe_shared_expert_num_ = header.moe_shared_expert_num;
+    cfg->moe_hidden_dim_ = header.moe_hidden_dim;
+    cfg->moe_shared_hidden_dim_ = header.moe_shared_hidden_dim;
+    cfg->moe_sparse_step_ = header.moe_sparse_step;
+    cfg->moe_norm_topk_prob_ = header.moe_norm_topk_prob;
+  }
+  
+  if (raw) {
+    raw->header_extra_bytes = sizeof(MoeHeader);
+  }
+  return true;
+}
+
+
 Model::Model(base::TokenizerType tokenizer_type, base::ModelType model_type, std::string token_path,
              std::string model_path, bool is_quant_model)
     : tokenizer_type_(tokenizer_type),
@@ -69,15 +104,17 @@ base::Status Model::read_model_file() {
     }
   }
 
-  auto gen_status = generate_model_infos(config);
-  if (!gen_status) {
-    return gen_status;
-  }
-
   if (!is_quant_model_) {
     raw_model_data_ = std::make_shared<RawModelDataFp32>();
   } else {
     raw_model_data_ = std::make_shared<RawModelDataInt8>();
+  }
+
+  ReadMoeHeaderIfExists(file, config_.get(), raw_model_data_);
+
+  auto gen_status = generate_model_infos(config);
+  if (!gen_status) {
+    return gen_status;
   }
 
   struct stat sb;
@@ -98,10 +135,10 @@ base::Status Model::read_model_file() {
   }
   if (!is_quant_model_) {
     raw_model_data_->weight_data =
-        static_cast<int8_t*>(raw_model_data_->data) + sizeof(ModelConfig);
+        static_cast<int8_t*>(raw_model_data_->data) + sizeof(ModelConfig) + raw_model_data_->header_extra_bytes;
   } else {
     raw_model_data_->weight_data =
-        static_cast<int8_t*>(raw_model_data_->data) + sizeof(ModelConfig) + sizeof(group_size_);
+        static_cast<int8_t*>(raw_model_data_->data) + sizeof(ModelConfig) + sizeof(group_size_) + raw_model_data_->header_extra_bytes;
   }
   if (raw_model_data_ == nullptr) {
     LOG(ERROR);
