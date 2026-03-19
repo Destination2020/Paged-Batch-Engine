@@ -1041,7 +1041,7 @@ void QwenMoeModel::feed_forward(int32_t layer_idx, const tensor::Tensor& input) 
   moe_shared_expert(layer_idx, ffn_norm_output);
 
   //residual scale_add
-  moe_residual_add(layer_idx, input);
+  moe_residual_add(input);
 
 }
 
