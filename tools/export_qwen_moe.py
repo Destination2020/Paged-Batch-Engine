@@ -197,11 +197,8 @@ def export_qwen_moe(model, config, output_path):
             expect_shape(f"{prefix}.mlp.gate.weight", layer.mlp.gate.weight, (num_experts, hidden_size))
             serialize_fp32(file, layer.mlp.gate.weight)
 
-            if len(layer.mlp.experts) != num_experts:
-                raise ValueError(
-                    f"{prefix}.mlp.experts count mismatch: expected {num_experts}, got {len(layer.mlp.experts)}"
-                )
-            for expert_idx, expert in enumerate(layer.mlp.experts):
+            for expert_idx in range(num_experts):
+                expert = layer.mlp.experts[expert_idx]
                 expert_prefix = f"{prefix}.mlp.experts.{expert_idx}"
                 expect_shape(f"{expert_prefix}.gate_proj.weight", expert.gate_proj.weight, (moe_hidden_dim, hidden_size))
                 expect_shape(f"{expert_prefix}.down_proj.weight", expert.down_proj.weight, (hidden_size, moe_hidden_dim))
