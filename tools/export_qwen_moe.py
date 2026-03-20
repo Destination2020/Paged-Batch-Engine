@@ -72,6 +72,56 @@ def get_required_attr(config, name):
     return value
 
 
+def validate_runtime_compatibility(config):
+    decoder_sparse_step = int(getattr(config, "decoder_sparse_step", 1) or 1)
+    if decoder_sparse_step != 1:
+        raise ValueError(
+            "Current HighPerInfFram QwenMoeModel only supports decoder_sparse_step = 1, "
+            f"but got {decoder_sparse_step}."
+        )
+
+    mlp_only_layers = list(getattr(config, "mlp_only_layers", []) or [])
+    if mlp_only_layers:
+        raise ValueError(
+            "Current HighPerInfFram QwenMoeModel expects all decoder layers to be sparse MoE layers. "
+            f"Found dense-only mlp_only_layers={mlp_only_layers}."
+        )
+
+
+def iter_expert_tensors(layer, prefix, num_experts, moe_hidden_dim, hidden_size):
+    experts = layer.mlp.experts
+
+    if hasattr(experts, "gate_up_proj") and hasattr(experts, "down_proj"):
+        expect_shape(
+            f"{prefix}.mlp.experts.gate_up_proj",
+            experts.gate_up_proj,
+            (num_experts, 2 * moe_hidden_dim, hidden_size),
+        )
+        expect_shape(
+            f"{prefix}.mlp.experts.down_proj",
+            experts.down_proj,
+            (num_experts, hidden_size, moe_hidden_dim),
+        )
+
+        for expert_idx in range(num_experts):
+            gate_up_proj = experts.gate_up_proj[expert_idx]
+            gate_proj, up_proj = torch.split(gate_up_proj, moe_hidden_dim, dim=0)
+            down_proj = experts.down_proj[expert_idx]
+            yield expert_idx, gate_proj, down_proj, up_proj
+        return
+
+    if hasattr(experts, "__getitem__"):
+        for expert_idx in range(num_experts):
+            expert = experts[expert_idx]
+            yield expert_idx, expert.gate_proj.weight, expert.down_proj.weight, expert.up_proj.weight
+        return
+
+    raise TypeError(
+        f"Unsupported expert container type: {type(experts).__name__}. "
+        "Expected either a packed Qwen2MoeExperts container or an indexable expert list."
+    )
+
+
 def load_model(model_dir):
     try:
         from transformers import AutoConfig, AutoModelForCausalLM
@@ -83,11 +133,12 @@ def load_model(model_dir):
     config_json = load_local_config_json(model_dir)
     config = AutoConfig.from_pretrained(model_dir, local_files_only=True, trust_remote_code=False)
     validate_moe_config(config_json, config)
+    validate_runtime_compatibility(config)
 
     print(f"loading model from local dir: {model_dir}")
     model = AutoModelForCausalLM.from_pretrained(
         model_dir,
-        torch_dtype=torch.float32,
+        dtype=torch.float32,
         low_cpu_mem_usage=True,
         local_files_only=True,
         trust_remote_code=False,
@@ -166,6 +217,12 @@ def export_qwen_moe(model, config, output_path):
         for layer_idx, layer in enumerate(layers):
             prefix = f"model.layers.{layer_idx}"
 
+            if not hasattr(layer.mlp, "experts"):
+                raise ValueError(
+                    f"{prefix}.mlp is not a sparse MoE block. "
+                    "Current exporter only supports fully sparse MoE decoder layers."
+                )
+
             expect_shape(f"{prefix}.input_layernorm.weight", layer.input_layernorm.weight, (hidden_size,))
             serialize_fp32(file, layer.input_layernorm.weight)
 
@@ -197,15 +254,16 @@ def export_qwen_moe(model, config, output_path):
             expect_shape(f"{prefix}.mlp.gate.weight", layer.mlp.gate.weight, (num_experts, hidden_size))
             serialize_fp32(file, layer.mlp.gate.weight)
 
-            for expert_idx in range(num_experts):
-                expert = layer.mlp.experts[expert_idx]
+            for expert_idx, gate_proj, down_proj, up_proj in iter_expert_tensors(
+                layer, prefix, num_experts, moe_hidden_dim, hidden_size
+            ):
                 expert_prefix = f"{prefix}.mlp.experts.{expert_idx}"
-                expect_shape(f"{expert_prefix}.gate_proj.weight", expert.gate_proj.weight, (moe_hidden_dim, hidden_size))
-                expect_shape(f"{expert_prefix}.down_proj.weight", expert.down_proj.weight, (hidden_size, moe_hidden_dim))
-                expect_shape(f"{expert_prefix}.up_proj.weight", expert.up_proj.weight, (moe_hidden_dim, hidden_size))
-                serialize_fp32(file, expert.gate_proj.weight)
-                serialize_fp32(file, expert.down_proj.weight)
-                serialize_fp32(file, expert.up_proj.weight)
+                expect_shape(f"{expert_prefix}.gate_proj.weight", gate_proj, (moe_hidden_dim, hidden_size))
+                expect_shape(f"{expert_prefix}.down_proj.weight", down_proj, (hidden_size, moe_hidden_dim))
+                expect_shape(f"{expert_prefix}.up_proj.weight", up_proj, (moe_hidden_dim, hidden_size))
+                serialize_fp32(file, gate_proj)
+                serialize_fp32(file, down_proj)
+                serialize_fp32(file, up_proj)
 
             if shared_hidden_dim > 0:
                 expect_shape(
