@@ -118,7 +118,7 @@ void rmsnorm_kernel_cu(const tensor::Tensor& input, const tensor::Tensor& weight
         weight.device_type() == base::DeviceType::kDeviceCUDA &&
         output.device_type() == base::DeviceType::kDeviceCUDA);
 
-#if defined(QWEN2_SUPPORT) || defined(QWEN3_SUPPORT)
+#if defined(QWEN2_SUPPORT) || defined(QWEN3_SUPPORT) || defined(QWEN_MOE_SUPPORT)
   const float eps = 1e-6f;
 #else
   const float eps = 1e-5f;
