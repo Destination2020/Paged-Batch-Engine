@@ -1183,6 +1183,8 @@ void QwenMoeModel::moe_router_topk(int32_t layer_idx, const tensor::Tensor& ffn_
     auto expert_h1 = get_buffer(ModelBufferType::kExpertH1);
     auto expert_h2 = get_buffer(ModelBufferType::kExpertH2);
     auto expert_output = get_buffer(ModelBufferType::kExpertOutput);
+    expert_h1.reshape({config_->moe_hidden_dim_});
+    expert_h2.reshape({config_->moe_hidden_dim_});
     for (int k = 0; k < config_->moe_topk_; ++k) {
       int32_t expert_idx = topk_index.index<int32_t>(k);
       float expert_weight = topk_value.index<float>(k);
@@ -1214,6 +1216,8 @@ void QwenMoeModel::moe_router_topk(int32_t layer_idx, const tensor::Tensor& ffn_
     auto shared_h1 = get_buffer(ModelBufferType::kExpertH1);
     auto shared_h2 = get_buffer(ModelBufferType::kExpertH2);
     auto shared_output = get_buffer(ModelBufferType::kExpertOutput);
+    shared_h1.reshape({config_->moe_shared_hidden_dim_});
+    shared_h2.reshape({config_->moe_shared_hidden_dim_});
 
     // forward through the shared expert
     STATUS_CHECK(shared_w1->forward(ffn_norm_output, shared_h1));
