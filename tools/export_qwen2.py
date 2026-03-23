@@ -40,6 +40,20 @@ def serialize_fp32(file, tensor):
     file.write(b)
 
 
+def serialize_bf16(file, tensor):
+    """ writes one bf16 tensor to file that is open in wb mode """
+    d = (
+        tensor.detach()
+        .cpu()
+        .view(-1)
+        .to(torch.bfloat16)
+        .view(torch.uint16)
+        .numpy()
+        .astype(np.uint16, copy=False)
+    )
+    file.write(d.tobytes())
+
+
 def serialize_int8(file, tensor):
     """ writes one int8 tensor to file that is open in wb mode """
     d = tensor.detach().cpu().view(-1).numpy().astype(np.int8)
@@ -133,6 +147,58 @@ def legacy_export(model, filepath):
     # write to binary file
     out_file.close()
     print(f"wrote {filepath}")
+
+
+def legacy_export_bf16(model, filepath):
+    """Qwen2 legacy export with a bf16 weight-data header."""
+    out_file = open(filepath, 'wb')
+
+    hidden_dim = model.layers[0].feed_forward.w1.weight.shape[0]
+    p = model.params
+    shared_classifier = torch.equal(model.tok_embeddings.weight, model.output.weight)
+    if not shared_classifier:
+        p.vocab_size = -p.vocab_size
+    n_kv_heads = p.n_heads if p.n_kv_heads is None else p.n_kv_heads
+    header = struct.pack('iiiiiii', p.dim, hidden_dim, p.n_layers, p.n_heads,
+                         n_kv_heads, p.vocab_size, p.max_seq_len)
+    out_file.write(header)
+
+    # Optional weight dtype header:
+    # magic='DTYP', data_type=4(kDataTypeBf16)
+    out_file.write(struct.pack('ii', 0x44545950, 4))
+
+    serialize_bf16(out_file, model.tok_embeddings.weight)
+
+    for layer in model.layers:
+        serialize_bf16(out_file, layer.attention_norm.weight)
+    for layer in model.layers:
+        serialize_bf16(out_file, layer.attention.wq.weight)
+        serialize_bf16(out_file, layer.attention.wq.bias)
+    for layer in model.layers:
+        serialize_bf16(out_file, layer.attention.wk.weight)
+        serialize_bf16(out_file, layer.attention.wk.bias)
+    for layer in model.layers:
+        serialize_bf16(out_file, layer.attention.wv.weight)
+        serialize_bf16(out_file, layer.attention.wv.bias)
+    for layer in model.layers:
+        serialize_bf16(out_file, layer.attention.wo.weight)
+    for layer in model.layers:
+        serialize_bf16(out_file, layer.ffn_norm.weight)
+    for layer in model.layers:
+        serialize_bf16(out_file, layer.feed_forward.w1.weight)
+    for layer in model.layers:
+        serialize_bf16(out_file, layer.feed_forward.w2.weight)
+    for layer in model.layers:
+        serialize_bf16(out_file, layer.feed_forward.w3.weight)
+    serialize_bf16(out_file, model.norm.weight)
+    serialize_bf16(out_file, model.freqs_cos[:p.max_seq_len])
+    serialize_bf16(out_file, model.freqs_sin[:p.max_seq_len])
+
+    if not shared_classifier:
+        serialize_bf16(out_file, model.output.weight)
+
+    out_file.close()
+    print(f"wrote bf16 model to {filepath}")
 
 
 def legacy_export_quant(model, filepath):
@@ -544,11 +610,15 @@ def load_hf_model(model_path):
     print(hf_model)
     hf_dict = hf_model.state_dict()
 
-    # convert LlamaConfig to ModelArgs
+    # convert HF config to ModelArgs
     config = ModelArgs()
-    if any(['config.json' in path for path in os.listdir("./")]):
-        with open(os.path.join("./", 'config.json'), 'r') as f:
+    config_json = None
+    local_config_path = os.path.join(model_path, "config.json")
+    if os.path.isdir(model_path) and os.path.exists(local_config_path):
+        with open(local_config_path, "r") as f:
             config_json = json.load(f)
+
+    if config_json is not None:
         config.dim = config_json["hidden_size"]
         config.n_layers = config_json["num_hidden_layers"]
         config.n_heads = config_json["num_attention_heads"]
@@ -609,6 +679,7 @@ def model_export(model, filepath, version, dtype=torch.float32):
     v0: legacy llama2.c float format, DEPRECATED
     v1: float32 export
     v2: int8 quantized Q8_0 export, similar to llama.cpp, in groups
+    v4: legacy bf16 export with an optional dtype header for HighPerInfFram
     # TODO: add dtype export support for other versions (?)
     """
     if version == 0:
@@ -619,6 +690,8 @@ def model_export(model, filepath, version, dtype=torch.float32):
         version2_export(model, filepath)
     elif version == 3:
         legacy_export_quant(model, filepath)
+    elif version == 4:
+        legacy_export_bf16(model, filepath)
     elif version == -1:
         hf_export(model, filepath, dtype)
     else:
@@ -662,13 +735,13 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("filepath", type=str, help="the output filepath")
     parser.add_argument("--version", default=0, type=int, help="the version to export with")
-    parser.add_argument("--dtype", type=str, help="dtype of the model (fp16, fp32)", default="fp32")
+    parser.add_argument("--dtype", type=str, help="dtype of the model (fp16, fp32, bf16)", default="fp32")
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument("--checkpoint", type=str, help="model checkpoint, .pt file")
     group.add_argument("--meta-llama", type=str, help="meta llama model path")
     group.add_argument("--hf", type=str, help="huggingface model path")
     args = parser.parse_args()
-    dtype = {"fp16": torch.float16, "fp32": torch.float32}[args.dtype]
+    dtype = {"fp16": torch.float16, "fp32": torch.float32, "bf16": torch.bfloat16}[args.dtype]
 
     if args.checkpoint:
         model = load_checkpoint(args.checkpoint)

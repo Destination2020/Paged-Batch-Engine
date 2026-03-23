@@ -21,4 +21,8 @@ const void* RawModelDataFp32::weight(size_t offset) const {
 const void* RawModelDataInt8::weight(size_t offset) const {
   return static_cast<int8_t*>(weight_data) + offset;
 }
+
+const void* RawModelDataBf16::weight(size_t offset) const {
+  return static_cast<uint16_t*>(weight_data) + offset;
+}
 }  // namespace model

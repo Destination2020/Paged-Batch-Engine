@@ -40,7 +40,7 @@ struct QwenMoeLayers {
 
   std::shared_ptr<op::Layer> embedding_layer_;
 
-  void to_cuda(std::shared_ptr<kernel::CudaConfig> config);
+  void to_cuda(std::shared_ptr<kernel::CudaConfig> config, base::DataType runtime_data_type);
 };
 
 class QwenMoeModel : public Model {
@@ -100,4 +100,3 @@ class QwenMoeModel : public Model {
 }  // namespace model
 
 #endif
-

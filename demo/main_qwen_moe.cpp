@@ -57,8 +57,7 @@ int main(int argc, char* argv[]) {
 
   model::QwenMoeModel model(base::TokenizerType::kEncodeBpe, tokenizer_path,
                              checkpoint_path, false);
-  // CPU mode first, switch to kDeviceCUDA after GPU kernels are ready
-  auto init_status = model.init(base::DeviceType::kDeviceCPU);
+  auto init_status = model.init(base::DeviceType::kDeviceCUDA);
   if (!init_status) {
     LOG(FATAL) << "The model init failed, the error code is: " << init_status.get_err_code();
   }

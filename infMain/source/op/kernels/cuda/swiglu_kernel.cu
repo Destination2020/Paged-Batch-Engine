@@ -1,8 +1,10 @@
 // Updated on March 15, 2026
 #include <tensor/tensor.h>
 #include "swiglu_kernel.cuh"
+#include "cuda_type_utils.cuh"
 namespace kernel {
-__global__ void swiglu_kernel_cu_fp32(int size, const float* in1, const float* in2, float* out) {
+template <typename T>
+__global__ void swiglu_kernel_cu_impl(int size, const T* in1, const T* in2, T* out) {
   int tid = threadIdx.x;
   int idx = threadIdx.x + blockDim.x * blockIdx.x;
   if (idx >= size) {
@@ -12,14 +14,14 @@ __global__ void swiglu_kernel_cu_fp32(int size, const float* in1, const float* i
   float* smem1 = shared_mem;
   float* smem2 = shared_mem + blockDim.x;
 
-  smem1[tid] = in1[idx];
-  smem2[tid] = in2[idx];
+  smem1[tid] = scalar_to_float(in1[idx]);
+  smem2[tid] = scalar_to_float(in2[idx]);
   __syncthreads();
 
-  float value = 1.0f / (1.0f + exp(-smem1[tid]));
+  float value = 1.0f / (1.0f + expf(-smem1[tid]));
   smem1[tid] = smem1[tid] * value;
 
-  out[idx] = smem1[tid] * smem2[tid];
+  out[idx] = float_to_scalar<T>(smem1[tid] * smem2[tid]);
 }
 
 void swiglu_kernel_cu(const tensor::Tensor& input1, const tensor::Tensor& input2,
@@ -37,13 +39,28 @@ void swiglu_kernel_cu(const tensor::Tensor& input1, const tensor::Tensor& input2
   int threads = 128;
   int blocks = (size + threads - 1) / threads;
   const size_t shmem = threads * sizeof(float) * 2;
+  const bool is_fp32 = input1.data_type() == base::DataType::kDataTypeFp32;
   if (!stream) {
-    swiglu_kernel_cu_fp32<<<blocks, threads, shmem>>>(
-        size, input1.ptr<float>(), input2.ptr<float>(), const_cast<float*>(output.ptr<float>()));
+    if (is_fp32) {
+      swiglu_kernel_cu_impl<float><<<blocks, threads, shmem>>>(
+          size, input1.ptr<float>(), input2.ptr<float>(), const_cast<float*>(output.ptr<float>()));
+    } else {
+      swiglu_kernel_cu_impl<base::CudaBF16><<<blocks, threads, shmem>>>(
+          size, reinterpret_cast<const base::CudaBF16*>(input1.ptr<uint16_t>()),
+          reinterpret_cast<const base::CudaBF16*>(input2.ptr<uint16_t>()),
+          reinterpret_cast<base::CudaBF16*>(const_cast<uint16_t*>(output.ptr<uint16_t>())));
+    }
   } else {
     cudaStream_t stream_ = static_cast<cudaStream_t>(stream);
-    swiglu_kernel_cu_fp32<<<blocks, threads, shmem, stream_>>>(
-        size, input1.ptr<float>(), input2.ptr<float>(), const_cast<float*>(output.ptr<float>()));
+    if (is_fp32) {
+      swiglu_kernel_cu_impl<float><<<blocks, threads, shmem, stream_>>>(
+          size, input1.ptr<float>(), input2.ptr<float>(), const_cast<float*>(output.ptr<float>()));
+    } else {
+      swiglu_kernel_cu_impl<base::CudaBF16><<<blocks, threads, shmem, stream_>>>(
+          size, reinterpret_cast<const base::CudaBF16*>(input1.ptr<uint16_t>()),
+          reinterpret_cast<const base::CudaBF16*>(input2.ptr<uint16_t>()),
+          reinterpret_cast<base::CudaBF16*>(const_cast<uint16_t*>(output.ptr<uint16_t>())));
+    }
   }
 }
 }  // namespace kernel

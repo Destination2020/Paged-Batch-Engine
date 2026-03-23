@@ -629,13 +629,13 @@ void Qwen3Model::cls_logits(const tensor::Tensor& input) const {
 
 int32_t Qwen3Model::post_processing(const tensor::Tensor& pos, bool is_prompt) const {
   tensor::Tensor forward_output = get_buffer(ModelBufferType::kForwardOutput);
-  const float* forward_logits = forward_output.ptr<float>();
 
   int32_t next = 0;
   if (is_prompt) {
     next = -1;
   } else {
-    next = static_cast<int32_t>(sampler_->sample(forward_logits, forward_output.size(),
+    next = static_cast<int32_t>(sampler_->sample(forward_output.get_buffer()->ptr(),
+                                                 forward_output.size(), forward_output.data_type(),
                                                  cuda_config_ ? cuda_config_->stream : nullptr));
   }
   return next;

@@ -1,9 +1,10 @@
 // Updated on March 15, 2026
 #include "emb_kernel.cuh"
+#include "cuda_type_utils.cuh"
 namespace kernel {
-__global__ void emb_kernel_cu_fp32(int32_t vocab_size, int32_t token_num, int32_t weight_dim,
-                                   const int32_t* input_ptr, const float* weight_ptr,
-                                   float* output_ptr) {
+template <typename T>
+__global__ void emb_kernel_cu_impl(int32_t vocab_size, int32_t token_num, int32_t weight_dim,
+                                   const int32_t* input_ptr, const T* weight_ptr, T* output_ptr) {
   int32_t token_idx = blockIdx.x;
   if (token_idx >= token_num) {
     return;
@@ -13,8 +14,8 @@ __global__ void emb_kernel_cu_fp32(int32_t vocab_size, int32_t token_num, int32_
     return;
   }
 
-  float* output_ptr_start = output_ptr + token_idx * weight_dim;
-  const float* weight_ptr_start = weight_ptr + token * weight_dim;
+  T* output_ptr_start = output_ptr + token_idx * weight_dim;
+  const T* weight_ptr_start = weight_ptr + token * weight_dim;
 
   for (int32_t i = threadIdx.x; i < weight_dim; i += blockDim.x) {
     output_ptr_start[i] = weight_ptr_start[i];
@@ -36,15 +37,27 @@ void emb_kernel_cu(const tensor::Tensor& input, const tensor::Tensor& weight,
   constexpr int32_t max_seq_len = 512;
   constexpr int32_t thread_num = 128;
   int32_t* in_ptr = input_cu.ptr<int32_t>();
-  float* wei_ptr = const_cast<float*>(weight.ptr<float>());
-  float* out_ptr = const_cast<float*>(output.ptr<float>());
+  cudaStream_t stream_ = stream ? static_cast<cudaStream_t>(stream) : nullptr;
   if (stream) {
-    cudaStream_t stream_ = static_cast<cudaStream_t>(stream);
-    emb_kernel_cu_fp32<<<max_seq_len, thread_num, 0, stream_>>>(vocab_size, input_num, weight_dim,
-                                                                in_ptr, wei_ptr, out_ptr);
+    if (weight.data_type() == base::DataType::kDataTypeFp32) {
+      emb_kernel_cu_impl<float><<<max_seq_len, thread_num, 0, stream_>>>(
+          vocab_size, input_num, weight_dim, in_ptr, weight.ptr<float>(),
+          const_cast<float*>(output.ptr<float>()));
+    } else {
+      emb_kernel_cu_impl<base::CudaBF16><<<max_seq_len, thread_num, 0, stream_>>>(
+          vocab_size, input_num, weight_dim, in_ptr,
+          reinterpret_cast<const base::CudaBF16*>(weight.ptr<uint16_t>()),
+          reinterpret_cast<base::CudaBF16*>(const_cast<uint16_t*>(output.ptr<uint16_t>())));
+    }
+  } else if (weight.data_type() == base::DataType::kDataTypeFp32) {
+    emb_kernel_cu_impl<float><<<max_seq_len, thread_num>>>(
+        vocab_size, input_num, weight_dim, in_ptr, weight.ptr<float>(),
+        const_cast<float*>(output.ptr<float>()));
   } else {
-    emb_kernel_cu_fp32<<<max_seq_len, thread_num>>>(vocab_size, input_num, weight_dim, in_ptr,
-                                                    wei_ptr, out_ptr);
+    emb_kernel_cu_impl<base::CudaBF16><<<max_seq_len, thread_num>>>(
+        vocab_size, input_num, weight_dim, in_ptr,
+        reinterpret_cast<const base::CudaBF16*>(weight.ptr<uint16_t>()),
+        reinterpret_cast<base::CudaBF16*>(const_cast<uint16_t*>(output.ptr<uint16_t>())));
   }
 }
 }  // namespace kernel

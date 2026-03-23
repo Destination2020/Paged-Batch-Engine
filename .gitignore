@@ -26,3 +26,6 @@ Qwen/
 # Libraries
 lib/
 
+QwenMoEModelFile/
+build_qwen/
+qwen2_moe_config.json

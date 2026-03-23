@@ -81,12 +81,12 @@ base::Status MatmulLayer::forward() {
 }
 
 base::Status MatmulLayer::set_bias(int32_t idx, int32_t& dim, const void* bias_ptr,
-                                   base::DeviceType device_type) {
+                                   base::DeviceType device_type, base::DataType data_type) {
   CHECK_GE(idx, 0);
   CHECK_LT(idx, bias_.size());
   CHECK_NE(bias_ptr, nullptr);
 
-  size_t size = dim * sizeof(float);
+  size_t size = dim * base::DataTypeSize(data_type);
   std::shared_ptr<base::Buffer> buffer =
       std::make_shared<base::Buffer>(size, nullptr, const_cast<void*>(bias_ptr), true);
   if (device_type != base::DeviceType::kDeviceUnknown) {
@@ -94,7 +94,7 @@ base::Status MatmulLayer::set_bias(int32_t idx, int32_t& dim, const void* bias_p
   }
 
   if (!is_quant_layer_) {
-    tensor::Tensor bias(base::DataType::kDataTypeFp32, dim);
+    tensor::Tensor bias(data_type, dim);
     bias.set_device_type(device_type);
     CHECK(bias.assign(buffer));
     // LOG(INFO) << "bias:" << bias.index<float>(0);
@@ -134,7 +134,11 @@ void MatmulLayer::to_cuda() {
   LayerParam::to_cuda();
   if (has_bias_) {
     for (auto& bias : bias_) {
-      bias.to_cuda(cuda_config_ ? cuda_config_->stream : nullptr);
+      if (!is_quant_layer_) {
+        bias.to_cuda(cuda_config_ ? cuda_config_->stream : nullptr, data_type_);
+      } else {
+        bias.to_cuda(cuda_config_ ? cuda_config_->stream : nullptr);
+      }
     }
   }
 }

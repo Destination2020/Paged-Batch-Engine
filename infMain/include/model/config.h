@@ -42,6 +42,12 @@ struct TransformerConfig {
 };
 
 inline constexpr int32_t kMoeMagic = 0x4D4F4531; // 'M' 'O' 'E' '1'
+inline constexpr int32_t kWeightDataTypeMagic = 0x44545950; // 'D' 'T' 'Y' 'P'
+
+struct WeightDataTypeHeader {
+  int32_t magic = 0;
+  int32_t data_type = 0;
+};
 
 struct MoeHeader {
   int32_t magic = 0;             // identify the file type

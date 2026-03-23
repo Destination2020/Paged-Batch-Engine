@@ -33,7 +33,8 @@ class Tensor {
 
   void to_cpu();
 
-  void to_cuda(cudaStream_t stream = nullptr);
+  void to_cuda(cudaStream_t stream = nullptr,
+               base::DataType target_data_type = base::DataType::kDataTypeUnknown);
 
   bool is_empty() const;
 

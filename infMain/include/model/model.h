@@ -55,6 +55,10 @@ class Model {
                                     const op::EmbeddingOutput& embedding_output,
                                     bool is_prompt) const;
 
+  void set_runtime_data_type(base::DataType data_type);
+
+  base::DataType runtime_data_type() const;
+
  protected:
   virtual base::Status insert_buffer(ModelBufferType buffer_idx, const tensor::Tensor& tensor);
 
@@ -91,6 +95,7 @@ class Model {
   std::unique_ptr<sampler::Sampler> sampler_;
   std::shared_ptr<RawModelData> raw_model_data_;
   base::DeviceType device_type_ = base::DeviceType::kDeviceUnknown;
+  base::DataType runtime_data_type_ = base::DataType::kDataTypeFp32;
   base::ModelType model_type_ = base::ModelType::kModelTypeUnknown;
   base::TokenizerType tokenizer_type_ = base::TokenizerType::kEncodeUnknown;
 };

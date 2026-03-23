@@ -12,7 +12,8 @@ class ArgmaxSampler : public Sampler {
  public:
   explicit ArgmaxSampler(base::DeviceType device_type) : Sampler(device_type) {}
 
-  size_t sample(const float* logits, size_t size, void* stream) override;
+  size_t sample(const void* logits, size_t size, base::DataType data_type,
+                void* stream) override;
 };
 }  // namespace sampler
 #endif  // LLAMA_INFER_NON_SAMPLER_H

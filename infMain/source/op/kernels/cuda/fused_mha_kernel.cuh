@@ -1,6 +1,8 @@
 // Updated on March 15, 2026
 #ifndef FUSED_MHA_KERNEL_H
 #define FUSED_MHA_KERNEL_H
+#include <base/cuda_config.h>
+#include <tensor/tensor.h>
 namespace kernel {
 void fused_mha_kernel_cu(int32_t pos, int32_t head_num, int32_t layer_index, int32_t seq_len,
                    int32_t kv_dim, int32_t kv_mul, int32_t head_size, const tensor::Tensor& mha_out,
@@ -9,4 +11,3 @@ void fused_mha_kernel_cu(int32_t pos, int32_t head_num, int32_t layer_index, int
                    base::DeviceType device_type, CudaConfig* config);
 }
 #endif  // MHA_KERNEL_H
-

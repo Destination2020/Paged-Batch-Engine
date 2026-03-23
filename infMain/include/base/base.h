@@ -54,6 +54,7 @@ enum class DataType : uint8_t {
   kDataTypeFp32 = 1,
   kDataTypeInt8 = 2,
   kDataTypeInt32 = 3,
+  kDataTypeBf16 = 4,
 };
 
 enum class ModelType : uint8_t {
@@ -68,6 +69,8 @@ inline size_t DataTypeSize(DataType data_type) {
     return sizeof(int8_t);
   } else if (data_type == DataType::kDataTypeInt32) {
     return sizeof(int32_t);
+  } else if (data_type == DataType::kDataTypeBf16) {
+    return sizeof(uint16_t);
   } else {
     return 0;
   }
@@ -160,6 +163,10 @@ Status InvalidArgument(const std::string& err_msg = "");
 }  // namespace error
 
 std::ostream& operator<<(std::ostream& os, const Status& x);
+
+std::ostream& operator<<(std::ostream& os, DeviceType x);
+
+std::ostream& operator<<(std::ostream& os, DataType x);
 
 }  // namespace base
 #endif  // KUIPER_INCLUDE_BASE_BASE_H_

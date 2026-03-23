@@ -1,9 +1,11 @@
 // Updated on March 15, 2026
 #include "tensor/tensor.h"
+#include <base/bf16.h>
 #include <cuda_device_runtime_api.h>
 #include <cuda_runtime.h>
 #include <glog/logging.h>
 #include <numeric>
+#include <vector>
 
 namespace tensor {
 template <typename T, typename Tp>
@@ -26,11 +28,30 @@ static size_t data_type_size(base::DataType data_type) {
     case base::DataType::kDataTypeInt32: {
       return 4;
     }
+    case base::DataType::kDataTypeBf16: {
+      return 2;
+    }
     default: {
       LOG(FATAL) << "Unknown data type size for " << int(data_type);
       return 0;
     }
   }
+}
+
+static std::vector<uint16_t> fp32_to_bf16_vector(const float* src, size_t size) {
+  std::vector<uint16_t> dst(size);
+  for (size_t i = 0; i < size; ++i) {
+    dst[i] = base::float_to_bf16_bits(src[i]);
+  }
+  return dst;
+}
+
+static std::vector<float> bf16_to_fp32_vector(const uint16_t* src, size_t size) {
+  std::vector<float> dst(size);
+  for (size_t i = 0; i < size; ++i) {
+    dst[i] = base::bf16_bits_to_float(src[i]);
+  }
+  return dst;
 }
 
 Tensor::Tensor(base::DataType data_type, int32_t dim0, bool need_alloc,
@@ -102,20 +123,41 @@ Tensor::Tensor(base::DataType data_type, std::vector<int32_t> dims, bool need_al
   }
 }
 
-void Tensor::to_cuda(cudaStream_t stream) {
+void Tensor::to_cuda(cudaStream_t stream, base::DataType target_data_type) {
   CHECK_NE(buffer_, nullptr);
+  if (target_data_type == base::DataType::kDataTypeUnknown) {
+    target_data_type = data_type_;
+  }
   const base::DeviceType device_type = this->device_type();
   if (device_type == base::DeviceType::kDeviceUnknown) {
     LOG(ERROR) << "The device type of the tensor is unknown.";
   } else if (device_type == base::DeviceType::kDeviceCPU) {
-    size_t byte_size = this->byte_size();
     auto cu_alloc = base::CUDADeviceAllocatorFactory::get_instance();
-    auto cu_buffer = std::make_shared<base::Buffer>(byte_size, cu_alloc);
-    cu_alloc->memcpy(buffer_->ptr(), cu_buffer->ptr(), byte_size, base::MemcpyKind::kMemcpyCPU2CUDA,
-                     stream);
+    auto cu_buffer = std::make_shared<base::Buffer>(size_ * base::DataTypeSize(target_data_type), cu_alloc);
+
+    if (data_type_ == target_data_type) {
+      size_t byte_size = this->byte_size();
+      cu_alloc->memcpy(buffer_->ptr(), cu_buffer->ptr(), byte_size,
+                       base::MemcpyKind::kMemcpyCPU2CUDA, stream);
+    } else if (data_type_ == base::DataType::kDataTypeFp32 &&
+               target_data_type == base::DataType::kDataTypeBf16) {
+      auto host_bf16 = fp32_to_bf16_vector(reinterpret_cast<const float*>(buffer_->ptr()), size_);
+      cu_alloc->memcpy(host_bf16.data(), cu_buffer->ptr(), host_bf16.size() * sizeof(uint16_t),
+                       base::MemcpyKind::kMemcpyCPU2CUDA, stream, true);
+    } else if (data_type_ == base::DataType::kDataTypeBf16 &&
+               target_data_type == base::DataType::kDataTypeFp32) {
+      auto host_fp32 = bf16_to_fp32_vector(reinterpret_cast<const uint16_t*>(buffer_->ptr()), size_);
+      cu_alloc->memcpy(host_fp32.data(), cu_buffer->ptr(), host_fp32.size() * sizeof(float),
+                       base::MemcpyKind::kMemcpyCPU2CUDA, stream, true);
+    } else {
+      LOG(FATAL) << "Unsupported tensor dtype conversion from " << data_type_ << " to "
+                 << target_data_type << " in Tensor::to_cuda";
+    }
     this->buffer_ = cu_buffer;
+    this->data_type_ = target_data_type;
   } else {
-    LOG(INFO) << "The device type of the tensor is already cuda.";
+    CHECK_EQ(data_type_, target_data_type)
+        << "Tensor::to_cuda does not support in-place CUDA dtype conversion.";
   }
 }
 

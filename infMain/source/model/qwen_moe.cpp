@@ -1,5 +1,6 @@
 // Updated on March 15, 2026
 #include <cuda_runtime_api.h>
+#include <base/bf16.h>
 #include <glog/logging.h>
 #include <op/matmul.h>
 #include <op/mha.h>
@@ -56,154 +57,93 @@ namespace {
 
 namespace model {
 
-void QwenMoeLayers::to_cuda(std::shared_ptr<kernel::CudaConfig> config) {
-  if (add_layer_) {
-    add_layer_->set_cuda_config(config);
-    add_layer_->to_cuda();
+namespace {
+void prepare_cuda_layer(const std::shared_ptr<op::Layer>& layer,
+                        const std::shared_ptr<kernel::CudaConfig>& config,
+                        base::DataType runtime_data_type) {
+  if (!layer) {
+    return;
   }
+  layer->set_cuda_config(config);
+  layer->set_data_type(runtime_data_type);
+  layer->to_cuda();
+}
+}  // namespace
 
-  if (rope_layer_) {
-    rope_layer_->set_cuda_config(config);
-    rope_layer_->to_cuda();
-  }
-
-  if (swiglu_layer_) {
-    swiglu_layer_->set_cuda_config(config);
-    swiglu_layer_->to_cuda();
-  }
-
-  if (shared_swiglu_layer_) {
-    shared_swiglu_layer_->set_cuda_config(config);
-    shared_swiglu_layer_->to_cuda();
-  }
-
-  if (cls_layer_) {
-    cls_layer_->set_cuda_config(config);
-    cls_layer_->to_cuda();
-  }
-
-  if (embedding_layer_) {
-    embedding_layer_->set_cuda_config(config);
-    embedding_layer_->to_cuda();
-  }
-
-  if (mha_layer_) {
-    mha_layer_->set_cuda_config(config);
-    mha_layer_->to_cuda();
-  }
+void QwenMoeLayers::to_cuda(std::shared_ptr<kernel::CudaConfig> config,
+                            base::DataType runtime_data_type) {
+  prepare_cuda_layer(add_layer_, config, runtime_data_type);
+  prepare_cuda_layer(rope_layer_, config, runtime_data_type);
+  prepare_cuda_layer(swiglu_layer_, config, runtime_data_type);
+  prepare_cuda_layer(shared_swiglu_layer_, config, runtime_data_type);
+  prepare_cuda_layer(cls_layer_, config, runtime_data_type);
+  prepare_cuda_layer(embedding_layer_, config, runtime_data_type);
+  prepare_cuda_layer(mha_layer_, config, runtime_data_type);
 
   for (auto& weight_layer : wq_layers_) {
-    if (weight_layer) {
-      weight_layer->set_cuda_config(config);
-      weight_layer->to_cuda();
-    }
+    prepare_cuda_layer(weight_layer, config, runtime_data_type);
   }
 
   for (auto& weight_layer : wk_layers_) {
-    if (weight_layer) {
-      weight_layer->set_cuda_config(config);
-      weight_layer->to_cuda();
-    }
+    prepare_cuda_layer(weight_layer, config, runtime_data_type);
   }
 
   for (auto& weight_layer : wv_layers_) {
-    if (weight_layer) {
-      weight_layer->set_cuda_config(config);
-      weight_layer->to_cuda();
-    }
+    prepare_cuda_layer(weight_layer, config, runtime_data_type);
   }
 
   for (auto& weight_layer : wo_layers_) {
-    if (weight_layer) {
-      weight_layer->set_cuda_config(config);
-      weight_layer->to_cuda();
-    }
+    prepare_cuda_layer(weight_layer, config, runtime_data_type);
   }
 
   for (auto& weight_layer : w1_layers_) {
-    if (weight_layer) {
-      weight_layer->set_cuda_config(config);
-      weight_layer->to_cuda();
-    }
+    prepare_cuda_layer(weight_layer, config, runtime_data_type);
   }
 
   for (auto& weight_layer : w2_layers_) {
-    if (weight_layer) {
-      weight_layer->set_cuda_config(config);
-      weight_layer->to_cuda();
-    }
+    prepare_cuda_layer(weight_layer, config, runtime_data_type);
   }
 
   for (auto& weight_layer : w3_layers_) {
-    if (weight_layer) {
-      weight_layer->set_cuda_config(config);
-      weight_layer->to_cuda();
-    }
+    prepare_cuda_layer(weight_layer, config, runtime_data_type);
   }
 
   for (auto& router_layer : router_layers_) {
-    if (router_layer) {
-      router_layer->set_cuda_config(config);
-      router_layer->to_cuda();
-    }
+    prepare_cuda_layer(router_layer, config, runtime_data_type);
   }
 
   for (auto& expert_w1_layer : expert_w1_layers_) {
     for (auto& layer : expert_w1_layer) {
-      if (layer) {
-        layer->set_cuda_config(config);
-        layer->to_cuda();
-      }
+      prepare_cuda_layer(layer, config, runtime_data_type);
     }
   }
 
   for (auto& expert_w2_layer : expert_w2_layers_) {
     for (auto& layer : expert_w2_layer) {
-      if (layer) {
-        layer->set_cuda_config(config);
-        layer->to_cuda();
-      }
+      prepare_cuda_layer(layer, config, runtime_data_type);
     }
   }
 
   for (auto& expert_w3_layer : expert_w3_layers_) {
     for (auto& layer : expert_w3_layer) {
-      if (layer) {
-        layer->set_cuda_config(config);
-        layer->to_cuda();
-      }
+      prepare_cuda_layer(layer, config, runtime_data_type);
     }
   }
 
   for (auto& rms_norm_layer : rmsnorm_layers_) {
-    if (rms_norm_layer) {
-      rms_norm_layer->set_cuda_config(config);
-      rms_norm_layer->to_cuda();
-    }
+    prepare_cuda_layer(rms_norm_layer, config, runtime_data_type);
   }
   for (auto& shared_w1_layer : shared_w1_layers_) {
-    if (shared_w1_layer) {
-      shared_w1_layer->set_cuda_config(config);
-      shared_w1_layer->to_cuda();
-    }
+    prepare_cuda_layer(shared_w1_layer, config, runtime_data_type);
   }
   for (auto& shared_w2_layer : shared_w2_layers_) {
-    if (shared_w2_layer) {
-      shared_w2_layer->set_cuda_config(config);
-      shared_w2_layer->to_cuda();
-    }
+    prepare_cuda_layer(shared_w2_layer, config, runtime_data_type);
   }
   for (auto& shared_w3_layer : shared_w3_layers_) {
-    if (shared_w3_layer) {
-      shared_w3_layer->set_cuda_config(config);
-      shared_w3_layer->to_cuda();
-    }
+    prepare_cuda_layer(shared_w3_layer, config, runtime_data_type);
   }
   for (auto& shared_gate_layer : shared_gate_layers_) {
-    if (shared_gate_layer) {
-      shared_gate_layer->set_cuda_config(config);
-      shared_gate_layer->to_cuda();
-    }
+    prepare_cuda_layer(shared_gate_layer, config, runtime_data_type);
   }
 
 }
@@ -220,6 +160,14 @@ base::Status QwenMoeModel::init(base::DeviceType device_type) {
   }
   if (device_type == base::DeviceType::kDeviceCPU && is_quant_model_) {
     return error::InternalError("The cpu device do not support int8 quant model.");
+  }
+  if (device_type == base::DeviceType::kDeviceCPU &&
+      runtime_data_type_ == base::DataType::kDataTypeBf16) {
+    return error::InternalError("BF16 runtime is only supported on CUDA.");
+  }
+  if (runtime_data_type_ != base::DataType::kDataTypeFp32 &&
+      runtime_data_type_ != base::DataType::kDataTypeBf16) {
+    return error::InternalError("Unsupported runtime data type for QwenMoeModel.");
   }
   if (is_quant_model_) {
     return error::InternalError("Quantized model is not supported for QwenMoeModel yet.");
@@ -239,6 +187,19 @@ base::Status QwenMoeModel::init(base::DeviceType device_type) {
   if (!read_status) {
     return read_status;
   }
+  if (device_type_ == base::DeviceType::kDeviceCUDA &&
+      raw_model_data_ != nullptr &&
+      raw_model_data_->data_type == base::DataType::kDataTypeBf16 &&
+      runtime_data_type_ == base::DataType::kDataTypeFp32) {
+    runtime_data_type_ = base::DataType::kDataTypeBf16;
+  }
+  if (device_type_ == base::DeviceType::kDeviceCPU &&
+      raw_model_data_ != nullptr &&
+      raw_model_data_->data_type == base::DataType::kDataTypeBf16) {
+    return error::InternalError("BF16 weight files are only supported on CUDA.");
+  }
+  LOG(INFO) << "QwenMoe init weight dtype: " << raw_model_data_->data_type
+            << ", runtime dtype: " << runtime_data_type_;
   init_mem();
   if (device_type_ == base::DeviceType::kDeviceCPU) {
     kernel::sin_cos_cache_calc_cpu(config_->head_size_, config_->seq_len_,
@@ -520,6 +481,7 @@ void QwenMoeModel::create_param_layers() {
   CHECK(qwen_layers_ != nullptr);
   // The embedding layer
   auto cpu_device_type = base::DeviceType::kDeviceCPU;
+  auto model_weight_dtype = raw_model_data_->data_type;
   const int32_t dim = config_->dim_;
   const int32_t kv_dim = config_->kv_dim_;
   const int32_t layer_num = config_->layer_num_;
@@ -557,7 +519,9 @@ void QwenMoeModel::create_param_layers() {
   // 0) embedding
   qwen_layers_->embedding_layer_ = std::make_shared<op::EmbeddingLayer>(
       device_type_, dim, config_->seq_len_, std::abs(config_->vocab_size_));
-  qwen_layers_->embedding_layer_->set_weight(0, {std::abs(config_->vocab_size_), dim}, raw_model_data_->weight(pos), cpu_device_type);
+  qwen_layers_->embedding_layer_->set_weight(
+      0, {std::abs(config_->vocab_size_), dim}, raw_model_data_->weight(pos), cpu_device_type,
+      model_weight_dtype);
   pos += static_cast<size_t>(std::abs(config_->vocab_size_)) * dim;
 
   std::vector<std::shared_ptr<op::RmsNormLayer>> attn_norms;
@@ -568,52 +532,62 @@ void QwenMoeModel::create_param_layers() {
   for (int32_t l = 0; l < layer_num; ++l) {
     // input_layernorm
     auto attn_norm = std::make_shared<op::RmsNormLayer>(device_type_, dim);
-    attn_norm->set_weight(0, {dim}, raw_model_data_->weight(pos), cpu_device_type);
+    attn_norm->set_weight(0, {dim}, raw_model_data_->weight(pos), cpu_device_type,
+                          model_weight_dtype);
     pos += dim;
     attn_norms.push_back(attn_norm);
 
     //q
     auto wq = std::make_shared<op::MatmulLayer>(device_type_, dim, dim, false, true);
-    wq->set_weight(0, {dim, dim}, raw_model_data_->weight(pos), cpu_device_type);
+    wq->set_weight(0, {dim, dim}, raw_model_data_->weight(pos), cpu_device_type,
+                   model_weight_dtype);
     pos += static_cast<size_t>(dim) * dim;
     int32_t q_bias_dim = dim;
-    wq->set_bias(0, q_bias_dim, raw_model_data_->weight(pos), cpu_device_type);
+    wq->set_bias(0, q_bias_dim, raw_model_data_->weight(pos), cpu_device_type,
+                 model_weight_dtype);
     pos += dim;
     qwen_layers_->wq_layers_.push_back(wq);
 
     // k
     auto wk = std::make_shared<op::MatmulLayer>(device_type_, kv_dim, dim, false, true);
-    wk->set_weight(0, {kv_dim, dim}, raw_model_data_->weight(pos), cpu_device_type);
+    wk->set_weight(0, {kv_dim, dim}, raw_model_data_->weight(pos), cpu_device_type,
+                   model_weight_dtype);
     pos += static_cast<size_t>(kv_dim) * dim;
     int32_t k_bias_dim = kv_dim;
-    wk->set_bias(0, k_bias_dim, raw_model_data_->weight(pos), cpu_device_type);
+    wk->set_bias(0, k_bias_dim, raw_model_data_->weight(pos), cpu_device_type,
+                 model_weight_dtype);
     pos += kv_dim;
     qwen_layers_->wk_layers_.push_back(wk);
 
     //v
     auto wv = std::make_shared<op::MatmulLayer>(device_type_, kv_dim, dim, false, true);
-    wv->set_weight(0, {kv_dim, dim}, raw_model_data_->weight(pos), cpu_device_type);
+    wv->set_weight(0, {kv_dim, dim}, raw_model_data_->weight(pos), cpu_device_type,
+                   model_weight_dtype);
     pos += static_cast<size_t>(kv_dim) * dim;
     int32_t v_bias_dim = kv_dim;
-    wv->set_bias(0, v_bias_dim, raw_model_data_->weight(pos), cpu_device_type);
+    wv->set_bias(0, v_bias_dim, raw_model_data_->weight(pos), cpu_device_type,
+                 model_weight_dtype);
     pos += kv_dim;
     qwen_layers_->wv_layers_.push_back(wv);
 
     // o
     auto wo = std::make_shared<op::MatmulLayer>(device_type_, dim, dim);
-    wo->set_weight(0, {dim, dim}, raw_model_data_->weight(pos), cpu_device_type);
+    wo->set_weight(0, {dim, dim}, raw_model_data_->weight(pos), cpu_device_type,
+                   model_weight_dtype);
     pos += static_cast<size_t>(dim) * dim;
     qwen_layers_->wo_layers_.push_back(wo);
 
     //post_attention_rmsnorm
     auto ffn_norm = std::make_shared<op::RmsNormLayer>(device_type_, dim);
-    ffn_norm->set_weight(0, {dim}, raw_model_data_->weight(pos), cpu_device_type);
+    ffn_norm->set_weight(0, {dim}, raw_model_data_->weight(pos), cpu_device_type,
+                         model_weight_dtype);
     pos += dim;
     ffn_norms.push_back(ffn_norm);
 
     //router: [num_experts, dim], no bias
     auto router = std::make_shared<op::MatmulLayer>(device_type_, moe_experts, dim, false, false);
-    router->set_weight(0, {moe_experts, dim}, raw_model_data_->weight(pos), cpu_device_type);
+    router->set_weight(0, {moe_experts, dim}, raw_model_data_->weight(pos), cpu_device_type,
+                       model_weight_dtype);
     pos += static_cast<size_t>(moe_experts) * dim;
     qwen_layers_->router_layers_[l] = router;
 
@@ -624,17 +598,20 @@ void QwenMoeModel::create_param_layers() {
 
     for (int32_t e = 0; e < moe_experts; ++e) {
       auto ew1 = std::make_shared<op::MatmulLayer>(device_type_, moe_hidden, dim);
-      ew1->set_weight(0, {moe_hidden, dim}, raw_model_data_->weight(pos), cpu_device_type);
+      ew1->set_weight(0, {moe_hidden, dim}, raw_model_data_->weight(pos), cpu_device_type,
+                      model_weight_dtype);
       pos += static_cast<size_t>(moe_hidden) * dim;
       qwen_layers_->expert_w1_layers_[l].push_back(ew1);
 
       auto ew2 = std::make_shared<op::MatmulLayer>(device_type_, dim, moe_hidden);
-      ew2->set_weight(0, {dim, moe_hidden}, raw_model_data_->weight(pos), cpu_device_type);
+      ew2->set_weight(0, {dim, moe_hidden}, raw_model_data_->weight(pos), cpu_device_type,
+                      model_weight_dtype);
       pos += static_cast<size_t>(dim) * moe_hidden;
       qwen_layers_->expert_w2_layers_[l].push_back(ew2);
 
       auto ew3 = std::make_shared<op::MatmulLayer>(device_type_, moe_hidden, dim);
-      ew3->set_weight(0, {moe_hidden, dim}, raw_model_data_->weight(pos), cpu_device_type);
+      ew3->set_weight(0, {moe_hidden, dim}, raw_model_data_->weight(pos), cpu_device_type,
+                      model_weight_dtype);
       pos += static_cast<size_t>(moe_hidden) * dim;
       qwen_layers_->expert_w3_layers_[l].push_back(ew3);
 
@@ -647,29 +624,34 @@ void QwenMoeModel::create_param_layers() {
 
     if (has_shared) {
       auto sw1 = std::make_shared<op::MatmulLayer>(device_type_, shared_hidden, dim);
-      sw1->set_weight(0, {shared_hidden, dim}, raw_model_data_->weight(pos), cpu_device_type);
+      sw1->set_weight(0, {shared_hidden, dim}, raw_model_data_->weight(pos), cpu_device_type,
+                      model_weight_dtype);
       pos += static_cast<size_t>(shared_hidden) * dim;
       qwen_layers_->shared_w1_layers_[l] = sw1;
 
       auto sw2 = std::make_shared<op::MatmulLayer>(device_type_, dim, shared_hidden);
-      sw2->set_weight(0, {dim, shared_hidden}, raw_model_data_->weight(pos), cpu_device_type);
+      sw2->set_weight(0, {dim, shared_hidden}, raw_model_data_->weight(pos), cpu_device_type,
+                      model_weight_dtype);
       pos += static_cast<size_t>(dim) * shared_hidden;
       qwen_layers_->shared_w2_layers_[l] = sw2;
 
       auto sw3 = std::make_shared<op::MatmulLayer>(device_type_, shared_hidden, dim);
-      sw3->set_weight(0, {shared_hidden, dim}, raw_model_data_->weight(pos), cpu_device_type);
+      sw3->set_weight(0, {shared_hidden, dim}, raw_model_data_->weight(pos), cpu_device_type,
+                      model_weight_dtype);
       pos += static_cast<size_t>(shared_hidden) * dim;
       qwen_layers_->shared_w3_layers_[l] = sw3;
 
       auto sgate = std::make_shared<op::MatmulLayer>(device_type_, 1, dim, false, false);
-      sgate->set_weight(0, {1, dim}, raw_model_data_->weight(pos), cpu_device_type);
+      sgate->set_weight(0, {1, dim}, raw_model_data_->weight(pos), cpu_device_type,
+                        model_weight_dtype);
       pos += dim;
       qwen_layers_->shared_gate_layers_[l] = sgate;
     }
   }
   // final norm
   auto final_norm = std::make_shared<op::RmsNormLayer>(device_type_, dim);
-  final_norm->set_weight(0, {dim}, raw_model_data_->weight(pos), cpu_device_type);
+  final_norm->set_weight(0, {dim}, raw_model_data_->weight(pos), cpu_device_type,
+                         model_weight_dtype);
   pos += dim;
   // 按旧索引约定拼装 rmsnorm_layers_
   for (auto& n : attn_norms) qwen_layers_->rmsnorm_layers_.push_back(n);
@@ -679,9 +661,11 @@ void QwenMoeModel::create_param_layers() {
   // lm_head
   auto cls = std::make_shared<op::MatmulLayer>(device_type_, vocab, dim);
   if (config_->is_shared_weight_) {
-    cls->set_weight(0, {vocab, dim}, raw_model_data_->weight(0), cpu_device_type);
+    cls->set_weight(0, {vocab, dim}, raw_model_data_->weight(0), cpu_device_type,
+                    model_weight_dtype);
   } else {
-    cls->set_weight(0, {vocab, dim}, raw_model_data_->weight(pos), cpu_device_type);
+    cls->set_weight(0, {vocab, dim}, raw_model_data_->weight(pos), cpu_device_type,
+                    model_weight_dtype);
     pos += static_cast<size_t>(vocab) * dim;
   }
   qwen_layers_->cls_layer_ = cls;
@@ -698,8 +682,12 @@ void QwenMoeModel::init_mem() {
 
   if (device_type_ == base::DeviceType::kDeviceCUDA) {
     CHECK_NE(cuda_config_, nullptr);
-    qwen_layers_->to_cuda(cuda_config_);
+    qwen_layers_->to_cuda(cuda_config_, runtime_data_type_);
   }
+
+  const base::DataType act_dtype =
+      device_type_ == base::DeviceType::kDeviceCUDA ? runtime_data_type_
+                                                    : base::DataType::kDataTypeFp32;
 
   std::shared_ptr<base::DeviceAllocator> alloc_cpu =
       base::CPUDeviceAllocatorFactory::get_instance();
@@ -707,7 +695,7 @@ void QwenMoeModel::init_mem() {
       base::CUDADeviceAllocatorFactory::get_instance();
 
   tensor::Tensor input_tokens(base::DataType::kDataTypeInt32, 1, true, alloc_cpu);
-  tensor::Tensor input_embeddings(base::DataType::kDataTypeFp32, 1, config_->dim_, true, alloc);
+  tensor::Tensor input_embeddings(act_dtype, 1, config_->dim_, true, alloc);
   tensor::Tensor sin_cache(base::DataType::kDataTypeFp32, config_->head_size_ * config_->seq_len_,
                            true, alloc);
   tensor::Tensor cos_cache(base::DataType::kDataTypeFp32, config_->head_size_ * config_->seq_len_,
@@ -719,29 +707,29 @@ void QwenMoeModel::init_mem() {
   CHECK(insert_buffer(ModelBufferType::kInputTokens, input_tokens));
   CHECK(insert_buffer(ModelBufferType::kInputEmbeddings, input_embeddings));
 
-  tensor::Tensor rms_output(base::DataType::kDataTypeFp32, config_->dim_, true, alloc);
+  tensor::Tensor rms_output(act_dtype, config_->dim_, true, alloc);
   CHECK(insert_buffer(ModelBufferType::kOutputRMSNorm, rms_output));
   CHECK(insert_buffer(ModelBufferType::kOutputMHA, rms_output));
   CHECK(insert_buffer(ModelBufferType::kW2Output, rms_output));
   CHECK(insert_buffer(ModelBufferType::kFFNRMSNorm, rms_output));
 
-  tensor::Tensor w1_output(base::DataType::kDataTypeFp32, config_->hidden_dim_, true, alloc);
-  tensor::Tensor w3_output(base::DataType::kDataTypeFp32, config_->hidden_dim_, true, alloc);
+  tensor::Tensor w1_output(act_dtype, config_->hidden_dim_, true, alloc);
+  tensor::Tensor w3_output(act_dtype, config_->hidden_dim_, true, alloc);
 
   CHECK(insert_buffer(ModelBufferType::kW1Output, w1_output));
   CHECK(insert_buffer(ModelBufferType::kW3Output, w3_output));
 
   // kv cache
-  tensor::Tensor key_cache(base::DataType::kDataTypeFp32, config_->layer_num_, config_->seq_len_,
+  tensor::Tensor key_cache(act_dtype, config_->layer_num_, config_->seq_len_,
                            config_->kv_dim_, true, alloc);
-  tensor::Tensor value_cache(base::DataType::kDataTypeFp32, config_->layer_num_, config_->seq_len_,
+  tensor::Tensor value_cache(act_dtype, config_->layer_num_, config_->seq_len_,
                              config_->kv_dim_, true, alloc);
 
   CHECK(insert_buffer(ModelBufferType::kKeyCache, key_cache));
   CHECK(insert_buffer(ModelBufferType::kValueCache, value_cache));
 
   // Wq query output
-  tensor::Tensor query(base::DataType::kDataTypeFp32, config_->dim_, true, alloc);
+  tensor::Tensor query(act_dtype, config_->dim_, true, alloc);
   CHECK(insert_buffer(ModelBufferType::kQuery, query));
 
   // Pos tensor
@@ -755,36 +743,36 @@ void QwenMoeModel::init_mem() {
   CHECK(insert_buffer(ModelBufferType::kAttnOutput, query));
 
   //router_logits
-  tensor::Tensor router_logits(base::DataType::kDataTypeFp32, config_->moe_expert_num_, true, alloc);
+  tensor::Tensor router_logits(act_dtype, config_->moe_expert_num_, true, alloc);
   CHECK(insert_buffer(ModelBufferType::kRouterLogits, router_logits));
 
   //topk output
-  tensor::Tensor topk_value(base::DataType::kDataTypeFp32, config_->moe_topk_, true, alloc);
-  tensor::Tensor topk_index(base::DataType::kDataTypeInt32, config_->moe_topk_, true, alloc);
+  tensor::Tensor topk_value(base::DataType::kDataTypeFp32, config_->moe_topk_, true, alloc_cpu);
+  tensor::Tensor topk_index(base::DataType::kDataTypeInt32, config_->moe_topk_, true, alloc_cpu);
   CHECK(insert_buffer(ModelBufferType::kTopKValue, topk_value));
   CHECK(insert_buffer(ModelBufferType::kTopKIndex, topk_index));
   
   //MoE sum
-  tensor::Tensor moe_sum(base::DataType::kDataTypeFp32, config_->dim_, true, alloc);
+  tensor::Tensor moe_sum(act_dtype, config_->dim_, true, alloc);
   CHECK(insert_buffer(ModelBufferType::kMoeAccum, moe_sum));
 
   //MoE single buffer
   int32_t max_hidden = std::max(config_->moe_hidden_dim_, config_->moe_shared_hidden_dim_);
-  tensor::Tensor expert_h1(base::DataType::kDataTypeFp32, max_hidden, true, alloc);
-  tensor::Tensor expert_h2(base::DataType::kDataTypeFp32, max_hidden, true, alloc);
+  tensor::Tensor expert_h1(act_dtype, max_hidden, true, alloc);
+  tensor::Tensor expert_h2(act_dtype, max_hidden, true, alloc);
   CHECK(insert_buffer(ModelBufferType::kExpertH1, expert_h1));
   CHECK(insert_buffer(ModelBufferType::kExpertH2, expert_h2));
   
   //output of single expert
-  tensor::Tensor expert_output(base::DataType::kDataTypeFp32, config_->dim_, true, alloc);
+  tensor::Tensor expert_output(act_dtype, config_->dim_, true, alloc);
   CHECK(insert_buffer(ModelBufferType::kExpertOutput, expert_output));
 
   //shared expert output
-  tensor::Tensor shared_gate_out(base::DataType::kDataTypeFp32, 1, true, alloc);
+  tensor::Tensor shared_gate_out(act_dtype, 1, true, alloc);
   CHECK(insert_buffer(ModelBufferType::kSharedGateOutput, shared_gate_out));
 
   // final forward output
-  tensor::Tensor forward_output(base::DataType::kDataTypeFp32, config_->vocab_size_, true, alloc);
+  tensor::Tensor forward_output(act_dtype, config_->vocab_size_, true, alloc);
   if (device_type_ == base::DeviceType::kDeviceCUDA) {
     tensor::Tensor forward_output_cpu(base::DataType::kDataTypeFp32, config_->vocab_size_, true,
                                       alloc_cpu);
@@ -1082,13 +1070,13 @@ void QwenMoeModel::cls_logits(const tensor::Tensor& input) const {
 
 int32_t QwenMoeModel::post_processing(const tensor::Tensor& pos, bool is_prompt) const {
   tensor::Tensor forward_output = get_buffer(ModelBufferType::kForwardOutput);
-  const float* forward_logits = forward_output.ptr<float>();
 
   int32_t next = 0;
   if (is_prompt) {
     next = -1;
   } else {
-    next = static_cast<int32_t>(sampler_->sample(forward_logits, forward_output.size(),
+    next = static_cast<int32_t>(sampler_->sample(forward_output.get_buffer()->ptr(),
+                                                 forward_output.size(), forward_output.data_type(),
                                                  cuda_config_ ? cuda_config_->stream : nullptr));
   }
   return next;
@@ -1188,9 +1176,9 @@ void QwenMoeModel::moe_router_topk(int32_t layer_idx, const tensor::Tensor& ffn_
     CHECK(moe_accum.device_type() == device_type_);
     if (device_type_ == base::DeviceType::kDeviceCUDA) {
       CHECK_NE(cuda_config_, nullptr);
-      cudaMemsetAsync(moe_accum.ptr<float>(), 0, moe_accum.byte_size(), cuda_config_->stream);
+      cudaMemsetAsync(moe_accum.ptr<uint8_t>(), 0, moe_accum.byte_size(), cuda_config_->stream);
     } else {
-      std::memset(moe_accum.ptr<float>(), 0, moe_accum.byte_size());
+      std::memset(moe_accum.ptr<uint8_t>(), 0, moe_accum.byte_size());
     }
   }
 
@@ -1253,8 +1241,16 @@ void QwenMoeModel::moe_router_topk(int32_t layer_idx, const tensor::Tensor& ffn_
       CHECK_NE(cuda_config_, nullptr);
       auto alloc_cu = base::CUDADeviceAllocatorFactory::get_instance();
       float gate_value = 0.f;
-      alloc_cu->memcpy(shared_gate_out.ptr<float>(), &gate_value, sizeof(float),
-                       base::MemcpyKind::kMemcpyCUDA2CPU, cuda_config_->stream);
+      if (shared_gate_out.data_type() == base::DataType::kDataTypeFp32) {
+        alloc_cu->memcpy(shared_gate_out.ptr<float>(), &gate_value, sizeof(float),
+                         base::MemcpyKind::kMemcpyCUDA2CPU, cuda_config_->stream);
+      } else {
+        uint16_t gate_bf16 = 0;
+        alloc_cu->memcpy(shared_gate_out.ptr<uint16_t>(), &gate_bf16, sizeof(uint16_t),
+                         base::MemcpyKind::kMemcpyCUDA2CPU, cuda_config_->stream);
+        cudaStreamSynchronize(cuda_config_->stream);
+        gate_value = base::bf16_bits_to_float(gate_bf16);
+      }
       cudaStreamSynchronize(cuda_config_->stream);
       gate_value = 1.f / (1.f + std::exp(-gate_value));
       kernel::moe_scale_add_cu(moe_accum, shared_output, gate_value, cuda_config_.get());
@@ -1275,4 +1271,3 @@ void QwenMoeModel::moe_router_topk(int32_t layer_idx, const tensor::Tensor& ffn_
   }
 
 }  // namespace model
-

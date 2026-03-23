@@ -3,6 +3,7 @@
 #define RAW_MODEL_DATA_H
 #include <cstddef>
 #include <cstdint>
+#include "base/base.h"
 namespace model {
 struct RawModelData {
   ~RawModelData();
@@ -11,6 +12,7 @@ struct RawModelData {
   int32_t header_extra_bytes = 0; // The extra bytes for the header (e.g., MoE header) at the beginning of the model file
   void* data = nullptr;
   void* weight_data = nullptr;
+  base::DataType data_type = base::DataType::kDataTypeFp32;
 
   virtual const void* weight(size_t offset) const = 0;
 };
@@ -20,6 +22,10 @@ struct RawModelDataFp32 : RawModelData {
 };
 
 struct RawModelDataInt8 : RawModelData {
+  const void* weight(size_t offset) const override;
+};
+
+struct RawModelDataBf16 : RawModelData {
   const void* weight(size_t offset) const override;
 };
 

@@ -6,8 +6,32 @@
 
 namespace model {
 
-static bool ReadMoeHeaderIfExists(FILE* file, TransformerConfig* cfg,  
-                          std::shared_ptr<RawModelData> raw) {
+static bool ReadWeightDataTypeHeaderIfExists(FILE* file, base::DataType* data_type,
+                                             int32_t* extra_bytes) {
+  long pos_before = ftell(file);
+  if (pos_before < 0) {
+    return false;
+  }
+  WeightDataTypeHeader header{};
+  size_t read_count = fread(&header, sizeof(WeightDataTypeHeader), 1, file);
+  if (read_count != 1) {
+    fseek(file, pos_before, SEEK_SET);
+    return false;
+  }
+  if (header.magic != kWeightDataTypeMagic) {
+    fseek(file, pos_before, SEEK_SET);
+    return false;
+  }
+  if (data_type) {
+    *data_type = static_cast<base::DataType>(header.data_type);
+  }
+  if (extra_bytes) {
+    *extra_bytes += static_cast<int32_t>(sizeof(WeightDataTypeHeader));
+  }
+  return true;
+}
+
+static bool ReadMoeHeaderIfExists(FILE* file, TransformerConfig* cfg, int32_t* extra_bytes) {
   long pos_before = ftell(file);
   if (pos_before < 0) {
     return false;
@@ -32,8 +56,8 @@ static bool ReadMoeHeaderIfExists(FILE* file, TransformerConfig* cfg,
     cfg->moe_norm_topk_prob_ = header.moe_norm_topk_prob;
   }
   
-  if (raw) {
-    raw->header_extra_bytes = sizeof(MoeHeader);
+  if (extra_bytes) {
+    *extra_bytes += static_cast<int32_t>(sizeof(MoeHeader));
   }
   return true;
 }
@@ -52,6 +76,10 @@ base::ModelType Model::model_type() const { return model_type_; }
 const std::string& Model::token_path() const { return token_path_; }
 
 const std::string& Model::model_path() const { return model_path_; }
+
+void Model::set_runtime_data_type(base::DataType data_type) { runtime_data_type_ = data_type; }
+
+base::DataType Model::runtime_data_type() const { return runtime_data_type_; }
 
 base::Status Model::insert_buffer(ModelBufferType buffer_idx, const tensor::Tensor& tensor) {
   if (buffers_.count(buffer_idx) > 0) {
@@ -104,13 +132,25 @@ base::Status Model::read_model_file() {
     }
   }
 
+  int32_t header_extra_bytes = 0;
+  base::DataType weight_data_type = is_quant_model_ ? base::DataType::kDataTypeInt8
+                                                    : base::DataType::kDataTypeFp32;
   if (!is_quant_model_) {
-    raw_model_data_ = std::make_shared<RawModelDataFp32>();
-  } else {
-    raw_model_data_ = std::make_shared<RawModelDataInt8>();
+    ReadWeightDataTypeHeaderIfExists(file, &weight_data_type, &header_extra_bytes);
   }
+  ReadMoeHeaderIfExists(file, config_.get(), &header_extra_bytes);
 
-  ReadMoeHeaderIfExists(file, config_.get(), raw_model_data_);
+  if (weight_data_type == base::DataType::kDataTypeFp32) {
+    raw_model_data_ = std::make_shared<RawModelDataFp32>();
+  } else if (weight_data_type == base::DataType::kDataTypeInt8) {
+    raw_model_data_ = std::make_shared<RawModelDataInt8>();
+  } else if (weight_data_type == base::DataType::kDataTypeBf16) {
+    raw_model_data_ = std::make_shared<RawModelDataBf16>();
+  } else {
+    return error::ModelParseError("Unsupported weight data type in model file.");
+  }
+  raw_model_data_->data_type = weight_data_type;
+  raw_model_data_->header_extra_bytes = header_extra_bytes;
 
   auto gen_status = generate_model_infos(config);
   if (!gen_status) {
@@ -135,10 +175,12 @@ base::Status Model::read_model_file() {
   }
   if (!is_quant_model_) {
     raw_model_data_->weight_data =
-        static_cast<int8_t*>(raw_model_data_->data) + sizeof(ModelConfig) + raw_model_data_->header_extra_bytes;
+        static_cast<int8_t*>(raw_model_data_->data) + sizeof(ModelConfig) +
+        raw_model_data_->header_extra_bytes;
   } else {
     raw_model_data_->weight_data =
-        static_cast<int8_t*>(raw_model_data_->data) + sizeof(ModelConfig) + sizeof(group_size_) + raw_model_data_->header_extra_bytes;
+        static_cast<int8_t*>(raw_model_data_->data) + sizeof(ModelConfig) + sizeof(group_size_) +
+        raw_model_data_->header_extra_bytes;
   }
   if (raw_model_data_ == nullptr) {
     LOG(ERROR);
@@ -254,16 +296,23 @@ std::pair<tensor::Tensor, tensor::Tensor> Model::slice_kv_cache(int32_t layer_id
                                                                 int32_t token_pos) const {
   int32_t layer_offset = layer_idx * config_->seq_len_ * config_->kv_dim_;
   int32_t cache_offset = layer_offset + token_pos * config_->kv_dim_;
+  const auto& key_cache = get_buffer(ModelBufferType::kKeyCache);
+  const auto& value_cache = get_buffer(ModelBufferType::kValueCache);
 
-  float* key_cache_ptr =
-      const_cast<float*>(get_buffer(ModelBufferType::kKeyCache).ptr<float>(cache_offset));
-  float* val_cache_ptr =
-      const_cast<float*>(get_buffer(ModelBufferType::kValueCache).ptr<float>(cache_offset));
+  void* key_cache_ptr = nullptr;
+  void* val_cache_ptr = nullptr;
+  if (key_cache.data_type() == base::DataType::kDataTypeFp32) {
+    key_cache_ptr = const_cast<float*>(key_cache.ptr<float>(cache_offset));
+    val_cache_ptr = const_cast<float*>(value_cache.ptr<float>(cache_offset));
+  } else if (key_cache.data_type() == base::DataType::kDataTypeBf16) {
+    key_cache_ptr = const_cast<uint16_t*>(key_cache.ptr<uint16_t>(cache_offset));
+    val_cache_ptr = const_cast<uint16_t*>(value_cache.ptr<uint16_t>(cache_offset));
+  } else {
+    LOG(FATAL) << "Unsupported kv cache dtype: " << key_cache.data_type();
+  }
 
-  tensor::Tensor key(base::DataType::kDataTypeFp32, config_->kv_dim_, false, nullptr,
-                     key_cache_ptr);
-  tensor::Tensor val(base::DataType::kDataTypeFp32, config_->kv_dim_, false, nullptr,
-                     val_cache_ptr);
+  tensor::Tensor key(key_cache.data_type(), config_->kv_dim_, false, nullptr, key_cache_ptr);
+  tensor::Tensor val(value_cache.data_type(), config_->kv_dim_, false, nullptr, val_cache_ptr);
   key.set_device_type(device_type_);
   val.set_device_type(device_type_);
   return {key, val};
@@ -281,15 +330,20 @@ tensor::Tensor Model::fill_input(const tensor::Tensor& pos_tensor,
   }
 #if defined(QWEN3_SUPPORT)
   std::shared_ptr<base::Buffer> input_emb_buffer = std::make_shared<base::Buffer>(
-      config_->hidden_dim_ * sizeof(float), nullptr,
-      input_embeddings.ptr<float>(index * config_->hidden_dim_), true);
-  tensor::Tensor input(base::DataType::kDataTypeFp32, config_->hidden_dim_);
+      config_->hidden_dim_ * base::DataTypeSize(input_embeddings.data_type()), nullptr,
+      const_cast<void*>(reinterpret_cast<const void*>(input_embeddings.ptr<uint8_t>(
+          index * config_->hidden_dim_ * base::DataTypeSize(input_embeddings.data_type())))),
+      true);
+  tensor::Tensor input(input_embeddings.data_type(), config_->hidden_dim_);
 
 #else
   std::shared_ptr<base::Buffer> input_emb_buffer =
-      std::make_shared<base::Buffer>(config_->dim_ * sizeof(float), nullptr,
-                                     input_embeddings.ptr<float>(index * config_->dim_), true);
-  tensor::Tensor input(base::DataType::kDataTypeFp32, config_->dim_);
+      std::make_shared<base::Buffer>(
+          config_->dim_ * base::DataTypeSize(input_embeddings.data_type()), nullptr,
+          const_cast<void*>(reinterpret_cast<const void*>(input_embeddings.ptr<uint8_t>(
+              index * config_->dim_ * base::DataTypeSize(input_embeddings.data_type())))),
+          true);
+  tensor::Tensor input(input_embeddings.data_type(), config_->dim_);
 #endif
   input.assign(input_emb_buffer);
   input.set_device_type(device_type_);

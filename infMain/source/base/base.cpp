@@ -74,4 +74,46 @@ std::ostream& operator<<(std::ostream& os, const Status& x) {
   return os;
 }
 
+std::ostream& operator<<(std::ostream& os, DeviceType x) {
+  switch (x) {
+    case DeviceType::kDeviceUnknown:
+      os << "DeviceUnknown";
+      break;
+    case DeviceType::kDeviceCPU:
+      os << "DeviceCPU";
+      break;
+    case DeviceType::kDeviceCUDA:
+      os << "DeviceCUDA";
+      break;
+    default:
+      os << "Device(" << static_cast<int>(x) << ")";
+      break;
+  }
+  return os;
+}
+
+std::ostream& operator<<(std::ostream& os, DataType x) {
+  switch (x) {
+    case DataType::kDataTypeUnknown:
+      os << "Unknown";
+      break;
+    case DataType::kDataTypeFp32:
+      os << "Fp32";
+      break;
+    case DataType::kDataTypeInt8:
+      os << "Int8";
+      break;
+    case DataType::kDataTypeInt32:
+      os << "Int32";
+      break;
+    case DataType::kDataTypeBf16:
+      os << "Bf16";
+      break;
+    default:
+      os << "DataType(" << static_cast<int>(x) << ")";
+      break;
+  }
+  return os;
+}
+
 }  // namespace base

@@ -23,7 +23,8 @@ base::Status BaseLayer::set_weight(int32_t idx, const tensor::Tensor& weight) {
 }
 
 base::Status BaseLayer::set_weight(int32_t idx, const std::vector<int32_t>& dims,
-                                   const void* weight_ptr, base::DeviceType device_type) {
+                                   const void* weight_ptr, base::DeviceType device_type,
+                                   base::DataType data_type) {
   return base::error::FunctionNotImplement();
 }
 
@@ -33,6 +34,8 @@ void BaseLayer::set_layer_name(const std::string& layer_name) { layer_name_ = la
 base::DeviceType BaseLayer::device_type() const { return device_type_; }
 
 void BaseLayer::set_device_type(base::DeviceType device_type) { device_type_ = device_type; }
+
+void BaseLayer::set_data_type(base::DataType data_type) { data_type_ = data_type; }
 
 Layer::Layer(base::DeviceType device_type, LayerType layer_type, std::string layer_name)
     : BaseLayer(device_type, layer_type, base::DataType::kDataTypeFp32, std::move(layer_name)) {}
@@ -158,7 +161,8 @@ LayerParam::LayerParam(base::DeviceType device_type, LayerType layer_type, bool 
 base::Status LayerParam::set_weight(int32_t idx, const tensor::Tensor& weight) {
   CHECK_GE(idx, 0);
   CHECK_LT(idx, weights_.size());
-  CHECK(weight.data_type() == base::DataType::kDataTypeFp32);
+  CHECK(weight.data_type() == base::DataType::kDataTypeFp32 ||
+        weight.data_type() == base::DataType::kDataTypeBf16);
   if (!weight.is_empty()) {
     CHECK(weight.device_type() == device_type_);
   }
@@ -175,7 +179,11 @@ const tensor::Tensor& LayerParam::get_weight(int32_t idx) const {
 void LayerParam::to_cuda() {
   Layer::to_cuda();
   for (auto& weight : weights_) {
-    weight.to_cuda(cuda_config_ ? cuda_config_->stream : nullptr);
+    if (!is_quant_layer_) {
+      weight.to_cuda(cuda_config_ ? cuda_config_->stream : nullptr, data_type_);
+    } else {
+      weight.to_cuda(cuda_config_ ? cuda_config_->stream : nullptr);
+    }
   }
   if (!scales_.is_empty()) {
     scales_.to_cuda(cuda_config_ ? cuda_config_->stream : nullptr);
@@ -183,12 +191,14 @@ void LayerParam::to_cuda() {
 }
 
 base::Status LayerParam::set_weight(int32_t idx, const std::vector<int32_t>& dims,
-                                    const void* weight_ptr, base::DeviceType device_type) {
+                                    const void* weight_ptr, base::DeviceType device_type,
+                                    base::DataType data_type) {
   CHECK_GE(idx, 0);
   CHECK_LT(idx, weights_.size());
   CHECK_NE(weight_ptr, nullptr);
 
-  size_t size = std::accumulate(dims.begin(), dims.end(), sizeof(float), std::multiplies<>());
+  size_t size =
+      std::accumulate(dims.begin(), dims.end(), base::DataTypeSize(data_type), std::multiplies<>());
   std::shared_ptr<base::Buffer> buffer =
       std::make_shared<base::Buffer>(size, nullptr, const_cast<void*>(weight_ptr), true);
   if (device_type != base::DeviceType::kDeviceUnknown) {
@@ -196,7 +206,7 @@ base::Status LayerParam::set_weight(int32_t idx, const std::vector<int32_t>& dim
   }
 
   if (!is_quant_layer_) {
-    tensor::Tensor weight(base::DataType::kDataTypeFp32, dims);
+    tensor::Tensor weight(data_type, dims);
     weight.set_device_type(device_type);
     CHECK(weight.assign(buffer));
     weights_.at(idx) = weight;
