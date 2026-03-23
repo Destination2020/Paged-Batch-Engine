@@ -125,7 +125,7 @@ if(USE_CPM)
   target_include_directories(llama PUBLIC ${sentencepiece_SOURCE_DIR}/src)
 endif()
 
-if (LLAMA3_SUPPORT OR QWEN2_SUPPORT OR QWEN3_SUPPORT OR QWEN_MOE_SUPPORT)
+if (QWEN_MOE_SUPPORT)
   target_link_libraries(llama absl::strings absl::str_format re2::re2 nlohmann_json::nlohmann_json)
   if(USE_CPM)
     target_include_directories(llama BEFORE PUBLIC ${absl_SOURCE_DIR})

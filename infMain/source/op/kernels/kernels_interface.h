@@ -47,6 +47,10 @@ typedef void (*ScaleSumKernel)(const tensor::Tensor& value, const tensor::Tensor
                                const tensor::Tensor& output, int t, int size, int stride,
                                void* stream);
 
+typedef void (*MoeSoftmaxTopKKernel)(tensor::Tensor& router_logits, int32_t num_experts, int32_t topk, 
+                                     tensor::Tensor& topk_values, tensor::Tensor& topk_indices, bool norm_topk_prob, 
+                                     CudaConfig* config);
+
 void softmax_inplace_cpu(const float* input_ptr, size_t size);
 
 AddKernel get_add_kernel(base::DeviceType device_type);
@@ -72,5 +76,7 @@ SwigluKernel get_swiglu_kernel(base::DeviceType device_type, void* stream = null
 ScaleSumKernel get_scale_sum_kernel(base::DeviceType device_type);
 
 RMSNormKernelDim get_rmsnorm_dim_kernel(base::DeviceType device_type);
+
+MoeSoftmaxTopKKernel get_moe_softmax_topk_kernel(base::DeviceType device_type);
 }  // namespace kernel
 #endif  // KERNELS_INTERFACE_H

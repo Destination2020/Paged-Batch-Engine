@@ -7,6 +7,7 @@
 #include <sentencepiece_processor.h>
 #include <utility>
 #include "../op/kernels/cpu/rope_kernel.h"
+#include "../op/kernels/cuda/moe_kernel.cuh"
 #include "../op/kernels/cuda/rope_kernel.cuh"
 #include <base/tick.h>
 #include <model/qwen_moe.h>
@@ -758,8 +759,8 @@ void QwenMoeModel::init_mem() {
   CHECK(insert_buffer(ModelBufferType::kRouterLogits, router_logits));
 
   //topk output
-  tensor::Tensor topk_value(base::DataType::kDataTypeFp32, config_->moe_topk_, true, alloc_cpu);
-  tensor::Tensor topk_index(base::DataType::kDataTypeInt32, config_->moe_topk_, true, alloc_cpu);
+  tensor::Tensor topk_value(base::DataType::kDataTypeFp32, config_->moe_topk_, true, alloc);
+  tensor::Tensor topk_index(base::DataType::kDataTypeInt32, config_->moe_topk_, true, alloc);
   CHECK(insert_buffer(ModelBufferType::kTopKValue, topk_value));
   CHECK(insert_buffer(ModelBufferType::kTopKIndex, topk_index));
   
@@ -779,7 +780,7 @@ void QwenMoeModel::init_mem() {
   CHECK(insert_buffer(ModelBufferType::kExpertOutput, expert_output));
 
   //shared expert output
-  tensor::Tensor shared_gate_out(base::DataType::kDataTypeFp32, 1, true, alloc_cpu);
+  tensor::Tensor shared_gate_out(base::DataType::kDataTypeFp32, 1, true, alloc);
   CHECK(insert_buffer(ModelBufferType::kSharedGateOutput, shared_gate_out));
 
   // final forward output
@@ -1149,18 +1150,35 @@ void QwenMoeModel::moe_router_topk(int32_t layer_idx, const tensor::Tensor& ffn_
     const auto& router_layer = qwen_layers_->router_layers_.at(layer_idx);
     CHECK_NE(router_layer, nullptr);
     STATUS_CHECK(router_layer->forward(ffn_norm_output, router_logits));
-    // top-k
-    cpu_softmax_inplace(router_logits.ptr<float>(), router_logits.size());
+    if (device_type_ == base::DeviceType::kDeviceCUDA) {
+      CHECK_NE(cuda_config_, nullptr);
+      auto alloc_cu = base::CUDADeviceAllocatorFactory::get_instance();
+      tensor::Tensor topk_value_cu(base::DataType::kDataTypeFp32, config_->moe_topk_, true, alloc_cu);
+      tensor::Tensor topk_index_cu(base::DataType::kDataTypeInt32, config_->moe_topk_, true, alloc_cu);
 
-    cpu_topk(router_logits.ptr<float>(), router_logits.size(), config_->moe_topk_, topk_value.ptr<float>(),
-             topk_index.ptr<int32_t>());
-    if(config_->moe_norm_topk_prob_) {
-      float sum = 0.f;
-      for (int i = 0; i < config_->moe_topk_; ++i) {
-        sum += topk_value.index<float>(i);
-      }
-      for (int i = 0; i < config_->moe_topk_; ++i) {
-        topk_value.index<float>(i) /= sum;
+      kernel::moe_router_softmax_topk_cu(router_logits, static_cast<int32_t>(router_logits.size()),
+                                         config_->moe_topk_, topk_value_cu, topk_index_cu,
+                                         config_->moe_norm_topk_prob_, cuda_config_.get());
+
+      alloc_cu->memcpy(topk_value_cu.ptr<float>(), topk_value.ptr<float>(), topk_value.byte_size(),
+                       base::MemcpyKind::kMemcpyCUDA2CPU, cuda_config_->stream);
+      alloc_cu->memcpy(topk_index_cu.ptr<int32_t>(), topk_index.ptr<int32_t>(),
+                       topk_index.byte_size(), base::MemcpyKind::kMemcpyCUDA2CPU,
+                       cuda_config_->stream);
+      cudaStreamSynchronize(cuda_config_->stream);
+    } else {
+      cpu_softmax_inplace(router_logits.ptr<float>(), router_logits.size());
+
+      cpu_topk(router_logits.ptr<float>(), router_logits.size(), config_->moe_topk_,
+               topk_value.ptr<float>(), topk_index.ptr<int32_t>());
+      if (config_->moe_norm_topk_prob_) {
+        float sum = 0.f;
+        for (int i = 0; i < config_->moe_topk_; ++i) {
+          sum += topk_value.index<float>(i);
+        }
+        for (int i = 0; i < config_->moe_topk_; ++i) {
+          topk_value.index<float>(i) /= sum;
+        }
       }
     }
   }
@@ -1198,8 +1216,12 @@ void QwenMoeModel::moe_router_topk(int32_t layer_idx, const tensor::Tensor& ffn_
       STATUS_CHECK(qwen_layers_->swiglu_layer_->forward(expert_h1, expert_h2, expert_h1));
       STATUS_CHECK(ew2->forward(expert_h1, expert_output));
 
-      //CUDA kernel scale_add
-      scale_add(moe_accum.ptr<float>(), expert_weight, expert_output.ptr<float>(), moe_accum.size());
+      if (device_type_ == base::DeviceType::kDeviceCUDA) {
+        CHECK_NE(cuda_config_, nullptr);
+        kernel::moe_scale_add_cu(moe_accum, expert_output, expert_weight, cuda_config_.get());
+      } else {
+        scale_add(moe_accum.ptr<float>(), expert_weight, expert_output.ptr<float>(), moe_accum.size());
+      }
 
     }
   }
@@ -1226,13 +1248,21 @@ void QwenMoeModel::moe_router_topk(int32_t layer_idx, const tensor::Tensor& ffn_
     STATUS_CHECK(shared_w2->forward(shared_h1, shared_output));
     STATUS_CHECK(shared_gate_layer->forward(ffn_norm_output, shared_gate_out));
 
-    //sigmoid
-    float gate_value = shared_gate_out.index<float>(0);
-    gate_value = 1.f / (1.f + std::exp(-gate_value));
-
-    //CUDA kernel scale_add
     auto moe_accum = get_buffer(ModelBufferType::kMoeAccum);
-    scale_add(moe_accum.ptr<float>(), gate_value, shared_output.ptr<float>(), moe_accum.size());
+    if (device_type_ == base::DeviceType::kDeviceCUDA) {
+      CHECK_NE(cuda_config_, nullptr);
+      auto alloc_cu = base::CUDADeviceAllocatorFactory::get_instance();
+      float gate_value = 0.f;
+      alloc_cu->memcpy(shared_gate_out.ptr<float>(), &gate_value, sizeof(float),
+                       base::MemcpyKind::kMemcpyCUDA2CPU, cuda_config_->stream);
+      cudaStreamSynchronize(cuda_config_->stream);
+      gate_value = 1.f / (1.f + std::exp(-gate_value));
+      kernel::moe_scale_add_cu(moe_accum, shared_output, gate_value, cuda_config_.get());
+    } else {
+      float gate_value = shared_gate_out.index<float>(0);
+      gate_value = 1.f / (1.f + std::exp(-gate_value));
+      scale_add(moe_accum.ptr<float>(), gate_value, shared_output.ptr<float>(), moe_accum.size());
+    }
   }
   
   void QwenMoeModel::moe_residual_add(const tensor::Tensor& input) const {
@@ -1245,5 +1275,4 @@ void QwenMoeModel::moe_router_topk(int32_t layer_idx, const tensor::Tensor& ffn_
   }
 
 }  // namespace model
-
 

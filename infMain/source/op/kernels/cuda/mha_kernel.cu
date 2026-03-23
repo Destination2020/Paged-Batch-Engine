@@ -47,7 +47,7 @@ __device__ void softmax_gpu(float* __restrict__ x, int size) {
   }
 }
 
-
+// pos: 当前时间步，seq_len: 序列长度，query: 当前时间步的query向量，score_ptr: 注意力分数输出地址，output: 注意力输出地址
 __global__ void multi_head_attention_kernel(int32_t pos, int32_t seq_len, float* query,
                                             float* score_ptr, float* output, float* key_cache,
                                             float* value_cache, int32_t kv_dim, int32_t kv_mul,

@@ -14,10 +14,12 @@
 #include "cuda/emb_kernel.cuh"
 #include "cuda/matmul_kernel.cuh"
 #include "cuda/mha_kernel.cuh"
+#include "cuda/moe_kernel.cuh"
 #include "cuda/rmsnorm_kernel.cuh"
 #include "cuda/rope_kernel.cuh"
 #include "cuda/swiglu_kernel.cuh"
 #include "kernels_interface.h"
+#include "cuda/fused_mha_kernel.cuh"
 namespace kernel {
 AddKernel get_add_kernel(base::DeviceType device_type) {
   if (device_type == base::DeviceType::kDeviceCPU) {
@@ -65,7 +67,7 @@ MHAKernel get_mha_kernel(base::DeviceType device_type) {
   if (device_type == base::DeviceType::kDeviceCPU) {
     return mha_kernel;
   } else if (device_type == base::DeviceType::kDeviceCUDA) {
-    return mha_kernel_cu;
+    return fused_mha_kernel_cu;
   } else {
     LOG(FATAL) << "Unknown device type for get an mha kernel.";
     return nullptr;
@@ -140,5 +142,15 @@ ScaleSumKernel get_scale_sum_kernel(base::DeviceType device_type) {
     return nullptr;
   }
 }
+
+MoeSoftmaxTopKKernel get_moe_softmax_topk_kernel(base::DeviceType device_type) {
+  if (device_type == base::DeviceType::kDeviceCUDA) {
+    return moe_router_softmax_topk_cu;
+  } else {
+    LOG(FATAL) << "Unknown device type for get a moe softmax topk kernel.";
+    return nullptr;
+  }
+}
+
 
 }  // namespace kernel

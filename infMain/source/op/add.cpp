@@ -1,4 +1,3 @@
-// Updated on March 15, 2026
 #include "op/add.h"
 #include "kernels/kernels_interface.h"
 namespace op {
