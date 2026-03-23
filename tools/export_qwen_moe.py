@@ -9,15 +9,34 @@ import json
 import struct
 from pathlib import Path
 
+import numpy as np
 import torch
 
 
 K_MOE_MAGIC = 0x4D4F4531
+K_WEIGHT_DTYPE_MAGIC = 0x44545950
+K_DATA_TYPE_FP32 = 0
+K_DATA_TYPE_BF16 = 4
 
 
 def serialize_fp32(file, tensor):
     """Write one tensor to file in flattened fp32 format."""
     tensor.detach().cpu().to(torch.float32).contiguous().view(-1).numpy().tofile(file)
+
+
+def serialize_bf16(file, tensor):
+    """Write one tensor to file in flattened bf16 format."""
+    data = (
+        tensor.detach()
+        .cpu()
+        .to(torch.bfloat16)
+        .contiguous()
+        .view(-1)
+        .view(torch.uint16)
+        .numpy()
+        .astype(np.uint16, copy=False)
+    )
+    file.write(data.tobytes())
 
 
 def expect_shape(name, tensor, expected_shape):
@@ -147,7 +166,7 @@ def load_model(model_dir):
     return model, config
 
 
-def write_headers(file, config):
+def write_headers(file, config, dtype_name):
     dim = int(get_required_attr(config, "hidden_size"))
     hidden_dim = int(get_required_attr(config, "intermediate_size"))
     layer_num = int(get_required_attr(config, "num_hidden_layers"))
@@ -169,6 +188,9 @@ def write_headers(file, config):
     )
     file.write(model_header)
 
+    if dtype_name == "bf16":
+        file.write(struct.pack("ii", K_WEIGHT_DTYPE_MAGIC, K_DATA_TYPE_BF16))
+
     shared_hidden_dim = int(
         getattr(config, "shared_expert_intermediate_size", 0) or 0
     )
@@ -186,7 +208,7 @@ def write_headers(file, config):
     file.write(moe_header)
 
 
-def export_qwen_moe(model, config, output_path):
+def export_qwen_moe(model, config, output_path, dtype_name):
     hidden_size = int(config.hidden_size)
     intermediate_size = int(config.intermediate_size)
     num_layers = int(config.num_hidden_layers)
@@ -208,11 +230,18 @@ def export_qwen_moe(model, config, output_path):
     if output_path.parent != Path(""):
         output_path.parent.mkdir(parents=True, exist_ok=True)
 
+    if dtype_name == "fp32":
+        serializer = serialize_fp32
+    elif dtype_name == "bf16":
+        serializer = serialize_bf16
+    else:
+        raise ValueError(f"Unsupported export dtype: {dtype_name}")
+
     with output_path.open("wb") as file:
-        write_headers(file, config)
+        write_headers(file, config, dtype_name)
 
         expect_shape("model.embed_tokens.weight", core_model.embed_tokens.weight, (vocab_size, hidden_size))
-        serialize_fp32(file, core_model.embed_tokens.weight)
+        serializer(file, core_model.embed_tokens.weight)
 
         for layer_idx, layer in enumerate(layers):
             prefix = f"model.layers.{layer_idx}"
@@ -224,35 +253,35 @@ def export_qwen_moe(model, config, output_path):
                 )
 
             expect_shape(f"{prefix}.input_layernorm.weight", layer.input_layernorm.weight, (hidden_size,))
-            serialize_fp32(file, layer.input_layernorm.weight)
+            serializer(file, layer.input_layernorm.weight)
 
             expect_shape(f"{prefix}.self_attn.q_proj.weight", layer.self_attn.q_proj.weight, (hidden_size, hidden_size))
             expect_shape(f"{prefix}.self_attn.q_proj.bias", layer.self_attn.q_proj.bias, (hidden_size,))
-            serialize_fp32(file, layer.self_attn.q_proj.weight)
-            serialize_fp32(file, layer.self_attn.q_proj.bias)
+            serializer(file, layer.self_attn.q_proj.weight)
+            serializer(file, layer.self_attn.q_proj.bias)
 
             expect_shape(f"{prefix}.self_attn.k_proj.weight", layer.self_attn.k_proj.weight, (kv_dim, hidden_size))
             expect_shape(f"{prefix}.self_attn.k_proj.bias", layer.self_attn.k_proj.bias, (kv_dim,))
-            serialize_fp32(file, layer.self_attn.k_proj.weight)
-            serialize_fp32(file, layer.self_attn.k_proj.bias)
+            serializer(file, layer.self_attn.k_proj.weight)
+            serializer(file, layer.self_attn.k_proj.bias)
 
             expect_shape(f"{prefix}.self_attn.v_proj.weight", layer.self_attn.v_proj.weight, (kv_dim, hidden_size))
             expect_shape(f"{prefix}.self_attn.v_proj.bias", layer.self_attn.v_proj.bias, (kv_dim,))
-            serialize_fp32(file, layer.self_attn.v_proj.weight)
-            serialize_fp32(file, layer.self_attn.v_proj.bias)
+            serializer(file, layer.self_attn.v_proj.weight)
+            serializer(file, layer.self_attn.v_proj.bias)
 
             expect_shape(f"{prefix}.self_attn.o_proj.weight", layer.self_attn.o_proj.weight, (hidden_size, hidden_size))
-            serialize_fp32(file, layer.self_attn.o_proj.weight)
+            serializer(file, layer.self_attn.o_proj.weight)
 
             expect_shape(
                 f"{prefix}.post_attention_layernorm.weight",
                 layer.post_attention_layernorm.weight,
                 (hidden_size,),
             )
-            serialize_fp32(file, layer.post_attention_layernorm.weight)
+            serializer(file, layer.post_attention_layernorm.weight)
 
             expect_shape(f"{prefix}.mlp.gate.weight", layer.mlp.gate.weight, (num_experts, hidden_size))
-            serialize_fp32(file, layer.mlp.gate.weight)
+            serializer(file, layer.mlp.gate.weight)
 
             for expert_idx, gate_proj, down_proj, up_proj in iter_expert_tensors(
                 layer, prefix, num_experts, moe_hidden_dim, hidden_size
@@ -261,9 +290,9 @@ def export_qwen_moe(model, config, output_path):
                 expect_shape(f"{expert_prefix}.gate_proj.weight", gate_proj, (moe_hidden_dim, hidden_size))
                 expect_shape(f"{expert_prefix}.down_proj.weight", down_proj, (hidden_size, moe_hidden_dim))
                 expect_shape(f"{expert_prefix}.up_proj.weight", up_proj, (moe_hidden_dim, hidden_size))
-                serialize_fp32(file, gate_proj)
-                serialize_fp32(file, down_proj)
-                serialize_fp32(file, up_proj)
+                serializer(file, gate_proj)
+                serializer(file, down_proj)
+                serializer(file, up_proj)
 
             if shared_hidden_dim > 0:
                 expect_shape(
@@ -286,30 +315,36 @@ def export_qwen_moe(model, config, output_path):
                     layer.mlp.shared_expert_gate.weight,
                     (1, hidden_size),
                 )
-                serialize_fp32(file, layer.mlp.shared_expert.gate_proj.weight)
-                serialize_fp32(file, layer.mlp.shared_expert.down_proj.weight)
-                serialize_fp32(file, layer.mlp.shared_expert.up_proj.weight)
-                serialize_fp32(file, layer.mlp.shared_expert_gate.weight)
+                serializer(file, layer.mlp.shared_expert.gate_proj.weight)
+                serializer(file, layer.mlp.shared_expert.down_proj.weight)
+                serializer(file, layer.mlp.shared_expert.up_proj.weight)
+                serializer(file, layer.mlp.shared_expert_gate.weight)
 
         expect_shape("model.norm.weight", core_model.norm.weight, (hidden_size,))
-        serialize_fp32(file, core_model.norm.weight)
+        serializer(file, core_model.norm.weight)
 
         if not tie_word_embeddings:
             expect_shape("lm_head.weight", model.lm_head.weight, (vocab_size, hidden_size))
-            serialize_fp32(file, model.lm_head.weight)
+            serializer(file, model.lm_head.weight)
 
-    print(f"wrote {output_path}")
+    print(f"wrote {output_path} with dtype={dtype_name}")
 
 
 def parse_args():
     parser = argparse.ArgumentParser(
-        description="Export a local Qwen1.5-MoE style HF model into HighPerInfFram fp32 bin format."
+        description="Export a local Qwen1.5-MoE style HF model into HighPerInfFram bin format."
     )
     parser.add_argument("filepath", help="output .bin file path")
     parser.add_argument(
         "--hf",
         required=True,
         help="local HF model directory path; repo ids are not supported",
+    )
+    parser.add_argument(
+        "--dtype",
+        default="fp32",
+        choices=("fp32", "bf16"),
+        help="weight dtype to write into the exported .bin file",
     )
     return parser.parse_args()
 
@@ -319,7 +354,7 @@ def main():
         args = parse_args()
         model_dir = resolve_local_model_dir(args.hf)
         model, config = load_model(model_dir)
-        export_qwen_moe(model, config, args.filepath)
+        export_qwen_moe(model, config, args.filepath, args.dtype)
     except Exception as exc:
         raise SystemExit(f"export failed: {exc}") from exc
 
