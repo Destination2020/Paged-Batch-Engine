@@ -39,6 +39,9 @@ enum class ModelBufferType : int32_t {
   kExpertH2 = 24,
   kExpertOutput = 25,
   kSharedGateOutput = 26,
+
+  kPagedKeyTemp = 27,
+  kPagedValueTemp = 28,
 };
 }
 

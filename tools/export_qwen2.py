@@ -27,7 +27,7 @@ import numpy as np
 import torch
 from torch import nn
 
-from model_qwen2 import ModelArgs, Transformer
+from model_qwen2 import ModelArgs, Transformer, precompute_freqs_cis
 
 
 # -----------------------------------------------------------------------------
@@ -605,11 +605,6 @@ def load_hf_model(model_path):
         print("Please run `pip install transformers` to install it")
         return None
 
-    # load HF model
-    hf_model = AutoModelForCausalLM.from_pretrained(model_path)
-    print(hf_model)
-    hf_dict = hf_model.state_dict()
-
     # convert HF config to ModelArgs
     config = ModelArgs()
     config_json = None
@@ -617,6 +612,16 @@ def load_hf_model(model_path):
     if os.path.isdir(model_path) and os.path.exists(local_config_path):
         with open(local_config_path, "r") as f:
             config_json = json.load(f)
+
+    # load HF model with a lower-memory code path whenever possible
+    hf_model = AutoModelForCausalLM.from_pretrained(
+        model_path,
+        dtype="auto",
+        low_cpu_mem_usage=True,
+    )
+    print(hf_model)
+    hf_config = hf_model.config
+    hf_dict = hf_model.state_dict()
 
     if config_json is not None:
         config.dim = config_json["hidden_size"]
@@ -628,17 +633,26 @@ def load_hf_model(model_path):
         config.norm_eps = config_json["rms_norm_eps"]
         config.max_seq_len = config_json["max_position_embeddings"]
     else:
-        config.dim = hf_model.config.hidden_size
-        config.n_layers = hf_model.config.num_hidden_layers
-        config.n_heads = hf_model.config.num_attention_heads
-        config.n_kv_heads = hf_model.config.num_key_value_heads
-        config.vocab_size = hf_model.config.vocab_size
-        config.hidden_dim = hf_model.config.intermediate_size
-        config.norm_eps = hf_model.config.rms_norm_eps
-        config.max_seq_len = hf_model.config.max_position_embeddings
+        config.dim = hf_config.hidden_size
+        config.n_layers = hf_config.num_hidden_layers
+        config.n_heads = hf_config.num_attention_heads
+        config.n_kv_heads = hf_config.num_key_value_heads
+        config.vocab_size = hf_config.vocab_size
+        config.hidden_dim = hf_config.intermediate_size
+        config.norm_eps = hf_config.rms_norm_eps
+        config.max_seq_len = hf_config.max_position_embeddings
+    del hf_model
 
-    # create a new Transformer object and set weights
-    model = Transformer(config)
+    # Build the export model on meta first so we don't allocate a second full
+    # set of random-initialized weights before attaching the HF tensors.
+    with torch.device("meta"):
+        model = Transformer(config)
+    freqs_cos, freqs_sin = precompute_freqs_cis(
+        model.params.dim // model.params.n_heads,
+        model.params.max_seq_len,
+    )
+    model.freqs_cos = freqs_cos
+    model.freqs_sin = freqs_sin
     print(model)
 
     model.tok_embeddings.weight = nn.Parameter(hf_dict['model.embed_tokens.weight'])
@@ -743,6 +757,11 @@ if __name__ == "__main__":
     args = parser.parse_args()
     dtype = {"fp16": torch.float16, "fp32": torch.float32, "bf16": torch.bfloat16}[args.dtype]
 
+    # Preserve the original default behavior for fp32, but make bf16 requests
+    # do what the CLI spelling suggests when the user didn't override version.
+    if args.version == 0 and args.dtype == "bf16":
+        args.version = 4
+
     if args.checkpoint:
         model = load_checkpoint(args.checkpoint)
     elif args.meta_llama:
@@ -754,4 +773,4 @@ if __name__ == "__main__":
         parser.error("Can't load input model!")
 
     # export
-    model_export(model, args.filepath, args.version, args.dtype)
+    model_export(model, args.filepath, args.version, dtype)

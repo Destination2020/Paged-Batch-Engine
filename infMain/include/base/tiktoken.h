@@ -164,6 +164,10 @@ class tiktoken {
 			return _decode_native(tokens);
 		}
 
+		auto decode(const int32_t token) const -> std::string {
+			return _decode_single_token(token);
+		}
+
 	private:
 		auto split_with_allowed_special_token(
 			re2::StringPiece &input,
@@ -255,6 +259,22 @@ class tiktoken {
 					}
 				}
 				ret += token_bytes;
+			}
+			return ret;
+		}
+
+		auto _decode_single_token(int32_t token) const -> std::string {
+			std::string ret;
+			auto iter = decoder_.find(token);
+			if (iter != decoder_.end()) {
+				ret = iter->second;
+			} else {
+				iter = special_tokens_decoder.find(token);
+				if (iter != special_tokens_decoder.end()) {
+					ret = iter->second;
+				} else {
+					throw std::runtime_error("unknown token: " + std::to_string(token));
+				}
 			}
 			return ret;
 		}

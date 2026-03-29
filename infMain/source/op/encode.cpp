@@ -120,7 +120,14 @@ std::vector<int32_t> BpeEncodeLayer::encode(const std::string& sentence) const {
   return input_ids;
 }
 
-std::string BpeEncodeLayer::decode(int32_t token_id) const { return ""; }
+std::string BpeEncodeLayer::decode(int32_t token_id) const { 
+  CHECK(this->tiktoken_ != nullptr);
+  auto s = tiktoken_->decode(token_id);
+  std::map<std::string, std::string> reverse_replacements;
+  reverse_replacements["Ġ"] = " ";
+  const std::string& sentence = absl::StrReplaceAll(s, reverse_replacements);
+  return sentence;
+}
 
 std::string BpeEncodeLayer::decode(const std::vector<int32_t>& token_ids) const {
   CHECK(this->tiktoken_ != nullptr);

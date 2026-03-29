@@ -11,6 +11,8 @@
 #include "../op/kernels/cpu/rope_kernel.h"
 #include "../op/kernels/cuda/rope_kernel.cuh"
 #include "base/tick.h"
+#include "op/kernels/cuda/paged_mha_kernel.cuh"
+#include "op/kernels/cuda/scatter_kv_kernel.cuh"
 namespace model {
 
 namespace {
@@ -72,6 +74,8 @@ Qwen2Model::Qwen2Model(base::TokenizerType tokenizer_type, std::string token_pat
                        std::string model_path, bool is_quant_model)
     : Model(tokenizer_type, base::ModelType::kModelTypeLLama2, std::move(token_path),
             std::move(model_path), is_quant_model) {}
+
+void Qwen2Model::set_use_paged_kv(bool enable) { use_paged_kv_ = enable; }
 
 base::Status Qwen2Model::init(base::DeviceType device_type) {
   using namespace base;
@@ -145,10 +149,13 @@ base::Status Qwen2Model::forward(const tensor::Tensor& input, const tensor::Tens
 
   for (int32_t layer_idx = 0; layer_idx < config_->layer_num_; ++layer_idx) {
     attention_rms(layer_idx, input);
-    // attention (wq wk wv @ input)
-    attention_qkv(layer_idx, pos_tensor);
-    // multi-head attention
-    attention_mha(layer_idx, pos_tensor);
+    if (use_paged_kv_) {
+      attention_qkv_paged(layer_idx, pos_tensor);
+      attention_mha_paged(layer_idx, pos_tensor);
+    } else {
+      attention_qkv(layer_idx, pos_tensor);
+      attention_mha(layer_idx, pos_tensor);
+    }
     // feed forward
     feed_forward(layer_idx, input);
   }
@@ -479,14 +486,36 @@ void Qwen2Model::init_mem() {
   CHECK(insert_buffer(ModelBufferType::kW3Output, w3_output));
 
   // kv cache
-  tensor::Tensor key_cache(act_dtype, config_->layer_num_, config_->seq_len_,
+  if (use_paged_kv_) {
+    for (int32_t i = 0; i < config_->layer_num_; ++i) {
+      block_allocators_.emplace_back(std::make_unique<base::BlockAllocator>(
+          model_num_blocks, model_block_size,
+          config_->kv_head_num_, config_->head_size_,
+          act_dtype, base::DeviceType::kDeviceCUDA));
+    }
+    CHECK(static_cast<int32_t>(block_allocators_.size()) == config_->layer_num_);
+    seq_kv_manager_ = std::make_unique<base::SequenceKVManager>(model_block_size, config_->layer_num_);
+
+    // Pre-allocate block table GPU buffer (max blocks per sequence)
+    int32_t max_blocks_per_seq = (config_->seq_len_ + model_block_size - 1) / model_block_size;
+    block_table_gpu_ = tensor::Tensor(base::DataType::kDataTypeInt32, max_blocks_per_seq, true, alloc_cu);
+    block_table_gpu_.set_device_type(base::DeviceType::kDeviceCUDA);
+
+    // Allocate paged key/value temp buffers for scatter
+    tensor::Tensor paged_key_temp(act_dtype, config_->kv_dim_, true, alloc);
+    tensor::Tensor paged_value_temp(act_dtype, config_->kv_dim_, true, alloc);
+    CHECK(insert_buffer(ModelBufferType::kPagedKeyTemp, paged_key_temp));
+    CHECK(insert_buffer(ModelBufferType::kPagedValueTemp, paged_value_temp));
+  } else {
+    tensor::Tensor key_cache(act_dtype, config_->layer_num_, config_->seq_len_,
                            config_->kv_dim_, true, alloc);
-  tensor::Tensor value_cache(act_dtype, config_->layer_num_, config_->seq_len_,
+    tensor::Tensor value_cache(act_dtype, config_->layer_num_, config_->seq_len_,
                              config_->kv_dim_, true, alloc);
 
-  CHECK(insert_buffer(ModelBufferType::kKeyCache, key_cache));
-  CHECK(insert_buffer(ModelBufferType::kValueCache, value_cache));
-
+    CHECK(insert_buffer(ModelBufferType::kKeyCache, key_cache));
+    CHECK(insert_buffer(ModelBufferType::kValueCache, value_cache));
+  }
+  
   // Wq query output
   tensor::Tensor query(act_dtype, config_->dim_, true, alloc);
   CHECK(insert_buffer(ModelBufferType::kQuery, query));
@@ -630,6 +659,55 @@ void Qwen2Model::attention_qkv(int32_t layer_idx, const tensor::Tensor& pos_tens
       get_buffer(ModelBufferType::kCosCache), tensor::Tensor{}));
 }
 
+void Qwen2Model::attention_qkv_paged(int32_t layer_idx,
+                                      const tensor::Tensor& pos_tensor) const {
+  CHECK(qwen_layers_ != nullptr);
+  tensor::Tensor query = this->get_buffer(ModelBufferType::kQuery);
+  tensor::Tensor key_temp = this->get_buffer(ModelBufferType::kPagedKeyTemp);
+  tensor::Tensor value_temp = this->get_buffer(ModelBufferType::kPagedValueTemp);
+
+  auto rmsnorm_output = get_buffer(ModelBufferType::kOutputRMSNorm);
+
+  // Wq @ input -> query
+  const auto& query_layer = qwen_layers_->wq_layers_.at(layer_idx);
+  CHECK_NE(query_layer, nullptr);
+  STATUS_CHECK(query_layer->forward(rmsnorm_output, query));
+
+  // Wk @ input -> key_temp
+  const auto& key_layer = qwen_layers_->wk_layers_.at(layer_idx);
+  CHECK_NE(key_layer, nullptr);
+  STATUS_CHECK(key_layer->forward(rmsnorm_output, key_temp));
+
+  // Wv @ input -> value_temp
+  const auto& value_layer = qwen_layers_->wv_layers_.at(layer_idx);
+  CHECK_NE(value_layer, nullptr);
+  STATUS_CHECK(value_layer->forward(rmsnorm_output, value_temp));
+
+  // RoPE on query and key_temp
+  CHECK_NE(qwen_layers_->rope_layer_, nullptr);
+  STATUS_CHECK(qwen_layers_->rope_layer_->forward(
+      query, key_temp, pos_tensor, get_buffer(ModelBufferType::kSinCache),
+      get_buffer(ModelBufferType::kCosCache), tensor::Tensor{}));
+
+  // Append token slot in SequenceKVManager (only on first layer)
+  if (layer_idx == 0) {
+    bool ok = seq_kv_manager_->append_token(block_allocators_);
+    CHECK(ok) << "Failed to allocate paged KV block (out of blocks)";
+  }
+
+  // Scatter key/value to paged pool
+  auto [block_id, offset] = seq_kv_manager_->current_slot(layer_idx);
+  CHECK_GE(block_id, 0);
+
+  kernel::scatter_kv_to_page_cu(
+      key_temp, value_temp,
+      const_cast<tensor::Tensor&>(block_allocators_[layer_idx]->key_pool()),
+      const_cast<tensor::Tensor&>(block_allocators_[layer_idx]->value_pool()),
+      block_id, offset, model_block_size,
+      config_->kv_head_num_, config_->head_size_,
+      device_type_, cuda_config_.get());
+}
+
 base::Status Qwen2Model::predict(const tensor::Tensor& input, const tensor::Tensor& pos_tensor,
                                  bool is_prompt, int& next) const {
   auto status = forward(input, pos_tensor, next);
@@ -663,6 +741,44 @@ void Qwen2Model::attention_mha(int32_t layer_idx, const tensor::Tensor& pos_tens
   tensor::Tensor attn_output = get_buffer(ModelBufferType::kAttnOutput);
   const auto& wo_layer = qwen_layers_->wo_layers_.at(layer_idx);
   CHECK_NE(wo_layer, nullptr) << "The weight output layer is null pointer.";
+  STATUS_CHECK(wo_layer->forward(mha_output, attn_output));
+}
+
+void Qwen2Model::attention_mha_paged(int32_t layer_idx,
+                                      const tensor::Tensor& pos_tensor) const {
+  CHECK(qwen_layers_ != nullptr);
+  tensor::Tensor mha_output = get_buffer(ModelBufferType::kOutputMHA);
+  tensor::Tensor query = this->get_buffer(ModelBufferType::kQuery);
+
+  // Copy block table for this layer to GPU
+  const auto& block_ids = seq_kv_manager_->page_table(layer_idx).block_ids();
+  int32_t num_kv_blocks = static_cast<int32_t>(block_ids.size());
+  CHECK_GT(num_kv_blocks, 0);
+
+  auto alloc_cu = base::CUDADeviceAllocatorFactory::get_instance();
+  alloc_cu->memcpy(block_ids.data(),
+                   const_cast<int32_t*>(block_table_gpu_.ptr<int32_t>()),
+                   num_kv_blocks * sizeof(int32_t),
+                   base::MemcpyKind::kMemcpyCPU2CUDA,
+                   cuda_config_->stream, true);
+
+  // Paged decode attention
+  kernel::paged_mha_decode_cu(
+      config_->head_num_, config_->head_size_, config_->kv_mul_,
+      query, mha_output,
+      block_allocators_[layer_idx]->key_pool(),
+      block_allocators_[layer_idx]->value_pool(),
+      block_table_gpu_.ptr<int32_t>(),
+      num_kv_blocks,
+      seq_kv_manager_->num_tokens_in_last_block(),
+      model_block_size,
+      config_->kv_head_num_,
+      device_type_, cuda_config_.get());
+
+  // wo @ attention output
+  tensor::Tensor attn_output = get_buffer(ModelBufferType::kAttnOutput);
+  const auto& wo_layer = qwen_layers_->wo_layers_.at(layer_idx);
+  CHECK_NE(wo_layer, nullptr);
   STATUS_CHECK(wo_layer->forward(mha_output, attn_output));
 }
 

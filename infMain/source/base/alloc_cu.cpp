@@ -1,4 +1,4 @@
-// Updated on March 15, 2026
+
 #include <cuda_runtime_api.h>
 #include "base/alloc.h"
 namespace base {
@@ -37,6 +37,7 @@ void* CUDADeviceAllocator::allocate(size_t byte_size) const {
       return nullptr;
     }
     big_buffers.emplace_back(ptr, byte_size, true);
+    reserved_bytes_map_[id] += byte_size;
     return ptr;
   }
 
@@ -60,6 +61,7 @@ void* CUDADeviceAllocator::allocate(size_t byte_size) const {
     return nullptr;
   }
   cuda_buffers.emplace_back(ptr, byte_size, true);
+  reserved_bytes_map_[id] += byte_size;
   return ptr;
 }
 
@@ -79,6 +81,7 @@ void CUDADeviceAllocator::release(void* ptr) const {
         if (!cuda_buffers[i].busy) {
           state = cudaSetDevice(it.first);
           state = cudaFree(cuda_buffers[i].data);
+          reserved_bytes_map_[it.first] -= cuda_buffers[i].byte_size;
           CHECK(state == cudaSuccess)
               << "Error: CUDA error when release memory on device " << it.first;
         } else {

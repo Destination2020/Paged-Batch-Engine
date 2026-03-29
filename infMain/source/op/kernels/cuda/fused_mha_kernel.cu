@@ -4,7 +4,7 @@
 #include <cfloat>
 #include <cub/cub.cuh>
 #include "cuda_type_utils.cuh"
-#include "fused_mha_kernel.cuh"
+#include "op/kernels/cuda/fused_mha_kernel.cuh"
 
 namespace kernel {
 constexpr static int thread_num = 256;
