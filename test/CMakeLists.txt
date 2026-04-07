@@ -7,7 +7,9 @@ set(link_ext_lib glog::glog GTest::gtest GTest::gtest_main pthread)
 file(GLOB DIR_TEST CONFIGURE_DEPENDS "../test/*.cpp")
 file(GLOB DIR_TEST_CUDA CONFIGURE_DEPENDS "../test/*.cu")
 # 排除独立的基准测试程序（有自己的 main 函数）
-list(REMOVE_ITEM DIR_TEST "${CMAKE_SOURCE_DIR}/test/test_cuda_graph_benchmark.cpp")
+list(FILTER DIR_TEST EXCLUDE REGEX ".*/test_cuda_graph_benchmark\\.cpp$")
+list(FILTER DIR_TEST EXCLUDE REGEX ".*/test_paged_attention_fast_benchmark\\.cpp$")
+list(FILTER DIR_TEST EXCLUDE REGEX ".*/test_paged_attention_fp8_benchmark\\.cpp$")
 
 aux_source_directory(../test/test_cu DIR_TEST_CU)
 aux_source_directory(../test/test_op DIR_TEST_OP)
@@ -38,8 +40,17 @@ target_link_libraries(test_llm llama)
 set_target_properties(test_llm PROPERTIES WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 set_target_properties(test_llm PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
 
+add_executable(paged_attention_fast_bench ../test/test_paged_attention_fast_benchmark.cpp)
+target_include_directories(paged_attention_fast_bench PUBLIC ../infMain/include)
+target_link_directories(paged_attention_fast_bench PUBLIC ${PROJECT_SOURCE_DIR}/lib)
+target_link_libraries(paged_attention_fast_bench glog::glog pthread llama)
+set_target_properties(paged_attention_fast_bench PROPERTIES WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 
-
+add_executable(paged_attention_fp8_bench ../test/test_paged_attention_fp8_benchmark.cpp)
+target_include_directories(paged_attention_fp8_bench PUBLIC ../infMain/include)
+target_link_directories(paged_attention_fp8_bench PUBLIC ${PROJECT_SOURCE_DIR}/lib)
+target_link_libraries(paged_attention_fp8_bench glog::glog pthread llama)
+set_target_properties(paged_attention_fp8_bench PROPERTIES WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 
 
 

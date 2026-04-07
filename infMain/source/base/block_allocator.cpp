@@ -7,13 +7,14 @@ namespace base {
 
 BlockAllocator::BlockAllocator(int32_t num_blocks, int32_t block_size, 
                                int32_t num_kv_heads, int32_t head_size, base::DataType dtype,
-                               base::DeviceType device)
+                               base::DeviceType device, BlockStorageMode storage_mode)
     : num_blocks_(num_blocks),
       block_size_(block_size),
       num_kv_heads_(num_kv_heads),
       head_size_(head_size),
       dtype_(dtype),
-      device_(device) {
+      device_(device),
+      storage_mode_(storage_mode) {
 
   CHECK_GT(num_blocks, 0) << "num_blocks must be positive";
   CHECK_GT(block_size, 0) << "block_size must be positive";
@@ -29,13 +30,25 @@ BlockAllocator::BlockAllocator(int32_t num_blocks, int32_t block_size,
     allocator = CPUDeviceAllocatorFactory::get_instance();
   }
 
-  key_pool_ = tensor::Tensor(dtype, num_blocks, block_size * num_kv_heads * head_size,
+  const base::DataType pool_dtype =
+      storage_mode_ == BlockStorageMode::kFp8E4M3PerTokenHead ? DataType::kDataTypeInt8 : dtype;
+  key_pool_ = tensor::Tensor(pool_dtype, num_blocks, block_size * num_kv_heads * head_size,
                              true, allocator);
-  value_pool_ = tensor::Tensor(dtype, num_blocks, block_size * num_kv_heads * head_size,
+  value_pool_ = tensor::Tensor(pool_dtype, num_blocks, block_size * num_kv_heads * head_size,
                                true, allocator);
 
   key_pool_.set_device_type(device);
   value_pool_.set_device_type(device);
+  if (storage_mode_ == BlockStorageMode::kFp8E4M3PerTokenHead) {
+    CHECK_EQ(device, DeviceType::kDeviceCUDA)
+        << "FP8 KV cache storage is only supported on CUDA.";
+    key_scale_pool_ =
+        tensor::Tensor(DataType::kDataTypeFp32, num_blocks, block_size * num_kv_heads, true, allocator);
+    value_scale_pool_ =
+        tensor::Tensor(DataType::kDataTypeFp32, num_blocks, block_size * num_kv_heads, true, allocator);
+    key_scale_pool_.set_device_type(device);
+    value_scale_pool_.set_device_type(device);
+  }
 
   // Initialize free table and queue
   free_table_.resize(num_blocks, true);
@@ -45,6 +58,7 @@ BlockAllocator::BlockAllocator(int32_t num_blocks, int32_t block_size,
 
   LOG(INFO) << "BlockAllocator initialized: " << num_blocks << " blocks, "
             << "block_size=" << block_size << ", "
+            << "storage_mode=" << static_cast<int>(storage_mode_) << ", "
             << "total_memory=" << (key_pool_.byte_size() + value_pool_.byte_size()) / (1024.0 * 1024.0)
             << " MB";
 }
@@ -76,6 +90,8 @@ void BlockAllocator::free(int32_t block_id) {
 std::pair<void*, void*> BlockAllocator::get_block_ptrs(int32_t block_id) const {
   CHECK_GE(block_id, 0); 
   CHECK_LT(block_id, num_blocks_);
+  CHECK(storage_mode_ == BlockStorageMode::kPlain)
+      << "get_block_ptrs only supports plain KV storage.";
 
   // Calculate offset: block_id * (num_layers * block_size * num_kv_heads * head_size)
   //                   + layer_idx * (block_size * num_kv_heads * head_size)

@@ -216,7 +216,7 @@ bool Tensor::assign(std::shared_ptr<base::Buffer> buffer) {
 
 bool Tensor::allocate(std::shared_ptr<base::DeviceAllocator> allocator, bool need_realloc) {
   if (!allocator) {
-    LOG(ERROR) << "The allocator parameter in the allocate function is null "
+    LOG(ERROR) << "The allocator parameter in the allocate function is null " 
                   "pointer!";
     return false;
   }

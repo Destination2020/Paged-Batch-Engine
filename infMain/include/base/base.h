@@ -42,6 +42,10 @@ enum class ModelBufferType : int32_t {
 
   kPagedKeyTemp = 27,
   kPagedValueTemp = 28,
+
+  kSplitKVPartialOut = 29,
+  kSplitKVPartialMax = 30,
+  kSplitKVPartialSum = 31,
 };
 }
 

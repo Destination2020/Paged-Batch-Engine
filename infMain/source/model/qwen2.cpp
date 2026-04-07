@@ -1,4 +1,4 @@
-// Updated on March 15, 2026
+// Updated on March 31, 2026
 #include "model/qwen2.h"
 #include <cuda_runtime_api.h>
 #include <glog/logging.h>
@@ -75,8 +75,6 @@ Qwen2Model::Qwen2Model(base::TokenizerType tokenizer_type, std::string token_pat
     : Model(tokenizer_type, base::ModelType::kModelTypeLLama2, std::move(token_path),
             std::move(model_path), is_quant_model) {}
 
-void Qwen2Model::set_use_paged_kv(bool enable) { use_paged_kv_ = enable; }
-
 base::Status Qwen2Model::init(base::DeviceType device_type) {
   using namespace base;
   if (token_path_.empty()) {
@@ -93,12 +91,22 @@ base::Status Qwen2Model::init(base::DeviceType device_type) {
       runtime_data_type_ != base::DataType::kDataTypeBf16) {
     return error::InternalError("Unsupported runtime data type for Qwen2Model.");
   }
+  if (use_fp8_kv_cache_) {
+    if (device_type != base::DeviceType::kDeviceCUDA) {
+      return error::InternalError("FP8 KV cache is only supported on CUDA.");
+    }
+    if (runtime_data_type_ != base::DataType::kDataTypeBf16) {
+      return error::InternalError("FP8 KV cache v1 requires BF16 runtime.");
+    }
+  }
 
   device_type_ = device_type;
   if (device_type == DeviceType::kDeviceCUDA) {
     cudaSetDevice(0);
     cuda_config_ = std::make_shared<kernel::CudaConfig>();
     cudaStreamCreate(&cuda_config_->stream);
+    cublasCreate(&cuda_config_->cublas_handle);
+    cublasSetStream(cuda_config_->cublas_handle, cuda_config_->stream);
     cudaError_t err = cudaGetLastError();
     if (err != cudaSuccess) {
       return error::InternalError("The cuda hanle create failed.");
@@ -140,26 +148,119 @@ base::Status Qwen2Model::init(base::DeviceType device_type) {
 
 base::Status Qwen2Model::forward(const tensor::Tensor& input, const tensor::Tensor& pos_tensor,
                                  int& next) const {
+  // Single-sequence convenience path: append slot automatically
+  CHECK(kv_cache_manager_ != nullptr)
+      << "KV cache manager must be initialized before forward";
+  bool ok = kv_cache_manager_->append_slot(single_seq_request_id_);
+  CHECK(ok) << "Failed to allocate paged KV block for single-seq forward";
+  return forward_with_request(input, pos_tensor, single_seq_request_id_, next);
+}
+
+base::Status Qwen2Model::forward_with_request(const tensor::Tensor& input,
+                                               const tensor::Tensor& pos_tensor,
+                                               base::RequestId request_id,
+                                               int& next) const {
   if (input.is_empty()) {
     return base::error::InvalidArgument("The input tensor is empty.");
   }
-  if (device_type_ == base::DeviceType::kDeviceCPU && is_quant_model_) {
-    return base::error::InternalError("Unsupported int8 quant in the cpu device");
-  }
+  CHECK(kv_cache_manager_ != nullptr)
+      << "KV cache manager must be initialized before forward_with_request";
+
+  auto alloc_cu = base::CUDADeviceAllocatorFactory::get_instance();
 
   for (int32_t layer_idx = 0; layer_idx < config_->layer_num_; ++layer_idx) {
     attention_rms(layer_idx, input);
-    if (use_paged_kv_) {
-      attention_qkv_paged(layer_idx, pos_tensor);
-      attention_mha_paged(layer_idx, pos_tensor);
-    } else {
-      attention_qkv(layer_idx, pos_tensor);
-      attention_mha(layer_idx, pos_tensor);
-    }
-    // feed forward
+
+    tensor::Tensor query = this->get_buffer(ModelBufferType::kQuery);
+    tensor::Tensor key_temp = this->get_buffer(ModelBufferType::kPagedKeyTemp);
+    tensor::Tensor value_temp = this->get_buffer(ModelBufferType::kPagedValueTemp);
+    auto rmsnorm_output = get_buffer(ModelBufferType::kOutputRMSNorm);
+
+    const auto& query_layer = qwen_layers_->wq_layers_.at(layer_idx);
+    STATUS_CHECK(query_layer->forward(rmsnorm_output, query));
+
+    const auto& key_layer = qwen_layers_->wk_layers_.at(layer_idx);
+    STATUS_CHECK(key_layer->forward(rmsnorm_output, key_temp));
+
+    const auto& value_layer = qwen_layers_->wv_layers_.at(layer_idx);
+    STATUS_CHECK(value_layer->forward(rmsnorm_output, value_temp));
+
+    STATUS_CHECK(qwen_layers_->rope_layer_->forward(
+        query, key_temp, pos_tensor, get_buffer(ModelBufferType::kSinCache),
+        get_buffer(ModelBufferType::kCosCache), tensor::Tensor{}));
+
+    // Scatter KV to the correct request's pool
+    auto [block_id, offset] = kv_cache_manager_->current_slot(request_id, layer_idx);
+    CHECK_GE(block_id, 0);
+
+    kernel::scatter_kv_to_page_cu(
+        key_temp, value_temp,
+        const_cast<tensor::Tensor&>(kv_cache_manager_->allocator(layer_idx).key_pool()),
+        const_cast<tensor::Tensor&>(kv_cache_manager_->allocator(layer_idx).value_pool()),
+        block_id, offset, model_block_size,
+        config_->kv_head_num_, config_->head_size_,
+        device_type_, cuda_config_.get());
+
+    // Paged MHA
+    const auto& block_ids = kv_cache_manager_->get_block_ids(request_id, layer_idx);
+    int32_t num_kv_blocks = static_cast<int32_t>(block_ids.size());
+    CHECK_GT(num_kv_blocks, 0);
+
+    int32_t context_len = kv_cache_manager_->get_context_len(request_id);
+    tensor::Tensor block_table_gpu(base::DataType::kDataTypeInt32, num_kv_blocks, true, alloc_cu);
+    tensor::Tensor seq_lens_gpu(base::DataType::kDataTypeInt32, 1, true, alloc_cu);
+    block_table_gpu.set_device_type(base::DeviceType::kDeviceCUDA);
+    seq_lens_gpu.set_device_type(base::DeviceType::kDeviceCUDA);
+
+    alloc_cu->memcpy(block_ids.data(), const_cast<int32_t*>(block_table_gpu.ptr<int32_t>()),
+                     num_kv_blocks * sizeof(int32_t),
+                     base::MemcpyKind::kMemcpyCPU2CUDA, cuda_config_->stream, true);
+    alloc_cu->memcpy(&context_len, const_cast<int32_t*>(seq_lens_gpu.ptr<int32_t>()),
+                     sizeof(int32_t),
+                     base::MemcpyKind::kMemcpyCPU2CUDA, cuda_config_->stream, true);
+
+    tensor::Tensor mha_output = get_buffer(ModelBufferType::kOutputMHA);
+    kernel::splitkv_batched_paged_mha_decode_cu(
+        1, config_->head_num_, config_->head_size_, config_->kv_mul_,
+        query, mha_output,
+        kv_cache_manager_->allocator(layer_idx).key_pool(),
+        kv_cache_manager_->allocator(layer_idx).value_pool(),
+        block_table_gpu, seq_lens_gpu,
+        num_kv_blocks, model_block_size, config_->kv_head_num_,
+        get_buffer(ModelBufferType::kSplitKVPartialOut),
+        get_buffer(ModelBufferType::kSplitKVPartialMax),
+        get_buffer(ModelBufferType::kSplitKVPartialSum),
+        device_type_, cuda_config_.get());
+
+    tensor::Tensor attn_output = get_buffer(ModelBufferType::kAttnOutput);
+    const auto& wo_layer = qwen_layers_->wo_layers_.at(layer_idx);
+    STATUS_CHECK(wo_layer->forward(mha_output, attn_output));
+
     feed_forward(layer_idx, input);
   }
   cls_logits(input);
+  return base::error::Success();
+}
+
+base::Status Qwen2Model::predict(const tensor::Tensor& input, const tensor::Tensor& pos_tensor,
+                                 bool is_prompt, int& next) const {
+  auto status = forward(input, pos_tensor, next);
+  if (!status) {
+    return status;
+  }
+  next = post_processing(pos_tensor, is_prompt);
+  return base::error::Success();
+}
+
+base::Status Qwen2Model::predict_with_request(const tensor::Tensor& input,
+                                               const tensor::Tensor& pos_tensor,
+                                               base::RequestId request_id,
+                                               bool is_prompt, int& next) const {
+  auto status = forward_with_request(input, pos_tensor, request_id, next);
+  if (!status) {
+    return status;
+  }
+  next = post_processing(pos_tensor, is_prompt);
   return base::error::Success();
 }
 
@@ -461,7 +562,6 @@ void Qwen2Model::init_mem() {
       base::CUDADeviceAllocatorFactory::get_instance();
 
   tensor::Tensor input_tokens(base::DataType::kDataTypeInt32, 1, true, alloc_cpu);
-  tensor::Tensor input_embeddings(act_dtype, 1, config_->dim_, true, alloc);
   tensor::Tensor sin_cache(base::DataType::kDataTypeFp32, config_->head_size_ * config_->seq_len_,
                            true, alloc);
   tensor::Tensor cos_cache(base::DataType::kDataTypeFp32, config_->head_size_ * config_->seq_len_,
@@ -469,75 +569,94 @@ void Qwen2Model::init_mem() {
 
   CHECK(insert_buffer(ModelBufferType::kSinCache, sin_cache));
   CHECK(insert_buffer(ModelBufferType::kCosCache, cos_cache));
-
   CHECK(insert_buffer(ModelBufferType::kInputTokens, input_tokens));
+
+  // All intermediate buffers are 1D.
+  // forward_decode_batch() uses raw pointers to treat them as [batch, dim].
+  // Embedding is 2D [1, dim] for the Layer check() in single-token path.
+  tensor::Tensor input_embeddings(act_dtype, 1, config_->dim_, true, alloc);
   CHECK(insert_buffer(ModelBufferType::kInputEmbeddings, input_embeddings));
 
-  tensor::Tensor rms_output(act_dtype, config_->dim_, true, alloc);
+  tensor::Tensor rms_output(act_dtype, model_max_batch_size * config_->dim_, true, alloc);
   CHECK(insert_buffer(ModelBufferType::kOutputRMSNorm, rms_output));
-  CHECK(insert_buffer(ModelBufferType::kOutputMHA, rms_output));
-  CHECK(insert_buffer(ModelBufferType::kW2Output, rms_output));
-  CHECK(insert_buffer(ModelBufferType::kFFNRMSNorm, rms_output));
 
-  tensor::Tensor w1_output(act_dtype, config_->hidden_dim_, true, alloc);
-  tensor::Tensor w3_output(act_dtype, config_->hidden_dim_, true, alloc);
+  tensor::Tensor mha_output(act_dtype, model_max_batch_size * config_->dim_, true, alloc);
+  CHECK(insert_buffer(ModelBufferType::kOutputMHA, mha_output));
 
+  tensor::Tensor w2_output(act_dtype, model_max_batch_size * config_->dim_, true, alloc);
+  CHECK(insert_buffer(ModelBufferType::kW2Output, w2_output));
+
+  tensor::Tensor ffn_norm_output(act_dtype, model_max_batch_size * config_->dim_, true, alloc);
+  CHECK(insert_buffer(ModelBufferType::kFFNRMSNorm, ffn_norm_output));
+
+  tensor::Tensor w1_output(act_dtype, model_max_batch_size * config_->hidden_dim_, true, alloc);
+  tensor::Tensor w3_output(act_dtype, model_max_batch_size * config_->hidden_dim_, true, alloc);
   CHECK(insert_buffer(ModelBufferType::kW1Output, w1_output));
   CHECK(insert_buffer(ModelBufferType::kW3Output, w3_output));
 
-  // kv cache
-  if (use_paged_kv_) {
-    for (int32_t i = 0; i < config_->layer_num_; ++i) {
-      block_allocators_.emplace_back(std::make_unique<base::BlockAllocator>(
-          model_num_blocks, model_block_size,
-          config_->kv_head_num_, config_->head_size_,
-          act_dtype, base::DeviceType::kDeviceCUDA));
-    }
-    CHECK(static_cast<int32_t>(block_allocators_.size()) == config_->layer_num_);
-    seq_kv_manager_ = std::make_unique<base::SequenceKVManager>(model_block_size, config_->layer_num_);
-
-    // Pre-allocate block table GPU buffer (max blocks per sequence)
-    int32_t max_blocks_per_seq = (config_->seq_len_ + model_block_size - 1) / model_block_size;
-    block_table_gpu_ = tensor::Tensor(base::DataType::kDataTypeInt32, max_blocks_per_seq, true, alloc_cu);
-    block_table_gpu_.set_device_type(base::DeviceType::kDeviceCUDA);
-
-    // Allocate paged key/value temp buffers for scatter
-    tensor::Tensor paged_key_temp(act_dtype, config_->kv_dim_, true, alloc);
-    tensor::Tensor paged_value_temp(act_dtype, config_->kv_dim_, true, alloc);
-    CHECK(insert_buffer(ModelBufferType::kPagedKeyTemp, paged_key_temp));
-    CHECK(insert_buffer(ModelBufferType::kPagedValueTemp, paged_value_temp));
-  } else {
-    tensor::Tensor key_cache(act_dtype, config_->layer_num_, config_->seq_len_,
-                           config_->kv_dim_, true, alloc);
-    tensor::Tensor value_cache(act_dtype, config_->layer_num_, config_->seq_len_,
-                             config_->kv_dim_, true, alloc);
-
-    CHECK(insert_buffer(ModelBufferType::kKeyCache, key_cache));
-    CHECK(insert_buffer(ModelBufferType::kValueCache, value_cache));
+  // KV cache: single unified KVCacheManager for all paths (single-seq + batch)
+  const int32_t total_blocks = model_num_blocks * model_max_batch_size;
+  std::vector<std::unique_ptr<base::BlockAllocator>> layer_allocators;
+  for (int32_t i = 0; i < config_->layer_num_; ++i) {
+    layer_allocators.emplace_back(std::make_unique<base::BlockAllocator>(
+        total_blocks, model_block_size,
+        config_->kv_head_num_, config_->head_size_,
+        act_dtype, base::DeviceType::kDeviceCUDA));
   }
-  
-  // Wq query output
-  tensor::Tensor query(act_dtype, config_->dim_, true, alloc);
+  kv_cache_manager_ = std::make_unique<base::KVCacheManager>(
+      model_block_size, config_->layer_num_, std::move(layer_allocators));
+
+  // Register a persistent request for the single-sequence forward() path
+  single_seq_request_id_ = kv_cache_manager_->register_request();
+
+  // Paged key/value temp buffers for batch scatter
+  tensor::Tensor paged_key_temp(act_dtype, model_max_batch_size * config_->kv_dim_, true, alloc);
+  tensor::Tensor paged_value_temp(act_dtype, model_max_batch_size * config_->kv_dim_, true, alloc);
+  CHECK(insert_buffer(ModelBufferType::kPagedKeyTemp, paged_key_temp));
+  CHECK(insert_buffer(ModelBufferType::kPagedValueTemp, paged_value_temp));
+
+  // Split-KV workspace (always fp32)
+  constexpr int32_t MAX_PARTITIONS = 32;
+  tensor::Tensor splitkv_partial_out(base::DataType::kDataTypeFp32,
+      model_max_batch_size * config_->head_num_ * MAX_PARTITIONS * config_->head_size_,
+      true, alloc_cu);
+  tensor::Tensor splitkv_partial_max(base::DataType::kDataTypeFp32,
+      model_max_batch_size * config_->head_num_ * MAX_PARTITIONS,
+      true, alloc_cu);
+  tensor::Tensor splitkv_partial_sum(base::DataType::kDataTypeFp32,
+      model_max_batch_size * config_->head_num_ * MAX_PARTITIONS,
+      true, alloc_cu);
+  splitkv_partial_out.set_device_type(base::DeviceType::kDeviceCUDA);
+  splitkv_partial_max.set_device_type(base::DeviceType::kDeviceCUDA);
+  splitkv_partial_sum.set_device_type(base::DeviceType::kDeviceCUDA);
+  CHECK(insert_buffer(ModelBufferType::kSplitKVPartialOut, splitkv_partial_out));
+  CHECK(insert_buffer(ModelBufferType::kSplitKVPartialMax, splitkv_partial_max));
+  CHECK(insert_buffer(ModelBufferType::kSplitKVPartialSum, splitkv_partial_sum));
+
+  // Query output
+  tensor::Tensor query(act_dtype, model_max_batch_size * config_->dim_, true, alloc);
   CHECK(insert_buffer(ModelBufferType::kQuery, query));
 
   // Pos tensor
   tensor::Tensor pos_tensor(base::DataType::kDataTypeInt32, 1, true, alloc_cpu);
   CHECK(insert_buffer(ModelBufferType::kInputPos, pos_tensor));
 
-  // Attention output
+  // Score storage (kept for legacy non-paged mha Layer, unused in batch path)
   tensor::Tensor attn(base::DataType::kDataTypeFp32, config_->head_num_, config_->seq_len_, true,
                       alloc);
   CHECK(insert_buffer(ModelBufferType::kScoreStorage, attn));
-  CHECK(insert_buffer(ModelBufferType::kAttnOutput, query));
 
-  // final forward output
-  tensor::Tensor forward_output(act_dtype, config_->vocab_size_, true, alloc);
+  // Attention output
+  tensor::Tensor attn_output(act_dtype, model_max_batch_size * config_->dim_, true, alloc);
+  CHECK(insert_buffer(ModelBufferType::kAttnOutput, attn_output));
+
+  // Forward output
+  tensor::Tensor forward_output(act_dtype, model_max_batch_size * config_->vocab_size_, true, alloc);
   if (device_type_ == base::DeviceType::kDeviceCUDA) {
     tensor::Tensor forward_output_cpu(base::DataType::kDataTypeFp32, config_->vocab_size_, true,
                                       alloc_cpu);
     CHECK(insert_buffer(ModelBufferType::kForwardOutputCPU, forward_output_cpu));
   }
-
   CHECK(insert_buffer(ModelBufferType::kForwardOutput, forward_output));
 }
 
@@ -626,160 +745,6 @@ void Qwen2Model::attention_rms(int32_t layer_idx, const tensor::Tensor& input) c
     LOG(FATAL) << "The attention rmsnorm layer is a null pointer in the llama2 model";
   }
   STATUS_CHECK(rmsnorm_layer->forward(input, rmsnorm_output));
-}
-
-void Qwen2Model::attention_qkv(int32_t layer_idx, const tensor::Tensor& pos_tensor) const {
-  CHECK(qwen_layers_ != nullptr);
-  // kv cache
-  tensor::Tensor query = this->get_buffer(ModelBufferType::kQuery);
-  int32_t pos = pos_tensor.index<int32_t>(0);
-  // wq wk wv @ input
-  const auto& [key, val] = slice_kv_cache(layer_idx, pos);
-  // query
-  const auto& query_layer = qwen_layers_->wq_layers_.at(layer_idx);
-  CHECK_NE(query_layer, nullptr) << "The query layer in the attention block is null pointer.";
-
-  auto rmsnorm_output = get_buffer(ModelBufferType::kOutputRMSNorm);
-  STATUS_CHECK(query_layer->forward(rmsnorm_output, query));
-
-  // key
-  const auto& key_layer = qwen_layers_->wk_layers_.at(layer_idx);
-  CHECK_NE(key_layer, nullptr) << "The key layer in the attention block is null pointer.";
-  STATUS_CHECK(key_layer->forward(rmsnorm_output, key));
-  // value
-  const auto& value_layer = qwen_layers_->wv_layers_.at(layer_idx);
-  CHECK_NE(value_layer, nullptr) << "The value layer in the attention block is null pointer.";
-  STATUS_CHECK(value_layer->forward(rmsnorm_output, val));
-
-  // rope
-  CHECK_NE(qwen_layers_->rope_layer_, nullptr)
-      << "The RoPE layer in the attention block is null pointer.";
-  STATUS_CHECK(qwen_layers_->rope_layer_->forward(
-      query, key, pos_tensor, get_buffer(ModelBufferType::kSinCache),
-      get_buffer(ModelBufferType::kCosCache), tensor::Tensor{}));
-}
-
-void Qwen2Model::attention_qkv_paged(int32_t layer_idx,
-                                      const tensor::Tensor& pos_tensor) const {
-  CHECK(qwen_layers_ != nullptr);
-  tensor::Tensor query = this->get_buffer(ModelBufferType::kQuery);
-  tensor::Tensor key_temp = this->get_buffer(ModelBufferType::kPagedKeyTemp);
-  tensor::Tensor value_temp = this->get_buffer(ModelBufferType::kPagedValueTemp);
-
-  auto rmsnorm_output = get_buffer(ModelBufferType::kOutputRMSNorm);
-
-  // Wq @ input -> query
-  const auto& query_layer = qwen_layers_->wq_layers_.at(layer_idx);
-  CHECK_NE(query_layer, nullptr);
-  STATUS_CHECK(query_layer->forward(rmsnorm_output, query));
-
-  // Wk @ input -> key_temp
-  const auto& key_layer = qwen_layers_->wk_layers_.at(layer_idx);
-  CHECK_NE(key_layer, nullptr);
-  STATUS_CHECK(key_layer->forward(rmsnorm_output, key_temp));
-
-  // Wv @ input -> value_temp
-  const auto& value_layer = qwen_layers_->wv_layers_.at(layer_idx);
-  CHECK_NE(value_layer, nullptr);
-  STATUS_CHECK(value_layer->forward(rmsnorm_output, value_temp));
-
-  // RoPE on query and key_temp
-  CHECK_NE(qwen_layers_->rope_layer_, nullptr);
-  STATUS_CHECK(qwen_layers_->rope_layer_->forward(
-      query, key_temp, pos_tensor, get_buffer(ModelBufferType::kSinCache),
-      get_buffer(ModelBufferType::kCosCache), tensor::Tensor{}));
-
-  // Append token slot in SequenceKVManager (only on first layer)
-  if (layer_idx == 0) {
-    bool ok = seq_kv_manager_->append_token(block_allocators_);
-    CHECK(ok) << "Failed to allocate paged KV block (out of blocks)";
-  }
-
-  // Scatter key/value to paged pool
-  auto [block_id, offset] = seq_kv_manager_->current_slot(layer_idx);
-  CHECK_GE(block_id, 0);
-
-  kernel::scatter_kv_to_page_cu(
-      key_temp, value_temp,
-      const_cast<tensor::Tensor&>(block_allocators_[layer_idx]->key_pool()),
-      const_cast<tensor::Tensor&>(block_allocators_[layer_idx]->value_pool()),
-      block_id, offset, model_block_size,
-      config_->kv_head_num_, config_->head_size_,
-      device_type_, cuda_config_.get());
-}
-
-base::Status Qwen2Model::predict(const tensor::Tensor& input, const tensor::Tensor& pos_tensor,
-                                 bool is_prompt, int& next) const {
-  auto status = forward(input, pos_tensor, next);
-  if (!status) {
-    return status;
-  }
-  next = post_processing(pos_tensor, is_prompt);
-  return base::error::Success();
-}
-
-void Qwen2Model::attention_mha(int32_t layer_idx, const tensor::Tensor& pos_tensor) const {
-  CHECK(qwen_layers_ != nullptr);
-  // mha
-  tensor::Tensor key_cache = get_buffer(ModelBufferType::kKeyCache);
-  // VAL = [val1,val2,...val t]
-  // output @ VAL = 最终的结果
-  tensor::Tensor val_cache = get_buffer(ModelBufferType::kValueCache);
-
-  tensor::Tensor mha_output = get_buffer(ModelBufferType::kOutputMHA);
-  tensor::Tensor score_storage = get_buffer(ModelBufferType::kScoreStorage);
-  tensor::Tensor query = this->get_buffer(ModelBufferType::kQuery);
-
-  const auto& mha_layer = qwen_layers_->mha_layer_;
-  CHECK_NE(mha_layer, nullptr) << "The multi head attention layer is null pointer.";
-  int pos = pos_tensor.index<int32_t>(0);
-  std::dynamic_pointer_cast<op::MultiHeadAttention>(mha_layer)->set_pos(pos);
-  std::dynamic_pointer_cast<op::MultiHeadAttention>(mha_layer)->set_layer_idx(layer_idx);
-  STATUS_CHECK(mha_layer->forward(query, score_storage, key_cache, val_cache, mha_output));
-
-  // wo @ attention output
-  tensor::Tensor attn_output = get_buffer(ModelBufferType::kAttnOutput);
-  const auto& wo_layer = qwen_layers_->wo_layers_.at(layer_idx);
-  CHECK_NE(wo_layer, nullptr) << "The weight output layer is null pointer.";
-  STATUS_CHECK(wo_layer->forward(mha_output, attn_output));
-}
-
-void Qwen2Model::attention_mha_paged(int32_t layer_idx,
-                                      const tensor::Tensor& pos_tensor) const {
-  CHECK(qwen_layers_ != nullptr);
-  tensor::Tensor mha_output = get_buffer(ModelBufferType::kOutputMHA);
-  tensor::Tensor query = this->get_buffer(ModelBufferType::kQuery);
-
-  // Copy block table for this layer to GPU
-  const auto& block_ids = seq_kv_manager_->page_table(layer_idx).block_ids();
-  int32_t num_kv_blocks = static_cast<int32_t>(block_ids.size());
-  CHECK_GT(num_kv_blocks, 0);
-
-  auto alloc_cu = base::CUDADeviceAllocatorFactory::get_instance();
-  alloc_cu->memcpy(block_ids.data(),
-                   const_cast<int32_t*>(block_table_gpu_.ptr<int32_t>()),
-                   num_kv_blocks * sizeof(int32_t),
-                   base::MemcpyKind::kMemcpyCPU2CUDA,
-                   cuda_config_->stream, true);
-
-  // Paged decode attention
-  kernel::paged_mha_decode_cu(
-      config_->head_num_, config_->head_size_, config_->kv_mul_,
-      query, mha_output,
-      block_allocators_[layer_idx]->key_pool(),
-      block_allocators_[layer_idx]->value_pool(),
-      block_table_gpu_.ptr<int32_t>(),
-      num_kv_blocks,
-      seq_kv_manager_->num_tokens_in_last_block(),
-      model_block_size,
-      config_->kv_head_num_,
-      device_type_, cuda_config_.get());
-
-  // wo @ attention output
-  tensor::Tensor attn_output = get_buffer(ModelBufferType::kAttnOutput);
-  const auto& wo_layer = qwen_layers_->wo_layers_.at(layer_idx);
-  CHECK_NE(wo_layer, nullptr);
-  STATUS_CHECK(wo_layer->forward(mha_output, attn_output));
 }
 
 void Qwen2Model::feed_forward(int32_t layer_idx, const tensor::Tensor& input) const {
@@ -872,6 +837,49 @@ int32_t Qwen2Model::post_processing(const tensor::Tensor& pos, bool is_prompt) c
                                                  cuda_config_ ? cuda_config_->stream : nullptr));
   }
   return next;
+}
+
+std::vector<int32_t> Qwen2Model::batch_sample(int32_t batch_size) const {
+  tensor::Tensor forward_output = get_buffer(ModelBufferType::kForwardOutput);
+  const int32_t vocab_size = config_->vocab_size_;
+
+  // Copy logits to CPU and do argmax per sequence
+  std::vector<float> logits_cpu(batch_size * vocab_size);
+  auto alloc_cu = base::CUDADeviceAllocatorFactory::get_instance();
+
+  if (forward_output.data_type() == base::DataType::kDataTypeFp32) {
+    alloc_cu->memcpy(forward_output.ptr<float>(), logits_cpu.data(),
+                     batch_size * vocab_size * sizeof(float),
+                     base::MemcpyKind::kMemcpyCUDA2CPU, nullptr, true);
+  } else {
+    // BF16: convert on GPU first would be better, but for simplicity copy raw and convert
+    std::vector<uint16_t> raw(batch_size * vocab_size);
+    alloc_cu->memcpy(forward_output.ptr<uint16_t>(), raw.data(),
+                     batch_size * vocab_size * sizeof(uint16_t),
+                     base::MemcpyKind::kMemcpyCUDA2CPU, nullptr, true);
+    for (int i = 0; i < batch_size * vocab_size; ++i) {
+      // BF16 to float: shift left 16 bits
+      uint32_t bits = static_cast<uint32_t>(raw[i]) << 16;
+      float val;
+      memcpy(&val, &bits, sizeof(float));
+      logits_cpu[i] = val;
+    }
+  }
+
+  std::vector<int32_t> results(batch_size);
+  for (int32_t b = 0; b < batch_size; ++b) {
+    const float* row = logits_cpu.data() + b * vocab_size;
+    int32_t best = 0;
+    float best_val = row[0];
+    for (int32_t v = 1; v < vocab_size; ++v) {
+      if (row[v] > best_val) {
+        best_val = row[v];
+        best = v;
+      }
+    }
+    results[b] = best;
+  }
+  return results;
 }
 
 }  // namespace model

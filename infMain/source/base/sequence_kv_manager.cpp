@@ -32,6 +32,7 @@ bool SequenceKVManager::append_token(
              rollback_layer < static_cast<int32_t>(newly_allocated_block_ids.size());
              ++rollback_layer) {
           layer_allocators[rollback_layer]->free(newly_allocated_block_ids[rollback_layer]);
+          page_tables_[rollback_layer].pop_last_block();
         }
         LOG(WARNING) << "Failed to allocate block for layer " << layer_idx
                      << ": no free blocks available";
