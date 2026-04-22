@@ -1,58 +1,101 @@
-// Continuous batching scheduler
+// Continuous batching scheduler with token-budget scheduling
 #ifndef KUIPER_INCLUDE_SERVING_SCHEDULER_H_
 #define KUIPER_INCLUDE_SERVING_SCHEDULER_H_
 
 #include <cstdint>
 #include <deque>
 #include <functional>
+#include <memory>
 #include <vector>
 #include "base/kv_cache_manager.h"
-#include "serving/decode_batch.h"
+#include "serving/mixed_batch.h"
 #include "serving/sequence_state.h"
-
-namespace model {
-class Qwen2Model;
-}  // namespace model
 
 namespace serving {
 
+class MixedBatchBuilder;
+
+struct SchedulerConfig {
+  int32_t max_num_seqs = 4;              // max concurrent sequences
+  int32_t max_num_batched_tokens = 128;  // token budget per step
+  int32_t prefill_chunk_cap = 64;        // max prefill tokens per request per step
+};
+
+// Scheduler output: what each request should do this step
+struct SchedulerOutput {
+  // All sequences participating this step (both decode and prefill)
+  std::vector<SequenceState*> scheduled_seqs;
+
+  // Per-sequence: how many tokens this step
+  // decode seq → 1, prefill seq → chunk_size
+  std::vector<int32_t> num_tokens_per_seq;
+
+  int32_t total_tokens = 0;
+  int32_t num_decode_seqs = 0;
+  int32_t num_prefill_seqs = 0;
+};
+
 class Scheduler {
  public:
-  Scheduler(int32_t max_batch_size, base::KVCacheManager* kv_manager);
+  explicit Scheduler(const SchedulerConfig& config, base::KVCacheManager* kv_manager);
+  ~Scheduler();
 
-  // Submit a new request (prompt already encoded)
-  void add_request(std::vector<int32_t> prompt_tokens);
+  // Submit a new request
+  void add_request(std::vector<int32_t> prompt_tokens, int32_t max_new_tokens);
 
   // One scheduling step:
-  //   1. Admit waiting requests (prefill via model)
-  //   2. Append decode slots for all running sequences
-  //   3. Build GPU batch metadata
-  DecodeBatchMetadata schedule_step(const model::Qwen2Model& model);
+  //   1. Allocate token budget to running (decode) sequences
+  //   2. Allocate remaining budget to waiting/prefilling sequences
+  //   3. Return SchedulerOutput describing what to do
+  SchedulerOutput schedule_step();
 
-  // Process forward outputs: update sequence states
-  void process_outputs(const std::vector<int32_t>& sampled_tokens,
+  // After forward + sampling: update sequence states
+  void process_outputs(const SchedulerOutput& output,
+                       const MixedBatchMetadata& batch,
+                       const SampledTokenView& sampled_tokens,
                        const std::function<bool(int32_t)>& is_eos);
 
-  // Pop completed sequences
+  // Build full mixed-batch metadata (decode rows first, then prefill rows).
+  MixedBatchMetadata build_mixed_batch(const SchedulerOutput& output,
+                                       void* stream = nullptr) const;
+
+  // Backward-compatible helper for the current decode-only execution path.
+  MixedBatchMetadata build_decode_batch(const SchedulerOutput& output,
+                                        void* stream = nullptr) const;
+
+  // Retrieve completed sequences
   std::vector<SequenceState> pop_finished();
+
+  // Reset latency accounting start time after offline request submission.
+  void reset_request_arrival_times();
 
   bool has_active_requests() const;
 
-  int32_t num_running() const { return static_cast<int32_t>(running_.size()); }
-  int32_t num_waiting() const { return static_cast<int32_t>(waiting_.size()); }
-
  private:
-  // Simple prefill: run model.predict() token-by-token to fill KV cache
-  void prefill_sequence(SequenceState& seq, const model::Qwen2Model& model);
+  int32_t total_kv_token_capacity() const;
+  void reap_finished_running();
+  void reap_preempted_running();
+  void preempt_sequence(SequenceState* seq, const std::string& reason);
+  bool can_admit_waiting_sequence(const SequenceState& seq,
+                                  int32_t desired_chunk,
+                                  int32_t free_blocks,
+                                  int32_t* chunk) const;
+  bool reject_waiting_request_that_cannot_start();
+  bool fail_stalled_prefill_request();
 
-  // Build GPU metadata from running_ sequences
-  DecodeBatchMetadata build_batch();
+  SchedulerConfig config_;
+  base::KVCacheManager* kv_manager_;
+  mutable std::unique_ptr<MixedBatchBuilder> mixed_batch_builder_;
+  int64_t next_client_request_id_ = 0;
+  int32_t max_request_blocks_hint_ = 1;
+  int64_t scheduler_step_ = 0;
 
-  int32_t max_batch_size_;
-  base::KVCacheManager* kv_manager_;  // not owned
-
+  // waiting_: not yet started prefill (or partially prefilled, paused)
+  // running_: all active sequences (both prefilling and decoding).
+  // Use deque so pointers stored in SchedulerOutput stay valid across push_back.
+  // finished_: completed sequences ready for pickup
   std::deque<SequenceState> waiting_;
-  std::vector<SequenceState> running_;
+  std::deque<SequenceState> running_;
   std::vector<SequenceState> finished_;
 };
 

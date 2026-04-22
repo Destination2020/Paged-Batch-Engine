@@ -96,24 +96,153 @@ list(INSERT CMAKE_PREFIX_PATH 0 /usr/local /usr)
 list(INSERT CMAKE_INCLUDE_PATH 0 /usr/local/include /usr/include)
 list(INSERT CMAKE_LIBRARY_PATH 0 /usr/local/lib /usr/lib)
 
-find_package(GTest REQUIRED)
+option(KUIPER_AUTO_ALIGN_CONDA_PACKAGES
+       "When a Conda env is active, auto-align package configs that must stay ABI-compatible."
+       ON)
+
+set(KUIPER_CONDA_PREFIX "")
+if(DEFINED ENV{CONDA_PREFIX} AND NOT "$ENV{CONDA_PREFIX}" STREQUAL "")
+  set(KUIPER_CONDA_PREFIX "$ENV{CONDA_PREFIX}")
+endif()
+
+function(kuiper_path_is_under_prefix out_var path prefix)
+  if("${path}" STREQUAL "" OR "${prefix}" STREQUAL "")
+    set(${out_var} FALSE PARENT_SCOPE)
+    return()
+  endif()
+
+  string(LENGTH "${prefix}" _prefix_len)
+  string(SUBSTRING "${path}" 0 ${_prefix_len} _path_prefix)
+  if(_path_prefix STREQUAL "${prefix}")
+    set(${out_var} TRUE PARENT_SCOPE)
+  else()
+    set(${out_var} FALSE PARENT_SCOPE)
+  endif()
+endfunction()
+
+function(kuiper_maybe_align_package_dir package_name config_subdir)
+  if(USE_CPM OR NOT KUIPER_AUTO_ALIGN_CONDA_PACKAGES OR "${KUIPER_CONDA_PREFIX}" STREQUAL "")
+    return()
+  endif()
+
+  set(_candidate_dir "${KUIPER_CONDA_PREFIX}/${config_subdir}")
+  set(_candidate_config "${_candidate_dir}/${package_name}Config.cmake")
+  if(NOT EXISTS "${_candidate_config}")
+    return()
+  endif()
+
+  set(_current_dir "")
+  if(DEFINED ${package_name}_DIR)
+    set(_current_dir "${${package_name}_DIR}")
+  endif()
+
+  kuiper_path_is_under_prefix(_current_is_conda "${_current_dir}" "${KUIPER_CONDA_PREFIX}")
+  if("${_current_dir}" STREQUAL "" OR _current_is_conda OR _current_dir MATCHES "^/usr(/local)?/")
+    set(${package_name}_DIR "${_candidate_dir}" CACHE PATH
+        "Auto-aligned ${package_name} package directory" FORCE)
+    message(STATUS "Auto-aligned ${package_name} to Conda package config: ${_candidate_dir}")
+  else()
+    message(STATUS "Keeping explicit ${package_name}_DIR=${_current_dir}")
+  endif()
+endfunction()
+
+function(kuiper_report_package_origin package_name)
+  if(NOT DEFINED ${package_name}_DIR OR "${${package_name}_DIR}" STREQUAL "")
+    return()
+  endif()
+
+  kuiper_path_is_under_prefix(_is_conda "${${package_name}_DIR}" "${KUIPER_CONDA_PREFIX}")
+  if(_is_conda)
+    message(STATUS "${package_name} package root: CONDA (${${package_name}_DIR})")
+  else()
+    message(STATUS "${package_name} package root: ${${package_name}_DIR}")
+  endif()
+endfunction()
+
+kuiper_maybe_align_package_dir(GTest "lib/cmake/GTest")
+if(LLAMA3_SUPPORT OR QWEN2_SUPPORT OR QWEN3_SUPPORT OR QWEN_MOE_SUPPORT)
+  kuiper_maybe_align_package_dir(nlohmann_json "share/cmake/nlohmann_json")
+endif()
+
+find_package(GTest CONFIG REQUIRED)
 find_package(glog REQUIRED)
 find_package(Armadillo REQUIRED)
+if (LLAMA3_SUPPORT OR QWEN2_SUPPORT OR QWEN3_SUPPORT OR QWEN_MOE_SUPPORT)
+  find_package(absl REQUIRED)
+  find_package(re2 REQUIRED)
+  find_package(nlohmann_json CONFIG REQUIRED)
+endif()
+
+kuiper_report_package_origin(GTest)
+if (LLAMA3_SUPPORT OR QWEN2_SUPPORT OR QWEN3_SUPPORT OR QWEN_MOE_SUPPORT)
+  kuiper_report_package_origin(nlohmann_json)
+  if(KUIPER_AUTO_ALIGN_CONDA_PACKAGES AND NOT USE_CPM AND
+     NOT "${KUIPER_CONDA_PREFIX}" STREQUAL "")
+    kuiper_path_is_under_prefix(_gtest_is_conda "${GTest_DIR}" "${KUIPER_CONDA_PREFIX}")
+    kuiper_path_is_under_prefix(_json_is_conda "${nlohmann_json_DIR}" "${KUIPER_CONDA_PREFIX}")
+    if(_gtest_is_conda AND NOT _json_is_conda)
+      message(WARNING
+              "GTest is using Conda while nlohmann_json is not. This is supported, "
+              "but keep an eye on mixed package roots if test targets start failing.")
+    elseif(_json_is_conda AND NOT _gtest_is_conda)
+      message(WARNING
+              "nlohmann_json is using Conda while GTest is not. This can reintroduce "
+              "test_llm header/library mismatches; consider clearing the build cache.")
+    endif()
+  endif()
+endif()
+find_library(NVTOOLSEXT_LIBRARY nvToolsExt PATHS /usr/local/cuda/lib64 /usr/lib /usr/lib64)
+if (NVTOOLSEXT_LIBRARY)
+  message(STATUS "Found NVTX library: ${NVTOOLSEXT_LIBRARY}")
+endif()
 
 aux_source_directory(infMain/source/tensor/ DIR_TENSOR)
 aux_source_directory(infMain/source/base/ DIR_BASE)
 aux_source_directory(infMain/source/op/ DIR_OP)
-aux_source_directory(infMain/source/model/ DIR_MODEL)
 aux_source_directory(infMain/source/op/kernels/cpu DIR_KERNEL_CPU)
 aux_source_directory(infMain/source/op/kernels/cuda DIR_KERNEL_CUDA)
 aux_source_directory(infMain/source/op/kernels/ DIR_KERNEL)
 aux_source_directory(infMain/source/sampler DIR_SAMPLE)
 aux_source_directory(infMain/source/serving DIR_SERVING)
 
+set(DIR_MODEL
+    infMain/source/model/model.cpp
+    infMain/source/model/raw_model_data.cpp
+    infMain/source/model/llama3.cpp)
+
+if (QWEN2_SUPPORT)
+  list(APPEND DIR_MODEL
+       infMain/source/model/qwen2.cpp
+       infMain/source/model/qwen2_batch.cpp
+       infMain/source/model/paged_kv_runtime.cpp
+       infMain/source/model/serving_memory_planner.cpp)
+endif()
+
+if (QWEN3_SUPPORT)
+  list(APPEND DIR_MODEL
+       infMain/source/model/qwen3.cpp)
+endif()
+
+if (QWEN_MOE_SUPPORT)
+  list(APPEND DIR_MODEL
+       infMain/source/model/qwen_moe.cpp)
+endif()
+
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/lib)
 
 add_library(llama SHARED ${DIR_TENSOR} ${DIR_BASE} ${DIR_OP} ${DIR_KERNEL} ${DIR_MODEL} ${DIR_KERNEL_CPU} ${DIR_KERNEL_CUDA} ${DIR_KERNEL} ${DIR_SAMPLE} ${DIR_SERVING})
-target_link_libraries(llama sentencepiece glog::glog gtest gtest_main pthread cudart cublas armadillo)
+target_link_libraries(llama
+  PUBLIC
+    sentencepiece
+    glog::glog
+    pthread
+    cudart
+    cublas
+    cublasLt
+    armadillo)
+if (NVTOOLSEXT_LIBRARY)
+  target_link_libraries(llama PUBLIC ${NVTOOLSEXT_LIBRARY})
+endif()
 target_link_directories(llama PUBLIC ${CMAKE_CUDA_COMPILER_LIBRARY_ROOT}/lib64)
 
 target_include_directories(llama PUBLIC ${glog_INCLUDE_DIR})
@@ -126,16 +255,15 @@ if(USE_CPM)
   target_include_directories(llama PUBLIC ${sentencepiece_SOURCE_DIR}/src)
 endif()
 
-if (QWEN_MOE_SUPPORT)
-  target_link_libraries(llama absl::strings absl::str_format re2::re2 nlohmann_json::nlohmann_json)
+if (LLAMA3_SUPPORT OR QWEN2_SUPPORT OR QWEN3_SUPPORT OR QWEN_MOE_SUPPORT)
+  target_link_libraries(llama PUBLIC absl::strings absl::str_format re2::re2
+                                     nlohmann_json::nlohmann_json)
   if(USE_CPM)
     target_include_directories(llama BEFORE PUBLIC ${absl_SOURCE_DIR})
+    target_include_directories(llama BEFORE PUBLIC ${nlohmann_json_SOURCE_DIR}/include)
   endif()
 endif()
 
 set_target_properties(llama PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
 add_subdirectory(test)
 add_subdirectory(demo)
-
-
-

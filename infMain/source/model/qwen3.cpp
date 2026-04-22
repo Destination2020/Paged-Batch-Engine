@@ -10,95 +10,100 @@
 #include <utility>
 #include "../op/kernels/cpu/rope_kernel.h"
 #include "../op/kernels/cuda/rope_kernel.cuh"
+#include "base/cuda_backend_runtime.h"
+#include "base/cuda_init_utils.h"
 #include "base/tick.h"
 namespace model {
 
-void Qwen3Layers::to_cuda(std::shared_ptr<kernel::CudaConfig> config) {
+namespace {
+
+void prepare_cuda_layer(const std::shared_ptr<op::Layer>& layer,
+                        const std::shared_ptr<base::DeviceContext>& context) {
+  if (!layer) {
+    return;
+  }
+  layer->set_device_context(context);
+  layer->materialize();
+}
+
+}  // namespace
+
+void Qwen3Layers::materialize(std::shared_ptr<base::DeviceContext> context) {
   if (add_layer_) {
-    add_layer_->set_cuda_config(config);
-    add_layer_->to_cuda();
+    prepare_cuda_layer(add_layer_, context);
   }
 
   if (rope_layer_) {
-    rope_layer_->set_cuda_config(config);
-    rope_layer_->to_cuda();
+    prepare_cuda_layer(rope_layer_, context);
   }
 
   if (swiglu_layer_) {
-    swiglu_layer_->set_cuda_config(config);
-    swiglu_layer_->to_cuda();
+    prepare_cuda_layer(swiglu_layer_, context);
   }
 
   if (cls_layer_) {
-    cls_layer_->set_cuda_config(config);
-    cls_layer_->to_cuda();
+    prepare_cuda_layer(cls_layer_, context);
   }
 
   if (embedding_layer_) {
-    embedding_layer_->set_cuda_config(config);
-    embedding_layer_->to_cuda();
+    prepare_cuda_layer(embedding_layer_, context);
   }
 
   if (mha_layer_) {
-    mha_layer_->set_cuda_config(config);
-    mha_layer_->to_cuda();
+    prepare_cuda_layer(mha_layer_, context);
   }
 
   for (auto& weight_layer : wq_layers_) {
     if (weight_layer) {
-      weight_layer->set_cuda_config(config);
-      weight_layer->to_cuda();
+      prepare_cuda_layer(weight_layer, context);
     }
   }
 
   for (auto& weight_layer : wk_layers_) {
     if (weight_layer) {
-      weight_layer->set_cuda_config(config);
-      weight_layer->to_cuda();
+      prepare_cuda_layer(weight_layer, context);
     }
   }
 
   for (auto& weight_layer : wv_layers_) {
     if (weight_layer) {
-      weight_layer->set_cuda_config(config);
-      weight_layer->to_cuda();
+      prepare_cuda_layer(weight_layer, context);
     }
   }
 
   for (auto& weight_layer : wo_layers_) {
     if (weight_layer) {
-      weight_layer->set_cuda_config(config);
-      weight_layer->to_cuda();
+      prepare_cuda_layer(weight_layer, context);
     }
   }
 
   for (auto& weight_layer : w1_layers_) {
     if (weight_layer) {
-      weight_layer->set_cuda_config(config);
-      weight_layer->to_cuda();
+      prepare_cuda_layer(weight_layer, context);
     }
   }
 
   for (auto& weight_layer : w2_layers_) {
     if (weight_layer) {
-      weight_layer->set_cuda_config(config);
-      weight_layer->to_cuda();
+      prepare_cuda_layer(weight_layer, context);
     }
   }
 
   for (auto& weight_layer : w3_layers_) {
     if (weight_layer) {
-      weight_layer->set_cuda_config(config);
-      weight_layer->to_cuda();
+      prepare_cuda_layer(weight_layer, context);
     }
   }
 
   for (auto& rms_norm_layer : rmsnorm_layers_) {
     if (rms_norm_layer) {
-      rms_norm_layer->to_cuda();
-      rms_norm_layer->set_cuda_config(config);
+      prepare_cuda_layer(rms_norm_layer, context);
     }
   }
+}
+
+void Qwen3Layers::to_cuda(std::shared_ptr<base::DeviceContext> context) {
+  materialize(std::move(context));
 }
 
 Qwen3Model::Qwen3Model(base::TokenizerType tokenizer_type, std::string token_path,
@@ -117,13 +122,14 @@ base::Status Qwen3Model::init(base::DeviceType device_type) {
 
   device_type_ = device_type;
   if (device_type == DeviceType::kDeviceCUDA) {
-    cudaSetDevice(0);
-    cuda_config_ = std::make_shared<kernel::CudaConfig>();
-    cudaStreamCreate(&cuda_config_->stream);
-    cudaError_t err = cudaGetLastError();
-    if (err != cudaSuccess) {
-      return error::InternalError("The cuda hanle create failed.");
+    std::shared_ptr<base::DeviceContext> context;
+    auto init_status = base::initialize_cuda_device_context(&context, 0, 0);
+    if (!init_status) {
+      return init_status;
     }
+    set_device_context(context);
+    cuda_config_ = base::cuda_config_from_device_context(device_context_);
+    CHECK_NE(cuda_config_, nullptr);
   }
 
   Status read_status = gen_model_from_file();
@@ -310,7 +316,7 @@ void Qwen3Model::init_mem() {
 
   if (device_type_ == base::DeviceType::kDeviceCUDA) {
     CHECK_NE(cuda_config_, nullptr);
-    qwen_layers_->to_cuda(cuda_config_);
+    qwen_layers_->materialize(device_context_);
   }
 
   std::shared_ptr<base::DeviceAllocator> alloc_cpu =

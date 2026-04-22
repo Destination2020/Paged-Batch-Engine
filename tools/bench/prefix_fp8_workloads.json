@@ -1,0 +1,30 @@
+{
+  "prefix_cache_long_repeat": {
+    "description": "Repeated long prompts to quantify warm Prefix Cache TTFT reduction on the same request set after warmup.",
+    "prompts": [
+      "Please analyze a continuous batching inference engine for a small Qwen2 model running on a laptop GPU. Explain the responsibilities of request admission, prompt prefill, paged KV allocation, block-table construction, slot mapping, decode scheduling, token sampling, and completion handling. Then discuss how Prefix Cache reuse, FP8 KV storage, cublasLt fast paths, stream synchronization, and decode-heavy scheduling each affect latency, throughput, and memory pressure. Finally, list three likely bottlenecks and three concrete optimization ideas, each with a short technical justification.",
+      "Please analyze a continuous batching inference engine for a small Qwen2 model running on a laptop GPU. Explain the responsibilities of request admission, prompt prefill, paged KV allocation, block-table construction, slot mapping, decode scheduling, token sampling, and completion handling. Then discuss how Prefix Cache reuse, FP8 KV storage, cublasLt fast paths, stream synchronization, and decode-heavy scheduling each affect latency, throughput, and memory pressure. Finally, list three likely bottlenecks and three concrete optimization ideas, each with a short technical justification.",
+      "Please analyze a continuous batching inference engine for a small Qwen2 model running on a laptop GPU. Explain the responsibilities of request admission, prompt prefill, paged KV allocation, block-table construction, slot mapping, decode scheduling, token sampling, and completion handling. Then discuss how Prefix Cache reuse, FP8 KV storage, cublasLt fast paths, stream synchronization, and decode-heavy scheduling each affect latency, throughput, and memory pressure. Finally, list three likely bottlenecks and three concrete optimization ideas, each with a short technical justification.",
+      "Please analyze a continuous batching inference engine for a small Qwen2 model running on a laptop GPU. Explain the responsibilities of request admission, prompt prefill, paged KV allocation, block-table construction, slot mapping, decode scheduling, token sampling, and completion handling. Then discuss how Prefix Cache reuse, FP8 KV storage, cublasLt fast paths, stream synchronization, and decode-heavy scheduling each affect latency, throughput, and memory pressure. Finally, list three likely bottlenecks and three concrete optimization ideas, each with a short technical justification.",
+      "Please analyze a continuous batching inference engine for a small Qwen2 model running on a laptop GPU. Explain the responsibilities of request admission, prompt prefill, paged KV allocation, block-table construction, slot mapping, decode scheduling, token sampling, and completion handling. Then discuss how Prefix Cache reuse, FP8 KV storage, cublasLt fast paths, stream synchronization, and decode-heavy scheduling each affect latency, throughput, and memory pressure. Finally, list three likely bottlenecks and three concrete optimization ideas, each with a short technical justification.",
+      "Please analyze a continuous batching inference engine for a small Qwen2 model running on a laptop GPU. Explain the responsibilities of request admission, prompt prefill, paged KV allocation, block-table construction, slot mapping, decode scheduling, token sampling, and completion handling. Then discuss how Prefix Cache reuse, FP8 KV storage, cublasLt fast paths, stream synchronization, and decode-heavy scheduling each affect latency, throughput, and memory pressure. Finally, list three likely bottlenecks and three concrete optimization ideas, each with a short technical justification."
+    ],
+    "max_new_tokens": 48,
+    "max_batched_tokens": 256,
+    "prefill_chunk_cap": 64
+  },
+  "decode_heavy_short": {
+    "description": "Short prompts plus long decode to keep stable decode-only steps while still allowing warm Prefix Cache hits from the warmup round.",
+    "prompts": [
+      "Hi.",
+      "Hello.",
+      "Yes?",
+      "Okay.",
+      "Go on.",
+      "Why?"
+    ],
+    "max_new_tokens": 96,
+    "max_batched_tokens": 256,
+    "prefill_chunk_cap": 48
+  }
+}

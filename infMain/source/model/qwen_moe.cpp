@@ -1,5 +1,4 @@
 // Updated on March 15, 2026
-#include <cuda_runtime_api.h>
 #include <base/bf16.h>
 #include <glog/logging.h>
 #include <op/matmul.h>
@@ -7,9 +6,11 @@
 #include <op/rmsnorm.h>
 #include <sentencepiece_processor.h>
 #include <utility>
+#include "../op/kernels/kernels_interface.h"
 #include "../op/kernels/cpu/rope_kernel.h"
-#include "../op/kernels/cuda/moe_kernel.cuh"
 #include "../op/kernels/cuda/rope_kernel.cuh"
+#include <base/cuda_backend_runtime.h>
+#include <base/cuda_init_utils.h>
 #include <base/tick.h>
 #include <model/qwen_moe.h>
 #include <algorithm>
@@ -58,94 +59,134 @@ namespace {
 namespace model {
 
 namespace {
+void* compute_queue_or_null(const std::shared_ptr<base::DeviceContext>& context) {
+  return context ? context->compute_queue : nullptr;
+}
+
+void runtime_copy_or_die(const std::shared_ptr<base::DeviceContext>& context,
+                         const void* src, void* dst, size_t byte_size,
+                         base::CopyDirection direction, bool need_sync = false) {
+  CHECK(context != nullptr && context->runtime != nullptr);
+  base::CopyParams params;
+  params.src = src;
+  params.dst = dst;
+  params.byte_size = byte_size;
+  params.direction = direction;
+  params.queue = compute_queue_or_null(context);
+  params.need_sync = need_sync;
+  STATUS_CHECK(context->runtime->copy(params));
+}
+
+void runtime_memset_zero_or_die(const std::shared_ptr<base::DeviceContext>& context,
+                                void* dst, size_t byte_size, bool need_sync = false) {
+  CHECK(context != nullptr && context->runtime != nullptr);
+  base::MemsetParams params;
+  params.dst = dst;
+  params.byte_size = byte_size;
+  params.value = 0;
+  params.queue = compute_queue_or_null(context);
+  params.need_sync = need_sync;
+  STATUS_CHECK(context->runtime->memset_zero(params));
+}
+
+void runtime_sync_or_die(const std::shared_ptr<base::DeviceContext>& context) {
+  CHECK(context != nullptr && context->runtime != nullptr);
+  STATUS_CHECK(context->runtime->synchronize_queue(compute_queue_or_null(context)));
+}
+
 void prepare_cuda_layer(const std::shared_ptr<op::Layer>& layer,
-                        const std::shared_ptr<kernel::CudaConfig>& config,
+                        const std::shared_ptr<base::DeviceContext>& context,
                         base::DataType runtime_data_type) {
   if (!layer) {
     return;
   }
-  layer->set_cuda_config(config);
+  layer->set_device_context(context);
   layer->set_data_type(runtime_data_type);
-  layer->to_cuda();
+  layer->materialize();
 }
 }  // namespace
 
-void QwenMoeLayers::to_cuda(std::shared_ptr<kernel::CudaConfig> config,
-                            base::DataType runtime_data_type) {
-  prepare_cuda_layer(add_layer_, config, runtime_data_type);
-  prepare_cuda_layer(rope_layer_, config, runtime_data_type);
-  prepare_cuda_layer(swiglu_layer_, config, runtime_data_type);
-  prepare_cuda_layer(shared_swiglu_layer_, config, runtime_data_type);
-  prepare_cuda_layer(cls_layer_, config, runtime_data_type);
-  prepare_cuda_layer(embedding_layer_, config, runtime_data_type);
-  prepare_cuda_layer(mha_layer_, config, runtime_data_type);
+void QwenMoeLayers::materialize(std::shared_ptr<base::DeviceContext> context,
+                                base::DataType runtime_data_type) {
+  prepare_cuda_layer(add_layer_, context, runtime_data_type);
+  prepare_cuda_layer(rope_layer_, context, runtime_data_type);
+  prepare_cuda_layer(swiglu_layer_, context, runtime_data_type);
+  prepare_cuda_layer(shared_swiglu_layer_, context, runtime_data_type);
+  prepare_cuda_layer(cls_layer_, context, runtime_data_type);
+  prepare_cuda_layer(embedding_layer_, context, runtime_data_type);
+  prepare_cuda_layer(mha_layer_, context, runtime_data_type);
 
   for (auto& weight_layer : wq_layers_) {
-    prepare_cuda_layer(weight_layer, config, runtime_data_type);
+    prepare_cuda_layer(weight_layer, context, runtime_data_type);
   }
 
   for (auto& weight_layer : wk_layers_) {
-    prepare_cuda_layer(weight_layer, config, runtime_data_type);
+    prepare_cuda_layer(weight_layer, context, runtime_data_type);
   }
 
   for (auto& weight_layer : wv_layers_) {
-    prepare_cuda_layer(weight_layer, config, runtime_data_type);
+    prepare_cuda_layer(weight_layer, context, runtime_data_type);
   }
 
   for (auto& weight_layer : wo_layers_) {
-    prepare_cuda_layer(weight_layer, config, runtime_data_type);
+    prepare_cuda_layer(weight_layer, context, runtime_data_type);
   }
 
   for (auto& weight_layer : w1_layers_) {
-    prepare_cuda_layer(weight_layer, config, runtime_data_type);
+    prepare_cuda_layer(weight_layer, context, runtime_data_type);
   }
 
   for (auto& weight_layer : w2_layers_) {
-    prepare_cuda_layer(weight_layer, config, runtime_data_type);
+    prepare_cuda_layer(weight_layer, context, runtime_data_type);
   }
 
   for (auto& weight_layer : w3_layers_) {
-    prepare_cuda_layer(weight_layer, config, runtime_data_type);
+    prepare_cuda_layer(weight_layer, context, runtime_data_type);
   }
 
   for (auto& router_layer : router_layers_) {
-    prepare_cuda_layer(router_layer, config, runtime_data_type);
+    prepare_cuda_layer(router_layer, context, runtime_data_type);
   }
 
   for (auto& expert_w1_layer : expert_w1_layers_) {
     for (auto& layer : expert_w1_layer) {
-      prepare_cuda_layer(layer, config, runtime_data_type);
+      prepare_cuda_layer(layer, context, runtime_data_type);
     }
   }
 
   for (auto& expert_w2_layer : expert_w2_layers_) {
     for (auto& layer : expert_w2_layer) {
-      prepare_cuda_layer(layer, config, runtime_data_type);
+      prepare_cuda_layer(layer, context, runtime_data_type);
     }
   }
 
   for (auto& expert_w3_layer : expert_w3_layers_) {
     for (auto& layer : expert_w3_layer) {
-      prepare_cuda_layer(layer, config, runtime_data_type);
+      prepare_cuda_layer(layer, context, runtime_data_type);
     }
   }
 
   for (auto& rms_norm_layer : rmsnorm_layers_) {
-    prepare_cuda_layer(rms_norm_layer, config, runtime_data_type);
+    prepare_cuda_layer(rms_norm_layer, context, runtime_data_type);
   }
   for (auto& shared_w1_layer : shared_w1_layers_) {
-    prepare_cuda_layer(shared_w1_layer, config, runtime_data_type);
+    prepare_cuda_layer(shared_w1_layer, context, runtime_data_type);
   }
   for (auto& shared_w2_layer : shared_w2_layers_) {
-    prepare_cuda_layer(shared_w2_layer, config, runtime_data_type);
+    prepare_cuda_layer(shared_w2_layer, context, runtime_data_type);
   }
   for (auto& shared_w3_layer : shared_w3_layers_) {
-    prepare_cuda_layer(shared_w3_layer, config, runtime_data_type);
+    prepare_cuda_layer(shared_w3_layer, context, runtime_data_type);
   }
   for (auto& shared_gate_layer : shared_gate_layers_) {
-    prepare_cuda_layer(shared_gate_layer, config, runtime_data_type);
+    prepare_cuda_layer(shared_gate_layer, context, runtime_data_type);
   }
 
+}
+
+void QwenMoeLayers::to_cuda(std::shared_ptr<base::DeviceContext> context,
+                            base::DataType runtime_data_type) {
+  materialize(std::move(context), runtime_data_type);
 }
 
 QwenMoeModel::QwenMoeModel(base::TokenizerType tokenizer_type, std::string token_path,
@@ -174,13 +215,14 @@ base::Status QwenMoeModel::init(base::DeviceType device_type) {
   }
   device_type_ = device_type;
   if (device_type == DeviceType::kDeviceCUDA) {
-    cudaSetDevice(0);
-    cuda_config_ = std::make_shared<kernel::CudaConfig>();
-    cudaStreamCreate(&cuda_config_->stream);
-    cudaError_t err = cudaGetLastError();
-    if (err != cudaSuccess) {
-      return error::InternalError("The cuda hanle create failed.");
+    std::shared_ptr<base::DeviceContext> context;
+    auto init_status = base::initialize_cuda_device_context(&context, 0);
+    if (!init_status) {
+      return init_status;
     }
+    set_device_context(context);
+    cuda_config_ = base::cuda_config_from_device_context(device_context_);
+    CHECK_NE(cuda_config_, nullptr);
   }
 
   Status read_status = gen_model_from_file();
@@ -682,7 +724,7 @@ void QwenMoeModel::init_mem() {
 
   if (device_type_ == base::DeviceType::kDeviceCUDA) {
     CHECK_NE(cuda_config_, nullptr);
-    qwen_layers_->to_cuda(cuda_config_, runtime_data_type_);
+    qwen_layers_->materialize(device_context_, runtime_data_type_);
   }
 
   const base::DataType act_dtype =
@@ -1144,16 +1186,16 @@ void QwenMoeModel::moe_router_topk(int32_t layer_idx, const tensor::Tensor& ffn_
       tensor::Tensor topk_value_cu(base::DataType::kDataTypeFp32, config_->moe_topk_, true, alloc_cu);
       tensor::Tensor topk_index_cu(base::DataType::kDataTypeInt32, config_->moe_topk_, true, alloc_cu);
 
-      kernel::moe_router_softmax_topk_cu(router_logits, static_cast<int32_t>(router_logits.size()),
-                                         config_->moe_topk_, topk_value_cu, topk_index_cu,
-                                         config_->moe_norm_topk_prob_, cuda_config_.get());
+      kernel::get_moe_softmax_topk_kernel(device_type_)(
+          router_logits, static_cast<int32_t>(router_logits.size()),
+          config_->moe_topk_, topk_value_cu, topk_index_cu,
+          config_->moe_norm_topk_prob_, device_context_.get());
 
-      alloc_cu->memcpy(topk_value_cu.ptr<float>(), topk_value.ptr<float>(), topk_value.byte_size(),
-                       base::MemcpyKind::kMemcpyCUDA2CPU, cuda_config_->stream);
-      alloc_cu->memcpy(topk_index_cu.ptr<int32_t>(), topk_index.ptr<int32_t>(),
-                       topk_index.byte_size(), base::MemcpyKind::kMemcpyCUDA2CPU,
-                       cuda_config_->stream);
-      cudaStreamSynchronize(cuda_config_->stream);
+      runtime_copy_or_die(device_context_, topk_value_cu.ptr<float>(), topk_value.ptr<float>(),
+                          topk_value.byte_size(), base::CopyDirection::kDeviceToHost);
+      runtime_copy_or_die(device_context_, topk_index_cu.ptr<int32_t>(), topk_index.ptr<int32_t>(),
+                          topk_index.byte_size(), base::CopyDirection::kDeviceToHost);
+      runtime_sync_or_die(device_context_);
     } else {
       cpu_softmax_inplace(router_logits.ptr<float>(), router_logits.size());
 
@@ -1176,7 +1218,8 @@ void QwenMoeModel::moe_router_topk(int32_t layer_idx, const tensor::Tensor& ffn_
     CHECK(moe_accum.device_type() == device_type_);
     if (device_type_ == base::DeviceType::kDeviceCUDA) {
       CHECK_NE(cuda_config_, nullptr);
-      cudaMemsetAsync(moe_accum.ptr<uint8_t>(), 0, moe_accum.byte_size(), cuda_config_->stream);
+      runtime_memset_zero_or_die(device_context_, moe_accum.ptr<uint8_t>(),
+                                 moe_accum.byte_size());
     } else {
       std::memset(moe_accum.ptr<uint8_t>(), 0, moe_accum.byte_size());
     }
@@ -1206,7 +1249,8 @@ void QwenMoeModel::moe_router_topk(int32_t layer_idx, const tensor::Tensor& ffn_
 
       if (device_type_ == base::DeviceType::kDeviceCUDA) {
         CHECK_NE(cuda_config_, nullptr);
-        kernel::moe_scale_add_cu(moe_accum, expert_output, expert_weight, cuda_config_.get());
+        kernel::get_moe_scale_add_kernel(device_type_)(
+            moe_accum, expert_output, expert_weight, device_context_.get());
       } else {
         scale_add(moe_accum.ptr<float>(), expert_weight, expert_output.ptr<float>(), moe_accum.size());
       }
@@ -1239,21 +1283,21 @@ void QwenMoeModel::moe_router_topk(int32_t layer_idx, const tensor::Tensor& ffn_
     auto moe_accum = get_buffer(ModelBufferType::kMoeAccum);
     if (device_type_ == base::DeviceType::kDeviceCUDA) {
       CHECK_NE(cuda_config_, nullptr);
-      auto alloc_cu = base::CUDADeviceAllocatorFactory::get_instance();
       float gate_value = 0.f;
       if (shared_gate_out.data_type() == base::DataType::kDataTypeFp32) {
-        alloc_cu->memcpy(shared_gate_out.ptr<float>(), &gate_value, sizeof(float),
-                         base::MemcpyKind::kMemcpyCUDA2CPU, cuda_config_->stream);
+        runtime_copy_or_die(device_context_, shared_gate_out.ptr<float>(), &gate_value,
+                            sizeof(float), base::CopyDirection::kDeviceToHost);
       } else {
         uint16_t gate_bf16 = 0;
-        alloc_cu->memcpy(shared_gate_out.ptr<uint16_t>(), &gate_bf16, sizeof(uint16_t),
-                         base::MemcpyKind::kMemcpyCUDA2CPU, cuda_config_->stream);
-        cudaStreamSynchronize(cuda_config_->stream);
+        runtime_copy_or_die(device_context_, shared_gate_out.ptr<uint16_t>(), &gate_bf16,
+                            sizeof(uint16_t), base::CopyDirection::kDeviceToHost);
+        runtime_sync_or_die(device_context_);
         gate_value = base::bf16_bits_to_float(gate_bf16);
       }
-      cudaStreamSynchronize(cuda_config_->stream);
+      runtime_sync_or_die(device_context_);
       gate_value = 1.f / (1.f + std::exp(-gate_value));
-      kernel::moe_scale_add_cu(moe_accum, shared_output, gate_value, cuda_config_.get());
+      kernel::get_moe_scale_add_kernel(device_type_)(
+          moe_accum, shared_output, gate_value, device_context_.get());
     } else {
       float gate_value = shared_gate_out.index<float>(0);
       gate_value = 1.f / (1.f + std::exp(-gate_value));

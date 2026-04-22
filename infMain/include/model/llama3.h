@@ -1,12 +1,17 @@
 // Updated on March 15, 2026
 #ifndef KUIPER_INCLUDE_MODEL_LLAMA_H_
 #define KUIPER_INCLUDE_MODEL_LLAMA_H_
-#include <base/cuda_config.h>
+#include "base/device_context.h"
 #include "model.h"
 #include "op/add.h"
 #include "op/embedding.h"
 #include "op/rope.h"
 #include "op/swiglu.h"
+
+namespace kernel {
+struct CudaConfig;
+}
+
 namespace model {
 
 struct LLama2Layers {
@@ -28,7 +33,10 @@ struct LLama2Layers {
 
   std::shared_ptr<op::Layer> embedding_layer_;
 
-  void to_cuda(std::shared_ptr<kernel::CudaConfig> config);
+  void materialize(std::shared_ptr<base::DeviceContext> context);
+
+  // Legacy compatibility helper. Prefer materialize() in new code.
+  void to_cuda(std::shared_ptr<base::DeviceContext> context);
 };
 
 class LLama2Model : public Model {

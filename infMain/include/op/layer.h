@@ -1,11 +1,15 @@
 // Updated on March 15, 2026
 #ifndef KUIPER_INCLUDE_OP_LAYER_H_
 #define KUIPER_INCLUDE_OP_LAYER_H_
-#include <base/cuda_config.h>
 #include <string>
 #include <vector>
 #include "base/base.h"
+#include "base/device_context.h"
 #include "tensor/tensor.h"
+
+namespace kernel {
+struct CudaConfig;
+}
 
 namespace op {
 class Layer;
@@ -146,15 +150,29 @@ class Layer : public BaseLayer {
 
   void reset_output_size(size_t size);
 
+  // Device-agnostic materialization entry. Prefer this in new code.
+  virtual void materialize();
+
+  // Legacy compatibility helper. Prefer materialize() in new code.
   virtual void to_cuda();
 
+  // Legacy compatibility helpers. Prefer set_device_context()/device_context()
+  // in new code.
   void set_cuda_config(std::shared_ptr<kernel::CudaConfig> config);
 
   std::shared_ptr<kernel::CudaConfig> cuda_config() const;
 
+  void set_device_context(std::shared_ptr<base::DeviceContext> context);
+
+  std::shared_ptr<base::DeviceContext> device_context() const;
+
  protected:
+  void* compute_queue() const;
+  kernel::CudaConfig* cuda_config_or_null() const;
+
   std::vector<tensor::Tensor> inputs_;
   std::vector<tensor::Tensor> outputs_;
+  std::shared_ptr<base::DeviceContext> device_context_;
   std::shared_ptr<kernel::CudaConfig> cuda_config_;
 };
 
@@ -171,6 +189,9 @@ class LayerParam : public Layer {
 
   const tensor::Tensor& get_weight(int32_t idx) const;
 
+  void materialize() override;
+
+  // Legacy compatibility helper. Prefer materialize() in new code.
   void to_cuda() override;
 
   base::Status set_weight(int32_t idx, const tensor::Tensor& weight) override;

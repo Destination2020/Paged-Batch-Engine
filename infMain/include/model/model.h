@@ -4,7 +4,10 @@
 #include <op/embedding.h>
 #include <map>
 #include <string>
+#include "base/device_context.h"
+#include "base/kv_cache_format.h"
 #include "config.h"
+#include "model/serving_memory_planner.h"
 #include "op/encode.h"
 #include "op/layer.h"
 #include "raw_model_data.h"
@@ -40,7 +43,7 @@ class Model {
 
   virtual std::string decode(int32_t token_idx) const;
 
-  virtual std::string decode(std::vector<int32_t> token_idxs) const;
+  virtual std::string decode(const std::vector<int32_t>& token_idxs) const;
 
   /////////////////////////////////////////////////////
   /////////////////////////////////////////////////////
@@ -58,6 +61,23 @@ class Model {
   void set_runtime_data_type(base::DataType data_type);
 
   base::DataType runtime_data_type() const;
+
+  void set_kv_cache_storage_mode(base::BlockStorageMode storage_mode);
+
+  base::BlockStorageMode kv_cache_storage_mode() const;
+
+  base::KVCacheStorageSpec kv_cache_storage_spec() const;
+
+  base::Status validate_kv_cache_runtime(base::DeviceType device_type) const;
+
+  virtual ServingWorkspaceProfile serving_workspace_profile(
+      base::DataType runtime_data_type) const;
+
+  size_t serving_workspace_bytes_per_token(base::DataType runtime_data_type) const;
+
+  void set_device_context(std::shared_ptr<base::DeviceContext> context);
+
+  std::shared_ptr<base::DeviceContext> device_context() const;
 
  protected:
   virtual base::Status insert_buffer(ModelBufferType buffer_idx, const tensor::Tensor& tensor);
@@ -94,8 +114,10 @@ class Model {
   std::map<ModelBufferType, tensor::Tensor> buffers_;
   std::unique_ptr<sampler::Sampler> sampler_;
   std::shared_ptr<RawModelData> raw_model_data_;
+  std::shared_ptr<base::DeviceContext> device_context_;
   base::DeviceType device_type_ = base::DeviceType::kDeviceUnknown;
   base::DataType runtime_data_type_ = base::DataType::kDataTypeFp32;
+  base::BlockStorageMode kv_cache_storage_mode_ = base::BlockStorageMode::kPlain;
   base::ModelType model_type_ = base::ModelType::kModelTypeUnknown;
   base::TokenizerType tokenizer_type_ = base::TokenizerType::kEncodeUnknown;
 };

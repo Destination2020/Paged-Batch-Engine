@@ -41,6 +41,15 @@ class CPUDeviceAllocator : public DeviceAllocator {
   void release(void* ptr) const override;
 };
 
+class PinnedCPUDeviceAllocator : public DeviceAllocator {
+ public:
+  explicit PinnedCPUDeviceAllocator();
+
+  void* allocate(size_t byte_size) const override;
+
+  void release(void* ptr) const override;
+};
+
 struct CudaMemoryBuffer {
   void* data;
   size_t byte_size;
@@ -78,6 +87,19 @@ class CPUDeviceAllocatorFactory {
 
  private:
   static std::shared_ptr<CPUDeviceAllocator> instance;
+};
+
+class PinnedCPUDeviceAllocatorFactory {
+ public:
+  static std::shared_ptr<PinnedCPUDeviceAllocator> get_instance() {
+    if (instance == nullptr) {
+      instance = std::make_shared<PinnedCPUDeviceAllocator>();
+    }
+    return instance;
+  }
+
+ private:
+  static std::shared_ptr<PinnedCPUDeviceAllocator> instance;
 };
 
 class CUDADeviceAllocatorFactory {

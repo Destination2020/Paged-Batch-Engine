@@ -1,0 +1,57 @@
+{
+  "mixed_baseline": {
+    "description": "Mixed prefill/decode workload with varied prompt lengths.",
+    "prompts": [
+      "What is AI?",
+      "Write a haiku about coding.",
+      "Explain quantum computing briefly.",
+      "Summarize the benefits of continuous batching in one paragraph.",
+      "List three tradeoffs of FP8 KV cache."
+    ],
+    "max_new_tokens": 64,
+    "max_batched_tokens": 128,
+    "prefill_chunk_cap": 64
+  },
+  "decode_only_focus": {
+    "description": "Short prompts plus longer decode to force stable decode-only steps.",
+    "prompts": [
+      "Hi.",
+      "Hello.",
+      "Yes?",
+      "Okay.",
+      "Go on.",
+      "Why?"
+    ],
+    "max_new_tokens": 96,
+    "max_batched_tokens": 32,
+    "prefill_chunk_cap": 8
+  },
+  "decode_only_relaxed_mid": {
+    "description": "Same short-prompt decode-heavy workload with a less conservative batching cap.",
+    "prompts": [
+      "Hi.",
+      "Hello.",
+      "Yes?",
+      "Okay.",
+      "Go on.",
+      "Why?"
+    ],
+    "max_new_tokens": 96,
+    "max_batched_tokens": 64,
+    "prefill_chunk_cap": 16
+  },
+  "decode_only_relaxed_full": {
+    "description": "Same short-prompt decode-heavy workload with auto throughput-oriented batching limits.",
+    "prompts": [
+      "Hi.",
+      "Hello.",
+      "Yes?",
+      "Okay.",
+      "Go on.",
+      "Why?"
+    ],
+    "max_new_tokens": 96,
+    "max_batched_tokens": "auto",
+    "prefill_chunk_cap": "auto"
+  }
+}

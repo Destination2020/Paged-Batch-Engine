@@ -37,11 +37,11 @@ base::Status SwiGLULayer::forward() {
   auto input1 = this->get_input(0);
   auto input2 = this->get_input(1);
   auto output = this->get_output(0);
+  void* queue = compute_queue();
   if (device_type_ == base::DeviceType::kDeviceCUDA) {
-    CHECK(cuda_config_ != nullptr);
+    CHECK(cuda_config_or_null() != nullptr);
   }
-  kernel::get_swiglu_kernel(device_type_)(input1, input2, output,
-                                          cuda_config_ ? cuda_config_->stream : nullptr);
+  kernel::get_swiglu_kernel(device_type_)(input1, input2, output, queue);
   return base::error::Success();
 }
 

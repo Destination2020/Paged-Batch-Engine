@@ -1,7 +1,6 @@
 // Updated on March 15, 2026
 #ifndef KUIPER_INCLUDE_TENSOR_TENSOR_H_
 #define KUIPER_INCLUDE_TENSOR_TENSOR_H_
-#include <driver_types.h>
 #include <glog/logging.h>
 #include <armadillo>
 #include <memory>
@@ -31,9 +30,16 @@ class Tensor {
   explicit Tensor(base::DataType data_type, std::vector<int32_t> dims, bool need_alloc = false,
                   std::shared_ptr<base::DeviceAllocator> alloc = nullptr, void* ptr = nullptr);
 
+  void to_host();
+
+  void to_device(base::DeviceType target_device_type,
+                 void* queue = nullptr,
+                 base::DataType target_data_type = base::DataType::kDataTypeUnknown);
+
+  // Legacy compatibility helpers. Prefer to_host()/to_device() in new code.
   void to_cpu();
 
-  void to_cuda(cudaStream_t stream = nullptr,
+  void to_cuda(void* queue = nullptr,
                base::DataType target_data_type = base::DataType::kDataTypeUnknown);
 
   bool is_empty() const;
@@ -48,6 +54,11 @@ class Tensor {
   const T* ptr() const;
 
   void reshape(const std::vector<int32_t>& dims);
+
+  // Reshape only if the existing storage is large enough. This is useful for
+  // preallocated runtime workspaces where accidental growth would hide a memory
+  // planning bug and could trigger a late cudaMalloc/OOM on the hot path.
+  void reshape_no_realloc(const std::vector<int32_t>& dims);
 
   std::shared_ptr<base::Buffer> get_buffer() const;
 

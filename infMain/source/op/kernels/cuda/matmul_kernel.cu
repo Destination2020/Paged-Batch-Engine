@@ -1,4 +1,5 @@
 // Updated on March 23, 2026
+#include <base/cuda_config.h>
 #include <tensor/tensor.h>
 #include <cub/block/block_reduce.cuh>
 #include "../kernels_interface.h"

@@ -3,11 +3,16 @@
 
 #include <cfloat>
 #include <cstdint>
+#include <cstdlib>
 #include <cuda_fp8.h>
 #include <cuda_runtime.h>
+#include <sstream>
+#include <string>
+#include <unordered_set>
 
 #include "base/bf16.h"
 #include "cuda_type_utils.cuh"
+#include <glog/logging.h>
 
 namespace kernel {
 
@@ -30,7 +35,45 @@ struct FastDecodeLaunchConfig {
   int32_t head_group = 1;
   int32_t threads = 128;
   int32_t num_stages = 1;
+  const char* debug_reason = "disabled";
 };
+
+bool decode_attn_diag_enabled() {
+  const char* env = std::getenv("KUIPER_DECODE_ATTN_DIAG");
+  return env != nullptr && env[0] != '\0' && env[0] != '0';
+}
+
+void maybe_log_fast_decode_choice(const char* tag,
+                                  int32_t batch_size,
+                                  int32_t max_blocks_per_seq,
+                                  int32_t head_num,
+                                  int32_t head_size,
+                                  int32_t kv_mul,
+                                  int32_t num_kv_heads,
+                                  const FastDecodeLaunchConfig& cfg) {
+  if (!decode_attn_diag_enabled()) {
+    return;
+  }
+  static std::unordered_set<std::string> seen;
+  std::ostringstream os;
+  os << tag
+     << ":bs=" << batch_size
+     << ":max_blocks=" << max_blocks_per_seq
+     << ":head_num=" << head_num
+     << ":head_size=" << head_size
+     << ":kv_mul=" << kv_mul
+     << ":kv_heads=" << num_kv_heads
+     << ":fast=" << (cfg.use_fast_path ? 1 : 0)
+     << ":head_group=" << cfg.head_group
+     << ":split_k=" << cfg.split_k
+     << ":threads=" << cfg.threads
+     << ":double_buffer=" << (cfg.use_double_buffer ? 1 : 0)
+     << ":reason=" << cfg.debug_reason;
+  const std::string key = os.str();
+  if (seen.insert(key).second) {
+    LOG(WARNING) << "[decode-attn-diag] " << key;
+  }
+}
 
 template <typename T>
 __device__ inline T warp_sum(T value) {
@@ -197,15 +240,18 @@ FastDecodeLaunchConfig choose_fast_decode_config(
     base::DeviceType device_type) {
   FastDecodeLaunchConfig cfg;
   if (device_type != base::DeviceType::kDeviceCUDA) {
+    cfg.debug_reason = "device_not_cuda";
     return cfg;
   }
   if (head_size != kFastHeadSize || block_size != kFastBlockSize) {
+    cfg.debug_reason = "shape_mismatch";
     return cfg;
   }
   if (queries.data_type() != base::DataType::kDataTypeBf16 ||
       outputs.data_type() != base::DataType::kDataTypeBf16 ||
       key_pool.data_type() != base::DataType::kDataTypeBf16 ||
       value_pool.data_type() != base::DataType::kDataTypeBf16) {
+    cfg.debug_reason = "dtype_mismatch";
     return cfg;
   }
   if (block_tables.data_type() != base::DataType::kDataTypeInt32 ||
@@ -213,23 +259,28 @@ FastDecodeLaunchConfig choose_fast_decode_config(
       partial_out.data_type() != base::DataType::kDataTypeFp32 ||
       partial_max.data_type() != base::DataType::kDataTypeFp32 ||
       partial_sum.data_type() != base::DataType::kDataTypeFp32) {
+    cfg.debug_reason = "aux_dtype_mismatch";
     return cfg;
   }
   if (num_kv_heads <= 0 || kv_mul <= 0 || head_num <= 0) {
+    cfg.debug_reason = "invalid_head_shape";
     return cfg;
   }
   if (head_num % num_kv_heads != 0 || kv_mul != head_num / num_kv_heads) {
+    cfg.debug_reason = "kv_ratio_mismatch";
     return cfg;
   }
   if ((reinterpret_cast<uintptr_t>(queries.ptr<uint16_t>()) & 0xF) != 0 ||
       (reinterpret_cast<uintptr_t>(key_pool.ptr<uint16_t>()) & 0xF) != 0 ||
       (reinterpret_cast<uintptr_t>(value_pool.ptr<uint16_t>()) & 0xF) != 0 ||
       (reinterpret_cast<uintptr_t>(outputs.ptr<uint16_t>()) & 0xF) != 0) {
+    cfg.debug_reason = "unaligned_ptr";
     return cfg;
   }
 
   if (max_blocks_per_seq <= 16) {
-    return FastDecodeLaunchConfig{};
+    cfg.debug_reason = "max_blocks_le_16";
+    return cfg;
   }
   cfg.use_fast_path = true;
   cfg.split_k = 8;
@@ -237,9 +288,11 @@ FastDecodeLaunchConfig choose_fast_decode_config(
   cfg.threads = 256;
   cfg.num_stages = 3;
   cfg.use_double_buffer = true;
+  cfg.debug_reason = "enabled";
 
   if (head_num % cfg.head_group != 0 || kv_mul % cfg.head_group != 0) {
     cfg = FastDecodeLaunchConfig{};
+    cfg.debug_reason = "head_group_incompatible";
   }
   return cfg;
 }
@@ -265,9 +318,11 @@ FastDecodeLaunchConfig choose_fp8_decode_config(
     base::DeviceType device_type) {
   FastDecodeLaunchConfig cfg;
   if (device_type != base::DeviceType::kDeviceCUDA) {
+    cfg.debug_reason = "device_not_cuda";
     return cfg;
   }
   if (head_size != kFastHeadSize || block_size != kFastBlockSize) {
+    cfg.debug_reason = "shape_mismatch";
     return cfg;
   }
   if (queries.data_type() != base::DataType::kDataTypeBf16 ||
@@ -276,6 +331,7 @@ FastDecodeLaunchConfig choose_fp8_decode_config(
       value_pool.data_type() != base::DataType::kDataTypeInt8 ||
       key_scale_pool.data_type() != base::DataType::kDataTypeFp32 ||
       value_scale_pool.data_type() != base::DataType::kDataTypeFp32) {
+    cfg.debug_reason = "dtype_mismatch";
     return cfg;
   }
   if (block_tables.data_type() != base::DataType::kDataTypeInt32 ||
@@ -283,18 +339,22 @@ FastDecodeLaunchConfig choose_fp8_decode_config(
       partial_out.data_type() != base::DataType::kDataTypeFp32 ||
       partial_max.data_type() != base::DataType::kDataTypeFp32 ||
       partial_sum.data_type() != base::DataType::kDataTypeFp32) {
+    cfg.debug_reason = "aux_dtype_mismatch";
     return cfg;
   }
   if (num_kv_heads <= 0 || kv_mul <= 0 || head_num <= 0) {
+    cfg.debug_reason = "invalid_head_shape";
     return cfg;
   }
   if (head_num % num_kv_heads != 0 || kv_mul != head_num / num_kv_heads) {
+    cfg.debug_reason = "kv_ratio_mismatch";
     return cfg;
   }
   if ((reinterpret_cast<uintptr_t>(queries.ptr<uint16_t>()) & 0xF) != 0 ||
       (reinterpret_cast<uintptr_t>(key_pool.ptr<int8_t>()) & 0xF) != 0 ||
       (reinterpret_cast<uintptr_t>(value_pool.ptr<int8_t>()) & 0xF) != 0 ||
       (reinterpret_cast<uintptr_t>(outputs.ptr<uint16_t>()) & 0xF) != 0) {
+    cfg.debug_reason = "unaligned_ptr";
     return cfg;
   }
 
@@ -318,9 +378,11 @@ FastDecodeLaunchConfig choose_fp8_decode_config(
     cfg.num_stages = 3;
     cfg.use_double_buffer = true;
   }
+  cfg.debug_reason = "enabled";
 
   if (head_num % cfg.head_group != 0 || kv_mul % cfg.head_group != 0) {
     cfg = FastDecodeLaunchConfig{};
+    cfg.debug_reason = "head_group_incompatible";
   }
   return cfg;
 }
@@ -862,6 +924,15 @@ bool splitkv_batched_paged_mha_fast_decode_cu(
       head_num, head_size, kv_mul, max_blocks_per_seq, block_size, num_kv_heads, queries, outputs,
       key_pool, value_pool, block_tables, seq_lens, partial_out, partial_max, partial_sum,
       device_type);
+  maybe_log_fast_decode_choice(
+      "bf16_fast_decode",
+      batch_size,
+      max_blocks_per_seq,
+      head_num,
+      head_size,
+      kv_mul,
+      num_kv_heads,
+      cfg);
   if (!cfg.use_fast_path) {
     return false;
   }
@@ -930,6 +1001,15 @@ bool splitkv_batched_paged_mha_fp8_decode_cu(
       head_num, head_size, kv_mul, max_blocks_per_seq, block_size, num_kv_heads, queries, outputs,
       key_pool, value_pool, key_scale_pool, value_scale_pool, block_tables, seq_lens, partial_out,
       partial_max, partial_sum, device_type);
+  maybe_log_fast_decode_choice(
+      "fp8_fast_decode",
+      batch_size,
+      max_blocks_per_seq,
+      head_num,
+      head_size,
+      kv_mul,
+      num_kv_heads,
+      cfg);
   if (!cfg.use_fast_path) {
     return false;
   }

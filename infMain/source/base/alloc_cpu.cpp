@@ -1,5 +1,6 @@
 // Updated on March 15, 2026
 #include <glog/logging.h>
+#include <cuda_runtime_api.h>
 #include <cstdlib>
 #include "base/alloc.h"
 
@@ -37,5 +38,32 @@ void CPUDeviceAllocator::release(void* ptr) const {
   }
 }
 
+PinnedCPUDeviceAllocator::PinnedCPUDeviceAllocator()
+    : DeviceAllocator(DeviceType::kDeviceCPU) {
+}
+
+void* PinnedCPUDeviceAllocator::allocate(size_t byte_size) const {
+  if (!byte_size) {
+    return nullptr;
+  }
+  void* data = nullptr;
+  const cudaError_t status = cudaMallocHost(&data, byte_size);
+  if (status != cudaSuccess) {
+    LOG(ERROR) << "cudaMallocHost failed for " << byte_size
+               << " bytes: " << cudaGetErrorString(status);
+    return nullptr;
+  }
+  return data;
+}
+
+void PinnedCPUDeviceAllocator::release(void* ptr) const {
+  if (!ptr) {
+    return;
+  }
+  const cudaError_t status = cudaFreeHost(ptr);
+  CHECK_EQ(status, cudaSuccess) << "cudaFreeHost failed: " << cudaGetErrorString(status);
+}
+
 std::shared_ptr<CPUDeviceAllocator> CPUDeviceAllocatorFactory::instance = nullptr;
+std::shared_ptr<PinnedCPUDeviceAllocator> PinnedCPUDeviceAllocatorFactory::instance = nullptr;
 }  // namespace base

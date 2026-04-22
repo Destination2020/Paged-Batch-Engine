@@ -25,13 +25,13 @@ base::Status RoPELayer::forward() {
 
   tensor::Tensor sin_cache = this->get_input(3);
   tensor::Tensor cos_cache = this->get_input(4);
+  void* queue = compute_queue();
 
   if (device_type_ == base::DeviceType::kDeviceCUDA) {
-    CHECK(cuda_config_ != nullptr);
+    CHECK(cuda_config_or_null() != nullptr);
   }
   kernel::get_rope_kernel(device_type_)(dim_, kv_dim_, head_size_, input_q, input_k, input_pos,
-                                        sin_cache, cos_cache,
-                                        cuda_config_ ? cuda_config_->stream : nullptr);
+                                        sin_cache, cos_cache, queue);
   return base::error::Success();
 }
 

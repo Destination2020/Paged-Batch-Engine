@@ -25,9 +25,11 @@ __global__ void emb_kernel_cu_impl(int32_t vocab_size, int32_t token_num, int32_
 void emb_kernel_cu(const tensor::Tensor& input, const tensor::Tensor& weight,
                    const tensor::Tensor& output, int32_t vocab_size, void* stream) {
   tensor::Tensor input_cu;
+  const tensor::Tensor* input_src = &input;
   if (input.device_type() != base::DeviceType::kDeviceCUDA) {
     input_cu = input.clone();
     input_cu.to_cuda();
+    input_src = &input_cu;
   }
   const int32_t input_num = static_cast<int32_t>(input.size());
   const int32_t weight_dim = weight.get_dim(1);
@@ -36,7 +38,7 @@ void emb_kernel_cu(const tensor::Tensor& input, const tensor::Tensor& weight,
 
   constexpr int32_t max_seq_len = 512;
   constexpr int32_t thread_num = 128;
-  int32_t* in_ptr = input_cu.ptr<int32_t>();
+  int32_t* in_ptr = const_cast<int32_t*>(input_src->ptr<int32_t>());
   cudaStream_t stream_ = stream ? static_cast<cudaStream_t>(stream) : nullptr;
   if (stream) {
     if (weight.data_type() == base::DataType::kDataTypeFp32) {

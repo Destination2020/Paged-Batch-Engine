@@ -3,6 +3,7 @@
 #define KUIPER_SOURCE_OP_KERNELS_CUDA_CUDA_TYPE_UTILS_CUH_
 
 #include <base/bf16.h>
+#include <cuda_fp8.h>
 
 namespace kernel {
 
@@ -30,6 +31,13 @@ __device__ inline float float_to_scalar<float>(float value) {
 template <>
 __device__ inline base::CudaBF16 float_to_scalar<base::CudaBF16>(float value) {
   return base::cuda_bf16_from_float(value);
+}
+
+template <>
+__device__ inline float scalar_to_float<int8_t>(int8_t value) {
+  __nv_fp8_e4m3 fp8_value;
+  fp8_value.__x = static_cast<uint8_t>(value);
+  return static_cast<float>(fp8_value);
 }
 
 template <typename T>

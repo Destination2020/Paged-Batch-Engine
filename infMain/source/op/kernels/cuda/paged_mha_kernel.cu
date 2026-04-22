@@ -1,12 +1,67 @@
 // Paged Multi-Head Attention Kernel Implementation
 #include "op/kernels/cuda/paged_mha_kernel.cuh"
 #include <cfloat>
+#include <cstdlib>
+#include <sstream>
+#include <string>
+#include <unordered_set>
 #include <cub/cub.cuh>
+#include <glog/logging.h>
 #include "cuda_type_utils.cuh"
 
 namespace kernel {
 
 constexpr static int thread_num = 256;
+
+namespace {
+
+bool decode_attn_diag_enabled() {
+  const char* env = std::getenv("KUIPER_DECODE_ATTN_DIAG");
+  return env != nullptr && env[0] != '\0' && env[0] != '0';
+}
+
+void maybe_log_splitkv_decode_choice(int32_t batch_size,
+                                     int32_t max_blocks_per_seq,
+                                     int32_t num_partitions,
+                                     int32_t head_num,
+                                     int32_t head_size,
+                                     int32_t kv_mul,
+                                     int32_t num_kv_heads,
+                                     base::DataType data_type) {
+  if (!decode_attn_diag_enabled()) {
+    return;
+  }
+
+  const char* dtype_name = "unknown";
+  switch (data_type) {
+    case base::DataType::kDataTypeFp32:
+      dtype_name = "fp32";
+      break;
+    case base::DataType::kDataTypeBf16:
+      dtype_name = "bf16";
+      break;
+    default:
+      break;
+  }
+
+  static std::unordered_set<std::string> seen;
+  std::ostringstream os;
+  os << "splitkv_decode"
+     << ":bs=" << batch_size
+     << ":max_blocks=" << max_blocks_per_seq
+     << ":num_partitions=" << num_partitions
+     << ":head_num=" << head_num
+     << ":head_size=" << head_size
+     << ":kv_mul=" << kv_mul
+     << ":kv_heads=" << num_kv_heads
+     << ":dtype=" << dtype_name;
+  const std::string key = os.str();
+  if (seen.insert(key).second) {
+    LOG(WARNING) << "[decode-attn-diag] " << key;
+  }
+}
+
+}  // namespace
 
 // Paged decode attention kernel
 // Each block processes one attention head
@@ -520,6 +575,15 @@ void splitkv_batched_paged_mha_decode_cu(
   // Adaptive number of partitions
   int32_t num_partitions = min(MAX_PARTITIONS, max_blocks_per_seq);
   if (num_partitions < 1) num_partitions = 1;
+  maybe_log_splitkv_decode_choice(
+      batch_size,
+      max_blocks_per_seq,
+      num_partitions,
+      head_num,
+      head_size,
+      kv_mul,
+      num_kv_heads,
+      queries.data_type());
 
   int smem_size = 2 * head_size * sizeof(float);
 

@@ -1,6 +1,5 @@
 // Updated on March 15, 2026
 #include "op/rmsnorm.h"
-#include <cuda_runtime_api.h>
 #include <armadillo>
 #include "kernels/cpu/rmsnorm_kernel.h"
 #include "kernels/kernels_interface.h"
@@ -20,15 +19,14 @@ base::Status RmsNormLayer::forward() {
   auto input = this->get_input(0);
   auto weight = this->get_weight(0);
   auto output = this->get_output(0);
+  void* queue = compute_queue();
   if (device_type_ == base::DeviceType::kDeviceCUDA) {
-    CHECK(cuda_config_ != nullptr);
+    CHECK(cuda_config_or_null() != nullptr);
   }
   if (input.dims_size() == 1) {
-    kernel::get_rmsnorm_kernel(device_type_)(input, weight, output,
-                                             cuda_config_ ? cuda_config_->stream : nullptr);
+    kernel::get_rmsnorm_kernel(device_type_)(input, weight, output, queue);
   } else {
-    kernel::get_rmsnorm_dim_kernel(device_type_)(input, weight, output, dim_,
-                                                 cuda_config_ ? cuda_config_->stream : nullptr);
+    kernel::get_rmsnorm_dim_kernel(device_type_)(input, weight, output, dim_, queue);
   }
 
   return base::error::Success();

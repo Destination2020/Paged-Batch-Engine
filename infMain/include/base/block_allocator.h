@@ -5,21 +5,22 @@
 #include <queue>
 #include <vector>
 #include "base/base.h"
+#include "base/kv_cache_format.h"
 #include "tensor/tensor.h"
 
 namespace base {
-
-enum class BlockStorageMode : uint8_t {
-  kPlain = 0,
-  kFp8E4M3PerTokenHead = 1,
-};
 
 // Manages a pool of fixed-size KV cache blocks
 class BlockAllocator {
  public:
   BlockAllocator(int32_t num_blocks, int32_t block_size, 
                  int32_t num_kv_heads, int32_t head_size,
-                 base::DataType dtype,base::DeviceType device,
+                 const KVCacheStorageSpec& storage_spec,
+                 base::DeviceType device);
+
+  BlockAllocator(int32_t num_blocks, int32_t block_size,
+                 int32_t num_kv_heads, int32_t head_size,
+                 base::DataType dtype, base::DeviceType device,
                  BlockStorageMode storage_mode = BlockStorageMode::kPlain);
 
   ~BlockAllocator();
@@ -27,7 +28,11 @@ class BlockAllocator {
   // Allocate a free block, returns block_id or -1 if no free blocks
   int32_t allocate();
 
-  // Free a block back to the pool
+  // Increase the reference count on an allocated block.
+  void incref(int32_t block_id);
+
+  // Release one reference to a block. The block returns to the free pool
+  // when its refcount drops to zero.
   void free(int32_t block_id);
 
   // Get pointers to key/value for a specific block
@@ -51,17 +56,20 @@ class BlockAllocator {
   int32_t block_size() const { return block_size_; }
   int32_t num_kv_heads() const { return num_kv_heads_; }
   int32_t head_size() const { return head_size_; }
-  BlockStorageMode storage_mode() const { return storage_mode_; }
-  bool uses_fp8_storage() const { return storage_mode_ == BlockStorageMode::kFp8E4M3PerTokenHead; }
+  const KVCacheStorageSpec& storage_spec() const { return storage_spec_; }
+  BlockStorageMode storage_mode() const { return storage_spec_.storage_mode; }
+  bool uses_fp8_storage() const { return storage_spec_.uses_fp8_storage(); }
+  base::DataType logical_dtype() const { return storage_spec_.logical_dtype; }
+  base::DataType storage_dtype() const { return storage_spec_.storage_dtype; }
+  base::DataType scale_dtype() const { return storage_spec_.scale_dtype; }
 
  private:
   int32_t num_blocks_;
   int32_t block_size_;
   int32_t num_kv_heads_;
   int32_t head_size_;
-  base::DataType dtype_;
   base::DeviceType device_;
-  BlockStorageMode storage_mode_ = BlockStorageMode::kPlain;
+  KVCacheStorageSpec storage_spec_;
 
   // Physical memory pools
   // Layout: [num_blocks, block_size * num_kv_heads * head_size]
@@ -72,7 +80,7 @@ class BlockAllocator {
   tensor::Tensor key_scale_pool_;
   tensor::Tensor value_scale_pool_;
 
-  std::vector<bool> free_table_;    // free_table_[block_id] = is_free
+  std::vector<int32_t> ref_counts_; // ref_counts_[block_id] = live references
   std::queue<int32_t> free_queue_;  // Queue of free block IDs
 };
 

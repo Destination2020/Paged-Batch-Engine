@@ -2,7 +2,6 @@
 #include "tensor/tensor.h"
 #include <base/bf16.h>
 #include <cuda_device_runtime_api.h>
-#include <cuda_runtime.h>
 #include <glog/logging.h>
 #include <numeric>
 #include <vector>
@@ -123,45 +122,61 @@ Tensor::Tensor(base::DataType data_type, std::vector<int32_t> dims, bool need_al
   }
 }
 
-void Tensor::to_cuda(cudaStream_t stream, base::DataType target_data_type) {
+void Tensor::to_device(base::DeviceType target_device_type,
+                       void* queue,
+                       base::DataType target_data_type) {
   CHECK_NE(buffer_, nullptr);
   if (target_data_type == base::DataType::kDataTypeUnknown) {
     target_data_type = data_type_;
   }
-  const base::DeviceType device_type = this->device_type();
-  if (device_type == base::DeviceType::kDeviceUnknown) {
+
+  const base::DeviceType current_device_type = this->device_type();
+  if (current_device_type == base::DeviceType::kDeviceUnknown) {
     LOG(ERROR) << "The device type of the tensor is unknown.";
-  } else if (device_type == base::DeviceType::kDeviceCPU) {
+    return;
+  }
+
+  if (target_device_type == base::DeviceType::kDeviceCPU) {
+    this->to_host();
+    CHECK_EQ(this->data_type_, target_data_type)
+        << "Tensor::to_device does not support host-side dtype conversion.";
+    return;
+  }
+
+  CHECK_EQ(target_device_type, base::DeviceType::kDeviceCUDA)
+      << "Tensor::to_device currently only supports CPU/CUDA backends.";
+
+  if (current_device_type == base::DeviceType::kDeviceCPU) {
     auto cu_alloc = base::CUDADeviceAllocatorFactory::get_instance();
     auto cu_buffer = std::make_shared<base::Buffer>(size_ * base::DataTypeSize(target_data_type), cu_alloc);
 
     if (data_type_ == target_data_type) {
       size_t byte_size = this->byte_size();
       cu_alloc->memcpy(buffer_->ptr(), cu_buffer->ptr(), byte_size,
-                       base::MemcpyKind::kMemcpyCPU2CUDA, stream);
+                       base::MemcpyKind::kMemcpyCPU2CUDA, queue);
     } else if (data_type_ == base::DataType::kDataTypeFp32 &&
                target_data_type == base::DataType::kDataTypeBf16) {
       auto host_bf16 = fp32_to_bf16_vector(reinterpret_cast<const float*>(buffer_->ptr()), size_);
       cu_alloc->memcpy(host_bf16.data(), cu_buffer->ptr(), host_bf16.size() * sizeof(uint16_t),
-                       base::MemcpyKind::kMemcpyCPU2CUDA, stream, true);
+                       base::MemcpyKind::kMemcpyCPU2CUDA, queue, true);
     } else if (data_type_ == base::DataType::kDataTypeBf16 &&
                target_data_type == base::DataType::kDataTypeFp32) {
       auto host_fp32 = bf16_to_fp32_vector(reinterpret_cast<const uint16_t*>(buffer_->ptr()), size_);
       cu_alloc->memcpy(host_fp32.data(), cu_buffer->ptr(), host_fp32.size() * sizeof(float),
-                       base::MemcpyKind::kMemcpyCPU2CUDA, stream, true);
+                       base::MemcpyKind::kMemcpyCPU2CUDA, queue, true);
     } else {
       LOG(FATAL) << "Unsupported tensor dtype conversion from " << data_type_ << " to "
-                 << target_data_type << " in Tensor::to_cuda";
+                 << target_data_type << " in Tensor::to_device";
     }
     this->buffer_ = cu_buffer;
     this->data_type_ = target_data_type;
   } else {
     CHECK_EQ(data_type_, target_data_type)
-        << "Tensor::to_cuda does not support in-place CUDA dtype conversion.";
+        << "Tensor::to_device does not support in-place CUDA dtype conversion.";
   }
 }
 
-void Tensor::to_cpu() {
+void Tensor::to_host() {
   CHECK_NE(buffer_, nullptr);
   const base::DeviceType device_type = this->device_type();
 
@@ -177,6 +192,14 @@ void Tensor::to_cpu() {
   } else {
     LOG(INFO) << "The device type of the tensor is already cpu.";
   }
+}
+
+void Tensor::to_cuda(void* queue, base::DataType target_data_type) {
+  to_device(base::DeviceType::kDeviceCUDA, queue, target_data_type);
+}
+
+void Tensor::to_cpu() {
+  to_host();
 }
 
 size_t Tensor::size() const { return this->size_; }
@@ -268,13 +291,32 @@ void Tensor::reshape(const std::vector<int32_t>& dims) {
     return;
   }
 
-  if (size > size_) {
+  const size_t requested_bytes = size * base::DataTypeSize(this->data_type_);
+  const size_t buffer_bytes = buffer_ ? buffer_->byte_size() : 0;
+  if (requested_bytes > buffer_bytes) {
     auto new_buffer = std::make_shared<base::Buffer>(size * base::DataTypeSize(this->data_type_),
                                                      buffer_->allocator());
     CHECK(new_buffer->allocate());
     new_buffer->copy_from(buffer_.get());
     this->buffer_ = new_buffer;
   }
+  this->dims_ = dims;
+  this->size_ = size;
+}
+
+void Tensor::reshape_no_realloc(const std::vector<int32_t>& dims) {
+  size_t size = reduce_dimension(dims.begin(), dims.end(), 1);
+  CHECK(buffer_ != nullptr && buffer_->ptr() != nullptr)
+      << "Tensor::reshape_no_realloc requires existing allocated storage.";
+  CHECK_NE(this->data_type_, base::DataType::kDataTypeUnknown)
+      << "Tensor::reshape_no_realloc requires a known data type.";
+
+  const size_t requested_bytes = size * base::DataTypeSize(this->data_type_);
+  const size_t buffer_bytes = buffer_->byte_size();
+  CHECK_LE(requested_bytes, buffer_bytes)
+      << "Tensor::reshape_no_realloc would exceed preallocated storage: requested_bytes="
+      << requested_bytes << ", buffer_bytes=" << buffer_bytes;
+
   this->dims_ = dims;
   this->size_ = size;
 }

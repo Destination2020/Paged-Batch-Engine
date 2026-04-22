@@ -1,5 +1,6 @@
 // Updated on March 15, 2026
 #include "op/layer.h"
+#include <base/cuda_backend_runtime.h>
 #include <base/cuda_config.h>
 #include <glog/logging.h>
 #include <cstdarg>
@@ -128,17 +129,40 @@ void Layer::reset_input_size(size_t size) { inputs_.resize(size); }
 
 void Layer::reset_output_size(size_t size) { outputs_.resize(size); }
 
-void Layer::to_cuda() {
+void* Layer::compute_queue() const {
+  if (device_context_ != nullptr && device_context_->compute_queue != nullptr) {
+    return device_context_->compute_queue;
+  }
+  return cuda_config_ ? cuda_config_->stream : nullptr;
+}
+
+kernel::CudaConfig* Layer::cuda_config_or_null() const {
+  if (cuda_config_ != nullptr) {
+    return cuda_config_.get();
+  }
+  if (device_context_ != nullptr && device_context_->backend == base::BackendType::kCUDA) {
+    auto config = base::cuda_config_from_device_context(device_context_);
+    return config.get();
+  }
+  return nullptr;
+}
+
+void Layer::materialize() {
+  const void* queue = compute_queue();
   for (auto& input : inputs_) {
     if (!input.is_empty()) {
-      input.to_cuda(cuda_config_ ? cuda_config_->stream : nullptr);
+      input.to_device(device_type_, const_cast<void*>(queue));
     }
   }
   for (auto& output : outputs_) {
     if (!output.is_empty()) {
-      output.to_cuda(cuda_config_ ? cuda_config_->stream : nullptr);
+      output.to_device(device_type_, const_cast<void*>(queue));
     }
   }
+}
+
+void Layer::to_cuda() {
+  materialize();
 }
 
 void Layer::set_cuda_config(std::shared_ptr<kernel::CudaConfig> config) {
@@ -146,9 +170,31 @@ void Layer::set_cuda_config(std::shared_ptr<kernel::CudaConfig> config) {
     return;
   }
   this->cuda_config_ = config;
+  if (device_context_ == nullptr) {
+    device_context_ = std::make_shared<base::DeviceContext>();
+  }
+  device_context_->backend = base::BackendType::kCUDA;
+  device_context_->compute_queue = config->stream;
+  device_context_->transfer_queue = config->stream;
+  device_context_->blas_handle = config->cublas_handle;
+  device_context_->blaslt_handle = config->cublas_lt_handle;
 }
 
 std::shared_ptr<kernel::CudaConfig> Layer::cuda_config() const { return cuda_config_; }
+
+void Layer::set_device_context(std::shared_ptr<base::DeviceContext> context) {
+  if (!context) {
+    return;
+  }
+  device_context_ = std::move(context);
+  if (device_context_->backend == base::BackendType::kCUDA) {
+    cuda_config_ = base::cuda_config_from_device_context(device_context_);
+  }
+}
+
+std::shared_ptr<base::DeviceContext> Layer::device_context() const {
+  return device_context_;
+}
 
 size_t Layer::input_size() const { return inputs_.size(); }
 
@@ -176,18 +222,23 @@ const tensor::Tensor& LayerParam::get_weight(int32_t idx) const {
   return weights_.at(idx);
 }
 
-void LayerParam::to_cuda() {
-  Layer::to_cuda();
+void LayerParam::materialize() {
+  Layer::materialize();
+  const void* queue = compute_queue();
   for (auto& weight : weights_) {
     if (!is_quant_layer_) {
-      weight.to_cuda(cuda_config_ ? cuda_config_->stream : nullptr, data_type_);
+      weight.to_device(device_type_, const_cast<void*>(queue), data_type_);
     } else {
-      weight.to_cuda(cuda_config_ ? cuda_config_->stream : nullptr);
+      weight.to_device(device_type_, const_cast<void*>(queue));
     }
   }
   if (!scales_.is_empty()) {
-    scales_.to_cuda(cuda_config_ ? cuda_config_->stream : nullptr);
+    scales_.to_device(device_type_, const_cast<void*>(queue));
   }
+}
+
+void LayerParam::to_cuda() {
+  materialize();
 }
 
 base::Status LayerParam::set_weight(int32_t idx, const std::vector<int32_t>& dims,

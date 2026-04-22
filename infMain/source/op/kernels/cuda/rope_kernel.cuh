@@ -8,7 +8,7 @@ void rope_kernel_cu(int32_t dim, int32_t kv_dim, int32_t head_size, const tensor
                     const tensor::Tensor& sin_cache, const tensor::Tensor& cos_cache, void* stream);
 
 void sin_cos_cache_calc_cu(int head_size, int max_seq_len, const tensor::Tensor& sin_cache,
-                           const tensor::Tensor& cos_cache, cudaStream_t stream);
+                           const tensor::Tensor& cos_cache, void* stream);
 
 // Batched RoPE: processes batch_tokens tokens with individual positions
 void rope_kernel_batched_cu(int32_t dim, int32_t kv_dim, int32_t head_size,

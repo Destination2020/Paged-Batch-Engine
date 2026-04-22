@@ -5,7 +5,6 @@
 
 #ifndef KUIPER_INCLUDE_OP_MATMUL_H_
 #define KUIPER_INCLUDE_OP_MATMUL_H_
-#include <base/cuda_config.h>
 #include "layer.h"
 namespace op {
 class MatmulLayer : public LayerParam {
@@ -24,6 +23,8 @@ class MatmulLayer : public LayerParam {
   tensor::Tensor& get_bias(int32_t idx);
 
   const tensor::Tensor& get_bias(int32_t idx) const;
+
+  void materialize() override;
 
   void to_cuda() override;
 

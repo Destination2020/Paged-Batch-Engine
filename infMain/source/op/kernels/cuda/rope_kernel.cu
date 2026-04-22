@@ -14,7 +14,7 @@ __global__ void rope_kernel_cu_impl(int pos, int dim, int kv_dim, int head_size,
   int num_heads = dim / head_size;
   int head_pair_count = head_size / 2;
   int total_pairs = num_heads * head_pair_count;
-  if (idx > total_pairs) {
+  if (idx >= total_pairs) {
     return;
   }
 
@@ -30,7 +30,7 @@ __global__ void rope_kernel_cu_impl(int pos, int dim, int kv_dim, int head_size,
   int num_heads = dim / head_size;
   int head_pair_count = head_size / 2;
   int total_pairs = num_heads * head_pair_count;
-  if (idx > total_pairs) {
+  if (idx >= total_pairs) {
     return;
   }
 
@@ -94,7 +94,7 @@ __global__ void sin_cos_calc(int head_size, int max_seq_len, float* sin_cache, f
 }
 
 void sin_cos_cache_calc_cu(int head_size, int max_seq_len, const tensor::Tensor& sin_cache,
-                           const tensor::Tensor& cos_cache, cudaStream_t stream) {
+                           const tensor::Tensor& cos_cache, void* stream) {
   CHECK_EQ(sin_cache.is_empty(), false);
   CHECK_EQ(cos_cache.is_empty(), false);
   constexpr int kThreads = 128;
@@ -102,8 +102,9 @@ void sin_cos_cache_calc_cu(int head_size, int max_seq_len, const tensor::Tensor&
   const int threads = std::min(head_size, kThreads);
   dim3 block(threads);
   dim3 grid((head_size + threads - 1) / threads, std::min(max_seq_len, kMaxPosBlocks));
-  if (stream) {
-    sin_cos_calc<<<grid, block, 0, stream>>>(head_size, max_seq_len,
+  cudaStream_t stream_ = stream ? static_cast<cudaStream_t>(stream) : nullptr;
+  if (stream_) {
+    sin_cos_calc<<<grid, block, 0, stream_>>>(head_size, max_seq_len,
                                              const_cast<float*>(sin_cache.ptr<float>()),
                                              const_cast<float*>(cos_cache.ptr<float>()));
   } else {
@@ -161,7 +162,7 @@ __global__ void rope_kernel_batched_impl(int dim, int kv_dim, int head_size,
   int num_heads = dim / head_size;
   int head_pair_count = head_size / 2;
   int total_pairs = num_heads * head_pair_count;
-  if (idx > total_pairs) {
+  if (idx >= total_pairs) {
     return;
   }
 
@@ -177,7 +178,7 @@ __global__ void rope_kernel_batched_impl(int dim, int kv_dim, int head_size,
   int num_heads = dim / head_size;
   int head_pair_count = head_size / 2;
   int total_pairs = num_heads * head_pair_count;
-  if (idx > total_pairs) {
+  if (idx >= total_pairs) {
     return;
   }
 

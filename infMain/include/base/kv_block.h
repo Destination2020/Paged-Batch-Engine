@@ -21,7 +21,7 @@ struct KVBlock {
 class PageTable {
  public:
   explicit PageTable(int32_t block_size)
-      : block_size_(block_size) {}
+      : block_size_(block_size), num_tokens_(0) {}
 
   // Get the list of physical block IDs
   const std::vector<int32_t>& block_ids() const { return block_ids_; }
@@ -51,6 +51,7 @@ class PageTable {
 
   // Increment token count (called after writing KV)
   void increment_token_count() { num_tokens_++; }
+  void add_token_count(int32_t count) { num_tokens_ += count; }
 
   // Clear the page table
   void clear() {
@@ -69,6 +70,5 @@ class PageTable {
 }  // namespace base
 
 #endif  // KUIPER_INCLUDE_BASE_KV_BLOCK_H_
-
 
 

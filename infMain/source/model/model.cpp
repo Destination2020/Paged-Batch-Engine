@@ -3,6 +3,7 @@
 #include <fcntl.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
+#include <utility>
 
 namespace model {
 
@@ -80,6 +81,39 @@ const std::string& Model::model_path() const { return model_path_; }
 void Model::set_runtime_data_type(base::DataType data_type) { runtime_data_type_ = data_type; }
 
 base::DataType Model::runtime_data_type() const { return runtime_data_type_; }
+
+void Model::set_kv_cache_storage_mode(base::BlockStorageMode storage_mode) {
+  kv_cache_storage_mode_ = storage_mode;
+}
+
+base::BlockStorageMode Model::kv_cache_storage_mode() const {
+  return kv_cache_storage_mode_;
+}
+
+base::KVCacheStorageSpec Model::kv_cache_storage_spec() const {
+  return base::MakeKVCacheStorageSpec(runtime_data_type_, kv_cache_storage_mode_);
+}
+
+base::Status Model::validate_kv_cache_runtime(base::DeviceType device_type) const {
+  return base::ValidateKVCacheStorageSpec(kv_cache_storage_spec(), device_type, runtime_data_type_);
+}
+
+ServingWorkspaceProfile Model::serving_workspace_profile(
+    base::DataType /*runtime_data_type*/) const {
+  return {};
+}
+
+size_t Model::serving_workspace_bytes_per_token(base::DataType runtime_data_type) const {
+  return serving_workspace_profile(runtime_data_type).total_bytes_per_token();
+}
+
+void Model::set_device_context(std::shared_ptr<base::DeviceContext> context) {
+  device_context_ = std::move(context);
+}
+
+std::shared_ptr<base::DeviceContext> Model::device_context() const {
+  return device_context_;
+}
 
 base::Status Model::insert_buffer(ModelBufferType buffer_idx, const tensor::Tensor& tensor) {
   if (buffers_.count(buffer_idx) > 0) {
@@ -287,7 +321,7 @@ std::string Model::decode(int32_t token_idx) const {
   return this->encode_layer_->decode(token_idx);
 }
 
-std::string Model::decode(std::vector<int32_t> token_idxs) const {
+std::string Model::decode(const std::vector<int32_t>& token_idxs) const {
   CHECK(this->encode_layer_ != nullptr);
   return this->encode_layer_->decode(token_idxs);
 }

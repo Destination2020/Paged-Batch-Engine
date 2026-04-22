@@ -85,6 +85,12 @@ std::ostream& operator<<(std::ostream& os, DeviceType x) {
     case DeviceType::kDeviceCUDA:
       os << "DeviceCUDA";
       break;
+    case DeviceType::kDeviceHIP:
+      os << "DeviceHIP";
+      break;
+    case DeviceType::kDeviceTPU:
+      os << "DeviceTPU";
+      break;
     default:
       os << "Device(" << static_cast<int>(x) << ")";
       break;

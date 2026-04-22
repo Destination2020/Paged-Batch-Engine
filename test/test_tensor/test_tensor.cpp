@@ -123,6 +123,32 @@ TEST(test_tensor, init2) {
   ASSERT_EQ(t1.is_empty(), true);
 }
 
+TEST(test_tensor, reshape_no_realloc_within_capacity) {
+  using namespace base;
+  auto alloc_cpu = CPUDeviceAllocatorFactory::get_instance();
+  tensor::Tensor workspace(DataType::kDataTypeFp32, 64, true, alloc_cpu);
+  ASSERT_EQ(workspace.is_empty(), false);
+
+  void* original_ptr = workspace.ptr<float>();
+  workspace.reshape_no_realloc({8, 8});
+
+  ASSERT_EQ(workspace.dims_size(), 2);
+  ASSERT_EQ(workspace.get_dim(0), 8);
+  ASSERT_EQ(workspace.get_dim(1), 8);
+  ASSERT_EQ(workspace.size(), 64);
+  ASSERT_EQ(workspace.ptr<float>(), original_ptr);
+}
+
+TEST(test_tensor, reshape_no_realloc_exceeds_capacity) {
+  using namespace base;
+  auto alloc_cpu = CPUDeviceAllocatorFactory::get_instance();
+  tensor::Tensor workspace(DataType::kDataTypeFp32, 64, true, alloc_cpu);
+  ASSERT_EQ(workspace.is_empty(), false);
+
+  EXPECT_DEATH(workspace.reshape_no_realloc({65}),
+               "Tensor::reshape_no_realloc would exceed preallocated storage");
+}
+
 TEST(test_tensor, assign1) {
   using namespace base;
   auto alloc_cpu = CPUDeviceAllocatorFactory::get_instance();

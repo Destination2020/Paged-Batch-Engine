@@ -4,6 +4,9 @@ if (MSVC)
     set(CUDA_ATTACH_VS_BUILD_RULE_TO_CUDA_FILE OFF CACHE BOOL "CUDA_ATTACH_VS_BUILD_RULE_TO_CUDA_FILE")
 endif ()
 
+set(KUIPER_FALLBACK_CUDA_ARCHITECTURES "89" CACHE STRING
+    "Fallback CUDA architectures used when automatic GPU detection is unavailable.")
+
 if (CMAKE_VERSION VERSION_GREATER_EQUAL 3.11)
     include(CheckLanguage)
     check_language(CUDA)
@@ -31,14 +34,32 @@ endif ()
 if (CUDA_FOUND)
     message(STATUS "Found CUDA Toolkit v${CUDA_VERSION_STRING}")
 
-    include(FindCUDA/select_compute_arch)
-    CUDA_DETECT_INSTALLED_GPUS(INSTALLED_GPU_CCS_1)
-    string(STRIP "${INSTALLED_GPU_CCS_1}" INSTALLED_GPU_CCS_2)
-    string(REPLACE " " ";" INSTALLED_GPU_CCS_3 "${INSTALLED_GPU_CCS_2}")
-    string(REPLACE "." "" CUDA_ARCH_LIST "${INSTALLED_GPU_CCS_3}")
-    string(REPLACE "+PTX" "" CUDA_ARCH_LIST "${CUDA_ARCH_LIST}")
-    SET(CMAKE_CUDA_ARCHITECTURES ${CUDA_ARCH_LIST})
-    MESSAGE(STATUS "CMAKE_CUDA_ARCHITECTURES: ${CMAKE_CUDA_ARCHITECTURES}")
+    set(KUIPER_COMMON_CUDA_ARCH_LIST "53;60;61;70;75;80;86;86")
+    if (NOT DEFINED CMAKE_CUDA_ARCHITECTURES OR
+        "${CMAKE_CUDA_ARCHITECTURES}" STREQUAL "" OR
+        "${CMAKE_CUDA_ARCHITECTURES}" STREQUAL "${KUIPER_COMMON_CUDA_ARCH_LIST}")
+        include(FindCUDA/select_compute_arch)
+        CUDA_DETECT_INSTALLED_GPUS(INSTALLED_GPU_CCS_1)
+        string(STRIP "${INSTALLED_GPU_CCS_1}" INSTALLED_GPU_CCS_2)
+        string(REPLACE " " ";" INSTALLED_GPU_CCS_3 "${INSTALLED_GPU_CCS_2}")
+        string(REPLACE "." "" CUDA_ARCH_LIST "${INSTALLED_GPU_CCS_3}")
+        string(REPLACE "+PTX" "" CUDA_ARCH_LIST "${CUDA_ARCH_LIST}")
+
+        if ("${CUDA_ARCH_LIST}" STREQUAL "" OR
+            "${CUDA_ARCH_LIST}" STREQUAL "${KUIPER_COMMON_CUDA_ARCH_LIST}")
+            set(CUDA_ARCH_LIST "${KUIPER_FALLBACK_CUDA_ARCHITECTURES}")
+            message(WARNING
+                    "Automatic GPU detection did not produce a specific CUDA architecture list. "
+                    "Using fallback CMAKE_CUDA_ARCHITECTURES=${CUDA_ARCH_LIST}. "
+                    "Override with -DCMAKE_CUDA_ARCHITECTURES=<arch> if needed.")
+        endif ()
+
+        set(CMAKE_CUDA_ARCHITECTURES "${CUDA_ARCH_LIST}" CACHE STRING
+            "CUDA architectures used for compilation." FORCE)
+    else ()
+        message(STATUS "Using preconfigured CMAKE_CUDA_ARCHITECTURES: ${CMAKE_CUDA_ARCHITECTURES}")
+    endif ()
+    message(STATUS "CMAKE_CUDA_ARCHITECTURES: ${CMAKE_CUDA_ARCHITECTURES}")
 
     if (DEFINED CMAKE_CUDA_COMPILER_LIBRARY_ROOT_FROM_NVVMIR_LIBRARY_DIR)
         set(CMAKE_CUDA_COMPILER_LIBRARY_ROOT "${CMAKE_CUDA_COMPILER_LIBRARY_ROOT_FROM_NVVMIR_LIBRARY_DIR}")

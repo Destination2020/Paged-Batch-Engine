@@ -1,9 +1,10 @@
 #ifndef MOE_KERNEL_CUH
 #define MOE_KERNEL_CUH
 #include "tensor/tensor.h"
-#include <base/cuda_config.h>
 
 namespace kernel {
+struct CudaConfig;
+
 void moe_router_softmax_topk_cu(tensor::Tensor& router_logits, int32_t num_experts, int32_t topk,
                                 tensor::Tensor& topk_values, tensor::Tensor& topk_indices,
                                 bool norm_topk_prob, CudaConfig* config = nullptr);

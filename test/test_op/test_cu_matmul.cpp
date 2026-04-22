@@ -3,6 +3,8 @@
 #include <cuda_runtime_api.h>
 #include <glog/logging.h>
 #include <gtest/gtest.h>
+#include "base/cuda_config.h"
+#include "base/device_context.h"
 #include "../source/op/kernels/cpu/matmul_kernel.h"
 #include "../source/op/kernels/kernels_interface.h"
 #include "../utils.cuh"
@@ -35,10 +37,17 @@ TEST(test_matmul_cu, matmul_linear_stream5) {
   cudaStream_t stream;
   cudaStreamCreate(&stream);
   config->stream = stream;
-  kernel::get_matmul_kernel(base::DeviceType::kDeviceCUDA)(input, weight, out_cu, 1.f, config);
+  base::DeviceContext cuda_context;
+  cuda_context.backend = base::BackendType::kCUDA;
+  cuda_context.compute_queue = stream;
+  cuda_context.native_context = std::shared_ptr<void>(config, [](void* ptr) {
+    delete static_cast<CudaConfig*>(ptr);
+  });
+  kernel::get_matmul_kernel(base::DeviceType::kDeviceCUDA)(input, weight, out_cu, 1.f,
+                                                           &cuda_context);
 
   kernel::get_matmul_kernel(base::DeviceType::kDeviceCPU)(input_cpu, weight_cpu, out_cpu, 1.f,
-                                                          config);
+                                                          nullptr);
 
   out_cu.to_cpu();
   for (int i = 0; i < out_cu.size(); ++i) {
