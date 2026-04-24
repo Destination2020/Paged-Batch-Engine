@@ -124,6 +124,7 @@ class Qwen2Model : public Model {
     set_kv_cache_storage_mode(enable ? base::BlockStorageMode::kFp8E4M3PerTokenHead
                                      : base::BlockStorageMode::kPlain);
   }
+  void set_radix_cache_enabled(bool enable);
   void set_kv_cache_memory_utilization(double utilization);
   void set_kv_cache_gpu_memory_utilization(double utilization);
   void set_serving_workspace_token_capacity(int32_t token_capacity);
@@ -189,6 +190,8 @@ class Qwen2Model : public Model {
   double kv_cache_memory_utilization_ = 0.80;
   int32_t serving_workspace_token_capacity_ = model_max_batch_size;
   size_t serving_workspace_reserved_bytes_ = 0;
+  bool radix_cache_enabled_override_set_ = false;
+  bool radix_cache_enabled_override_ = true;
 
   // Single-sequence request ID for the simple forward() path
   mutable base::RequestId single_seq_request_id_ = -1;

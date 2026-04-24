@@ -265,6 +265,11 @@ void Qwen2Model::set_kv_cache_memory_utilization(double utilization) {
   }
 }
 
+void Qwen2Model::set_radix_cache_enabled(bool enable) {
+  radix_cache_enabled_override_set_ = true;
+  radix_cache_enabled_override_ = enable;
+}
+
 void Qwen2Model::set_kv_cache_gpu_memory_utilization(double utilization) {
   set_kv_cache_memory_utilization(utilization);
 }
@@ -961,6 +966,9 @@ void Qwen2Model::init_mem() {
     if (allocation_ok) {
       kv_cache_manager_ = std::make_unique<base::KVCacheManager>(
           model_block_size, config_->layer_num_, std::move(layer_allocators));
+      if (radix_cache_enabled_override_set_) {
+        kv_cache_manager_->set_radix_cache_enabled(radix_cache_enabled_override_);
+      }
       break;
     }
 

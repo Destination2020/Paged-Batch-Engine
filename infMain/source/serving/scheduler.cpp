@@ -135,26 +135,25 @@ void Scheduler::add_request(std::vector<int32_t> prompt_tokens, int32_t max_new_
       config_.max_num_seqs * max_request_blocks_hint_);
 
   SequenceState seq;
-  seq.request_id = kv_manager_->register_request_with_prompt(prompt_tokens);
+  seq.request_id = kv_manager_->register_request_with_radix_cache(prompt_tokens);
   seq.client_request_id = next_client_request_id_++;
-  seq.prefix_cache_hit_tokens = kv_manager_->get_context_len(seq.request_id);
   seq.prompt_tokens = std::move(prompt_tokens);
   seq.max_new_tokens = std::max(1, max_new_tokens);
   seq.generated_tokens = 0;
   seq.next_token = -1;
-  seq.prefix_cache_published = seq.prefix_cache_hit_tokens > 0;
   seq.finished = false;
   seq.failed = false;
   seq.first_token_recorded = false;
   seq.finished_time_recorded = false;
   seq.recompute_pending = false;
+  seq.radix_cache_published = false;
   seq.status = SequenceStatus::kWaiting;
   seq.finish_reason.clear();
   seq.last_preempt_reason.clear();
   seq.preemption_count = 0;
   seq.ready_step = 0;
   seq.arrival_time = std::chrono::steady_clock::now();
-  seq.num_prompt_tokens_computed = seq.prefix_cache_hit_tokens;
+  seq.num_prompt_tokens_computed = kv_manager_->get_context_len(seq.request_id);
   seq.scheduled_tokens = 0;
 
   const int32_t kv_capacity_tokens = total_kv_token_capacity();
@@ -162,8 +161,6 @@ void Scheduler::add_request(std::vector<int32_t> prompt_tokens, int32_t max_new_
     fail_sequence(&seq, now,
                   "prompt_exceeds_kv_capacity(prompt_tokens=" +
                       std::to_string(seq.prompt_tokens.size()) +
-                      ", prefix_cache_hit_tokens=" +
-                      std::to_string(seq.prefix_cache_hit_tokens) +
                       ", kv_capacity_tokens=" +
                       std::to_string(kv_capacity_tokens) + ")");
     kv_manager_->free_request(seq.request_id);
@@ -208,7 +205,8 @@ SchedulerOutput Scheduler::schedule_step() {
     }
   }
 
-  remaining_free_blocks = kv_manager_->num_free_blocks(0);
+  remaining_free_blocks =
+      kv_manager_->num_free_blocks(0) + kv_manager_->radix_cache_evictable_blocks();
 
   // Phase 2: Allocate budget to running prefill sequences (continuing chunks)
   for (auto& seq : running_) {
@@ -316,10 +314,10 @@ void Scheduler::process_outputs(const SchedulerOutput& output,
       if (prompt_finished && seq->recompute_pending) {
         seq->recompute_pending = false;
       }
-      if (prompt_finished && !seq->recompute_pending && !seq->prefix_cache_published &&
-          seq->output_tokens.empty()) {
-        kv_manager_->publish_prefix_cache(seq->request_id, seq->prompt_tokens);
-        seq->prefix_cache_published = true;
+      if (prompt_finished && !seq->recompute_pending &&
+          !seq->radix_cache_published && seq->output_tokens.empty()) {
+        kv_manager_->publish_radix_cache(seq->request_id, seq->prompt_tokens);
+        seq->radix_cache_published = true;
       }
       if (prompt_finished && sample_idx < sampled_tokens.size() &&
           batch.sample_row_to_request[sample_idx] == static_cast<int32_t>(i)) {
@@ -401,12 +399,12 @@ void Scheduler::preempt_sequence(SequenceState* seq, const std::string& reason) 
   CHECK(!seq->failed);
 
   kv_manager_->free_request(seq->request_id);
-  seq->request_id = kv_manager_->register_request_with_prompt(seq->prompt_tokens);
-  seq->prefix_cache_hit_tokens = kv_manager_->get_context_len(seq->request_id);
-  seq->num_prompt_tokens_computed = seq->prefix_cache_hit_tokens;
+  seq->request_id = kv_manager_->register_request_with_radix_cache(seq->prompt_tokens);
+  seq->num_prompt_tokens_computed = kv_manager_->get_context_len(seq->request_id);
   seq->scheduled_tokens = 0;
   seq->next_token = -1;
   seq->recompute_pending = true;
+  seq->radix_cache_published = false;
   seq->status = SequenceStatus::kPreempted;
   seq->last_preempt_reason = reason;
   seq->preemption_count++;
@@ -462,7 +460,10 @@ bool Scheduler::reject_waiting_request_that_cannot_start() {
       config_.max_num_batched_tokens,
       config_.prefill_chunk_cap});
   int32_t chunk = 0;
-  if (can_admit_waiting_sequence(seq, desired_chunk, kv_manager_->num_free_blocks(0), &chunk)) {
+  if (can_admit_waiting_sequence(
+          seq, desired_chunk,
+          kv_manager_->num_free_blocks(0) + kv_manager_->radix_cache_evictable_blocks(),
+          &chunk)) {
     return false;
   }
 
@@ -481,9 +482,14 @@ bool Scheduler::reject_waiting_request_that_cannot_start() {
              std::to_string(failed.prefill_target_tokens() + 1) +
              ", kv_capacity_tokens=" + std::to_string(total_kv_token_capacity()) + ")";
   } else {
+    const int32_t reusable_free_blocks =
+        kv_manager_->num_free_blocks(0) + kv_manager_->radix_cache_evictable_blocks();
     reason = "prefill_cannot_start(remaining_prompt_tokens=" +
              std::to_string(failed.remaining_prompt_tokens()) +
-             ", free_kv_blocks=" + std::to_string(kv_manager_->num_free_blocks(0)) + ")";
+             ", free_kv_blocks=" + std::to_string(kv_manager_->num_free_blocks(0)) +
+             ", radix_evictable_blocks=" +
+             std::to_string(kv_manager_->radix_cache_evictable_blocks()) +
+             ", reusable_kv_blocks=" + std::to_string(reusable_free_blocks) + ")";
   }
   fail_sequence(&failed, std::chrono::steady_clock::now(), reason);
   kv_manager_->free_request(failed.request_id);
@@ -502,7 +508,9 @@ bool Scheduler::fail_stalled_prefill_request() {
         config_.max_num_batched_tokens,
         config_.prefill_chunk_cap});
     const int32_t chunk = cap_prefill_chunk_by_blocks(
-        current_tokens, desired_chunk, kv_manager_->num_free_blocks(0), kv_manager_->block_size());
+        current_tokens, desired_chunk,
+        kv_manager_->num_free_blocks(0) + kv_manager_->radix_cache_evictable_blocks(),
+        kv_manager_->block_size());
     if (chunk > 0) {
       continue;
     }
@@ -513,7 +521,9 @@ bool Scheduler::fail_stalled_prefill_request() {
                       ", remaining_prompt_tokens=" +
                       std::to_string(seq.remaining_prompt_tokens()) +
                       ", free_kv_blocks=" +
-                      std::to_string(kv_manager_->num_free_blocks(0)) + ")");
+                      std::to_string(kv_manager_->num_free_blocks(0)) +
+                      ", radix_evictable_blocks=" +
+                      std::to_string(kv_manager_->radix_cache_evictable_blocks()) + ")");
     reap_finished_running();
     return true;
   }

@@ -92,6 +92,31 @@ void SequenceKVManager::release_all(
     page_tables_[layer_idx].clear();
   }
   num_tokens_ = 0;
+  shared_prefix_tokens_ = 0;
+}
+
+void SequenceKVManager::truncate_to(
+    const std::vector<std::unique_ptr<BlockAllocator>>& layer_allocators,
+    int32_t new_num_tokens) {
+  CHECK_EQ(static_cast<int32_t>(layer_allocators.size()), num_layers_)
+      << "layer_allocators size must match num_layers";
+  CHECK_GE(new_num_tokens, shared_prefix_tokens_)
+      << "Cannot truncate below shared prefix boundary";
+  CHECK_LE(new_num_tokens, num_tokens_)
+      << "truncate_to only supports shrinking the sequence";
+
+  if (new_num_tokens == num_tokens_) {
+    return;
+  }
+
+  for (int32_t layer_idx = 0; layer_idx < num_layers_; ++layer_idx) {
+    std::vector<int32_t> removed_blocks =
+        page_tables_[layer_idx].truncate_to_tokens(new_num_tokens);
+    for (int32_t block_id : removed_blocks) {
+      layer_allocators[layer_idx]->free(block_id);
+    }
+  }
+  num_tokens_ = new_num_tokens;
 }
 
 void SequenceKVManager::clear() {
@@ -99,6 +124,7 @@ void SequenceKVManager::clear() {
     pt.clear();
   }
   num_tokens_ = 0;
+  shared_prefix_tokens_ = 0;
   stats_ = KVAppendStats{};
 }
 
@@ -126,6 +152,7 @@ void SequenceKVManager::adopt_shared_prefix(
     page_tables_[layer_idx].add_token_count(shared_tokens);
   }
   num_tokens_ = shared_tokens;
+  shared_prefix_tokens_ = shared_tokens;
 }
 
 bool SequenceKVManager::append_tokens_internal(

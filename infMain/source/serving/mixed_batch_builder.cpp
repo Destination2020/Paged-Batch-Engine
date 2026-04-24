@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <limits>
 #include <vector>
+#include <cuda_runtime_api.h>
 #include <glog/logging.h>
 #include "base/alloc.h"
 #include "serving/scheduler.h"
@@ -13,6 +14,12 @@ tensor::Tensor reshape_view(const tensor::Tensor& tensor, const std::vector<int3
   tensor::Tensor view = tensor;
   view.reshape_no_realloc(dims);
   return view;
+}
+
+bool has_cuda_device() {
+  int device_count = 0;
+  const cudaError_t status = cudaGetDeviceCount(&device_count);
+  return status == cudaSuccess && device_count > 0;
 }
 
 void ensure_int32_storage(tensor::Tensor& tensor,
@@ -66,9 +73,14 @@ namespace serving {
 
 MixedBatchBuilder::MixedBatchBuilder(base::KVCacheManager* kv_manager)
     : kv_manager_(kv_manager),
-      host_alloc_(base::PinnedCPUDeviceAllocatorFactory::get_instance()),
-      device_alloc_(base::CUDADeviceAllocatorFactory::get_instance()) {
+      host_alloc_(base::CPUDeviceAllocatorFactory::get_instance()),
+      device_alloc_(base::CPUDeviceAllocatorFactory::get_instance()) {
   CHECK_NE(kv_manager_, nullptr);
+  use_cuda_ = has_cuda_device();
+  if (use_cuda_) {
+    host_alloc_ = base::PinnedCPUDeviceAllocatorFactory::get_instance();
+    device_alloc_ = base::CUDADeviceAllocatorFactory::get_instance();
+  }
 }
 
 MixedBatchBuilder::~MixedBatchBuilder() = default;
@@ -180,18 +192,27 @@ MixedBatchMetadata MixedBatchBuilder::build(const SchedulerOutput& output, void*
                                block_tables + request_idx * batch.max_blocks_per_seq);
   }
 
-  copy_host_to_device(host_token_ids_, device_token_ids_, batch.num_tokens, stream);
-  copy_host_to_device(host_positions_, device_positions_, batch.num_tokens, stream);
-  copy_host_to_device(host_seq_lens_, device_seq_lens_, batch.num_requests, stream);
-  copy_host_to_device(host_block_tables_, device_block_tables_, block_table_entries, stream);
-  copy_host_to_device(host_logits_indices_, device_logits_indices_, logits_count, stream);
+  if (use_cuda_) {
+    copy_host_to_device(host_token_ids_, device_token_ids_, batch.num_tokens, stream);
+    copy_host_to_device(host_positions_, device_positions_, batch.num_tokens, stream);
+    copy_host_to_device(host_seq_lens_, device_seq_lens_, batch.num_requests, stream);
+    copy_host_to_device(host_block_tables_, device_block_tables_, block_table_entries, stream);
+    copy_host_to_device(host_logits_indices_, device_logits_indices_, logits_count, stream);
 
-  batch.token_ids = make_int32_view(device_token_ids_, batch.num_tokens);
-  batch.positions = make_int32_view(device_positions_, batch.num_tokens);
-  batch.seq_lens = make_int32_view(device_seq_lens_, batch.num_requests);
-  batch.block_tables =
-      make_int32_view(device_block_tables_, batch.num_requests, batch.max_blocks_per_seq);
-  batch.logits_indices = make_int32_view(device_logits_indices_, logits_count);
+    batch.token_ids = make_int32_view(device_token_ids_, batch.num_tokens);
+    batch.positions = make_int32_view(device_positions_, batch.num_tokens);
+    batch.seq_lens = make_int32_view(device_seq_lens_, batch.num_requests);
+    batch.block_tables =
+        make_int32_view(device_block_tables_, batch.num_requests, batch.max_blocks_per_seq);
+    batch.logits_indices = make_int32_view(device_logits_indices_, logits_count);
+  } else {
+    batch.token_ids = make_int32_view(host_token_ids_, batch.num_tokens);
+    batch.positions = make_int32_view(host_positions_, batch.num_tokens);
+    batch.seq_lens = make_int32_view(host_seq_lens_, batch.num_requests);
+    batch.block_tables =
+        make_int32_view(host_block_tables_, batch.num_requests, batch.max_blocks_per_seq);
+    batch.logits_indices = make_int32_view(host_logits_indices_, logits_count);
+  }
 
   batch.request_ids = request_ids_;
   batch.tokens_per_request = tokens_per_request_;
@@ -267,20 +288,30 @@ MixedBatchMetadata MixedBatchBuilder::build_decode(const SchedulerOutput& output
                                block_tables + request_idx * batch.max_blocks_per_seq);
   }
 
-  copy_host_to_device(host_token_ids_, device_token_ids_, batch.num_tokens, stream);
-  copy_host_to_device(host_positions_, device_positions_, batch.num_tokens, stream);
-  copy_host_to_device(host_seq_lens_, device_seq_lens_, batch.num_requests, stream);
-  copy_host_to_device(host_block_tables_, device_block_tables_, block_table_entries, stream);
-  copy_host_to_device(host_logits_indices_, device_logits_indices_, batch.num_requests, stream);
-  copy_host_to_device(host_slot_mapping_, device_slot_mapping_, batch.num_tokens, stream);
+  if (use_cuda_) {
+    copy_host_to_device(host_token_ids_, device_token_ids_, batch.num_tokens, stream);
+    copy_host_to_device(host_positions_, device_positions_, batch.num_tokens, stream);
+    copy_host_to_device(host_seq_lens_, device_seq_lens_, batch.num_requests, stream);
+    copy_host_to_device(host_block_tables_, device_block_tables_, block_table_entries, stream);
+    copy_host_to_device(host_logits_indices_, device_logits_indices_, batch.num_requests, stream);
+    copy_host_to_device(host_slot_mapping_, device_slot_mapping_, batch.num_tokens, stream);
 
-  batch.token_ids = make_int32_view(device_token_ids_, batch.num_tokens);
-  batch.positions = make_int32_view(device_positions_, batch.num_tokens);
-  batch.seq_lens = make_int32_view(device_seq_lens_, batch.num_requests);
-  batch.slot_mapping = make_int32_view(device_slot_mapping_, batch.num_tokens);
-  batch.block_tables =
-      make_int32_view(device_block_tables_, batch.num_requests, batch.max_blocks_per_seq);
-  batch.logits_indices = make_int32_view(device_logits_indices_, batch.num_requests);
+    batch.token_ids = make_int32_view(device_token_ids_, batch.num_tokens);
+    batch.positions = make_int32_view(device_positions_, batch.num_tokens);
+    batch.seq_lens = make_int32_view(device_seq_lens_, batch.num_requests);
+    batch.slot_mapping = make_int32_view(device_slot_mapping_, batch.num_tokens);
+    batch.block_tables =
+        make_int32_view(device_block_tables_, batch.num_requests, batch.max_blocks_per_seq);
+    batch.logits_indices = make_int32_view(device_logits_indices_, batch.num_requests);
+  } else {
+    batch.token_ids = make_int32_view(host_token_ids_, batch.num_tokens);
+    batch.positions = make_int32_view(host_positions_, batch.num_tokens);
+    batch.seq_lens = make_int32_view(host_seq_lens_, batch.num_requests);
+    batch.slot_mapping = make_int32_view(host_slot_mapping_, batch.num_tokens);
+    batch.block_tables =
+        make_int32_view(host_block_tables_, batch.num_requests, batch.max_blocks_per_seq);
+    batch.logits_indices = make_int32_view(host_logits_indices_, batch.num_requests);
+  }
 
   batch.request_ids = request_ids_;
   batch.tokens_per_request = tokens_per_request_;
@@ -334,6 +365,9 @@ void MixedBatchBuilder::copy_host_to_device(const tensor::Tensor& host_tensor,
   if (count <= 0) {
     return;
   }
+  if (!use_cuda_) {
+    return;
+  }
   device_alloc_->memcpy(host_tensor.ptr<int32_t>(), device_tensor.ptr<int32_t>(),
                         static_cast<size_t>(count) * sizeof(int32_t),
                         base::MemcpyKind::kMemcpyCPU2CUDA, stream, false);
@@ -354,6 +388,10 @@ tensor::Tensor MixedBatchBuilder::make_int32_view(const tensor::Tensor& storage,
     return tensor::Tensor(base::DataType::kDataTypeInt32, 0);
   }
   return reshape_view(storage, {dim0, dim1});
+}
+
+bool MixedBatchBuilder::cuda_available() const {
+  return use_cuda_;
 }
 
 }  // namespace serving

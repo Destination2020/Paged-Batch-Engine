@@ -3,21 +3,24 @@
 #define KUIPER_INCLUDE_BASE_KV_CACHE_MANAGER_H_
 
 #include <cstdint>
-#include <string>
-#include <unordered_map>
 #include <vector>
 #include "base/block_allocator.h"
+#include "base/compressed_radix_cache_tree.h"
 #include "base/sequence_kv_manager.h"
 
 namespace base {
 
 using RequestId = int32_t;
 
-struct PrefixCacheStats {
+struct RadixCacheStats {
   int64_t lookup_requests = 0;
   int64_t cache_hits = 0;
   int64_t cache_misses = 0;
   int64_t tokens_reused = 0;
+  int64_t publish_requests = 0;
+  int64_t published_blocks = 0;
+  int64_t evictions = 0;
+  int64_t evicted_blocks = 0;
 };
 
 class KVCacheManager {
@@ -27,12 +30,12 @@ class KVCacheManager {
 
   // Register a new request, returns its ID
   RequestId register_request();
-  RequestId register_request_with_prompt(const std::vector<int32_t>& prompt_tokens);
+  RequestId register_request_with_radix_cache(const std::vector<int32_t>& prompt_tokens);
 
   // Free all blocks held by a request
   void free_request(RequestId id);
-  void publish_prefix_cache(RequestId id, const std::vector<int32_t>& prompt_tokens);
-  void clear_prefix_cache();
+  void publish_radix_cache(RequestId id, const std::vector<int32_t>& prompt_tokens);
+  void clear_radix_cache();
 
   // Append one token slot for a request (allocates across all layers)
   bool append_slot(RequestId id);
@@ -79,11 +82,14 @@ class KVCacheManager {
   int32_t num_free_blocks(int32_t layer_idx) const;
   int32_t num_total_blocks(int32_t layer_idx) const;
   const KVAppendStats& append_stats(RequestId id) const;
-  const PrefixCacheStats& prefix_cache_stats() const { return prefix_cache_stats_; }
-  void reset_prefix_cache_stats() { prefix_cache_stats_ = PrefixCacheStats{}; }
-  void set_prefix_cache_enabled(bool enabled) { prefix_cache_enabled_ = enabled; }
-  bool prefix_cache_enabled() const { return prefix_cache_enabled_; }
+  const RadixCacheStats& radix_cache_stats() const { return radix_cache_stats_; }
+  void reset_radix_cache_stats() { radix_cache_stats_ = RadixCacheStats{}; }
+  void set_radix_cache_enabled(bool enabled);
+  int32_t radix_cache_node_count() const { return radix_cache_.node_count(); }
+  int32_t radix_cache_split_count() const { return radix_cache_.split_count(); }
+  int32_t radix_cache_evictable_blocks() const;
   bool is_valid_request(RequestId id) const;
+  bool radix_cache_enabled() const { return radix_cache_enabled_; }
   int32_t request_slot_capacity() const {
     return static_cast<int32_t>(request_slots_.size());
   }
@@ -97,14 +103,8 @@ class KVCacheManager {
     SequenceKVManager manager;
     uint32_t generation = 0;
     bool active = false;
-    int32_t shared_prefix_tokens = 0;
-    std::string prefix_cache_key;
-  };
-
-  struct PrefixCacheEntry {
-    std::vector<std::vector<int32_t>> block_ids_per_layer;
-    int32_t shared_tokens = 0;
-    int32_t ref_count = 0;
+    CompressedRadixCacheTree::Node* radix_cache_leaf = nullptr;
+    int32_t radix_cache_shared_tokens = 0;
   };
 
   static constexpr uint32_t kRequestIdBits = 31;
@@ -122,14 +122,23 @@ class KVCacheManager {
 
   bool try_decode_request_id(RequestId id, uint32_t* slot_idx,
                              uint32_t* generation) const;
-  std::string build_prefix_cache_key(const std::vector<int32_t>& prompt_tokens,
-                                     int32_t shared_tokens) const;
-  int32_t cacheable_prefix_tokens(const std::vector<int32_t>& prompt_tokens) const;
-  void release_prefix_cache_entry(const PrefixCacheEntry& entry);
-  void maybe_attach_prefix_cache(RequestSlot* slot,
-                                 const std::vector<int32_t>& prompt_tokens);
-  void maybe_publish_prefix_cache(RequestSlot* slot,
-                                  const std::vector<int32_t>& prompt_tokens);
+  int32_t full_blocks_for_tokens(int32_t num_tokens) const;
+  int32_t additional_blocks_needed(int32_t current_tokens, int32_t appended_tokens) const;
+  int32_t min_free_blocks_across_layers() const;
+  std::vector<std::vector<int32_t>> full_block_ids_for_request(
+      const RequestSlot& slot, int32_t full_blocks) const;
+  void release_block_ids(const std::vector<std::vector<int32_t>>& block_ids_per_layer);
+  void release_block_ids(const std::vector<std::vector<int32_t>>& block_ids_per_layer,
+                         int32_t start_block,
+                         int32_t block_count);
+  void retain_block_ids(const std::vector<std::vector<int32_t>>& block_ids_per_layer,
+                        int32_t start_block,
+                        int32_t block_count);
+  void maybe_attach_radix_cache(RequestSlot* slot,
+                                const std::vector<int32_t>& prompt_tokens);
+  void maybe_unpin_radix_cache_path(RequestSlot* slot);
+  bool ensure_free_blocks_available(int32_t required_blocks_per_layer);
+  int32_t evict_radix_cache_blocks(int32_t min_blocks_to_evict);
   RequestSlot& lookup_request_slot(RequestId id, uint32_t* slot_idx = nullptr);
   const RequestSlot& lookup_request_slot(RequestId id,
                                          uint32_t* slot_idx = nullptr) const;
@@ -139,12 +148,12 @@ class KVCacheManager {
   int32_t block_size_;
   int32_t num_layers_;
   std::vector<std::unique_ptr<BlockAllocator>> layer_allocators_;
+  CompressedRadixCacheTree radix_cache_;
+  RadixCacheStats radix_cache_stats_;
   std::vector<RequestSlot> request_slots_;
   std::vector<uint32_t> free_slot_indices_;
-  std::unordered_map<std::string, PrefixCacheEntry> prefix_cache_;
-  PrefixCacheStats prefix_cache_stats_;
-  bool prefix_cache_enabled_ = true;
   int32_t num_active_requests_ = 0;
+  bool radix_cache_enabled_ = true;
 };
 
 }  // namespace base

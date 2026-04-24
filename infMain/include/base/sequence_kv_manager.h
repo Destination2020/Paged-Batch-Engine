@@ -52,6 +52,11 @@ class SequenceKVManager {
   // Release all blocks back to allocator
   void release_all(const std::vector<std::unique_ptr<BlockAllocator>>& layer_allocators);
 
+  // Truncate the sequence to a target token count. Shared-prefix tokens are
+  // treated as immutable lower bound for truncation.
+  void truncate_to(const std::vector<std::unique_ptr<BlockAllocator>>& layer_allocators,
+                   int32_t new_num_tokens);
+
   // Clear the manager (for reuse)
   void clear();
 
@@ -61,6 +66,9 @@ class SequenceKVManager {
   void adopt_shared_prefix(const std::vector<std::unique_ptr<BlockAllocator>>& layer_allocators,
                            const std::vector<std::vector<int32_t>>& shared_block_ids,
                            int32_t shared_tokens);
+
+  int32_t shared_prefix_tokens() const { return shared_prefix_tokens_; }
+  int32_t private_tokens() const { return num_tokens_ - shared_prefix_tokens_; }
 
   const KVAppendStats& stats() const { return stats_; }
 
@@ -72,6 +80,7 @@ class SequenceKVManager {
   int32_t num_layers_ = 0;
   int32_t block_size_ = 0;
   int32_t num_tokens_ = 0;
+  int32_t shared_prefix_tokens_ = 0;
   std::vector<PageTable> page_tables_;
   KVAppendStats stats_;
 };
@@ -79,6 +88,5 @@ class SequenceKVManager {
 }  // namespace base
 
 #endif  // KUIPER_INCLUDE_BASE_SEQUENCE_KV_MANAGER_H_
-
 
 

@@ -27,13 +27,12 @@ struct SequenceState {
   int32_t max_new_tokens = 0;
   int32_t generated_tokens = 0;
   int32_t next_token = -1;
-  int32_t prefix_cache_hit_tokens = 0;
-  bool prefix_cache_published = false;
   bool finished = false;
   bool failed = false;
   bool first_token_recorded = false;
   bool finished_time_recorded = false;
   bool recompute_pending = false;
+  bool radix_cache_published = false;
   SequenceStatus status = SequenceStatus::kWaiting;
   std::string finish_reason;
   std::string last_preempt_reason;
@@ -128,4 +127,3 @@ struct SequenceState {
 }  // namespace serving
 
 #endif  // KUIPER_INCLUDE_SERVING_SEQUENCE_STATE_H_
-

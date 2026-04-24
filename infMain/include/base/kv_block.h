@@ -53,6 +53,23 @@ class PageTable {
   void increment_token_count() { num_tokens_++; }
   void add_token_count(int32_t count) { num_tokens_ += count; }
 
+  // Truncate this page table to a logical token count and return physical
+  // blocks that are no longer referenced by the table.
+  std::vector<int32_t> truncate_to_tokens(int32_t new_num_tokens) {
+    int32_t new_block_count = 0;
+    if (new_num_tokens > 0) {
+      new_block_count = (new_num_tokens + block_size_ - 1) / block_size_;
+    }
+
+    std::vector<int32_t> removed_blocks;
+    if (new_block_count < static_cast<int32_t>(block_ids_.size())) {
+      removed_blocks.assign(block_ids_.begin() + new_block_count, block_ids_.end());
+      block_ids_.resize(new_block_count);
+    }
+    num_tokens_ = new_num_tokens;
+    return removed_blocks;
+  }
+
   // Clear the page table
   void clear() {
     block_ids_.clear();
@@ -70,5 +87,4 @@ class PageTable {
 }  // namespace base
 
 #endif  // KUIPER_INCLUDE_BASE_KV_BLOCK_H_
-
 

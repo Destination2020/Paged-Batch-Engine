@@ -92,3 +92,79 @@ TEST(SequenceKVManagerTest, AppendTokensFailureRollsBackWithoutMutation) {
   EXPECT_EQ(stats.allocation_failures, 1);
   EXPECT_EQ(stats.rollback_count, 1);
 }
+
+TEST(SequenceKVManagerTest, TruncateToShrinksLogicalLengthAndReleasesTailBlocks) {
+  constexpr int32_t kBlockSize = 4;
+  constexpr int32_t kNumLayers = 2;
+
+  auto allocators = make_allocators(kNumLayers, 4, kBlockSize);
+  base::SequenceKVManager manager(kBlockSize, kNumLayers);
+
+  ASSERT_TRUE(manager.append_tokens(allocators, 6));
+  EXPECT_EQ(manager.num_tokens(), 6);
+  EXPECT_EQ(manager.page_table(0).num_blocks(), 2);
+  EXPECT_EQ(manager.page_table(1).num_blocks(), 2);
+  EXPECT_EQ(allocators[0]->num_free_blocks(), 2);
+  EXPECT_EQ(allocators[1]->num_free_blocks(), 2);
+
+  manager.truncate_to(allocators, 3);
+
+  EXPECT_EQ(manager.num_tokens(), 3);
+  EXPECT_EQ(manager.shared_prefix_tokens(), 0);
+  EXPECT_EQ(manager.private_tokens(), 3);
+  EXPECT_EQ(manager.page_table(0).num_tokens(), 3);
+  EXPECT_EQ(manager.page_table(1).num_tokens(), 3);
+  EXPECT_EQ(manager.page_table(0).num_blocks(), 1);
+  EXPECT_EQ(manager.page_table(1).num_blocks(), 1);
+  EXPECT_EQ(manager.num_tokens_in_last_block(), 3);
+  EXPECT_EQ(manager.current_slot(0), std::make_pair(0, 2));
+  EXPECT_EQ(manager.current_slot(1), std::make_pair(0, 2));
+  EXPECT_EQ(allocators[0]->num_free_blocks(), 3);
+  EXPECT_EQ(allocators[1]->num_free_blocks(), 3);
+
+  ASSERT_TRUE(manager.append_tokens(allocators, 3));
+  EXPECT_EQ(manager.num_tokens(), 6);
+  EXPECT_EQ(manager.page_table(0).num_blocks(), 2);
+  EXPECT_EQ(manager.page_table(1).num_blocks(), 2);
+  EXPECT_EQ(manager.get_slot(0, 4), std::make_pair(2, 0));
+  EXPECT_EQ(manager.get_slot(1, 5), std::make_pair(2, 1));
+}
+
+TEST(SequenceKVManagerTest, TruncateWithSharedPrefixKeepsSharedBlocksPinned) {
+  constexpr int32_t kBlockSize = 4;
+  constexpr int32_t kNumLayers = 2;
+
+  auto allocators = make_allocators(kNumLayers, 6, kBlockSize);
+  base::SequenceKVManager manager(kBlockSize, kNumLayers);
+
+  const std::vector<std::vector<int32_t>> shared_blocks = {{0}, {0}};
+  ASSERT_TRUE(allocators[0]->allocate() == 0);
+  ASSERT_TRUE(allocators[1]->allocate() == 0);
+
+  manager.adopt_shared_prefix(allocators, shared_blocks, 4);
+  ASSERT_TRUE(manager.append_tokens(allocators, 4));
+
+  EXPECT_EQ(manager.shared_prefix_tokens(), 4);
+  EXPECT_EQ(manager.private_tokens(), 4);
+  EXPECT_EQ(manager.num_tokens(), 8);
+  EXPECT_EQ(manager.page_table(0).num_blocks(), 2);
+  EXPECT_EQ(manager.page_table(1).num_blocks(), 2);
+  EXPECT_EQ(allocators[0]->num_free_blocks(), 4);
+  EXPECT_EQ(allocators[1]->num_free_blocks(), 4);
+
+  manager.truncate_to(allocators, 4);
+
+  EXPECT_EQ(manager.num_tokens(), 4);
+  EXPECT_EQ(manager.shared_prefix_tokens(), 4);
+  EXPECT_EQ(manager.private_tokens(), 0);
+  EXPECT_EQ(manager.page_table(0).num_tokens(), 4);
+  EXPECT_EQ(manager.page_table(1).num_tokens(), 4);
+  EXPECT_EQ(manager.page_table(0).num_blocks(), 1);
+  EXPECT_EQ(manager.page_table(1).num_blocks(), 1);
+  EXPECT_EQ(manager.get_slot(0, 3), std::make_pair(0, 3));
+  EXPECT_EQ(manager.get_slot(1, 3), std::make_pair(0, 3));
+  EXPECT_EQ(allocators[0]->num_free_blocks(), 5);
+  EXPECT_EQ(allocators[1]->num_free_blocks(), 5);
+
+  EXPECT_DEATH(manager.truncate_to(allocators, 3), "shared prefix");
+}

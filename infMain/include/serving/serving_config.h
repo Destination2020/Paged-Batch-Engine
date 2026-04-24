@@ -51,6 +51,8 @@ struct BenchConfig {
   std::string prefill_chunk_cap_request = "auto";
   bool auto_max_num_batched_tokens = true;
   bool auto_prefill_chunk_cap = true;
+  bool radix_cache_config_explicit = false;
+  bool radix_cache_enabled = true;
   PromptTokenStats prompt_token_stats;
   AutoScheduleEstimate auto_estimate;
   ServingCapacityInfo capacity_info;

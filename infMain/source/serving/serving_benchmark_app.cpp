@@ -26,6 +26,21 @@ bool parse_bool_flag(std::string_view value) {
   return value == "1" || value == "true" || value == "TRUE" || value == "yes" || value == "on";
 }
 
+bool parse_toggle_flag(std::string_view value, bool* out) {
+  CHECK_NE(out, nullptr);
+  if (value == "1" || value == "true" || value == "TRUE" || value == "yes" ||
+      value == "on" || value == "enable" || value == "enabled") {
+    *out = true;
+    return true;
+  }
+  if (value == "0" || value == "false" || value == "FALSE" || value == "no" ||
+      value == "off" || value == "disable" || value == "disabled") {
+    *out = false;
+    return true;
+  }
+  return false;
+}
+
 bool starts_with(std::string_view value, std::string_view prefix) {
   return value.size() >= prefix.size() && value.substr(0, prefix.size()) == prefix;
 }
@@ -103,6 +118,18 @@ BenchConfig parse_bench_config(int argc, char* argv[], int prompt_start_index) {
       return true;
     };
 
+    auto read_toggle = [&](std::string_view prefix, bool& out, bool& seen) {
+      if (!starts_with(arg, prefix)) {
+        return false;
+      }
+      const std::string_view value = arg.substr(prefix.size());
+      CHECK(parse_toggle_flag(value, &out))
+          << "Invalid value for " << prefix << value
+          << ". Expected one of: on/off, 1/0, true/false.";
+      seen = true;
+      return true;
+    };
+
     if (read_int("--max-new-tokens=", config.max_new_tokens) ||
         read_auto_int("--max-batched-tokens=", config.max_num_batched_tokens,
                       config.max_num_batched_tokens_request,
@@ -115,6 +142,10 @@ BenchConfig parse_bench_config(int argc, char* argv[], int prompt_start_index) {
         read_int("--warmup-rounds=", config.warmup_rounds) ||
         read_double("--kv-cache-memory-utilization=", config.kv_cache_memory_utilization) ||
         read_double("--gpu-memory-utilization=", config.kv_cache_memory_utilization) ||
+        read_toggle("--radix-cache=", config.radix_cache_enabled,
+                    config.radix_cache_config_explicit) ||
+        read_toggle("--enable-radix-cache=", config.radix_cache_enabled,
+                    config.radix_cache_config_explicit) ||
         read_bool("--quiet=", config.quiet) ||
         read_bool("--step-profile=", config.print_step_profile) ||
         read_bool("--step-trace=", config.print_step_trace) ||
@@ -286,6 +317,9 @@ void print_config_summary(const BenchConfig& config) {
             << " kv_cache_memory_utilization="
             << format_double(config.kv_cache_memory_utilization, 3)
             << " warmup_rounds=" << config.warmup_rounds
+            << " radix_cache_config_explicit="
+            << (config.radix_cache_config_explicit ? 1 : 0)
+            << " radix_cache_enabled=" << (config.radix_cache_enabled ? 1 : 0)
             << " prompt_count=" << config.prompt_token_stats.prompt_count
             << " prompt_min_tokens=" << config.prompt_token_stats.min_prompt_tokens
             << " prompt_p50_tokens=" << config.prompt_token_stats.p50_prompt_tokens
@@ -343,9 +377,12 @@ void print_config_summary(const BenchConfig& config) {
 }
 
 void print_final_summary(const SummaryStats& stats,
-                         const base::PrefixCacheStats& prefix_stats,
                          double wall_ms,
-                         double throughput_tokens_per_s) {
+                         double throughput_tokens_per_s,
+                         const base::RadixCacheStats& radix_stats,
+                         int32_t radix_cache_nodes,
+                         int32_t radix_cache_splits,
+                         int32_t radix_cache_evictable_blocks) {
   const double ttft_mean_ms = average(stats.request_ttft_ms);
   const double itl_mean_ms = average(stats.request_itl_ms);
   const double latency_mean_ms = average(stats.request_latency_ms);
@@ -378,10 +415,17 @@ void print_final_summary(const SummaryStats& stats,
             << " latency_p50_ms=" << format_double(percentile(stats.request_latency_ms, 0.50))
             << " latency_p95_ms=" << format_double(percentile(stats.request_latency_ms, 0.95))
             << " latency_p99_ms=" << format_double(percentile(stats.request_latency_ms, 0.99))
-            << " prefix_cache_lookups=" << prefix_stats.lookup_requests
-            << " prefix_cache_hits=" << prefix_stats.cache_hits
-            << " prefix_cache_misses=" << prefix_stats.cache_misses
-            << " prefix_cache_tokens_reused=" << prefix_stats.tokens_reused
+            << " radix_cache_lookups=" << radix_stats.lookup_requests
+            << " radix_cache_hits=" << radix_stats.cache_hits
+            << " radix_cache_misses=" << radix_stats.cache_misses
+            << " radix_cache_tokens_reused=" << radix_stats.tokens_reused
+            << " radix_cache_publish_requests=" << radix_stats.publish_requests
+            << " radix_cache_published_blocks=" << radix_stats.published_blocks
+            << " radix_cache_evictions=" << radix_stats.evictions
+            << " radix_cache_evicted_blocks=" << radix_stats.evicted_blocks
+            << " radix_cache_nodes=" << radix_cache_nodes
+            << " radix_cache_splits=" << radix_cache_splits
+            << " radix_cache_evictable_blocks=" << radix_cache_evictable_blocks
             << "\n";
 }
 
@@ -397,6 +441,7 @@ int ServingBenchmarkApp::run(int argc, char* argv[]) {
 
   prepare_benchmark_config();
   run_warmup();
+  kv_cache_manager()->reset_radix_cache_stats();
   create_scheduler();
   submit_all_requests();
   run_serving_loop();
@@ -503,9 +548,6 @@ void ServingBenchmarkApp::prepare_benchmark_config() {
 
 void ServingBenchmarkApp::run_warmup() {
   if (bench_config_.warmup_rounds <= 0 || prompts_.empty()) {
-    if (kv_cache_manager() != nullptr) {
-      kv_cache_manager()->reset_prefix_cache_stats();
-    }
     return;
   }
 
@@ -544,8 +586,6 @@ void ServingBenchmarkApp::run_warmup() {
       (void)finished;
     }
   }
-
-  kv_cache_manager()->reset_prefix_cache_stats();
 }
 
 void ServingBenchmarkApp::create_scheduler() {
@@ -600,7 +640,12 @@ void ServingBenchmarkApp::run_serving_loop() {
 
   print_done(duration, throughput);
   if (bench_config_.print_final_summary) {
-    print_final_summary(summary_, kv_cache_manager()->prefix_cache_stats(), wall_ms, throughput);
+    const auto* kv_manager = kv_cache_manager();
+    print_final_summary(summary_, wall_ms, throughput,
+                        kv_manager->radix_cache_stats(),
+                        kv_manager->radix_cache_node_count(),
+                        kv_manager->radix_cache_split_count(),
+                        kv_manager->radix_cache_evictable_blocks());
   }
 }
 

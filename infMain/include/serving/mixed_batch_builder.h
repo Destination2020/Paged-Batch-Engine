@@ -8,7 +8,6 @@
 
 namespace base {
 class DeviceAllocator;
-class CUDADeviceAllocator;
 }  // namespace base
 
 namespace serving {
@@ -30,6 +29,7 @@ class MixedBatchBuilder {
   MixedBatchMetadata build_decode(const SchedulerOutput& output, void* stream);
 
  private:
+  bool cuda_available() const;
   void ensure_token_capacity(int32_t token_capacity);
   void ensure_request_capacity(int32_t request_capacity);
   void ensure_block_table_capacity(int32_t total_entries);
@@ -49,7 +49,8 @@ class MixedBatchBuilder {
  private:
   base::KVCacheManager* kv_manager_ = nullptr;
   std::shared_ptr<base::DeviceAllocator> host_alloc_;
-  std::shared_ptr<base::CUDADeviceAllocator> device_alloc_;
+  std::shared_ptr<base::DeviceAllocator> device_alloc_;
+  bool use_cuda_ = false;
 
   tensor::Tensor host_token_ids_;
   tensor::Tensor device_token_ids_;

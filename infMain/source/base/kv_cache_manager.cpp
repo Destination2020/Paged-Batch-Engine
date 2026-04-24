@@ -1,8 +1,6 @@
 // KVCacheManager implementation
 #include "base/kv_cache_manager.h"
 #include <algorithm>
-#include <functional>
-#include <sstream>
 #include <glog/logging.h>
 
 namespace base {
@@ -15,7 +13,7 @@ RequestId KVCacheManager::encode_request_id(uint32_t slot_idx,
   CHECK_LE(raw, static_cast<uint32_t>(INT32_MAX));
   return static_cast<RequestId>(raw);
 }
-
+ 
 uint32_t KVCacheManager::decode_slot_index(RequestId id) {
   return static_cast<uint32_t>(id) & kRequestSlotMask;
 }
@@ -28,7 +26,8 @@ KVCacheManager::KVCacheManager(int32_t block_size, int32_t num_layers,
                                std::vector<std::unique_ptr<BlockAllocator>> layer_allocators)
     : block_size_(block_size),
       num_layers_(num_layers),
-      layer_allocators_(std::move(layer_allocators)) {
+      layer_allocators_(std::move(layer_allocators)),
+      radix_cache_(block_size, num_layers) {
   CHECK_GT(block_size_, 0);
   CHECK_GT(num_layers_, 0);
   CHECK_EQ(static_cast<int32_t>(layer_allocators_.size()), num_layers_);
@@ -46,8 +45,8 @@ RequestId KVCacheManager::register_request() {
         << "request slot generation overflow at slot " << slot_idx;
     slot->generation++;
     slot->manager.clear();
-    slot->shared_prefix_tokens = 0;
-    slot->prefix_cache_key.clear();
+    slot->radix_cache_leaf = nullptr;
+    slot->radix_cache_shared_tokens = 0;
   } else {
     CHECK_LT(request_slots_.size(), static_cast<size_t>(kMaxRequestSlots))
         << "request slot capacity exhausted";
@@ -61,30 +60,18 @@ RequestId KVCacheManager::register_request() {
   return encode_request_id(slot_idx, slot->generation);
 }
 
-RequestId KVCacheManager::register_request_with_prompt(
+RequestId KVCacheManager::register_request_with_radix_cache(
     const std::vector<int32_t>& prompt_tokens) {
   const RequestId id = register_request();
   RequestSlot& slot = lookup_request_slot(id);
-  maybe_attach_prefix_cache(&slot, prompt_tokens);
+  maybe_attach_radix_cache(&slot, prompt_tokens);
   return id;
 }
 
 void KVCacheManager::free_request(RequestId id) {
   uint32_t slot_idx = 0;
   auto& slot = lookup_request_slot(id, &slot_idx);
-  if (!slot.prefix_cache_key.empty()) {
-    auto it = prefix_cache_.find(slot.prefix_cache_key);
-    if (it != prefix_cache_.end()) {
-      CHECK_GT(it->second.ref_count, 0);
-      --it->second.ref_count;
-      if (it->second.ref_count == 0) {
-        release_prefix_cache_entry(it->second);
-        prefix_cache_.erase(it);
-      }
-    }
-    slot.prefix_cache_key.clear();
-    slot.shared_prefix_tokens = 0;
-  }
+  maybe_unpin_radix_cache_path(&slot);
   slot.manager.release_all(layer_allocators_);
   slot.active = false;
   free_slot_indices_.push_back(slot_idx);
@@ -92,33 +79,66 @@ void KVCacheManager::free_request(RequestId id) {
   num_active_requests_--;
 }
 
-void KVCacheManager::publish_prefix_cache(
+void KVCacheManager::publish_radix_cache(
     RequestId id, const std::vector<int32_t>& prompt_tokens) {
   auto& slot = lookup_request_slot(id);
-  maybe_publish_prefix_cache(&slot, prompt_tokens);
+  if (!radix_cache_enabled_) {
+    return;
+  }
+
+  radix_cache_stats_.publish_requests++;
+  const int32_t full_blocks = full_blocks_for_tokens(
+      std::min(static_cast<int32_t>(prompt_tokens.size()), slot.manager.num_tokens()));
+  if (full_blocks == 0) {
+    return;
+  }
+
+  const std::vector<std::vector<int32_t>> block_ids_per_layer =
+      full_block_ids_for_request(slot, full_blocks);
+  retain_block_ids(block_ids_per_layer, 0, full_blocks);
+  const auto result = radix_cache_.insert(prompt_tokens, block_ids_per_layer);
+  if (result.existing_prefix_blocks > 0) {
+    release_block_ids(block_ids_per_layer, 0, result.existing_prefix_blocks);
+  }
+  radix_cache_stats_.published_blocks += result.inserted_blocks;
 }
 
-void KVCacheManager::clear_prefix_cache() {
-  for (auto& [key, entry] : prefix_cache_) {
-    (void)key;
-    release_prefix_cache_entry(entry);
-  }
-  prefix_cache_.clear();
-
+void KVCacheManager::clear_radix_cache() {
   for (auto& slot : request_slots_) {
-    if (!slot.active) {
-      slot.shared_prefix_tokens = 0;
-      slot.prefix_cache_key.clear();
+    if (slot.active) {
+      maybe_unpin_radix_cache_path(&slot);
     }
   }
+  release_block_ids(radix_cache_.clear_and_collect_block_ids());
 }
 
 bool KVCacheManager::append_slot(RequestId id) {
+  if (lookup_request(id).append_token(layer_allocators_)) {
+    return true;
+  }
+  if (!ensure_free_blocks_available(1)) {
+    return false;
+  }
   return lookup_request(id).append_token(layer_allocators_);
 }
 
 bool KVCacheManager::append_slots(RequestId id, int32_t num_tokens) {
-  return lookup_request(id).append_tokens(layer_allocators_, num_tokens);
+  SequenceKVManager& request = lookup_request(id);
+  if (request.append_tokens(layer_allocators_, num_tokens)) {
+    return true;
+  }
+
+  const int32_t current_tokens = request.num_tokens();
+  const int32_t blocks_before = (current_tokens + block_size_ - 1) / block_size_;
+  const int32_t blocks_after = (current_tokens + num_tokens + block_size_ - 1) / block_size_;
+  const int32_t required_blocks_per_layer = blocks_after - blocks_before;
+  if (required_blocks_per_layer <= 0) {
+    return false;
+  }
+  if (!ensure_free_blocks_available(required_blocks_per_layer)) {
+    return false;
+  }
+  return request.append_tokens(layer_allocators_, num_tokens);
 }
 
 std::pair<int32_t, int32_t> KVCacheManager::get_slot(
@@ -238,111 +258,174 @@ bool KVCacheManager::try_decode_request_id(RequestId id, uint32_t* slot_idx,
   return true;
 }
 
-std::string KVCacheManager::build_prefix_cache_key(
-    const std::vector<int32_t>& prompt_tokens, int32_t shared_tokens) const {
-  CHECK_GE(shared_tokens, 0);
-  CHECK_LE(shared_tokens, static_cast<int32_t>(prompt_tokens.size()));
-
-  uint64_t hash = 1469598103934665603ull;
-  auto hash_mix = [&](uint64_t value) {
-    hash ^= value;
-    hash *= 1099511628211ull;
-  };
-
-  hash_mix(static_cast<uint64_t>(shared_tokens));
-  for (int32_t idx = 0; idx < shared_tokens; ++idx) {
-    hash_mix(static_cast<uint32_t>(prompt_tokens[idx]));
-  }
-
-  std::ostringstream os;
-  os << shared_tokens << ":" << hash;
-  return os.str();
+int32_t KVCacheManager::full_blocks_for_tokens(int32_t num_tokens) const {
+  CHECK_GE(num_tokens, 0);
+  return num_tokens / block_size_;
 }
 
-int32_t KVCacheManager::cacheable_prefix_tokens(
-    const std::vector<int32_t>& prompt_tokens) const {
-  const int32_t prompt_tokens_count = static_cast<int32_t>(prompt_tokens.size());
-  if (prompt_tokens_count <= block_size_) {
-    return 0;
-  }
-
-  const int32_t full_prompt_blocks = prompt_tokens_count / block_size_;
-  if (full_prompt_blocks <= 1) {
-    return 0;
-  }
-
-  // Keep one full block private so later decode appends never target a shared
-  // tail block. The MVP intentionally trades hit rate for simple correctness.
-  return (full_prompt_blocks - 1) * block_size_;
+int32_t KVCacheManager::additional_blocks_needed(int32_t current_tokens,
+                                                 int32_t appended_tokens) const {
+  CHECK_GE(current_tokens, 0);
+  CHECK_GE(appended_tokens, 0);
+  const int32_t blocks_before =
+      (current_tokens + block_size_ - 1) / block_size_;
+  const int32_t blocks_after =
+      (current_tokens + appended_tokens + block_size_ - 1) / block_size_;
+  return blocks_after - blocks_before;
 }
 
-void KVCacheManager::release_prefix_cache_entry(const PrefixCacheEntry& entry) {
+int32_t KVCacheManager::min_free_blocks_across_layers() const {
+  int32_t min_free_blocks = num_free_blocks(0);
   for (int32_t layer_idx = 0; layer_idx < num_layers_; ++layer_idx) {
-    for (int32_t block_id : entry.block_ids_per_layer[layer_idx]) {
-      layer_allocators_[layer_idx]->free(block_id);
+    min_free_blocks = std::min(min_free_blocks, num_free_blocks(layer_idx));
+  }
+  return min_free_blocks;
+}
+
+std::vector<std::vector<int32_t>> KVCacheManager::full_block_ids_for_request(
+    const RequestSlot& slot, int32_t full_blocks) const {
+  CHECK_GE(full_blocks, 0);
+  std::vector<std::vector<int32_t>> block_ids_per_layer(num_layers_);
+  for (int32_t layer_idx = 0; layer_idx < num_layers_; ++layer_idx) {
+    const auto& block_ids = slot.manager.page_table(layer_idx).block_ids();
+    CHECK_GE(static_cast<int32_t>(block_ids.size()), full_blocks);
+    block_ids_per_layer[layer_idx].assign(block_ids.begin(),
+                                          block_ids.begin() + full_blocks);
+  }
+  return block_ids_per_layer;
+}
+
+void KVCacheManager::release_block_ids(
+    const std::vector<std::vector<int32_t>>& block_ids_per_layer) {
+  release_block_ids(block_ids_per_layer, 0,
+                    block_ids_per_layer.empty()
+                        ? 0
+                        : static_cast<int32_t>(block_ids_per_layer[0].size()));
+}
+
+void KVCacheManager::release_block_ids(
+    const std::vector<std::vector<int32_t>>& block_ids_per_layer,
+    int32_t start_block,
+    int32_t block_count) {
+  CHECK_EQ(static_cast<int32_t>(block_ids_per_layer.size()), num_layers_);
+  CHECK_GE(start_block, 0);
+  CHECK_GE(block_count, 0);
+  for (int32_t layer_idx = 0; layer_idx < num_layers_; ++layer_idx) {
+    CHECK_LE(start_block + block_count,
+             static_cast<int32_t>(block_ids_per_layer[layer_idx].size()));
+    for (int32_t block_idx = 0; block_idx < block_count; ++block_idx) {
+      layer_allocators_[layer_idx]->free(
+          block_ids_per_layer[layer_idx][start_block + block_idx]);
     }
   }
 }
 
-void KVCacheManager::maybe_attach_prefix_cache(
-    RequestSlot* slot, const std::vector<int32_t>& prompt_tokens) {
-  CHECK_NE(slot, nullptr);
-  if (!prefix_cache_enabled_) {
-    return;
+void KVCacheManager::retain_block_ids(
+    const std::vector<std::vector<int32_t>>& block_ids_per_layer,
+    int32_t start_block,
+    int32_t block_count) {
+  CHECK_EQ(static_cast<int32_t>(block_ids_per_layer.size()), num_layers_);
+  CHECK_GE(start_block, 0);
+  CHECK_GE(block_count, 0);
+  for (int32_t layer_idx = 0; layer_idx < num_layers_; ++layer_idx) {
+    CHECK_LE(start_block + block_count,
+             static_cast<int32_t>(block_ids_per_layer[layer_idx].size()));
+    for (int32_t block_idx = 0; block_idx < block_count; ++block_idx) {
+      layer_allocators_[layer_idx]->incref(
+          block_ids_per_layer[layer_idx][start_block + block_idx]);
+    }
   }
-  prefix_cache_stats_.lookup_requests++;
-
-  const int32_t shared_tokens = cacheable_prefix_tokens(prompt_tokens);
-  if (shared_tokens <= 0) {
-    prefix_cache_stats_.cache_misses++;
-    return;
-  }
-
-  const std::string key = build_prefix_cache_key(prompt_tokens, shared_tokens);
-  auto it = prefix_cache_.find(key);
-  if (it == prefix_cache_.end()) {
-    prefix_cache_stats_.cache_misses++;
-    return;
-  }
-
-  slot->manager.adopt_shared_prefix(layer_allocators_, it->second.block_ids_per_layer,
-                                    it->second.shared_tokens);
-  slot->shared_prefix_tokens = it->second.shared_tokens;
-  slot->prefix_cache_key = key;
-  it->second.ref_count++;
-  prefix_cache_stats_.cache_hits++;
-  prefix_cache_stats_.tokens_reused += it->second.shared_tokens;
 }
 
-void KVCacheManager::maybe_publish_prefix_cache(
-    RequestSlot* slot, const std::vector<int32_t>& prompt_tokens) {
-  CHECK_NE(slot, nullptr);
-  if (!prefix_cache_enabled_) {
-    return;
-  }
-  const int32_t shared_tokens = cacheable_prefix_tokens(prompt_tokens);
-  if (shared_tokens <= 0 || slot->shared_prefix_tokens >= shared_tokens) {
-    return;
+bool KVCacheManager::ensure_free_blocks_available(int32_t required_blocks_per_layer) {
+  CHECK_GE(required_blocks_per_layer, 0);
+  if (required_blocks_per_layer == 0) {
+    return true;
   }
 
-  const std::string key = build_prefix_cache_key(prompt_tokens, shared_tokens);
-  auto [it, inserted] = prefix_cache_.emplace(key, PrefixCacheEntry{});
-  if (inserted) {
-    PrefixCacheEntry& entry = it->second;
-    entry.shared_tokens = shared_tokens;
-    entry.ref_count = 1;  // Cache holds one persistent reference.
-    entry.block_ids_per_layer.resize(num_layers_);
-    const int32_t shared_blocks = shared_tokens / block_size_;
+  auto has_capacity = [&]() {
     for (int32_t layer_idx = 0; layer_idx < num_layers_; ++layer_idx) {
-      const auto& block_ids = slot->manager.page_table(layer_idx).block_ids();
-      CHECK_GE(static_cast<int32_t>(block_ids.size()), shared_blocks);
-      entry.block_ids_per_layer[layer_idx].assign(block_ids.begin(),
-                                                  block_ids.begin() + shared_blocks);
-      for (int32_t block_id : entry.block_ids_per_layer[layer_idx]) {
-        layer_allocators_[layer_idx]->incref(block_id);
+      if (num_free_blocks(layer_idx) < required_blocks_per_layer) {
+        return false;
       }
     }
+    return true;
+  };
+
+  while (!has_capacity()) {
+    if (evict_radix_cache_blocks(required_blocks_per_layer) == 0) {
+      return false;
+    }
   }
+  return true;
+}
+
+void KVCacheManager::maybe_attach_radix_cache(
+    RequestSlot* slot, const std::vector<int32_t>& prompt_tokens) {
+  CHECK_NE(slot, nullptr);
+  if (!radix_cache_enabled_) {
+    return;
+  }
+  radix_cache_stats_.lookup_requests++;
+
+  const int32_t max_reusable_blocks =
+      std::max(0, static_cast<int32_t>(prompt_tokens.size()) - 1) / block_size_;
+  if (max_reusable_blocks <= 0) {
+    radix_cache_stats_.cache_misses++;
+    return;
+  }
+  const int32_t max_reusable_tokens = max_reusable_blocks * block_size_;
+  std::vector<int32_t> reusable_tokens(prompt_tokens.begin(),
+                                       prompt_tokens.begin() + max_reusable_tokens);
+  auto match = radix_cache_.match_prefix(reusable_tokens);
+  if (match.matched_blocks <= 0 || match.matched_leaf == radix_cache_.root()) {
+    radix_cache_stats_.cache_misses++;
+    return;
+  }
+
+  slot->manager.adopt_shared_prefix(layer_allocators_, match.block_ids_per_layer,
+                                    match.matched_tokens);
+  radix_cache_.pin_path(match.matched_leaf);
+  slot->radix_cache_leaf = match.matched_leaf;
+  slot->radix_cache_shared_tokens = match.matched_tokens;
+  radix_cache_stats_.cache_hits++;
+  radix_cache_stats_.tokens_reused += match.matched_tokens;
+}
+
+void KVCacheManager::maybe_unpin_radix_cache_path(RequestSlot* slot) {
+  CHECK_NE(slot, nullptr);
+  if (slot->radix_cache_leaf != nullptr) {
+    radix_cache_.unpin_path(slot->radix_cache_leaf);
+    slot->radix_cache_leaf = nullptr;
+    slot->radix_cache_shared_tokens = 0;
+  }
+}
+
+int32_t KVCacheManager::evict_radix_cache_blocks(int32_t min_blocks_to_evict) {
+  CHECK_GE(min_blocks_to_evict, 0);
+  int32_t evicted_blocks = 0;
+  while (evicted_blocks < min_blocks_to_evict) {
+    const auto leaves = radix_cache_.collect_evictable_leaves();
+    if (leaves.empty()) {
+      break;
+    }
+    const auto removed_block_ids = radix_cache_.erase_leaf(leaves.front());
+    const int32_t removed_blocks =
+        removed_block_ids.empty() ? 0 : static_cast<int32_t>(removed_block_ids[0].size());
+    release_block_ids(removed_block_ids);
+    evicted_blocks += removed_blocks;
+    radix_cache_stats_.evictions++;
+    radix_cache_stats_.evicted_blocks += removed_blocks;
+  }
+  return evicted_blocks;
+}
+
+int32_t KVCacheManager::radix_cache_evictable_blocks() const {
+  return radix_cache_.evictable_blocks();
+}
+
+void KVCacheManager::set_radix_cache_enabled(bool enabled) {
+  radix_cache_enabled_ = enabled;
 }
 
 KVCacheManager::RequestSlot& KVCacheManager::lookup_request_slot(
@@ -378,12 +461,5 @@ const SequenceKVManager& KVCacheManager::lookup_request(RequestId id) const {
 }
 
 }  // namespace base
-
-
-
-
-
-
-
 
 
