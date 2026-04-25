@@ -25,8 +25,10 @@ struct SequenceState {
   std::vector<int32_t> prompt_tokens;
   std::vector<int32_t> output_tokens;
   int32_t max_new_tokens = 0;
+  int32_t min_new_tokens = 0;
   int32_t generated_tokens = 0;
   int32_t next_token = -1;
+  bool ignore_eos = false;
   bool finished = false;
   bool failed = false;
   bool first_token_recorded = false;

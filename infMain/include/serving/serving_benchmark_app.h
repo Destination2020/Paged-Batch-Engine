@@ -26,8 +26,6 @@ class ServingBenchmarkApp {
   virtual ~ServingBenchmarkApp() = default;
 
   int run(int argc, char* argv[]);
-
- protected:
   virtual const char* usage_name() const = 0;
   virtual bool initialize_model(const std::string& model_path,
                                 const std::string& tokenizer_path,
@@ -58,6 +56,7 @@ class ServingBenchmarkApp {
   void submit_requests_to(Scheduler& scheduler,
                           int32_t max_new_tokens,
                           bool quiet) const;
+  int run_online_server();
   void run_serving_loop();
   void run_serving_step(void* stream);
   StepProfile build_step_profile(const MixedBatchMetadata& batch,

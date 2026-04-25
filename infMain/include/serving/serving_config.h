@@ -60,6 +60,10 @@ struct BenchConfig {
   bool print_step_profile = false;
   bool print_step_trace = false;
   bool print_final_summary = true;
+  bool online_server = false;
+  std::string listen_host = "127.0.0.1";
+  int32_t listen_port = 8080;
+  int32_t max_queue_size = 128;
 };
 
 }  // namespace serving

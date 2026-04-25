@@ -41,7 +41,11 @@ class Scheduler {
   ~Scheduler();
 
   // Submit a new request
-  void add_request(std::vector<int32_t> prompt_tokens, int32_t max_new_tokens);
+  int64_t add_request(std::vector<int32_t> prompt_tokens, int32_t max_new_tokens,
+                      int32_t min_new_tokens = 0,
+                      bool ignore_eos = false);
+
+  bool cancel_request(int64_t client_request_id, const std::string& reason);
 
   // One scheduling step:
   //   1. Allocate token budget to running (decode) sequences

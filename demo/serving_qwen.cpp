@@ -15,14 +15,6 @@ bool fp8_kv_cache_enabled() {
   return env != nullptr && env[0] != '\0' && env[0] != '0';
 }
 
-bool prefix_cache_enabled() {
-  const char* env = std::getenv("KUIPER_ENABLE_PREFIX_CACHE");
-  if (env == nullptr || env[0] == '\0') {
-    return true;
-  }
-  return env[0] != '0';
-}
-
 std::string build_chatml_prompt(const std::string& user_prompt) {
   return "<|im_start|>system\nYou are Qwen, created by Alibaba Cloud. You are a helpful "
          "assistant.\n<|im_end|>\n<|im_start|>user\n" +
@@ -56,6 +48,9 @@ class QwenServingBenchmarkApp final : public serving::ServingBenchmarkApp {
         base::TokenizerType::kEncodeBpe, tokenizer_path, model_path, false);
     model_->set_kv_cache_memory_utilization(bench_config.kv_cache_memory_utilization);
     model_->set_serving_workspace_token_capacity(bench_config.max_num_batched_tokens);
+    if (bench_config.radix_cache_config_explicit) {
+      model_->set_radix_cache_enabled(bench_config.radix_cache_enabled);
+    }
     if (fp8_kv_cache_enabled()) {
       model_->set_use_fp8_kv_cache(true);
       model_->set_runtime_data_type(base::DataType::kDataTypeBf16);
@@ -66,7 +61,6 @@ class QwenServingBenchmarkApp final : public serving::ServingBenchmarkApp {
       LOG(FATAL) << "Model init failed: " << init_status.get_err_msg();
       return false;
     }
-    model_->kv_cache_manager()->set_prefix_cache_enabled(prefix_cache_enabled());
     return true;
   }
 

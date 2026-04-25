@@ -87,13 +87,19 @@ void record_sampled_token(SequenceState* seq,
                           std::chrono::steady_clock::time_point now) {
   CHECK_NE(seq, nullptr);
   seq->record_generated_token(now);
-  if (is_eos(token)) {
+  const bool token_is_eos = is_eos(token);
+  const bool should_stop_on_eos = !seq->ignore_eos &&
+                                  seq->generated_tokens > seq->min_new_tokens &&
+                                  token_is_eos;
+  if (should_stop_on_eos) {
     finish_sequence(seq, now);
     return;
   }
 
   seq->next_token = token;
-  seq->output_tokens.push_back(token);
+  if (!token_is_eos) {
+    seq->output_tokens.push_back(token);
+  }
   if (seq->generated_tokens >= seq->max_new_tokens) {
     finish_sequence(seq, now);
   }
@@ -119,7 +125,10 @@ Scheduler::Scheduler(const SchedulerConfig& config, base::KVCacheManager* kv_man
 
 Scheduler::~Scheduler() = default;
 
-void Scheduler::add_request(std::vector<int32_t> prompt_tokens, int32_t max_new_tokens) {
+int64_t Scheduler::add_request(std::vector<int32_t> prompt_tokens,
+                               int32_t max_new_tokens,
+                               int32_t min_new_tokens,
+                               bool ignore_eos) {
   const auto now = std::chrono::steady_clock::now();
   const int32_t total_tokens_hint = static_cast<int32_t>(prompt_tokens.size()) +
                                     std::max(1, max_new_tokens);
@@ -137,8 +146,11 @@ void Scheduler::add_request(std::vector<int32_t> prompt_tokens, int32_t max_new_
   SequenceState seq;
   seq.request_id = kv_manager_->register_request_with_radix_cache(prompt_tokens);
   seq.client_request_id = next_client_request_id_++;
+  const int64_t client_request_id = seq.client_request_id;
   seq.prompt_tokens = std::move(prompt_tokens);
   seq.max_new_tokens = std::max(1, max_new_tokens);
+  seq.min_new_tokens = std::max(0, std::min(min_new_tokens, seq.max_new_tokens));
+  seq.ignore_eos = ignore_eos;
   seq.generated_tokens = 0;
   seq.next_token = -1;
   seq.finished = false;
@@ -165,10 +177,35 @@ void Scheduler::add_request(std::vector<int32_t> prompt_tokens, int32_t max_new_
                       std::to_string(kv_capacity_tokens) + ")");
     kv_manager_->free_request(seq.request_id);
     finished_.push_back(std::move(seq));
-    return;
+    return client_request_id;
   }
 
   waiting_.push_back(std::move(seq));
+  return client_request_id;
+}
+
+bool Scheduler::cancel_request(int64_t client_request_id, const std::string& reason) {
+  const auto now = std::chrono::steady_clock::now();
+  for (auto it = waiting_.begin(); it != waiting_.end(); ++it) {
+    if (it->client_request_id != client_request_id) {
+      continue;
+    }
+    fail_sequence(&*it, now, reason);
+    kv_manager_->free_request(it->request_id);
+    finished_.push_back(std::move(*it));
+    waiting_.erase(it);
+    return true;
+  }
+
+  for (auto& seq : running_) {
+    if (seq.client_request_id != client_request_id) {
+      continue;
+    }
+    fail_sequence(&seq, now, reason);
+    reap_finished_running();
+    return true;
+  }
+  return false;
 }
 
 SchedulerOutput Scheduler::schedule_step() {
