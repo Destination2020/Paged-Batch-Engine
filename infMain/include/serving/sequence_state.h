@@ -8,6 +8,7 @@
 #include <vector>
 #include <glog/logging.h>
 #include "base/kv_cache_manager.h"
+#include "serving/generation_config.h"
 
 namespace serving {
 
@@ -24,11 +25,9 @@ struct SequenceState {
   int64_t client_request_id = -1;
   std::vector<int32_t> prompt_tokens;
   std::vector<int32_t> output_tokens;
-  int32_t max_new_tokens = 0;
-  int32_t min_new_tokens = 0;
+  GenerationConfig generation_config;
   int32_t generated_tokens = 0;
   int32_t next_token = -1;
-  bool ignore_eos = false;
   bool finished = false;
   bool failed = false;
   bool first_token_recorded = false;
@@ -46,28 +45,34 @@ struct SequenceState {
   std::chrono::steady_clock::time_point last_token_time;
   std::chrono::steady_clock::time_point finished_time;
 
-  // Chunked prefill tracking
-  int32_t num_prompt_tokens_computed = 0;  // how many prompt tokens written to KV cache
-  int32_t scheduled_tokens = 0;           // tokens allocated this step (transient)
+  // Unified token progress for prefill/recompute. computed_tokens is the
+  // number of prompt/recomputed output tokens already present in KV.
+  int32_t computed_tokens = 0;
+  int32_t scheduled_tokens = 0;  // tokens allocated this step (transient)
+
 
   // Derived state
-  int32_t prefill_target_tokens() const {
+  int32_t target_tokens() const {
     return static_cast<int32_t>(prompt_tokens.size()) +
            (recompute_pending ? static_cast<int32_t>(output_tokens.size()) : 0);
   }
 
+  int32_t prefill_target_tokens() const { return target_tokens(); }
+
   bool is_prefill() const {
-    return num_prompt_tokens_computed < prefill_target_tokens();
+    return computed_tokens < target_tokens();
   }
 
-  int32_t remaining_prompt_tokens() const {
-    return prefill_target_tokens() - num_prompt_tokens_computed;
+  int32_t remaining_tokens() const {
+    return target_tokens() - computed_tokens;
   }
+
+  int32_t remaining_prompt_tokens() const { return remaining_tokens(); }
 
   int32_t prefill_token_at(int32_t index) const {
     const int32_t prompt_size = static_cast<int32_t>(prompt_tokens.size());
     CHECK_GE(index, 0);
-    CHECK_LT(index, prefill_target_tokens());
+    CHECK_LT(index, target_tokens());
     if (index < prompt_size) {
       return prompt_tokens[index];
     }

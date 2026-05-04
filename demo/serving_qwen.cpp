@@ -82,6 +82,9 @@ class QwenServingBenchmarkApp final : public serving::ServingBenchmarkApp {
   }
 
   std::vector<int32_t> encode_prompt(const std::string& user_prompt) const override {
+    if (user_prompt.rfind("<|im_start|>", 0) == 0) {
+      return model_->encode(user_prompt);
+    }
     return model_->encode(build_chatml_prompt(user_prompt));
   }
 
@@ -102,8 +105,9 @@ class QwenServingBenchmarkApp final : public serving::ServingBenchmarkApp {
   }
 
   serving::SampledTokenView batch_sample(
-      const serving::MixedBatchMetadata& batch) const override {
-    return model_->batch_sample(batch);
+      const serving::MixedBatchMetadata& batch,
+      const serving::SchedulerOutput& sched_out) const override {
+    return model_->batch_sample(batch, sched_out);
   }
 
   std::string postprocess_decoded_text(std::string text) const override {
@@ -121,3 +125,5 @@ int main(int argc, char* argv[]) {
   QwenServingBenchmarkApp app;
   return app.run(argc, argv);
 }
+
+

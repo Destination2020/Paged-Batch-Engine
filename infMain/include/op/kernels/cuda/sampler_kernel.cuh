@@ -26,6 +26,15 @@ void sample_argmax_rows_cu(const tensor::Tensor& logits,
                            tensor::Tensor& token_ids,
                            void* stream);
 
+void sample_topk_topp_selected_rows_cu(const tensor::Tensor& logits,
+                                       const tensor::Tensor& row_indices,
+                                       const tensor::Tensor& temperatures,
+                                       const tensor::Tensor& top_ps,
+                                       const tensor::Tensor& top_ks,
+                                       const tensor::Tensor& random_values,
+                                       tensor::Tensor& token_ids,
+                                       void* stream);
+
 }  // namespace kernel
 
 #endif  // KUIPER_INCLUDE_OP_KERNELS_CUDA_SAMPLER_KERNEL_CUH_

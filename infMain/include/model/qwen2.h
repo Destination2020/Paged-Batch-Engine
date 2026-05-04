@@ -5,6 +5,7 @@
 #include "base/device_context.h"
 #include "base/kv_cache_manager.h"
 #include "serving/mixed_batch.h"
+#include "serving/scheduler.h"
 #include "serving/serving_capacity.h"
 #include "model.h"
 #include "op/add.h"
@@ -15,7 +16,7 @@
 namespace model {
 constexpr int32_t model_block_size = 16;
 constexpr int32_t model_num_blocks = 30;
-constexpr int32_t model_max_batch_size = 8;
+constexpr int32_t model_max_batch_size = 16;
 
 class PagedKVRuntime;
 
@@ -42,7 +43,7 @@ struct Qwen2Layers {
                    base::DataType runtime_data_type);
 };
 
-struct Qwen2HostDeviceInt32TensorPair {
+struct Qwen2HostDeviceTensorPair {
   // Host side is normally pinned CPU memory; device side is backend-local
   // memory for the active execution device.
   // The pair is reused across steps to avoid allocating metadata buffers on
@@ -50,6 +51,8 @@ struct Qwen2HostDeviceInt32TensorPair {
   tensor::Tensor host;
   tensor::Tensor device;
 };
+
+using Qwen2HostDeviceInt32TensorPair = Qwen2HostDeviceTensorPair;
 
 struct Qwen2SingleSeqForwardWorkspace {
   // Single-token forward_with_request() still uses the paged decode kernel.
@@ -64,6 +67,10 @@ struct Qwen2BatchSamplerWorkspace {
   // the sampled token results before they are exposed as SampledTokenView.
   Qwen2HostDeviceInt32TensorPair row_indices;
   Qwen2HostDeviceInt32TensorPair token_ids;
+  Qwen2HostDeviceTensorPair temperatures;
+  Qwen2HostDeviceTensorPair top_ps;
+  Qwen2HostDeviceInt32TensorPair top_ks;
+  Qwen2HostDeviceTensorPair random_values;
 
   // Recorded after the device-to-host token copy so batch_sample_device() can wait
   // only for the sampler stream work instead of synchronizing the whole device.
@@ -138,6 +145,8 @@ class Qwen2Model : public Model {
   // Batch sample: argmax over [batch_size, vocab_size] forward output
   serving::SampledTokenView batch_sample(int32_t batch_size) const;
   serving::SampledTokenView batch_sample(const serving::MixedBatchMetadata& batch) const;
+  serving::SampledTokenView batch_sample(const serving::MixedBatchMetadata& batch,
+                                         const serving::SchedulerOutput& sched_out) const;
 
   // Prefill a chunk of prompt tokens for a request.
   // Returns next_token prediction from the last token in the chunk.

@@ -10,6 +10,15 @@
 
 namespace base {
 
+struct KVBlockPayloadPtrs {
+  void* key = nullptr;
+  void* value = nullptr;
+  void* key_scale = nullptr;
+  void* value_scale = nullptr;
+  size_t key_value_bytes = 0;
+  size_t scale_bytes = 0;
+};
+
 // Manages a pool of fixed-size KV cache blocks
 class BlockAllocator {
  public:
@@ -39,6 +48,8 @@ class BlockAllocator {
   // Returns (key_ptr, value_ptr)
   std::pair<void*, void*> get_block_ptrs(int32_t block_id) const;
 
+  KVBlockPayloadPtrs get_block_payload_ptrs(int32_t block_id) const;
+
   // Query free blocks
   int32_t num_free_blocks() const { return static_cast<int32_t>(free_queue_.size()); }
   int32_t num_total_blocks() const { return num_blocks_; }
@@ -62,6 +73,9 @@ class BlockAllocator {
   base::DataType logical_dtype() const { return storage_spec_.logical_dtype; }
   base::DataType storage_dtype() const { return storage_spec_.storage_dtype; }
   base::DataType scale_dtype() const { return storage_spec_.scale_dtype; }
+  base::DeviceType device_type() const { return device_; }
+  size_t key_value_bytes_per_block() const;
+  size_t scale_bytes_per_block() const;
 
  private:
   int32_t num_blocks_;

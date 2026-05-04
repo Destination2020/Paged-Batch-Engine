@@ -15,9 +15,10 @@ aux_source_directory(../test/test_cu DIR_TEST_CU)
 aux_source_directory(../test/test_op DIR_TEST_OP)
 aux_source_directory(../test/test_model DIR_TEST_MODEL)
 aux_source_directory(../test/test_tensor DIR_TEST_TENSOR)
+aux_source_directory(../test/test_serving DIR_TEST_SERVING)
 aux_source_directory(../test/optimized DIR_TEST_OPTIMIZED)
 
-add_executable(test_llm ${DIR_TEST} ${DIR_TEST_CUDA} ${DIR_TEST_CU} ${DIR_TEST_OP} ${DIR_TEST_OPTIMIZED} ${DIR_TEST_TENSOR} ${DIR_TEST_MODEL})
+add_executable(test_llm ${DIR_TEST} ${DIR_TEST_CUDA} ${DIR_TEST_CU} ${DIR_TEST_OP} ${DIR_TEST_OPTIMIZED} ${DIR_TEST_TENSOR} ${DIR_TEST_SERVING} ${DIR_TEST_MODEL})
 
 # Enable debug symbols for CUDA (uncomment for CUDA debugging)
 set(CMAKE_CUDA_FLAGS_DEBUG "${CMAKE_CUDA_FLAGS_DEBUG} -g -G")

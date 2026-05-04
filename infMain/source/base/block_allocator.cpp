@@ -134,4 +134,38 @@ std::pair<void*, void*> BlockAllocator::get_block_ptrs(int32_t block_id) const {
   return {key_ptr, value_ptr};
 }
 
+size_t BlockAllocator::key_value_bytes_per_block() const {
+  return static_cast<size_t>(block_size_) * num_kv_heads_ * head_size_ *
+         DataTypeSize(storage_spec_.storage_dtype);
+}
+
+size_t BlockAllocator::scale_bytes_per_block() const {
+  if (!storage_spec_.has_scales()) {
+    return 0;
+  }
+  return static_cast<size_t>(block_size_) * num_kv_heads_ *
+         DataTypeSize(storage_spec_.scale_dtype);
+}
+
+KVBlockPayloadPtrs BlockAllocator::get_block_payload_ptrs(int32_t block_id) const {
+  CHECK_GE(block_id, 0);
+  CHECK_LT(block_id, num_blocks_);
+
+  const size_t key_value_bytes = key_value_bytes_per_block();
+  const size_t key_value_offset = static_cast<size_t>(block_id) * key_value_bytes;
+  KVBlockPayloadPtrs ptrs;
+  ptrs.key = const_cast<uint8_t*>(key_pool_.ptr<uint8_t>(key_value_offset));
+  ptrs.value = const_cast<uint8_t*>(value_pool_.ptr<uint8_t>(key_value_offset));
+  ptrs.key_value_bytes = key_value_bytes;
+
+  const size_t scale_bytes = scale_bytes_per_block();
+  ptrs.scale_bytes = scale_bytes;
+  if (scale_bytes > 0) {
+    const size_t scale_offset = static_cast<size_t>(block_id) * scale_bytes;
+    ptrs.key_scale = const_cast<uint8_t*>(key_scale_pool_.ptr<uint8_t>(scale_offset));
+    ptrs.value_scale = const_cast<uint8_t*>(value_scale_pool_.ptr<uint8_t>(scale_offset));
+  }
+  return ptrs;
+}
+
 }  // namespace base

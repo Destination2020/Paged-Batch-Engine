@@ -6,6 +6,7 @@
 #include <cmath>
 #include <limits>
 #include <numeric>
+#include <random>
 #include <glog/logging.h>
 #include <op/matmul.h>
 #include <op/mha.h>
@@ -18,6 +19,7 @@
 #include "base/tick.h"
 #include "model/paged_kv_runtime.h"
 #include "model/serving_memory_planner.h"
+#include "op/kernels/cuda/sampler_kernel.cuh"
 #include "../op/kernels/kernels_interface.h"
 namespace model {
 
@@ -89,6 +91,113 @@ void argmax_host_rows_into(const T* logits,
     }
     results[sample_idx] = best;
   }
+}
+
+
+struct SamplingCandidate {
+  int32_t token = 0;
+  float logit = 0.0f;
+  double prob = 0.0;
+};
+
+bool sampling_is_greedy(const serving::SamplingConfig& sampling) {
+  return sampling.temperature <= 0.0 && sampling.top_k <= 0 && sampling.top_p >= 1.0 &&
+         sampling.repetition_penalty == 1.0;
+}
+
+template <typename T>
+int32_t sample_host_row_with_config(const T* row,
+                                    int32_t vocab_size,
+                                    const serving::SamplingConfig& sampling,
+                                    const std::vector<int32_t>& previous_tokens,
+                                    std::mt19937* rng) {
+  CHECK_NE(row, nullptr);
+  CHECK_NE(rng, nullptr);
+  if (sampling_is_greedy(sampling)) {
+    int32_t best = 0;
+    float best_val = host_logit_to_float(row[0]);
+    for (int32_t vocab_idx = 1; vocab_idx < vocab_size; ++vocab_idx) {
+      const float value = host_logit_to_float(row[vocab_idx]);
+      if (value > best_val) {
+        best_val = value;
+        best = vocab_idx;
+      }
+    }
+    return best;
+  }
+
+  std::vector<SamplingCandidate> candidates;
+  candidates.reserve(vocab_size);
+  for (int32_t vocab_idx = 0; vocab_idx < vocab_size; ++vocab_idx) {
+    float logit = host_logit_to_float(row[vocab_idx]);
+    if (sampling.repetition_penalty != 1.0) {
+      for (int32_t prev : previous_tokens) {
+        if (prev == vocab_idx) {
+          if (logit > 0.0f) {
+            logit = static_cast<float>(logit / sampling.repetition_penalty);
+          } else {
+            logit = static_cast<float>(logit * sampling.repetition_penalty);
+          }
+          break;
+        }
+      }
+    }
+    candidates.push_back({vocab_idx, logit, 0.0});
+  }
+
+  const int32_t top_k = sampling.top_k > 0
+      ? std::min(sampling.top_k, static_cast<int32_t>(candidates.size()))
+      : static_cast<int32_t>(candidates.size());
+  std::partial_sort(candidates.begin(), candidates.begin() + top_k, candidates.end(),
+                    [](const SamplingCandidate& lhs, const SamplingCandidate& rhs) {
+                      return lhs.logit > rhs.logit;
+                    });
+  candidates.resize(top_k);
+
+  const double temperature = std::max(1e-6, sampling.temperature);
+  const float max_logit = candidates.front().logit;
+  double denom = 0.0;
+  for (auto& candidate : candidates) {
+    candidate.prob = std::exp((static_cast<double>(candidate.logit - max_logit)) / temperature);
+    denom += candidate.prob;
+  }
+  if (denom <= 0.0 || !std::isfinite(denom)) {
+    return candidates.front().token;
+  }
+  for (auto& candidate : candidates) {
+    candidate.prob /= denom;
+  }
+
+  std::sort(candidates.begin(), candidates.end(),
+            [](const SamplingCandidate& lhs, const SamplingCandidate& rhs) {
+              return lhs.prob > rhs.prob;
+            });
+  if (sampling.top_p < 1.0) {
+    double cumulative = 0.0;
+    size_t keep = 0;
+    for (; keep < candidates.size(); ++keep) {
+      cumulative += candidates[keep].prob;
+      if (cumulative >= sampling.top_p) {
+        ++keep;
+        break;
+      }
+    }
+    candidates.resize(std::max<size_t>(1, keep));
+  }
+
+  double weight_sum = 0.0;
+  for (const auto& candidate : candidates) {
+    weight_sum += candidate.prob;
+  }
+  std::uniform_real_distribution<double> dist(0.0, weight_sum);
+  double draw = dist(*rng);
+  for (const auto& candidate : candidates) {
+    draw -= candidate.prob;
+    if (draw <= 0.0) {
+      return candidate.token;
+    }
+  }
+  return candidates.back().token;
 }
 
 void ensure_tensor_storage(tensor::Tensor& tensor,
@@ -1254,6 +1363,30 @@ void Qwen2Model::ensure_batch_sampler_workspace(int32_t sample_count) const {
   ensure_tensor_storage(batch_sampler_workspace_.token_ids.host,
                         base::DataType::kDataTypeInt32,
                         sample_count, host_alloc, base::DeviceType::kDeviceCPU);
+  ensure_tensor_storage(batch_sampler_workspace_.temperatures.host,
+                        base::DataType::kDataTypeFp32, sample_count, host_alloc,
+                        base::DeviceType::kDeviceCPU);
+  ensure_tensor_storage(batch_sampler_workspace_.temperatures.device,
+                        base::DataType::kDataTypeFp32, sample_count, device_alloc,
+                        device_type_);
+  ensure_tensor_storage(batch_sampler_workspace_.top_ps.host,
+                        base::DataType::kDataTypeFp32, sample_count, host_alloc,
+                        base::DeviceType::kDeviceCPU);
+  ensure_tensor_storage(batch_sampler_workspace_.top_ps.device,
+                        base::DataType::kDataTypeFp32, sample_count, device_alloc,
+                        device_type_);
+  ensure_tensor_storage(batch_sampler_workspace_.top_ks.host,
+                        base::DataType::kDataTypeInt32, sample_count, host_alloc,
+                        base::DeviceType::kDeviceCPU);
+  ensure_tensor_storage(batch_sampler_workspace_.top_ks.device,
+                        base::DataType::kDataTypeInt32, sample_count, device_alloc,
+                        device_type_);
+  ensure_tensor_storage(batch_sampler_workspace_.random_values.host,
+                        base::DataType::kDataTypeFp32, sample_count, host_alloc,
+                        base::DeviceType::kDeviceCPU);
+  ensure_tensor_storage(batch_sampler_workspace_.random_values.device,
+                        base::DataType::kDataTypeFp32, sample_count, device_alloc,
+                        device_type_);
 }
 
 void Qwen2Model::ensure_batch_sampler_sync_event() const {
@@ -1453,6 +1586,151 @@ serving::SampledTokenView Qwen2Model::batch_sample(const serving::MixedBatchMeta
   CHECK(!batch.logits_indices.is_empty());
   return batch_sample_device(forward_output, batch.logits_indices,
                              static_cast<int32_t>(batch.logits_row_indices.size()));
+}
+
+serving::SampledTokenView Qwen2Model::batch_sample(
+    const serving::MixedBatchMetadata& batch,
+    const serving::SchedulerOutput& sched_out) const {
+  if (batch.logits_row_indices.empty()) {
+    return {};
+  }
+
+  bool all_greedy = true;
+  for (int32_t sample_idx = 0;
+       sample_idx < static_cast<int32_t>(batch.sample_row_to_request.size());
+       ++sample_idx) {
+    const int32_t request_idx = batch.sample_row_to_request[sample_idx];
+    CHECK_GE(request_idx, 0);
+    CHECK_LT(request_idx, static_cast<int32_t>(sched_out.scheduled_seqs.size()));
+    const auto* seq = sched_out.scheduled_seqs[request_idx];
+    CHECK_NE(seq, nullptr);
+    if (!sampling_is_greedy(seq->generation_config.sampling)) {
+      all_greedy = false;
+      break;
+    }
+  }
+  if (all_greedy) {
+    return batch_sample(batch);
+  }
+
+  const int32_t sample_count = static_cast<int32_t>(batch.logits_row_indices.size());
+  ensure_batch_sampler_workspace(sample_count);
+  int32_t* host_tokens = batch_sampler_workspace_.token_ids.host.ptr<int32_t>();
+  tensor::Tensor forward_output =
+      reshape_view(get_buffer(ModelBufferType::kForwardOutput),
+                   {batch.num_tokens, config_->vocab_size_});
+
+  bool can_use_cuda_sampling = device_type_ == base::DeviceType::kDeviceCUDA &&
+                               !batch_sample_cpu_fallback_enabled();
+  for (int32_t sample_idx = 0; sample_idx < sample_count; ++sample_idx) {
+    const int32_t request_idx = batch.sample_row_to_request[sample_idx];
+    const auto* seq = sched_out.scheduled_seqs[request_idx];
+    const auto& sampling = seq->generation_config.sampling;
+    if (sampling.repetition_penalty != 1.0 ||
+        sampling.top_k <= 0 || sampling.top_k > 32) {
+      can_use_cuda_sampling = false;
+      break;
+    }
+  }
+
+  if (can_use_cuda_sampling) {
+    base::nvtx::ScopedRange range("batch_sample_configured_cuda", base::nvtx::kColorSample);
+    float* temperatures = batch_sampler_workspace_.temperatures.host.ptr<float>();
+    float* top_ps = batch_sampler_workspace_.top_ps.host.ptr<float>();
+    int32_t* top_ks = batch_sampler_workspace_.top_ks.host.ptr<int32_t>();
+    float* random_values = batch_sampler_workspace_.random_values.host.ptr<float>();
+    std::mt19937 rng(0xC0FFEEu + static_cast<uint32_t>(sample_count));
+    std::uniform_real_distribution<float> uniform(0.0f, 0.99999994f);
+    for (int32_t sample_idx = 0; sample_idx < sample_count; ++sample_idx) {
+      const int32_t request_idx = batch.sample_row_to_request[sample_idx];
+      const auto* seq = sched_out.scheduled_seqs[request_idx];
+      const auto& sampling = seq->generation_config.sampling;
+      temperatures[sample_idx] = static_cast<float>(std::max(1.0e-6, sampling.temperature));
+      top_ps[sample_idx] = static_cast<float>(sampling.top_p);
+      top_ks[sample_idx] = sampling.top_k;
+      random_values[sample_idx] = uniform(rng);
+    }
+    void* queue = compute_queue_or_null(device_context_);
+    runtime_copy_or_die(device_context_, temperatures,
+                        batch_sampler_workspace_.temperatures.device.ptr<float>(),
+                        static_cast<size_t>(sample_count) * sizeof(float),
+                        base::CopyDirection::kHostToDevice, queue, false);
+    runtime_copy_or_die(device_context_, top_ps,
+                        batch_sampler_workspace_.top_ps.device.ptr<float>(),
+                        static_cast<size_t>(sample_count) * sizeof(float),
+                        base::CopyDirection::kHostToDevice, queue, false);
+    runtime_copy_or_die(device_context_, top_ks,
+                        batch_sampler_workspace_.top_ks.device.ptr<int32_t>(),
+                        static_cast<size_t>(sample_count) * sizeof(int32_t),
+                        base::CopyDirection::kHostToDevice, queue, false);
+    runtime_copy_or_die(device_context_, random_values,
+                        batch_sampler_workspace_.random_values.device.ptr<float>(),
+                        static_cast<size_t>(sample_count) * sizeof(float),
+                        base::CopyDirection::kHostToDevice, queue, false);
+
+    tensor::Tensor token_ids_device =
+        reshape_view(batch_sampler_workspace_.token_ids.device, {sample_count});
+    kernel::sample_topk_topp_selected_rows_cu(
+        forward_output, batch.logits_indices,
+        reshape_view(batch_sampler_workspace_.temperatures.device, {sample_count}),
+        reshape_view(batch_sampler_workspace_.top_ps.device, {sample_count}),
+        reshape_view(batch_sampler_workspace_.top_ks.device, {sample_count}),
+        reshape_view(batch_sampler_workspace_.random_values.device, {sample_count}),
+        token_ids_device, queue);
+    runtime_copy_or_die(device_context_, token_ids_device.ptr<int32_t>(), host_tokens,
+                        static_cast<size_t>(sample_count) * sizeof(int32_t),
+                        base::CopyDirection::kDeviceToHost, queue, true);
+    return {host_tokens, sample_count};
+  }
+
+  base::nvtx::ScopedRange range("batch_sample_configured_cpu", base::nvtx::kColorSample);
+
+  std::mt19937 rng(0xC0FFEEu + static_cast<uint32_t>(sample_count));
+  const int64_t logits_elements = static_cast<int64_t>(batch.num_tokens) * config_->vocab_size_;
+  if (forward_output.data_type() == base::DataType::kDataTypeFp32) {
+    std::vector<float> logits_cpu;
+    const float* logits_ptr = nullptr;
+    if (forward_output.device_type() == base::DeviceType::kDeviceCPU) {
+      logits_ptr = forward_output.ptr<float>();
+    } else {
+      logits_cpu.resize(logits_elements);
+      runtime_copy_or_die(device_context_, forward_output.ptr<float>(), logits_cpu.data(),
+                          static_cast<size_t>(logits_elements) * sizeof(float),
+                          base::CopyDirection::kDeviceToHost, nullptr, true);
+      logits_ptr = logits_cpu.data();
+    }
+    for (int32_t sample_idx = 0; sample_idx < sample_count; ++sample_idx) {
+      const int32_t row_idx = batch.logits_row_indices[sample_idx];
+      const int32_t request_idx = batch.sample_row_to_request[sample_idx];
+      const auto* seq = sched_out.scheduled_seqs[request_idx];
+      host_tokens[sample_idx] = sample_host_row_with_config(
+          logits_ptr + static_cast<int64_t>(row_idx) * config_->vocab_size_,
+          config_->vocab_size_, seq->generation_config.sampling, seq->output_tokens, &rng);
+    }
+    return {host_tokens, sample_count};
+  }
+
+  CHECK_EQ(forward_output.data_type(), base::DataType::kDataTypeBf16);
+  std::vector<uint16_t> logits_cpu;
+  const uint16_t* logits_ptr = nullptr;
+  if (forward_output.device_type() == base::DeviceType::kDeviceCPU) {
+    logits_ptr = forward_output.ptr<uint16_t>();
+  } else {
+    logits_cpu.resize(logits_elements);
+    runtime_copy_or_die(device_context_, forward_output.ptr<uint16_t>(), logits_cpu.data(),
+                        static_cast<size_t>(logits_elements) * sizeof(uint16_t),
+                        base::CopyDirection::kDeviceToHost, nullptr, true);
+    logits_ptr = logits_cpu.data();
+  }
+  for (int32_t sample_idx = 0; sample_idx < sample_count; ++sample_idx) {
+    const int32_t row_idx = batch.logits_row_indices[sample_idx];
+    const int32_t request_idx = batch.sample_row_to_request[sample_idx];
+    const auto* seq = sched_out.scheduled_seqs[request_idx];
+    host_tokens[sample_idx] = sample_host_row_with_config(
+        logits_ptr + static_cast<int64_t>(row_idx) * config_->vocab_size_,
+        config_->vocab_size_, seq->generation_config.sampling, seq->output_tokens, &rng);
+  }
+  return {host_tokens, sample_count};
 }
 
 int32_t Qwen2Model::prefill_chunk(base::RequestId request_id,

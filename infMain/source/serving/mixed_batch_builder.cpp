@@ -160,15 +160,15 @@ MixedBatchMetadata MixedBatchBuilder::build(const SchedulerOutput& output, void*
       logits_row_indices_.push_back(row_cursor);
       logits_indices[logits_count++] = row_cursor;
     } else {
-      const int32_t start_pos = seq->num_prompt_tokens_computed;
-      CHECK_LE(start_pos + scheduled_tokens, seq->prefill_target_tokens());
+      const int32_t start_pos = seq->computed_tokens;
+      CHECK_LE(start_pos + scheduled_tokens, seq->target_tokens());
 
       for (int32_t token_offset = 0; token_offset < scheduled_tokens; ++token_offset) {
         token_ids[row_cursor + token_offset] = seq->prefill_token_at(start_pos + token_offset);
         positions[row_cursor + token_offset] = start_pos + token_offset;
       }
 
-      if (start_pos + scheduled_tokens == seq->prefill_target_tokens()) {
+      if (start_pos + scheduled_tokens == seq->target_tokens()) {
         const int32_t sample_row = row_cursor + scheduled_tokens - 1;
         sample_row_to_request_.push_back(request_idx);
         logits_row_indices_.push_back(sample_row);

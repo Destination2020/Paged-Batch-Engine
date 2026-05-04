@@ -268,6 +268,160 @@ void launch_argmax_selected_rows(const tensor::Tensor& logits,
       logits.get_dim(1));
 }
 
+
+template <typename T>
+__global__ void sample_topk_topp_selected_rows_kernel(
+    const T* __restrict__ logits,
+    const int32_t* __restrict__ row_indices,
+    const float* __restrict__ temperatures,
+    const float* __restrict__ top_ps,
+    const int32_t* __restrict__ top_ks,
+    const float* __restrict__ random_values,
+    int32_t* __restrict__ token_ids,
+    int32_t vocab_size) {
+  constexpr int32_t kMaxCudaTopK = 32;
+  constexpr int32_t kThreads = 128;
+  __shared__ float shared_values[kThreads * kMaxCudaTopK];
+  __shared__ int32_t shared_indices[kThreads * kMaxCudaTopK];
+  __shared__ float final_values[kMaxCudaTopK];
+  __shared__ int32_t final_indices[kMaxCudaTopK];
+  __shared__ float final_probs[kMaxCudaTopK];
+  __shared__ int32_t final_keep;
+  __shared__ float final_weight_sum;
+
+  const int32_t sample_idx = blockIdx.x;
+  const int32_t tid = threadIdx.x;
+  const int32_t row_idx = row_indices[sample_idx];
+  const T* row = logits + static_cast<int64_t>(row_idx) * vocab_size;
+  const int32_t requested_top_k = top_ks[sample_idx] > 0 ? top_ks[sample_idx] : kMaxCudaTopK;
+  const int32_t top_k = min(min(requested_top_k, vocab_size), kMaxCudaTopK);
+
+  float local_values[kMaxCudaTopK];
+  int32_t local_indices[kMaxCudaTopK];
+  for (int32_t idx = 0; idx < top_k; ++idx) {
+    local_values[idx] = -3.4028234663852886e38F;
+    local_indices[idx] = 0;
+  }
+
+  for (int32_t vocab_idx = tid; vocab_idx < vocab_size; vocab_idx += blockDim.x) {
+    const float value = scalar_to_float(row[vocab_idx]);
+    if (value <= local_values[top_k - 1]) {
+      continue;
+    }
+    int32_t insert_pos = top_k - 1;
+    while (insert_pos > 0 && value > local_values[insert_pos - 1]) {
+      local_values[insert_pos] = local_values[insert_pos - 1];
+      local_indices[insert_pos] = local_indices[insert_pos - 1];
+      --insert_pos;
+    }
+    local_values[insert_pos] = value;
+    local_indices[insert_pos] = vocab_idx;
+  }
+
+  for (int32_t idx = 0; idx < top_k; ++idx) {
+    shared_values[tid * kMaxCudaTopK + idx] = local_values[idx];
+    shared_indices[tid * kMaxCudaTopK + idx] = local_indices[idx];
+  }
+  __syncthreads();
+
+  if (tid == 0) {
+    for (int32_t idx = 0; idx < top_k; ++idx) {
+      final_values[idx] = -3.4028234663852886e38F;
+      final_indices[idx] = 0;
+    }
+    for (int32_t thread_idx = 0; thread_idx < blockDim.x; ++thread_idx) {
+      for (int32_t candidate_idx = 0; candidate_idx < top_k; ++candidate_idx) {
+        const float value = shared_values[thread_idx * kMaxCudaTopK + candidate_idx];
+        const int32_t token = shared_indices[thread_idx * kMaxCudaTopK + candidate_idx];
+        if (value <= final_values[top_k - 1]) {
+          continue;
+        }
+        int32_t insert_pos = top_k - 1;
+        while (insert_pos > 0 && value > final_values[insert_pos - 1]) {
+          final_values[insert_pos] = final_values[insert_pos - 1];
+          final_indices[insert_pos] = final_indices[insert_pos - 1];
+          --insert_pos;
+        }
+        final_values[insert_pos] = value;
+        final_indices[insert_pos] = token;
+      }
+    }
+
+    const float temperature = fmaxf(temperatures[sample_idx], 1.0e-6f);
+    const float top_p = fminf(fmaxf(top_ps[sample_idx], 0.0f), 1.0f);
+    const float max_logit = final_values[0];
+    float denom = 0.0f;
+    for (int32_t idx = 0; idx < top_k; ++idx) {
+      final_probs[idx] = expf((final_values[idx] - max_logit) / temperature);
+      denom += final_probs[idx];
+    }
+    if (!(denom > 0.0f) || !isfinite(denom)) {
+      token_ids[sample_idx] = final_indices[0];
+      final_keep = 1;
+      final_weight_sum = 1.0f;
+      return;
+    }
+    for (int32_t idx = 0; idx < top_k; ++idx) {
+      final_probs[idx] /= denom;
+    }
+
+    int32_t keep = top_k;
+    if (top_p < 1.0f) {
+      float cumulative = 0.0f;
+      keep = 0;
+      for (; keep < top_k; ++keep) {
+        cumulative += final_probs[keep];
+        if (cumulative >= top_p) {
+          ++keep;
+          break;
+        }
+      }
+      keep = max(1, keep);
+    }
+    float weight_sum = 0.0f;
+    for (int32_t idx = 0; idx < keep; ++idx) {
+      weight_sum += final_probs[idx];
+    }
+    final_keep = keep;
+    final_weight_sum = weight_sum;
+  }
+  __syncthreads();
+
+  if (tid == 0) {
+    const float random_value = fminf(fmaxf(random_values[sample_idx], 0.0f), 0.99999994f);
+    float draw = random_value * final_weight_sum;
+    for (int32_t idx = 0; idx < final_keep; ++idx) {
+      draw -= final_probs[idx];
+      if (draw <= 0.0f) {
+        token_ids[sample_idx] = final_indices[idx];
+        return;
+      }
+    }
+    token_ids[sample_idx] = final_indices[final_keep - 1];
+  }
+}
+
+template <typename T>
+void launch_sample_topk_topp_selected_rows(const tensor::Tensor& logits,
+                                           const tensor::Tensor& row_indices,
+                                           const tensor::Tensor& temperatures,
+                                           const tensor::Tensor& top_ps,
+                                           const tensor::Tensor& top_ks,
+                                           const tensor::Tensor& random_values,
+                                           tensor::Tensor& token_ids,
+                                           cudaStream_t stream) {
+  const int32_t sample_count = row_indices.get_dim(0);
+  constexpr int32_t kThreads = 128;
+  sample_topk_topp_selected_rows_kernel<T><<<sample_count, kThreads, 0, stream>>>(
+      logits.ptr<T>(), row_indices.ptr<int32_t>(), temperatures.ptr<float>(),
+      top_ps.ptr<float>(), top_ks.ptr<int32_t>(), random_values.ptr<float>(),
+      token_ids.ptr<int32_t>(), logits.get_dim(1));
+  const cudaError_t err = cudaPeekAtLastError();
+  CHECK_EQ(err, cudaSuccess)
+      << "sample_topk_topp_selected_rows_kernel launch failed: "
+      << cudaGetErrorString(err);
+}
+
 void validate_logits_tensor(const tensor::Tensor& logits) {
   CHECK_EQ(logits.device_type(), base::DeviceType::kDeviceCUDA);
   CHECK_EQ(logits.dims_size(), 2);
@@ -340,6 +494,43 @@ void argmax_selected_rows_cu(const tensor::Tensor& logits,
     launch_argmax_selected_rows<float>(logits, row_indices, token_ids, cuda_stream);
   } else {
     launch_argmax_selected_rows<base::CudaBF16>(logits, row_indices, token_ids, cuda_stream);
+  }
+}
+
+
+void sample_topk_topp_selected_rows_cu(const tensor::Tensor& logits,
+                                       const tensor::Tensor& row_indices,
+                                       const tensor::Tensor& temperatures,
+                                       const tensor::Tensor& top_ps,
+                                       const tensor::Tensor& top_ks,
+                                       const tensor::Tensor& random_values,
+                                       tensor::Tensor& token_ids,
+                                       void* stream) {
+  validate_logits_tensor(logits);
+  validate_row_indices_tensor(row_indices);
+  validate_token_ids_tensor(token_ids, row_indices.get_dim(0));
+  CHECK_EQ(temperatures.device_type(), base::DeviceType::kDeviceCUDA);
+  CHECK_EQ(top_ps.device_type(), base::DeviceType::kDeviceCUDA);
+  CHECK_EQ(top_ks.device_type(), base::DeviceType::kDeviceCUDA);
+  CHECK_EQ(random_values.device_type(), base::DeviceType::kDeviceCUDA);
+  CHECK_EQ(temperatures.data_type(), base::DataType::kDataTypeFp32);
+  CHECK_EQ(top_ps.data_type(), base::DataType::kDataTypeFp32);
+  CHECK_EQ(top_ks.data_type(), base::DataType::kDataTypeInt32);
+  CHECK_EQ(random_values.data_type(), base::DataType::kDataTypeFp32);
+  CHECK_EQ(temperatures.get_dim(0), row_indices.get_dim(0));
+  CHECK_EQ(top_ps.get_dim(0), row_indices.get_dim(0));
+  CHECK_EQ(top_ks.get_dim(0), row_indices.get_dim(0));
+  CHECK_EQ(random_values.get_dim(0), row_indices.get_dim(0));
+
+  cudaStream_t cuda_stream = static_cast<cudaStream_t>(stream);
+  if (logits.data_type() == base::DataType::kDataTypeFp32) {
+    launch_sample_topk_topp_selected_rows<float>(
+        logits, row_indices, temperatures, top_ps, top_ks, random_values, token_ids,
+        cuda_stream);
+  } else {
+    launch_sample_topk_topp_selected_rows<base::CudaBF16>(
+        logits, row_indices, temperatures, top_ps, top_ks, random_values, token_ids,
+        cuda_stream);
   }
 }
 

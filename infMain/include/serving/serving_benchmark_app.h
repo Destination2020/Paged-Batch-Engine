@@ -26,6 +26,7 @@ class ServingBenchmarkApp {
   virtual ~ServingBenchmarkApp() = default;
 
   int run(int argc, char* argv[]);
+  const BenchConfig& bench_config() const { return bench_config_; }
   virtual const char* usage_name() const = 0;
   virtual bool initialize_model(const std::string& model_path,
                                 const std::string& tokenizer_path,
@@ -39,7 +40,8 @@ class ServingBenchmarkApp {
   virtual bool is_sentence_ending(int32_t token) const = 0;
   virtual base::Status forward_mixed_batch(const MixedBatchMetadata& batch) const = 0;
   virtual base::Status forward_decode_batch(const MixedBatchMetadata& batch) const = 0;
-  virtual SampledTokenView batch_sample(const MixedBatchMetadata& batch) const = 0;
+  virtual SampledTokenView batch_sample(const MixedBatchMetadata& batch,
+                                      const SchedulerOutput& sched_out) const = 0;
 
   virtual std::vector<std::string> default_prompts() const;
   virtual std::string postprocess_decoded_text(std::string text) const;
@@ -56,10 +58,10 @@ class ServingBenchmarkApp {
   void submit_requests_to(Scheduler& scheduler,
                           int32_t max_new_tokens,
                           bool quiet) const;
-  int run_online_server();
   void run_serving_loop();
   void run_serving_step(void* stream);
-  StepProfile build_step_profile(const MixedBatchMetadata& batch,
+  StepProfile build_step_profile(const SchedulerOutput& sched_out,
+                                 const MixedBatchMetadata& batch,
                                  size_t sampled_token_count,
                                  Clock::time_point schedule_start,
                                  Clock::time_point schedule_end,
@@ -74,6 +76,7 @@ class ServingBenchmarkApp {
                                  Clock::time_point step_start,
                                  Clock::time_point step_end) const;
   void process_finished(const std::vector<SequenceState>& finished);
+  void record_no_progress_step(const SchedulerOutput& sched_out);
   void record_step_profile(const StepProfile& profile,
                            bool decode_only_step,
                            int32_t finished_count);

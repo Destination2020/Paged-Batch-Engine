@@ -65,7 +65,7 @@ TEST(SchedulerRadixCacheTest, PartialHitBuildsCorrectPrefillMetadataAcrossChunks
 
   serving::Scheduler scheduler(config, &kv_manager);
   const auto partial_hit_prompt = Tokens({1, 2, 3, 4, 5, 6, 11, 12, 13, 14});
-  scheduler.add_request(partial_hit_prompt, /*max_new_tokens=*/4);
+  scheduler.add_request(partial_hit_prompt, serving::GenerationConfig(4));
 
   const auto output1 = scheduler.schedule_step();
   ASSERT_EQ(output1.num_prefill_seqs, 1);
@@ -77,7 +77,7 @@ TEST(SchedulerRadixCacheTest, PartialHitBuildsCorrectPrefillMetadataAcrossChunks
 
   auto* seq1 = output1.scheduled_seqs[0];
   ASSERT_NE(seq1, nullptr);
-  EXPECT_EQ(seq1->num_prompt_tokens_computed, 6);
+  EXPECT_EQ(seq1->computed_tokens, 6);
   EXPECT_EQ(kv_manager.get_context_len(seq1->request_id), 6);
 
   const auto& request_blocks_before_chunk = kv_manager.get_block_ids(seq1->request_id, 0);
@@ -116,7 +116,7 @@ TEST(SchedulerRadixCacheTest, PartialHitBuildsCorrectPrefillMetadataAcrossChunks
 
   auto* seq2 = output2.scheduled_seqs[0];
   ASSERT_NE(seq2, nullptr);
-  EXPECT_EQ(seq2->num_prompt_tokens_computed, 8);
+  EXPECT_EQ(seq2->computed_tokens, 8);
   EXPECT_EQ(kv_manager.get_context_len(seq2->request_id), 8);
 
   auto batch2 = scheduler.build_mixed_batch(output2, nullptr);
@@ -130,4 +130,51 @@ TEST(SchedulerRadixCacheTest, PartialHitBuildsCorrectPrefillMetadataAcrossChunks
       TensorToIntVector(batch2.block_tables),
       std::vector<int32_t>({cached_blocks[0], cached_blocks[1], cached_blocks[2],
                             first_private_block}));
+}
+
+TEST(SchedulerPolicyTest, PriorityPolicyAdmitsHigherPriorityWaitingRequestFirst) {
+  constexpr int32_t kBlockSize = 4;
+  constexpr int32_t kNumLayers = 1;
+  base::KVCacheManager kv_manager(
+      kBlockSize, kNumLayers, make_allocators(kNumLayers, 64, kBlockSize));
+
+  serving::SchedulerConfig config;
+  config.max_num_seqs = 2;
+  config.max_num_batched_tokens = 4;
+  config.prefill_chunk_cap = 4;
+  config.policy = serving::SchedulingPolicy::kPriority;
+
+  serving::Scheduler scheduler(config, &kv_manager);
+  auto low_priority = serving::GenerationConfig(4, 0, false, 1);
+  auto high_priority = serving::GenerationConfig(4, 0, false, 10);
+
+  scheduler.add_request(Tokens({1, 2, 3, 4}), low_priority);
+  scheduler.add_request(Tokens({5, 6, 7, 8}), high_priority);
+
+  const auto output = scheduler.schedule_step();
+  ASSERT_EQ(output.scheduled_seqs.size(), 1u);
+  EXPECT_EQ(output.scheduled_seqs[0]->generation_config.priority, 10);
+  EXPECT_EQ(output.num_tokens_per_seq[0], 4);
+}
+
+TEST(SchedulerPolicyTest, LongPrefillThresholdCapsChunkSize) {
+  constexpr int32_t kBlockSize = 4;
+  constexpr int32_t kNumLayers = 1;
+  base::KVCacheManager kv_manager(
+      kBlockSize, kNumLayers, make_allocators(kNumLayers, 64, kBlockSize));
+
+  serving::SchedulerConfig config;
+  config.max_num_seqs = 1;
+  config.max_num_batched_tokens = 8;
+  config.prefill_chunk_cap = 8;
+  config.long_prefill_token_threshold = 3;
+
+  serving::Scheduler scheduler(config, &kv_manager);
+  scheduler.add_request(Tokens({1, 2, 3, 4, 5, 6, 7, 8}),
+                        serving::GenerationConfig(4));
+
+  const auto output = scheduler.schedule_step();
+  ASSERT_EQ(output.scheduled_seqs.size(), 1u);
+  EXPECT_EQ(output.num_prefill_seqs, 1);
+  EXPECT_EQ(output.num_tokens_per_seq[0], 3);
 }

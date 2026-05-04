@@ -5,6 +5,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <string>
+#include "serving/scheduler.h"
 #include "serving/serving_capacity.h"
 
 namespace serving {
@@ -45,6 +46,10 @@ struct BenchConfig {
   int32_t max_new_tokens = 256;
   int32_t max_num_batched_tokens = kAutoMaxBatchedTokensSafetyCap;
   int32_t prefill_chunk_cap = kAutoPrefillChunkCapSafetyCap;
+  SchedulingPolicy scheduling_policy = SchedulingPolicy::kFCFS;
+  int32_t long_prefill_token_threshold = 0;
+  int32_t max_partial_prefills = 0;
+  int32_t max_long_partial_prefills = 0;
   int32_t warmup_rounds = 0;
   double kv_cache_memory_utilization = kDefaultKVCacheMemoryUtilization;
   std::string max_num_batched_tokens_request = "auto";
@@ -63,7 +68,11 @@ struct BenchConfig {
   bool online_server = false;
   std::string listen_host = "127.0.0.1";
   int32_t listen_port = 8080;
+  int32_t http_worker_threads = 0;   // 0 auto-selects a bounded worker pool
+  int32_t http_listen_backlog = 1024;
   int32_t max_queue_size = 128;
+  int32_t request_timeout_ms = 0;  // 0 disables request timeout
+  int32_t max_prompt_tokens = 0;   // 0 disables prompt length check
 };
 
 }  // namespace serving

@@ -2,12 +2,14 @@
 #ifndef KUIPER_INCLUDE_SERVING_SCHEDULER_H_
 #define KUIPER_INCLUDE_SERVING_SCHEDULER_H_
 
+#include <chrono>
 #include <cstdint>
 #include <deque>
 #include <functional>
 #include <memory>
 #include <vector>
 #include "base/kv_cache_manager.h"
+#include "serving/generation_config.h"
 #include "serving/mixed_batch.h"
 #include "serving/sequence_state.h"
 
@@ -15,13 +17,39 @@ namespace serving {
 
 class MixedBatchBuilder;
 
+enum class SchedulingPolicy {
+  kFCFS,
+  kPriority,
+};
+
 struct SchedulerConfig {
   int32_t max_num_seqs = 4;              // max concurrent sequences
   int32_t max_num_batched_tokens = 128;  // token budget per step
   int32_t prefill_chunk_cap = 64;        // max prefill tokens per request per step
+  SchedulingPolicy policy = SchedulingPolicy::kFCFS;
+  int32_t long_prefill_token_threshold = 0;  // 0 disables long-prefill throttling
+  int32_t max_partial_prefills = 0;          // 0 means no explicit limit
+  int32_t max_long_partial_prefills = 0;     // 0 means no explicit limit
 };
 
 // Scheduler output: what each request should do this step
+struct SchedulerMetrics {
+  int64_t schedule_steps = 0;
+  int64_t no_progress_steps = 0;
+  int64_t scheduled_decode_tokens = 0;
+  int64_t scheduled_prefill_tokens = 0;
+  int64_t scheduled_batched_tokens = 0;
+  int64_t preemptions = 0;
+  int64_t priority_preemptions = 0;
+  int64_t decode_kv_preemptions = 0;
+  int64_t waiting_rejections = 0;
+  int64_t stalled_prefill_failures = 0;
+  int64_t waiting_queue_samples = 0;
+  int64_t running_queue_samples = 0;
+  int32_t max_waiting_queue = 0;
+  int32_t max_running_queue = 0;
+};
+
 struct SchedulerOutput {
   // All sequences participating this step (both decode and prefill)
   std::vector<SequenceState*> scheduled_seqs;
@@ -33,6 +61,9 @@ struct SchedulerOutput {
   int32_t total_tokens = 0;
   int32_t num_decode_seqs = 0;
   int32_t num_prefill_seqs = 0;
+  int32_t waiting_queue_size = 0;
+  int32_t running_queue_size = 0;
+  int32_t preemptions = 0;
 };
 
 class Scheduler {
@@ -41,9 +72,13 @@ class Scheduler {
   ~Scheduler();
 
   // Submit a new request
-  int64_t add_request(std::vector<int32_t> prompt_tokens, int32_t max_new_tokens,
-                      int32_t min_new_tokens = 0,
-                      bool ignore_eos = false);
+  int64_t add_request(std::vector<int32_t> prompt_tokens,
+                      GenerationConfig generation_config);
+
+  int64_t add_decode_ready_request(base::RequestId request_id,
+                                   std::vector<int32_t> prompt_tokens,
+                                   GenerationConfig generation_config,
+                                   int32_t computed_tokens);
 
   bool cancel_request(int64_t client_request_id, const std::string& reason);
 
@@ -74,12 +109,57 @@ class Scheduler {
   void reset_request_arrival_times();
 
   bool has_active_requests() const;
+  const SchedulerMetrics& metrics() const { return metrics_; }
+  void reset_metrics() { metrics_ = SchedulerMetrics{}; }
 
  private:
   int32_t total_kv_token_capacity() const;
+  int32_t reusable_free_blocks() const;
   void reap_finished_running();
   void reap_preempted_running();
   void preempt_sequence(SequenceState* seq, const std::string& reason);
+  void reserve_metadata_capacity_for_request(int32_t prompt_tokens,
+                                             const GenerationConfig& generation_config);
+  void append_decode_to_output(SequenceState* seq, SchedulerOutput* output);
+  void append_prefill_to_output(SequenceState* seq,
+                                int32_t chunk,
+                                SchedulerOutput* output);
+  bool higher_priority(const SequenceState& lhs, const SequenceState& rhs) const;
+  void enqueue_waiting_sequence(SequenceState seq);
+  bool try_allocate_decode_slot(SequenceState* seq, std::string* preempt_reason);
+  int32_t choose_prefill_chunk(const SequenceState& seq, int32_t remaining_budget) const;
+  int32_t allocate_prefill_chunk(const SequenceState& seq,
+                                 int32_t desired_chunk,
+                                 int32_t* remaining_free_blocks) const;
+  int32_t running_partial_prefills() const;
+  int32_t running_long_partial_prefills() const;
+  bool can_schedule_prefill_now(const SequenceState& seq) const;
+  bool maybe_preempt_for_waiting_sequence(const SequenceState& waiting_seq,
+                                          int32_t* remaining_free_blocks);
+  void schedule_decode_sequences(SchedulerOutput* output,
+                                 int32_t* remaining_budget);
+  void schedule_running_prefills(SchedulerOutput* output,
+                                 int32_t* remaining_budget,
+                                 int32_t* remaining_free_blocks);
+  void admit_waiting_prefills(SchedulerOutput* output,
+                              int32_t* remaining_budget,
+                              int32_t* remaining_free_blocks);
+  void handle_no_progress_step(const SchedulerOutput& output);
+  void process_decode_output(SequenceState* seq,
+                             int32_t output_index,
+                             const MixedBatchMetadata& batch,
+                             const SampledTokenView& sampled_tokens,
+                             const std::function<bool(int32_t)>& is_eos,
+                             std::chrono::steady_clock::time_point now,
+                             int32_t* sample_idx);
+  void process_prefill_output(SequenceState* seq,
+                              int32_t output_index,
+                              const MixedBatchMetadata& batch,
+                              const SampledTokenView& sampled_tokens,
+                              const std::function<bool(int32_t)>& is_eos,
+                              std::chrono::steady_clock::time_point now,
+                              int32_t* sample_idx);
+  void maybe_publish_radix_cache(SequenceState* seq);
   bool can_admit_waiting_sequence(const SequenceState& seq,
                                   int32_t desired_chunk,
                                   int32_t free_blocks,
@@ -101,6 +181,7 @@ class Scheduler {
   std::deque<SequenceState> waiting_;
   std::deque<SequenceState> running_;
   std::vector<SequenceState> finished_;
+  SchedulerMetrics metrics_;
 };
 
 }  // namespace serving
