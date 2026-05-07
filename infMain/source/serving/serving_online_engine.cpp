@@ -1,9 +1,11 @@
 #include "serving/serving_online_engine.h"
 
 #include <glog/logging.h>
+#include <algorithm>
 #include <chrono>
 #include <deque>
 #include <utility>
+#include <cuda_runtime_api.h>
 
 #include "base/base.h"
 #include "serving/scheduler.h"
@@ -11,6 +13,21 @@
 #include "serving/serving_config.h"
 
 namespace serving {
+
+namespace {
+
+void set_online_worker_device_or_die(const BenchConfig& config) {
+  int32_t device_id = config.device_id;
+  if (is_remote_pd_mode(config.pd_mode)) {
+    device_id = config.decode_device_id;
+  }
+  const cudaError_t status = cudaSetDevice(device_id);
+  CHECK_EQ(status, cudaSuccess)
+      << "cudaSetDevice(" << device_id
+      << ") failed in online worker thread: " << cudaGetErrorString(status);
+}
+
+}  // namespace
 
 void OnlineRequestHandle::set_request_id(int64_t request_id) {
   std::lock_guard<std::mutex> lock(mu_);
@@ -64,6 +81,34 @@ bool OnlineRequestHandle::wait_next_token(std::string* token_text, bool* finishe
   return false;
 }
 
+bool OnlineRequestHandle::wait_next_token_for(int32_t timeout_ms,
+                                              std::string* token_text,
+                                              bool* finished,
+                                              bool* failed,
+                                              std::string* error) {
+  std::unique_lock<std::mutex> lock(mu_);
+  const bool ready = cv_.wait_for(
+      lock, std::chrono::milliseconds(std::max(1, timeout_ms)),
+      [&]() { return next_idx_ < token_texts_.size() || finished_; });
+  if (!ready) {
+    *finished = false;
+    *failed = false;
+    error->clear();
+    return false;
+  }
+  if (next_idx_ < token_texts_.size()) {
+    *token_text = token_texts_[next_idx_++];
+    *finished = false;
+    *failed = false;
+    error->clear();
+    return true;
+  }
+  *finished = true;
+  *failed = failed_;
+  *error = error_;
+  return false;
+}
+
 bool OnlineRequestHandle::wait_full_text(int32_t timeout_ms, std::string* text,
                                          bool* failed, std::string* error) {
   std::unique_lock<std::mutex> lock(mu_);
@@ -85,6 +130,15 @@ OnlineServingEngine::OnlineServingEngine(ServingBenchmarkApp* app, const BenchCo
 OnlineServingEngine::~OnlineServingEngine() { stop(); }
 
 void OnlineServingEngine::start() {
+  if (is_pd_mode(config_.pd_mode)) {
+    if (is_dual_gpu_pd_mode(config_.pd_mode)) {
+      CHECK(app_->pd_dual_gpu_supported())
+          << "pd-mode=" << config_.pd_mode << " requires app-provided P/D models";
+    }
+    worker_ = std::thread([this]() { run_pd_loop(); });
+    return;
+  }
+
   SchedulerConfig sched_config;
   sched_config.max_num_seqs = app_->max_model_batch_size();
   sched_config.max_num_batched_tokens = config_.max_num_batched_tokens;
@@ -134,6 +188,9 @@ std::shared_ptr<OnlineRequestHandle> OnlineServingEngine::submit(
     submission.stop = request.generation_config.sampling.stop;
     submission.generation_config.normalize();
     submission.handle = handle;
+    if (is_pd_mode(config_.pd_mode)) {
+      handle->set_request_id(next_pd_request_id_++);
+    }
     submissions_.push_back(std::move(submission));
     ++pending_submissions_;
   }
@@ -144,8 +201,27 @@ std::shared_ptr<OnlineRequestHandle> OnlineServingEngine::submit(
 int32_t OnlineServingEngine::default_timeout_ms() const { return config_.request_timeout_ms; }
 
 nlohmann::json OnlineServingEngine::metrics_json() const {
-  const auto& metrics = scheduler_->metrics();
   nlohmann::json body;
+  if (is_pd_mode(config_.pd_mode)) {
+    std::lock_guard<std::mutex> lock(mu_);
+    body["engine"]["mode"] = config_.pd_mode;
+    body["engine"]["queued_requests"] = pending_submissions_;
+    body["engine"]["active_requests"] = pd_active_requests_;
+    body["engine"]["completed_requests"] = pd_completed_requests_;
+    body["engine"]["failed_requests"] = pd_failed_requests_;
+    body["engine"]["generated_tokens"] = pd_generated_tokens_;
+    body["pd"]["mode"] = config_.pd_mode;
+    body["pd"]["transfer_backend"] = pd_transfer_backend(config_.pd_mode);
+    body["pd"]["prefill_device_id"] = config_.prefill_device_id;
+    body["pd"]["decode_device_id"] = config_.decode_device_id;
+    if (is_remote_pd_mode(config_.pd_mode)) {
+      body["pd"]["prefill_zmq_endpoint"] = config_.prefill_zmq_endpoint;
+    }
+    return body;
+  }
+
+  const auto& metrics = scheduler_->metrics();
+  body["engine"]["mode"] = "single";
   body["scheduler"]["steps"] = metrics.schedule_steps;
   body["scheduler"]["no_progress_steps"] = metrics.no_progress_steps;
   body["scheduler"]["decode_tokens"] = metrics.scheduled_decode_tokens;
@@ -175,6 +251,7 @@ void OnlineServingEngine::cancel(const std::shared_ptr<OnlineRequestHandle>& han
 }
 
 void OnlineServingEngine::run_loop() {
+  set_online_worker_device_or_die(config_);
   void* stream = app_->model_stream();
   while (true) {
     flush_submissions();
@@ -188,6 +265,102 @@ void OnlineServingEngine::run_loop() {
     }
     run_step(stream);
   }
+}
+
+void OnlineServingEngine::run_pd_loop() {
+  set_online_worker_device_or_die(config_);
+  while (true) {
+    PendingSubmission submission;
+    {
+      std::unique_lock<std::mutex> lock(mu_);
+      cv_.wait(lock, [&]() { return stopping_ || !submissions_.empty(); });
+      if (stopping_ && submissions_.empty()) {
+        break;
+      }
+      submission = std::move(submissions_.front());
+      submissions_.pop_front();
+      --pending_submissions_;
+      ++pd_active_requests_;
+    }
+
+    run_pd_submission(std::move(submission));
+
+    {
+      std::lock_guard<std::mutex> lock(mu_);
+      --pd_active_requests_;
+    }
+  }
+}
+
+void OnlineServingEngine::run_pd_submission(PendingSubmission submission) {
+  if (submission.handle == nullptr || submission.handle->cancelled()) {
+    return;
+  }
+
+  std::string streamed_text;
+  auto on_token = [&](int32_t token) {
+    if (submission.handle->cancelled() || app_->is_sentence_ending(token)) {
+      return;
+    }
+    const std::string token_text = app_->decode_tokens({token});
+    const std::string candidate_text = streamed_text + token_text;
+    size_t stop_pos = std::string::npos;
+    for (const auto& stop : submission.stop) {
+      if (stop.empty()) {
+        continue;
+      }
+      const size_t pos = candidate_text.find(stop);
+      if (pos != std::string::npos) {
+        stop_pos = std::min(stop_pos, pos);
+      }
+    }
+    if (stop_pos != std::string::npos) {
+      const std::string trimmed_text = candidate_text.substr(0, stop_pos);
+      if (trimmed_text.size() > streamed_text.size()) {
+        submission.handle->push_token(trimmed_text.substr(streamed_text.size()));
+      }
+      submission.handle->mark_cancelled();
+      return;
+    }
+    streamed_text = candidate_text;
+    submission.handle->push_token(token_text);
+  };
+  const auto result =
+      is_remote_pd_mode(config_.pd_mode)
+          ? (config_.pd_mode == "remote-zmq-nccl" ||
+                     config_.pd_mode == "remote-zmq-nccl-layer"
+                 ? app_->run_remote_zmq_nccl_pd_generation(
+                       std::move(submission.prompt_tokens),
+                       submission.generation_config, on_token)
+                 : app_->run_remote_zmq_cpu_pd_generation(
+                       std::move(submission.prompt_tokens),
+                       submission.generation_config, on_token))
+          : app_->run_dual_gpu_pd_generation(
+                std::move(submission.prompt_tokens), submission.generation_config,
+                on_token);
+
+  {
+    std::lock_guard<std::mutex> lock(mu_);
+    pd_generated_tokens_ += static_cast<int64_t>(result.output_tokens.size());
+    if (result.failed) {
+      ++pd_failed_requests_;
+    } else {
+      ++pd_completed_requests_;
+    }
+  }
+
+  if (submission.handle->cancelled()) {
+    submission.handle->finish(app_->postprocess_decoded_text(streamed_text),
+                              false, "");
+    return;
+  }
+  if (result.failed) {
+    submission.handle->finish("", true, result.error);
+    return;
+  }
+  submission.handle->finish(app_->postprocess_decoded_text(
+                                app_->decode_tokens(result.output_tokens)),
+                            false, "");
 }
 
 void OnlineServingEngine::flush_submissions() {

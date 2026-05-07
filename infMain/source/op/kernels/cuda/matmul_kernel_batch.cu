@@ -214,8 +214,8 @@ void matmul_batch_kernel_cu(const tensor::Tensor& input,
                             const tensor::Tensor& output,
                             int32_t batch_tokens,
                             const CudaConfig* config) {
-  CHECK_NE(config, nullptr);
-  CHECK_NE(config->cublas_handle, nullptr) << "cuBLAS handle not initialized";
+  CHECK(config != nullptr);
+  CHECK(config->cublas_handle != nullptr) << "cuBLAS handle not initialized";
   CHECK_GT(batch_tokens, 0);
   CHECK(!input.is_empty());
   CHECK(!weight.is_empty());

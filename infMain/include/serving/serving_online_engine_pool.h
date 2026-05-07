@@ -43,6 +43,25 @@ class SingleOnlineEnginePool final : public OnlineEnginePool {
   std::unique_ptr<OnlineServingEngine> engine_;
 };
 
+class ZmqOnlineEnginePool final : public OnlineEnginePool {
+ public:
+  explicit ZmqOnlineEnginePool(const BenchConfig& config);
+  ~ZmqOnlineEnginePool() override;
+
+  void start() override;
+  void stop() override;
+  std::shared_ptr<OnlineRequestHandle> submit(const OnlineGenerateRequest& request,
+                                              std::string* error) override;
+  void cancel(const std::shared_ptr<OnlineRequestHandle>& handle,
+              const std::string& reason) override;
+  int32_t default_timeout_ms() const override;
+  nlohmann::json metrics_json() const override;
+
+ private:
+  struct Impl;
+  std::unique_ptr<Impl> impl_;
+};
+
 }  // namespace serving
 
 #endif  // KUIPER_INCLUDE_SERVING_SERVING_ONLINE_ENGINE_POOL_H_

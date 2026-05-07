@@ -81,6 +81,7 @@ base::Status DecodeKVReservationManager::reserve(
 
   reservation->decode_request_id = decode_request_id;
   reservation->reserved_tokens = request.computed_tokens;
+  reservation->first_token = request.first_token;
   reservation->dst_block_ids_per_layer.resize(dst_pool_.layer_num);
   for (int32_t layer_idx = 0; layer_idx < dst_pool_.layer_num; ++layer_idx) {
     const std::vector<int32_t>& dst_blocks = kv_manager_->get_block_ids(decode_request_id, layer_idx);

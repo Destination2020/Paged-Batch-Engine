@@ -73,7 +73,48 @@ struct BenchConfig {
   int32_t max_queue_size = 128;
   int32_t request_timeout_ms = 0;  // 0 disables request timeout
   int32_t max_prompt_tokens = 0;   // 0 disables prompt length check
+  int32_t device_id = 0;
+  std::string pd_mode = "off";
+  int32_t prefill_device_id = 0;
+  int32_t decode_device_id = 1;
+  std::string online_process_role = "inproc";
+  std::string engine_zmq_endpoint = "tcp://127.0.0.1:19090";
+  std::string prefill_zmq_endpoint = "tcp://127.0.0.1:19091";
+  int32_t engine_zmq_timeout_ms = 30000;
 };
+
+inline bool is_dual_gpu_pd_mode(const std::string& pd_mode) {
+  return pd_mode == "dual-gpu-p2p" || pd_mode == "dual-gpu-nccl" ||
+         pd_mode == "dual-gpu-nccl-layer";
+}
+
+inline bool is_remote_pd_mode(const std::string& pd_mode) {
+  return pd_mode == "remote-zmq-cpu" || pd_mode == "remote-zmq-nccl" ||
+         pd_mode == "remote-zmq-nccl-layer";
+}
+
+inline bool is_pd_mode(const std::string& pd_mode) {
+  return is_dual_gpu_pd_mode(pd_mode) || is_remote_pd_mode(pd_mode);
+}
+
+inline const char* pd_transfer_backend(const std::string& pd_mode) {
+  if (pd_mode == "remote-zmq-cpu") {
+    return "zmq-cpu";
+  }
+  if (pd_mode == "remote-zmq-nccl") {
+    return "zmq-nccl";
+  }
+  if (pd_mode == "remote-zmq-nccl-layer") {
+    return "zmq-nccl-layer";
+  }
+  if (pd_mode == "dual-gpu-nccl" || pd_mode == "dual-gpu-nccl-layer") {
+    return "nccl";
+  }
+  if (pd_mode == "dual-gpu-p2p") {
+    return "p2p";
+  }
+  return "none";
+}
 
 }  // namespace serving
 

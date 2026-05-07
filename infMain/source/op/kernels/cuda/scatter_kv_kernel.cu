@@ -268,7 +268,7 @@ void scatter_kv_batch_to_pages_fp8_e4m3_cu(
     base::DeviceType device_type,
     CudaConfig* config) {
   UNUSED(device_type);
-  CHECK_NE(config, nullptr);
+  CHECK(config != nullptr);
   CHECK_EQ(key_pool.data_type(), base::DataType::kDataTypeInt8);
   CHECK_EQ(value_pool.data_type(), base::DataType::kDataTypeInt8);
   CHECK_EQ(key_scale_pool.data_type(), base::DataType::kDataTypeFp32);

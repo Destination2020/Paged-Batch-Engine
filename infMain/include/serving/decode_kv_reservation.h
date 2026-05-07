@@ -23,6 +23,7 @@ struct DecodeKVReservationRequest {
 struct DecodeKVReservation {
   base::RequestId decode_request_id = -1;
   int32_t reserved_tokens = 0;
+  int32_t first_token = -1;
   std::vector<std::vector<int32_t>> dst_block_ids_per_layer;
 
   bool valid() const { return decode_request_id >= 0; }

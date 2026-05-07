@@ -207,7 +207,8 @@ TEST(PDEngineTest, DecodeEngineInjectsReservationAsDecodeReadyRequest) {
   generation_config.max_new_tokens = 4;
   DecodeReadySubmitResult result;
   ASSERT_TRUE(decode_engine.submit_decode_ready_request(
-      reservation, {1, 2, 3, 4}, generation_config, &result));
+      reservation, {1, 2, 3, 4}, generation_config, reservation_request.first_token,
+      &result));
   EXPECT_GE(result.request_id, 0);
 
   SchedulerOutput output = decode_engine.schedule_step();
@@ -217,6 +218,11 @@ TEST(PDEngineTest, DecodeEngineInjectsReservationAsDecodeReadyRequest) {
   EXPECT_EQ(classify_pd_worker_step(output), PDWorkerStepKind::kDecodeOnly);
   ASSERT_EQ(output.scheduled_seqs.size(), 1);
   EXPECT_EQ(output.scheduled_seqs[0]->request_id, reservation.decode_request_id);
+  EXPECT_EQ(output.scheduled_seqs[0]->next_token, reservation_request.first_token);
+  EXPECT_EQ(output.scheduled_seqs[0]->generated_tokens, 1);
+  EXPECT_EQ(output.scheduled_seqs[0]->output_tokens,
+            std::vector<int32_t>({reservation_request.first_token}));
+  EXPECT_TRUE(output.scheduled_seqs[0]->first_token_recorded);
   EXPECT_EQ(decode_kv->get_context_len(reservation.decode_request_id), 5);
 
   reservation_manager.release(&reservation);
@@ -278,7 +284,8 @@ TEST(PDEngineTest, InProcPrefillCopyDecodeEnginePipelineSchedulesDecodeOnly) {
 
   DecodeReadySubmitResult decode_submit;
   ASSERT_TRUE(decode_engine.submit_decode_ready_request(
-      reservation, prompt_tokens, generation_config, &decode_submit));
+      reservation, prompt_tokens, generation_config, reservation_request.first_token,
+      &decode_submit));
   SchedulerOutput decode_output = decode_engine.schedule_step();
   EXPECT_EQ(decode_output.num_prefill_seqs, 0);
   EXPECT_EQ(decode_output.num_decode_seqs, 1);
@@ -286,6 +293,7 @@ TEST(PDEngineTest, InProcPrefillCopyDecodeEnginePipelineSchedulesDecodeOnly) {
   EXPECT_EQ(classify_pd_worker_step(decode_output), PDWorkerStepKind::kDecodeOnly);
   ASSERT_EQ(decode_output.scheduled_seqs.size(), 1);
   EXPECT_EQ(decode_output.scheduled_seqs[0]->request_id, reservation.decode_request_id);
+  EXPECT_EQ(decode_output.scheduled_seqs[0]->next_token, reservation_request.first_token);
   PDWorkerStepOutput decode_step;
   ASSERT_TRUE(decode_engine.execute_step(decode_output, nullptr, &decode_step));
   EXPECT_EQ(app.forward_decode_calls, 1);

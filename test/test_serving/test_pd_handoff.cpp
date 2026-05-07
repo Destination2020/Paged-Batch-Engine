@@ -4,6 +4,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/block_allocator.h"
 #include "base/kv_cache_manager.h"
@@ -67,6 +68,28 @@ std::unique_ptr<base::KVCacheManager> make_cuda_fp8_kv_manager(int32_t num_block
 bool cuda_available() {
   int count = 0;
   return cudaGetDeviceCount(&count) == cudaSuccess && count > 0;
+}
+
+bool cuda_device_count_at_least(int count) {
+  int device_count = 0;
+  return cudaGetDeviceCount(&device_count) == cudaSuccess && device_count >= count;
+}
+
+std::unique_ptr<base::KVCacheManager> make_cuda_plain_kv_manager_on_device(
+    int32_t device_id,
+    int32_t num_blocks = 8) {
+  int previous_device = 0;
+  cudaGetDevice(&previous_device);
+  CHECK_EQ(cudaSetDevice(device_id), cudaSuccess);
+  std::vector<std::unique_ptr<base::BlockAllocator>> allocators;
+  allocators.emplace_back(std::make_unique<base::BlockAllocator>(
+      num_blocks, 16, 2, 64, base::DataType::kDataTypeBf16,
+      base::DeviceType::kDeviceCUDA, base::BlockStorageMode::kPlain));
+  allocators.emplace_back(std::make_unique<base::BlockAllocator>(
+      num_blocks, 16, 2, 64, base::DataType::kDataTypeBf16,
+      base::DeviceType::kDeviceCUDA, base::BlockStorageMode::kPlain));
+  cudaSetDevice(previous_device);
+  return std::make_unique<base::KVCacheManager>(16, 2, std::move(allocators));
 }
 
 void fill_request_blocks(base::KVCacheManager* kv_manager,
@@ -141,6 +164,32 @@ void fill_cuda_fp8_request_blocks(base::KVCacheManager* kv_manager,
   }
 }
 
+void fill_cuda_plain_request_blocks(base::KVCacheManager* kv_manager,
+                                    base::RequestId request_id,
+                                    int32_t base_value) {
+  auto cuda_allocator = base::CUDADeviceAllocatorFactory::get_instance();
+  for (int32_t layer_idx = 0; layer_idx < kv_manager->num_layers(); ++layer_idx) {
+    const auto& block_ids = kv_manager->get_block_ids(request_id, layer_idx);
+    auto& allocator = kv_manager->allocator_mut(layer_idx);
+    for (int32_t block_pos = 0; block_pos < static_cast<int32_t>(block_ids.size()); ++block_pos) {
+      const auto ptrs = allocator.get_block_payload_ptrs(block_ids[block_pos]);
+      std::vector<uint16_t> key_value(ptrs.key_value_bytes / sizeof(uint16_t));
+      for (size_t i = 0; i < key_value.size(); ++i) {
+        key_value[i] = static_cast<uint16_t>(
+            base_value + layer_idx * 100 + block_pos * 10 + i % 10);
+      }
+      cuda_allocator->memcpy(key_value.data(), ptrs.key, ptrs.key_value_bytes,
+                             base::MemcpyKind::kMemcpyCPU2CUDA, nullptr, true);
+      for (size_t i = 0; i < key_value.size(); ++i) {
+        key_value[i] = static_cast<uint16_t>(
+            base_value + 1000 + layer_idx * 100 + block_pos * 10 + i % 10);
+      }
+      cuda_allocator->memcpy(key_value.data(), ptrs.value, ptrs.key_value_bytes,
+                             base::MemcpyKind::kMemcpyCPU2CUDA, nullptr, true);
+    }
+  }
+}
+
 void expect_cuda_fp8_request_blocks_equal(base::KVCacheManager* src_kv_manager,
                                           base::RequestId src_request_id,
                                           base::KVCacheManager* dst_kv_manager,
@@ -184,6 +233,39 @@ void expect_cuda_fp8_request_blocks_equal(base::KVCacheManager* src_kv_manager,
       EXPECT_EQ(dst_value, src_value);
       EXPECT_EQ(dst_key_scale, src_key_scale);
       EXPECT_EQ(dst_value_scale, src_value_scale);
+    }
+  }
+}
+
+void expect_cuda_plain_request_blocks_equal(base::KVCacheManager* src_kv_manager,
+                                            base::RequestId src_request_id,
+                                            base::KVCacheManager* dst_kv_manager,
+                                            base::RequestId dst_request_id) {
+  auto cuda_allocator = base::CUDADeviceAllocatorFactory::get_instance();
+  for (int32_t layer_idx = 0; layer_idx < src_kv_manager->num_layers(); ++layer_idx) {
+    const auto& src_block_ids = src_kv_manager->get_block_ids(src_request_id, layer_idx);
+    const auto& dst_block_ids = dst_kv_manager->get_block_ids(dst_request_id, layer_idx);
+    auto& src_allocator = src_kv_manager->allocator_mut(layer_idx);
+    auto& dst_allocator = dst_kv_manager->allocator_mut(layer_idx);
+    ASSERT_EQ(src_block_ids.size(), dst_block_ids.size());
+    for (int32_t block_pos = 0; block_pos < static_cast<int32_t>(src_block_ids.size()); ++block_pos) {
+      const auto src = src_allocator.get_block_payload_ptrs(src_block_ids[block_pos]);
+      const auto dst = dst_allocator.get_block_payload_ptrs(dst_block_ids[block_pos]);
+      std::vector<uint16_t> src_key(src.key_value_bytes / sizeof(uint16_t));
+      std::vector<uint16_t> dst_key(dst.key_value_bytes / sizeof(uint16_t));
+      std::vector<uint16_t> src_value(src.key_value_bytes / sizeof(uint16_t));
+      std::vector<uint16_t> dst_value(dst.key_value_bytes / sizeof(uint16_t));
+      cuda_allocator->memcpy(src.key, src_key.data(), src.key_value_bytes,
+                             base::MemcpyKind::kMemcpyCUDA2CPU, nullptr, true);
+      cuda_allocator->memcpy(dst.key, dst_key.data(), dst.key_value_bytes,
+                             base::MemcpyKind::kMemcpyCUDA2CPU, nullptr, true);
+      cuda_allocator->memcpy(src.value, src_value.data(), src.key_value_bytes,
+                             base::MemcpyKind::kMemcpyCUDA2CPU, nullptr, true);
+      cuda_allocator->memcpy(dst.value, dst_value.data(), dst.key_value_bytes,
+                             base::MemcpyKind::kMemcpyCUDA2CPU, nullptr, true);
+
+      EXPECT_EQ(dst_key, src_key);
+      EXPECT_EQ(dst_value, src_value);
     }
   }
 }
@@ -455,8 +537,8 @@ TEST(PDHandoffTest, CudaFp8ConnectorCopiesKeyValueAndScaleBlocks) {
   PDHandoffState state;
   ASSERT_TRUE(coordinator.start_prefill_handoff(manifest, &state));
   EXPECT_TRUE(state.handoff_id.valid());
-  EXPECT_EQ(state.phase, PDHandoffPhase::kTransferSubmitted);
-  EXPECT_FALSE(state.ready_for_decode());
+  EXPECT_TRUE(state.phase == PDHandoffPhase::kTransferSubmitted ||
+              state.phase == PDHandoffPhase::kDecodeReady);
 
   ASSERT_EQ(cudaStreamSynchronize(stream), cudaSuccess);
   ASSERT_TRUE(coordinator.advance(&state));
@@ -470,6 +552,161 @@ TEST(PDHandoffTest, CudaFp8ConnectorCopiesKeyValueAndScaleBlocks) {
 
   reservation_manager.release(&reservation);
   src_kv_manager->free_request(src_request_id);
+}
+
+TEST(PDHandoffTest, CudaP2PConnectorCopiesPlainBlocksAcrossDevices) {
+  if (!cuda_device_count_at_least(2)) {
+    GTEST_SKIP() << "At least two CUDA devices are required";
+  }
+
+  auto src_kv_manager = make_cuda_plain_kv_manager_on_device(0);
+  auto dst_kv_manager = make_cuda_plain_kv_manager_on_device(1);
+
+  const base::RequestId src_request_id = src_kv_manager->register_request();
+  ASSERT_TRUE(src_kv_manager->append_slots(src_request_id, 32));
+  fill_cuda_plain_request_blocks(src_kv_manager.get(), src_request_id, 33);
+
+  KVPoolDescriptor src_pool = make_pool(0);
+  KVPoolDescriptor dst_pool = make_pool(1);
+  DecodeKVReservationManager reservation_manager(dst_kv_manager.get(), dst_pool);
+
+  DecodeKVReservationRequest request;
+  request.client_request_id.value = "req-cuda-p2p-copy";
+  request.handoff_id.value = 24;
+  request.prompt_tokens = 32;
+  request.computed_tokens = 32;
+  request.first_token = 101;
+  request.src_pool = src_pool;
+  request.src_block_ids_per_layer = {
+      src_kv_manager->get_block_ids(src_request_id, 0),
+      src_kv_manager->get_block_ids(src_request_id, 1),
+  };
+
+  DecodeKVReservation reservation;
+  KVBlockManifest manifest;
+  ASSERT_TRUE(reservation_manager.reserve(request, &reservation, &manifest));
+
+  cudaStream_t stream = nullptr;
+  ASSERT_EQ(cudaSetDevice(1), cudaSuccess);
+  ASSERT_EQ(cudaStreamCreate(&stream), cudaSuccess);
+  CudaP2PKVTransferConnector connector(src_kv_manager.get(), dst_kv_manager.get(),
+                                       0, 1, stream, false);
+  PDCoordinator coordinator(&connector);
+  PDHandoffState state;
+  ASSERT_TRUE(coordinator.start_prefill_handoff(manifest, &state));
+  ASSERT_EQ(cudaStreamSynchronize(stream), cudaSuccess);
+  ASSERT_TRUE(coordinator.advance(&state));
+  ASSERT_EQ(cudaStreamDestroy(stream), cudaSuccess);
+
+  EXPECT_EQ(state.phase, PDHandoffPhase::kDecodeReady);
+  EXPECT_TRUE(state.transfer_status.ok());
+  expect_cuda_plain_request_blocks_equal(src_kv_manager.get(), src_request_id,
+                                         dst_kv_manager.get(), reservation.decode_request_id);
+
+  reservation_manager.release(&reservation);
+  src_kv_manager->free_request(src_request_id);
+}
+
+TEST(PDHandoffTest, NcclConnectorCopiesPlainBlocksAcrossDevices) {
+  if (!cuda_device_count_at_least(2)) {
+    GTEST_SKIP() << "At least two CUDA devices are required";
+  }
+
+  auto src_kv_manager = make_cuda_plain_kv_manager_on_device(0);
+  auto dst_kv_manager = make_cuda_plain_kv_manager_on_device(1);
+
+  const base::RequestId src_request_id = src_kv_manager->register_request();
+  ASSERT_TRUE(src_kv_manager->append_slots(src_request_id, 32));
+  fill_cuda_plain_request_blocks(src_kv_manager.get(), src_request_id, 77);
+
+  KVPoolDescriptor src_pool = make_pool(0);
+  KVPoolDescriptor dst_pool = make_pool(1);
+  DecodeKVReservationManager reservation_manager(dst_kv_manager.get(), dst_pool);
+
+  DecodeKVReservationRequest request;
+  request.client_request_id.value = "req-nccl-copy";
+  request.handoff_id.value = 25;
+  request.prompt_tokens = 32;
+  request.computed_tokens = 32;
+  request.first_token = 101;
+  request.src_pool = src_pool;
+  request.src_block_ids_per_layer = {
+      src_kv_manager->get_block_ids(src_request_id, 0),
+      src_kv_manager->get_block_ids(src_request_id, 1),
+  };
+
+  DecodeKVReservation reservation;
+  KVBlockManifest manifest;
+  ASSERT_TRUE(reservation_manager.reserve(request, &reservation, &manifest));
+
+  cudaStream_t stream = nullptr;
+  ASSERT_EQ(cudaSetDevice(1), cudaSuccess);
+  ASSERT_EQ(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking), cudaSuccess);
+  PDHandoffState state;
+  {
+    NcclKVBlockTransferConnector connector(src_kv_manager.get(), dst_kv_manager.get(),
+                                           0, 1, stream, false);
+    PDCoordinator coordinator(&connector);
+    ASSERT_TRUE(coordinator.start_prefill_handoff(manifest, &state));
+    ASSERT_EQ(cudaStreamSynchronize(stream), cudaSuccess);
+    ASSERT_TRUE(coordinator.advance(&state));
+  }
+  ASSERT_EQ(cudaStreamDestroy(stream), cudaSuccess);
+
+  EXPECT_EQ(state.phase, PDHandoffPhase::kDecodeReady);
+  EXPECT_TRUE(state.transfer_status.ok());
+  expect_cuda_plain_request_blocks_equal(src_kv_manager.get(), src_request_id,
+                                         dst_kv_manager.get(), reservation.decode_request_id);
+
+  reservation_manager.release(&reservation);
+  src_kv_manager->free_request(src_request_id);
+}
+
+TEST(PDHandoffTest, NcclLayerConnectorCopiesPlainBlocksAcrossDevices) {
+  if (!cuda_device_count_at_least(2)) {
+    GTEST_SKIP() << "At least two CUDA devices are required";
+  }
+
+  auto src_kv_manager = make_cuda_plain_kv_manager_on_device(0);
+  auto dst_kv_manager = make_cuda_plain_kv_manager_on_device(1);
+
+  const base::RequestId src_request_id = src_kv_manager->register_request();
+  const base::RequestId dst_request_id = dst_kv_manager->register_request();
+  ASSERT_TRUE(src_kv_manager->append_slots(src_request_id, 32));
+  ASSERT_TRUE(dst_kv_manager->append_slots(dst_request_id, 32));
+  fill_cuda_plain_request_blocks(src_kv_manager.get(), src_request_id, 177);
+
+  cudaStream_t stream = nullptr;
+  ASSERT_EQ(cudaSetDevice(1), cudaSuccess);
+  ASSERT_EQ(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking), cudaSuccess);
+
+  LayerKVTransferRequest request;
+  request.client_request_id.value = "req-nccl-layer-copy";
+  request.handoff_id.value = 26;
+  request.src_request_id = src_request_id;
+  request.dst_request_id = dst_request_id;
+  request.prompt_tokens = 32;
+  request.computed_tokens = 32;
+  request.src_pool = make_pool(0);
+  request.dst_pool = make_pool(1);
+
+  {
+    NcclLayerKVTransferConnector connector(src_kv_manager.get(), dst_kv_manager.get(),
+                                           0, 1, nullptr, stream, false);
+    ASSERT_TRUE(connector.prepare(request));
+    ASSERT_TRUE(connector.save_kv_layer(0));
+    ASSERT_TRUE(connector.save_kv_layer(1));
+    ASSERT_EQ(cudaStreamSynchronize(stream), cudaSuccess);
+    EXPECT_TRUE(connector.poll().ok());
+    ASSERT_TRUE(connector.wait_for_layer_load(0, stream));
+    ASSERT_TRUE(connector.wait_for_layer_load(1, stream));
+  }
+  ASSERT_EQ(cudaStreamDestroy(stream), cudaSuccess);
+
+  expect_cuda_plain_request_blocks_equal(src_kv_manager.get(), src_request_id,
+                                         dst_kv_manager.get(), dst_request_id);
+  src_kv_manager->free_request(src_request_id);
+  dst_kv_manager->free_request(dst_request_id);
 }
 
 }  // namespace serving

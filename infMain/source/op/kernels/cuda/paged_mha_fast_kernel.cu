@@ -918,7 +918,7 @@ bool splitkv_batched_paged_mha_fast_decode_cu(
     const tensor::Tensor& partial_sum,
     base::DeviceType device_type,
     CudaConfig* config) {
-  CHECK_NE(config, nullptr);
+  CHECK(config != nullptr);
 
   const FastDecodeLaunchConfig cfg = choose_fast_decode_config(
       head_num, head_size, kv_mul, max_blocks_per_seq, block_size, num_kv_heads, queries, outputs,
@@ -995,7 +995,7 @@ bool splitkv_batched_paged_mha_fp8_decode_cu(
     const tensor::Tensor& partial_sum,
     base::DeviceType device_type,
     CudaConfig* config) {
-  CHECK_NE(config, nullptr);
+  CHECK(config != nullptr);
 
   const FastDecodeLaunchConfig cfg = choose_fp8_decode_config(
       head_num, head_size, kv_mul, max_blocks_per_seq, block_size, num_kv_heads, queries, outputs,

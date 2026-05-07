@@ -79,6 +79,17 @@ base::Status InProcDecodeEngine::submit_decode_ready_request(
     std::vector<int32_t> prompt_tokens,
     GenerationConfig generation_config,
     DecodeReadySubmitResult* result) {
+  return submit_decode_ready_request(reservation, std::move(prompt_tokens),
+                                     generation_config, reservation.first_token,
+                                     result);
+}
+
+base::Status InProcDecodeEngine::submit_decode_ready_request(
+    const DecodeKVReservation& reservation,
+    std::vector<int32_t> prompt_tokens,
+    GenerationConfig generation_config,
+    int32_t first_token,
+    DecodeReadySubmitResult* result) {
   if (result == nullptr) {
     return base::error::InvalidArgument("decode-ready submit result is null");
   }
@@ -87,7 +98,7 @@ base::Status InProcDecodeEngine::submit_decode_ready_request(
   }
   result->request_id = scheduler_->add_decode_ready_request(
       reservation.decode_request_id, std::move(prompt_tokens), generation_config,
-      reservation.reserved_tokens);
+      reservation.reserved_tokens, first_token);
   return base::error::Success();
 }
 

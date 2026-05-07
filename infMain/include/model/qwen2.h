@@ -5,6 +5,7 @@
 #include "base/device_context.h"
 #include "base/kv_cache_manager.h"
 #include "serving/mixed_batch.h"
+#include "serving/pd_handoff.h"
 #include "serving/scheduler.h"
 #include "serving/serving_capacity.h"
 #include "model.h"
@@ -101,6 +102,7 @@ class Qwen2Model : public Model {
   ~Qwen2Model();
 
   base::Status init(base::DeviceType device_type) override;
+  base::Status init(base::DeviceType device_type, int32_t device_id);
 
   base::Status predict(const tensor::Tensor& input, const tensor::Tensor& pos_tensor,
                        bool is_prompt, int& next) const override;
@@ -157,6 +159,10 @@ class Qwen2Model : public Model {
   // Get KVCacheManager for external use (scheduler, prefill, etc.)
   base::KVCacheManager* kv_cache_manager() const { return kv_cache_manager_.get(); }
 
+  void set_layer_kv_transfer_connector(
+      serving::LayerKVTransferConnector* connector,
+      serving::LayerKVConnectorRole role) const;
+
   serving::ServingCapacityInfo serving_capacity_info() const;
 
  private:
@@ -212,6 +218,9 @@ class Qwen2Model : public Model {
   mutable Qwen2SingleSeqForwardWorkspace single_seq_workspace_;
   mutable Qwen2BatchSamplerWorkspace batch_sampler_workspace_;
   mutable Qwen2RowAttentionMetadataWorkspace row_attn_workspace_;
+  mutable serving::LayerKVTransferConnector* layer_kv_connector_ = nullptr;
+  mutable serving::LayerKVConnectorRole layer_kv_connector_role_ =
+      serving::LayerKVConnectorRole::kDisabled;
 };
 }  // namespace model
 

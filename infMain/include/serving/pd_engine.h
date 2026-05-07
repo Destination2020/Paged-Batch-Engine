@@ -71,6 +71,11 @@ class InProcDecodeEngine final {
   base::Status submit_decode_ready_request(const DecodeKVReservation& reservation,
                                            std::vector<int32_t> prompt_tokens,
                                            GenerationConfig generation_config,
+                                           int32_t first_token,
+                                           DecodeReadySubmitResult* result);
+  base::Status submit_decode_ready_request(const DecodeKVReservation& reservation,
+                                           std::vector<int32_t> prompt_tokens,
+                                           GenerationConfig generation_config,
                                            DecodeReadySubmitResult* result);
   SchedulerOutput schedule_step();
   base::Status execute_step(const SchedulerOutput& output,

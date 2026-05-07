@@ -126,7 +126,7 @@ __global__ void moe_scale_add_kernel(T* input, const T* expert_output, float sca
 void moe_router_softmax_topk_cu(tensor::Tensor& router_logits, int32_t num_experts, int32_t topk,
                                 tensor::Tensor& topk_values, tensor::Tensor& topk_indices,
                                 bool norm_topk_prob, CudaConfig* config) {
-  CHECK_NE(config, nullptr);
+  CHECK(config != nullptr);
   CHECK(router_logits.is_empty() == false);
   CHECK(topk_values.is_empty() == false);
   CHECK(topk_indices.is_empty() == false);
@@ -158,7 +158,7 @@ void moe_router_softmax_topk_cu(tensor::Tensor& router_logits, int32_t num_exper
 
 void moe_scale_add_cu(tensor::Tensor& input_tensor, const tensor::Tensor& expert_output, float scale,
                       CudaConfig* config) {
-  CHECK_NE(config, nullptr);
+  CHECK(config != nullptr);
   CHECK(input_tensor.is_empty() == false);
   CHECK(expert_output.is_empty() == false);
   CHECK(input_tensor.device_type() == base::DeviceType::kDeviceCUDA);

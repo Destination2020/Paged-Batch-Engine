@@ -78,7 +78,8 @@ class Scheduler {
   int64_t add_decode_ready_request(base::RequestId request_id,
                                    std::vector<int32_t> prompt_tokens,
                                    GenerationConfig generation_config,
-                                   int32_t computed_tokens);
+                                   int32_t computed_tokens,
+                                   int32_t first_token);
 
   bool cancel_request(int64_t client_request_id, const std::string& reason);
 

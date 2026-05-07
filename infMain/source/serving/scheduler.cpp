@@ -175,9 +175,25 @@ int64_t Scheduler::add_request(std::vector<int32_t> prompt_tokens,
 int64_t Scheduler::add_decode_ready_request(base::RequestId request_id,
                                             std::vector<int32_t> prompt_tokens,
                                             GenerationConfig generation_config,
-                                            int32_t computed_tokens) {
+                                            int32_t computed_tokens,
+                                            int32_t first_token) {
   generation_config.normalize();
   const auto now = std::chrono::steady_clock::now();
+  if (first_token < 0) {
+    SequenceState failed;
+    failed.request_id = request_id;
+    failed.client_request_id = next_client_request_id_++;
+    const int64_t client_request_id = failed.client_request_id;
+    failed.prompt_tokens = std::move(prompt_tokens);
+    failed.generation_config = generation_config;
+    failed.arrival_time = now;
+    fail_sequence(&failed, now, "decode_ready_missing_first_token");
+    if (kv_manager_->is_valid_request(request_id)) {
+      kv_manager_->free_request(request_id);
+    }
+    finished_.push_back(std::move(failed));
+    return client_request_id;
+  }
   if (!kv_manager_->is_valid_request(request_id)) {
     SequenceState failed;
     failed.request_id = request_id;
@@ -200,11 +216,12 @@ int64_t Scheduler::add_decode_ready_request(base::RequestId request_id,
   const int64_t client_request_id = seq.client_request_id;
   seq.prompt_tokens = std::move(prompt_tokens);
   seq.generation_config = generation_config;
-  seq.generated_tokens = 0;
-  seq.next_token = -1;
+  seq.generated_tokens = 1;
+  seq.next_token = first_token;
+  seq.output_tokens.push_back(first_token);
   seq.finished = false;
   seq.failed = false;
-  seq.first_token_recorded = false;
+  seq.first_token_recorded = true;
   seq.finished_time_recorded = false;
   seq.recompute_pending = false;
   seq.radix_cache_published = true;
@@ -214,6 +231,8 @@ int64_t Scheduler::add_decode_ready_request(base::RequestId request_id,
   seq.preemption_count = 0;
   seq.ready_step = 0;
   seq.arrival_time = now;
+  seq.first_token_time = now;
+  seq.last_token_time = now;
   seq.computed_tokens = computed_tokens;
   seq.scheduled_tokens = 0;
 
@@ -225,6 +244,13 @@ int64_t Scheduler::add_decode_ready_request(base::RequestId request_id,
                       ", target_tokens=" + std::to_string(seq.target_tokens()) +
                       ", kv_context_len=" +
                       std::to_string(kv_manager_->get_context_len(seq.request_id)) + ")");
+    kv_manager_->free_request(seq.request_id);
+    finished_.push_back(std::move(seq));
+    return client_request_id;
+  }
+
+  if (seq.generated_tokens >= seq.generation_config.max_new_tokens) {
+    finish_sequence(&seq, now);
     kv_manager_->free_request(seq.request_id);
     finished_.push_back(std::move(seq));
     return client_request_id;

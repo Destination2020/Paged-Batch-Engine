@@ -39,6 +39,8 @@ class OnlineRequestHandle {
   void finish(std::string full_text, bool failed, std::string error);
   bool wait_next_token(std::string* token_text, bool* finished, bool* failed,
                        std::string* error);
+  bool wait_next_token_for(int32_t timeout_ms, std::string* token_text,
+                           bool* finished, bool* failed, std::string* error);
   bool wait_full_text(int32_t timeout_ms, std::string* text, bool* failed,
                       std::string* error);
 
@@ -79,6 +81,8 @@ class OnlineServingEngine {
   };
 
   void run_loop();
+  void run_pd_loop();
+  void run_pd_submission(PendingSubmission submission);
   void flush_submissions();
   void flush_cancellations();
   void run_step(void* stream);
@@ -92,12 +96,17 @@ class OnlineServingEngine {
   std::unique_ptr<Scheduler> scheduler_;
   std::unique_ptr<GpuWorker> gpu_worker_;
   std::thread worker_;
-  std::mutex mu_;
+  mutable std::mutex mu_;
   std::condition_variable cv_;
   std::deque<PendingSubmission> submissions_;
   std::vector<std::pair<int64_t, std::string>> cancellations_;
   int32_t pending_submissions_ = 0;
   bool stopping_ = false;
+  int64_t next_pd_request_id_ = 0;
+  int32_t pd_active_requests_ = 0;
+  int64_t pd_completed_requests_ = 0;
+  int64_t pd_failed_requests_ = 0;
+  int64_t pd_generated_tokens_ = 0;
   std::unordered_map<int64_t, std::shared_ptr<OnlineRequestHandle>> handles_;
   std::unordered_map<int64_t, std::vector<std::string>> stop_by_request_;
   std::unordered_map<int64_t, std::string> streamed_text_by_request_;

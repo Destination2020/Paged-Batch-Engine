@@ -769,7 +769,7 @@ void batched_paged_mha_prefill_cu(
     return;
   }
   CHECK_EQ(device_type, base::DeviceType::kDeviceCUDA);
-  CHECK_NE(config, nullptr);
+  CHECK(config != nullptr);
   CHECK_GT(head_size, 0);
   CHECK_GT(block_size, 0);
   CHECK_GT(num_kv_heads, 0);
@@ -1069,7 +1069,7 @@ void batched_paged_mha_prefill_fp8_cu(
     return;
   }
   CHECK_EQ(device_type, base::DeviceType::kDeviceCUDA);
-  CHECK_NE(config, nullptr);
+  CHECK(config != nullptr);
   CHECK_EQ(queries.device_type(), base::DeviceType::kDeviceCUDA);
   CHECK_EQ(chunk_keys.device_type(), base::DeviceType::kDeviceCUDA);
   CHECK_EQ(chunk_values.device_type(), base::DeviceType::kDeviceCUDA);

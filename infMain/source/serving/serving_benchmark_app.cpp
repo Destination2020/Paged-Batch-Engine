@@ -1,15 +1,28 @@
 #include "serving/serving_benchmark_app.h"
 #include "serving/serving_online_server.h"
+#include "serving/serving_zmq_engine_core.h"
+#include "serving/serving_zmq_rpc.h"
 #include <glog/logging.h>
 #include <algorithm>
 #include <cmath>
+#include <cstdlib>
+#include <cstring>
 #include <iomanip>
 #include <iostream>
+#include <future>
 #include <limits>
+#include <memory>
 #include <numeric>
 #include <sstream>
 #include <string_view>
+#include <thread>
+#include <cuda_runtime_api.h>
+#include <nccl.h>
 #include "base/nvtx_utils.h"
+#include "base/alloc.h"
+#include "serving/decode_kv_reservation.h"
+#include "serving/pd_coordinator.h"
+#include "serving/pd_handoff_builder.h"
 
 namespace serving {
 
@@ -27,6 +40,16 @@ bool parse_bool_flag(std::string_view value) {
   return value == "1" || value == "true" || value == "TRUE" || value == "yes" || value == "on";
 }
 
+bool pd_layer_diag_enabled() {
+  const char* value = std::getenv("KUIPER_PD_LAYER_DIAG");
+  return value != nullptr && value[0] != '\0' && value[0] != '0';
+}
+
+void pd_layer_diag(const std::string& message) {
+  if (pd_layer_diag_enabled()) {
+    std::cerr << "PD_LAYER_DIAG " << message << std::endl;
+  }
+}
 
 std::string scheduling_policy_name(SchedulingPolicy policy) {
   switch (policy) {
@@ -182,7 +205,34 @@ BenchConfig parse_bench_config(int argc, char* argv[], int prompt_start_index) {
         read_int("--http-listen-backlog=", config.http_listen_backlog) ||
         read_int("--max-queue-size=", config.max_queue_size) ||
         read_int("--request-timeout-ms=", config.request_timeout_ms) ||
-        read_int("--max-prompt-tokens=", config.max_prompt_tokens)) {
+        read_int("--max-prompt-tokens=", config.max_prompt_tokens) ||
+        read_int("--device-id=", config.device_id) ||
+        read_int("--prefill-device-id=", config.prefill_device_id) ||
+        read_int("--decode-device-id=", config.decode_device_id) ||
+        read_int("--engine-zmq-timeout-ms=", config.engine_zmq_timeout_ms)) {
+      continue;
+    }
+    const std::string_view online_process_role_prefix = "--online-process-role=";
+    if (starts_with(arg, online_process_role_prefix)) {
+      config.online_process_role =
+          std::string(arg.substr(online_process_role_prefix.size()));
+      continue;
+    }
+    const std::string_view engine_zmq_endpoint_prefix = "--engine-zmq-endpoint=";
+    if (starts_with(arg, engine_zmq_endpoint_prefix)) {
+      config.engine_zmq_endpoint =
+          std::string(arg.substr(engine_zmq_endpoint_prefix.size()));
+      continue;
+    }
+    const std::string_view prefill_zmq_endpoint_prefix = "--prefill-zmq-endpoint=";
+    if (starts_with(arg, prefill_zmq_endpoint_prefix)) {
+      config.prefill_zmq_endpoint =
+          std::string(arg.substr(prefill_zmq_endpoint_prefix.size()));
+      continue;
+    }
+    const std::string_view pd_mode_prefix = "--pd-mode=";
+    if (starts_with(arg, pd_mode_prefix)) {
+      config.pd_mode = std::string(arg.substr(pd_mode_prefix.size()));
       continue;
     }
     const std::string_view listen_host_prefix = "--listen-host=";
@@ -213,6 +263,28 @@ BenchConfig parse_bench_config(int argc, char* argv[], int prompt_start_index) {
   config.max_queue_size = std::max(1, config.max_queue_size);
   config.request_timeout_ms = std::max(0, config.request_timeout_ms);
   config.max_prompt_tokens = std::max(0, config.max_prompt_tokens);
+  config.device_id = std::max(0, config.device_id);
+  config.prefill_device_id = std::max(0, config.prefill_device_id);
+  config.decode_device_id = std::max(0, config.decode_device_id);
+  config.engine_zmq_timeout_ms = std::max(1, config.engine_zmq_timeout_ms);
+  if (config.online_process_role.empty()) {
+    config.online_process_role = kOnlineProcessRoleInProc;
+  }
+  CHECK(config.online_process_role == kOnlineProcessRoleInProc ||
+        config.online_process_role == kOnlineProcessRoleZmqHttpApi ||
+        config.online_process_role == kOnlineProcessRoleZmqEngineCore ||
+        config.online_process_role == kOnlineProcessRoleZmqPrefillEngineCore ||
+        config.online_process_role == kOnlineProcessRoleZmqDecodeEngineCore)
+      << "Invalid --online-process-role=" << config.online_process_role
+      << ". Expected inproc, zmq-http-api, zmq-engine-core, "
+      << "zmq-prefill-engine-core, or zmq-decode-engine-core.";
+  if (config.pd_mode.empty()) {
+    config.pd_mode = "off";
+  }
+  if (config.pd_mode == "off") {
+    config.prefill_device_id = config.device_id;
+    config.decode_device_id = config.device_id;
+  }
   return config;
 }
 
@@ -330,6 +402,50 @@ AutoScheduleEstimate estimate_auto_schedule(
   return estimate;
 }
 
+base::Status copy_bytes_to_host(const void* src,
+                                size_t byte_size,
+                                base::DeviceType device_type,
+                                void* stream,
+                                std::string* dst) {
+  CHECK_NE(dst, nullptr);
+  dst->assign(byte_size, '\0');
+  if (byte_size == 0) {
+    return base::error::Success();
+  }
+  if (device_type == base::DeviceType::kDeviceCUDA) {
+    auto allocator = base::CUDADeviceAllocatorFactory::get_instance();
+    allocator->memcpy(src, dst->data(), byte_size, base::MemcpyKind::kMemcpyCUDA2CPU,
+                      stream, true);
+  } else {
+    std::memcpy(dst->data(), src, byte_size);
+  }
+  return base::error::Success();
+}
+
+base::Status copy_bytes_from_host(const std::string& src,
+                                  void* dst,
+                                  size_t expected_byte_size,
+                                  base::DeviceType device_type,
+                                  void* stream) {
+  if (src.size() != expected_byte_size) {
+    return base::error::InvalidArgument(
+        "remote kv payload byte size mismatch(expected=" +
+        std::to_string(expected_byte_size) + ", actual=" +
+        std::to_string(src.size()) + ")");
+  }
+  if (expected_byte_size == 0) {
+    return base::error::Success();
+  }
+  if (device_type == base::DeviceType::kDeviceCUDA) {
+    auto allocator = base::CUDADeviceAllocatorFactory::get_instance();
+    allocator->memcpy(src.data(), dst, expected_byte_size,
+                      base::MemcpyKind::kMemcpyCPU2CUDA, stream, true);
+  } else {
+    std::memcpy(dst, src.data(), expected_byte_size);
+  }
+  return base::error::Success();
+}
+
 void print_step_profile(const StepProfile& profile) {
   std::cout << "STEP_PROFILE"
             << " step=" << profile.step
@@ -375,8 +491,16 @@ void print_config_summary(const BenchConfig& config) {
             << " long_prefill_token_threshold=" << config.long_prefill_token_threshold
             << " max_partial_prefills=" << config.max_partial_prefills
             << " max_long_partial_prefills=" << config.max_long_partial_prefills
+            << " device_id=" << config.device_id
             << " request_timeout_ms=" << config.request_timeout_ms
             << " max_prompt_tokens=" << config.max_prompt_tokens
+            << " pd_mode=" << config.pd_mode
+            << " online_process_role=" << config.online_process_role
+            << " engine_zmq_endpoint=" << config.engine_zmq_endpoint
+            << " prefill_zmq_endpoint=" << config.prefill_zmq_endpoint
+            << " engine_zmq_timeout_ms=" << config.engine_zmq_timeout_ms
+            << " prefill_device_id=" << config.prefill_device_id
+            << " decode_device_id=" << config.decode_device_id
             << " http_worker_threads=" << config.http_worker_threads
             << " http_listen_backlog=" << config.http_listen_backlog
             << " kv_cache_memory_utilization="
@@ -510,6 +634,10 @@ int ServingBenchmarkApp::run(int argc, char* argv[]) {
   if (!parse_args(argc, argv)) {
     return -1;
   }
+  if (bench_config_.online_server &&
+      bench_config_.online_process_role == kOnlineProcessRoleZmqHttpApi) {
+    return serving::run_online_server(nullptr, bench_config_);
+  }
   if (!initialize_model(model_path_, tokenizer_path_, bench_config_)) {
     return -1;
   }
@@ -518,12 +646,1673 @@ int ServingBenchmarkApp::run(int argc, char* argv[]) {
   run_warmup();
   kv_cache_manager()->reset_radix_cache_stats();
   if (bench_config_.online_server) {
+    if (is_zmq_engine_core_role(bench_config_.online_process_role)) {
+      auto status = serving::run_zmq_engine_core_server(this, bench_config_);
+      if (!status) {
+        LOG(ERROR) << status.get_err_msg();
+        return -1;
+      }
+      return 0;
+    }
     return serving::run_online_server(this);
+  }
+  if (is_dual_gpu_pd_mode(bench_config_.pd_mode)) {
+    return run_dual_gpu_pd_offline();
   }
   create_scheduler();
   submit_all_requests();
   run_serving_loop();
   return 0;
+}
+
+KVPoolDescriptor ServingBenchmarkApp::pd_prefill_kv_pool() const {
+  const ServingCapacityInfo info = pd_prefill_serving_capacity_info();
+  KVPoolDescriptor pool;
+  pool.device_id = bench_config_.prefill_device_id;
+  pool.layer_num = info.layer_num;
+  pool.block_size = info.block_size;
+  pool.kv_head_num = info.kv_head_num;
+  pool.head_size = info.head_size;
+  pool.dtype = info.runtime_data_type;
+  pool.storage_mode = base::BlockStorageMode::kPlain;
+  return pool;
+}
+
+KVPoolDescriptor ServingBenchmarkApp::pd_decode_kv_pool() const {
+  const ServingCapacityInfo info = pd_decode_serving_capacity_info();
+  KVPoolDescriptor pool;
+  pool.device_id = bench_config_.decode_device_id;
+  pool.layer_num = info.layer_num;
+  pool.block_size = info.block_size;
+  pool.kv_head_num = info.kv_head_num;
+  pool.head_size = info.head_size;
+  pool.dtype = info.runtime_data_type;
+  pool.storage_mode = base::BlockStorageMode::kPlain;
+  return pool;
+}
+
+ServingBenchmarkApp::PDGenerationResult ServingBenchmarkApp::run_dual_gpu_pd_generation(
+    std::vector<int32_t> prompt_tokens,
+    GenerationConfig generation_config,
+    const std::function<void(int32_t)>& on_token) const {
+  return run_dual_gpu_pd_generation_with_mode(
+      bench_config_.pd_mode, std::move(prompt_tokens), std::move(generation_config),
+      on_token);
+}
+
+RemotePrefillResult ServingBenchmarkApp::run_remote_prefill_generation(
+    std::vector<int32_t> prompt_tokens,
+    GenerationConfig generation_config) const {
+  RemotePrefillResult result;
+  const bool nccl_handoff = bench_config_.pd_mode == "remote-zmq-nccl";
+  result.prompt_tokens = prompt_tokens;
+  generation_config.normalize();
+  if (prompt_tokens.empty()) {
+    result.failed = true;
+    result.error = "empty_prompt";
+    return result;
+  }
+
+  SchedulerConfig prefill_config;
+  prefill_config.max_num_seqs = max_model_batch_size();
+  prefill_config.max_num_batched_tokens = bench_config_.max_num_batched_tokens;
+  prefill_config.prefill_chunk_cap = bench_config_.prefill_chunk_cap;
+  prefill_config.policy = bench_config_.scheduling_policy;
+  prefill_config.long_prefill_token_threshold =
+      bench_config_.long_prefill_token_threshold;
+  prefill_config.max_partial_prefills = bench_config_.max_partial_prefills;
+  prefill_config.max_long_partial_prefills =
+      bench_config_.max_long_partial_prefills;
+
+  Scheduler prefill_scheduler(prefill_config, kv_cache_manager());
+  const int64_t client_id =
+      prefill_scheduler.add_request(prompt_tokens, generation_config);
+
+  base::RequestId src_request_id = -1;
+  int32_t first_token = -1;
+  bool completed_prefill = false;
+  while (prefill_scheduler.has_active_requests() && !completed_prefill) {
+    SchedulerOutput output = prefill_scheduler.schedule_step();
+    if (output.total_tokens == 0) {
+      continue;
+    }
+    MixedBatchMetadata batch =
+        prefill_scheduler.build_mixed_batch(output, model_stream());
+    base::Status status = forward_mixed_batch(batch);
+    if (!status) {
+      result.failed = true;
+      result.error = status.get_err_msg();
+      return result;
+    }
+    SampledTokenView sampled = batch_sample(batch, output);
+    int32_t sample_idx = 0;
+    for (size_t i = 0; i < output.scheduled_seqs.size() && !completed_prefill; ++i) {
+      auto* seq = output.scheduled_seqs[i];
+      if (seq == nullptr) {
+        continue;
+      }
+      const bool is_prefill_row = i >= static_cast<size_t>(output.num_decode_seqs);
+      const bool prompt_finished =
+          is_prefill_row &&
+          seq->computed_tokens + seq->scheduled_tokens ==
+              static_cast<int32_t>(prompt_tokens.size());
+      if (prompt_finished) {
+        if (sample_idx >= sampled.size()) {
+          result.failed = true;
+          result.error = "remote_prefill_missing_first_token_sample";
+          return result;
+        }
+        if (seq->client_request_id == client_id) {
+          src_request_id = seq->request_id;
+          first_token = sampled.tokens[sample_idx];
+          completed_prefill = true;
+        }
+        ++sample_idx;
+      }
+    }
+    if (completed_prefill) {
+      break;
+    }
+    prefill_scheduler.process_outputs(
+        output, batch, sampled,
+        [&](int32_t token) { return is_sentence_ending(token); });
+    auto finished_now = prefill_scheduler.pop_finished();
+    for (const auto& seq : finished_now) {
+      if (seq.client_request_id != client_id) {
+        continue;
+      }
+      result.output_tokens = seq.output_tokens;
+      result.failed = seq.failed;
+      result.error = seq.finish_reason;
+      if (!result.output_tokens.empty()) {
+        result.first_tokens = {result.output_tokens.front()};
+        result.first_token = result.output_tokens.front();
+      }
+      return result;
+    }
+  }
+
+  if (!completed_prefill || src_request_id < 0 || first_token < 0) {
+    result.failed = true;
+    result.error = "remote_prefill_did_not_produce_first_token";
+    return result;
+  }
+
+  result.computed_tokens = static_cast<int32_t>(prompt_tokens.size());
+  result.first_token = first_token;
+  result.first_tokens = {first_token};
+  result.src_pool = pd_prefill_kv_pool();
+  result.layers.reserve(result.src_pool.layer_num);
+  result.client_request_id.value =
+      "remote-zmq-" + std::to_string(
+                         static_cast<int64_t>(
+                             std::chrono::steady_clock::now()
+                                 .time_since_epoch()
+                                 .count()));
+  result.handoff_id.value =
+      static_cast<uint64_t>(
+          std::chrono::steady_clock::now().time_since_epoch().count());
+  if (!result.handoff_id.valid()) {
+    result.handoff_id.value = 1;
+  }
+
+  const int32_t required_blocks =
+      (result.computed_tokens + result.src_pool.block_size - 1) /
+      result.src_pool.block_size;
+  for (int32_t layer_idx = 0; layer_idx < result.src_pool.layer_num; ++layer_idx) {
+    RemoteKVLayerPayload layer;
+    layer.layer_idx = layer_idx;
+    const auto& block_ids = kv_cache_manager()->get_block_ids(src_request_id, layer_idx);
+    if (static_cast<int32_t>(block_ids.size()) < required_blocks) {
+      result.failed = true;
+      result.error = "remote_prefill_source_block_count_insufficient";
+      break;
+    }
+    layer.src_block_ids.assign(block_ids.begin(), block_ids.begin() + required_blocks);
+    if (nccl_handoff) {
+      result.layers.push_back(std::move(layer));
+      continue;
+    }
+    auto& allocator = kv_cache_manager()->allocator_mut(layer_idx);
+    for (int32_t block_idx = 0; block_idx < required_blocks; ++block_idx) {
+      const int32_t src_block_id = layer.src_block_ids[block_idx];
+      const auto ptrs = allocator.get_block_payload_ptrs(src_block_id);
+      RemoteKVBlockPayload block;
+      block.src_block_id = src_block_id;
+      base::Status status = copy_bytes_to_host(
+          ptrs.key, ptrs.key_value_bytes, allocator.device_type(), model_stream(),
+          &block.key);
+      if (!status) {
+        result.failed = true;
+        result.error = status.get_err_msg();
+        break;
+      }
+      status = copy_bytes_to_host(
+          ptrs.value, ptrs.key_value_bytes, allocator.device_type(), model_stream(),
+          &block.value);
+      if (!status) {
+        result.failed = true;
+        result.error = status.get_err_msg();
+        break;
+      }
+      if (ptrs.scale_bytes > 0) {
+        status = copy_bytes_to_host(
+            ptrs.key_scale, ptrs.scale_bytes, allocator.device_type(),
+            model_stream(), &block.key_scale);
+        if (!status) {
+          result.failed = true;
+          result.error = status.get_err_msg();
+          break;
+        }
+        status = copy_bytes_to_host(
+            ptrs.value_scale, ptrs.scale_bytes, allocator.device_type(),
+            model_stream(), &block.value_scale);
+        if (!status) {
+          result.failed = true;
+          result.error = status.get_err_msg();
+          break;
+        }
+      }
+      layer.blocks.push_back(std::move(block));
+    }
+    if (result.failed) {
+      break;
+    }
+    result.layers.push_back(std::move(layer));
+  }
+
+  if (nccl_handoff && !result.failed) {
+    std::lock_guard<std::mutex> lock(pending_remote_prefills_mu_);
+    pending_remote_prefills_[result.handoff_id.value] = {src_request_id};
+  } else if (kv_cache_manager()->is_valid_request(src_request_id)) {
+    kv_cache_manager()->free_request(src_request_id);
+  }
+  return result;
+}
+
+RemotePrefillResult ServingBenchmarkApp::run_remote_prefill_layer_generation(
+    std::vector<int32_t> prompt_tokens,
+    GenerationConfig generation_config,
+    const LayerKVTransferRequest& layer_request,
+    const std::string& nccl_unique_id) const {
+  RemotePrefillResult result;
+  result.prompt_tokens = prompt_tokens;
+  result.client_request_id = layer_request.client_request_id;
+  result.handoff_id = layer_request.handoff_id;
+  generation_config.normalize();
+  if (prompt_tokens.empty()) {
+    result.failed = true;
+    result.error = "empty_prompt";
+    return result;
+  }
+
+  base::RequestId src_request_id = kv_cache_manager()->register_request();
+  LayerKVTransferRequest producer_request = layer_request;
+  producer_request.src_request_id = src_request_id;
+  RemoteNcclKVTransferOptions options;
+  options.role = RemoteNcclKVTransferRole::kProducer;
+  options.kv_manager = kv_cache_manager();
+  options.device_id = layer_request.src_pool.device_id;
+  options.nccl_unique_id = nccl_unique_id;
+  options.stream = model_stream();
+  options.need_sync = false;
+  RemoteNcclLayerKVTransferConnector layer_connector(std::move(options));
+  base::Status status = layer_connector.prepare(producer_request);
+  if (!status) {
+    result.failed = true;
+    result.error = status.get_err_msg();
+    if (kv_cache_manager()->is_valid_request(src_request_id)) {
+      kv_cache_manager()->free_request(src_request_id);
+    }
+    return result;
+  }
+
+  SchedulerConfig prefill_config;
+  prefill_config.max_num_seqs = max_model_batch_size();
+  prefill_config.max_num_batched_tokens = bench_config_.max_num_batched_tokens;
+  prefill_config.prefill_chunk_cap = bench_config_.prefill_chunk_cap;
+  prefill_config.policy = bench_config_.scheduling_policy;
+  prefill_config.long_prefill_token_threshold =
+      bench_config_.long_prefill_token_threshold;
+  prefill_config.max_partial_prefills = bench_config_.max_partial_prefills;
+  prefill_config.max_long_partial_prefills =
+      bench_config_.max_long_partial_prefills;
+
+  Scheduler prefill_metadata_builder(prefill_config, kv_cache_manager());
+  MixedBatchMetadata last_prefill_batch;
+  SchedulerOutput last_prefill_output;
+  int32_t computed_tokens = 0;
+  SequenceState prefill_seq;
+  prefill_seq.request_id = src_request_id;
+  prefill_seq.client_request_id = 0;
+  prefill_seq.prompt_tokens = prompt_tokens;
+  prefill_seq.generation_config = generation_config;
+  prefill_seq.status = SequenceStatus::kRunning;
+  while (computed_tokens < static_cast<int32_t>(prompt_tokens.size())) {
+    const int32_t chunk = std::min({
+        static_cast<int32_t>(prompt_tokens.size()) - computed_tokens,
+        prefill_config.max_num_batched_tokens,
+        prefill_config.prefill_chunk_cap});
+    if (chunk <= 0) {
+      result.failed = true;
+      result.error = "remote_layer_prefill_zero_chunk";
+      layer_connector.cancel(result.error);
+      break;
+    }
+
+    SchedulerOutput prefill_output;
+    prefill_seq.computed_tokens = computed_tokens;
+    prefill_seq.scheduled_tokens = chunk;
+    prefill_output.scheduled_seqs.push_back(&prefill_seq);
+    prefill_output.num_tokens_per_seq.push_back(chunk);
+    prefill_output.total_tokens = chunk;
+    prefill_output.num_prefill_seqs = 1;
+    pd_layer_diag("prefill_forward start chunk=" + std::to_string(chunk) +
+                  " computed=" + std::to_string(computed_tokens));
+    MixedBatchMetadata prefill_batch =
+        prefill_metadata_builder.build_mixed_batch(prefill_output, model_stream());
+
+    status = pd_forward_prefill_batch(prefill_batch);
+    pd_layer_diag("prefill_forward done status=" +
+                  std::string(status ? "ok" : status.get_err_msg()));
+    if (!status) {
+      result.failed = true;
+      result.error = status.get_err_msg();
+      layer_connector.cancel(result.error);
+      break;
+    }
+
+    computed_tokens += chunk;
+    if (computed_tokens == static_cast<int32_t>(prompt_tokens.size())) {
+      last_prefill_batch = prefill_batch;
+      last_prefill_output = prefill_output;
+    }
+  }
+
+  if (!result.failed) {
+    for (int32_t layer_idx = 0; layer_idx < layer_request.src_pool.layer_num;
+         ++layer_idx) {
+      pd_layer_diag("prefill_send_layer start layer=" +
+                    std::to_string(layer_idx));
+      status = layer_connector.save_kv_layer(layer_idx);
+      pd_layer_diag("prefill_send_layer done layer=" +
+                    std::to_string(layer_idx) + " status=" +
+                    std::string(status ? "ok" : status.get_err_msg()));
+      if (!status) {
+        result.failed = true;
+        result.error = status.get_err_msg();
+        layer_connector.cancel(result.error);
+        break;
+      }
+    }
+  }
+
+  if (!result.failed) {
+    while (true) {
+      KVTransferStatus transfer_status = layer_connector.poll();
+      if (transfer_status.ok()) {
+        break;
+      }
+      if (transfer_status.state == KVTransferState::kFailed ||
+          transfer_status.state == KVTransferState::kCancelled) {
+        result.failed = true;
+        result.error = transfer_status.error;
+        break;
+      }
+      std::this_thread::sleep_for(std::chrono::milliseconds(1));
+    }
+  }
+
+  if (!result.failed) {
+    SampledTokenView sampled =
+        pd_batch_sample_prefill(last_prefill_batch, last_prefill_output);
+    if (sampled.empty()) {
+      result.failed = true;
+      result.error = "remote_layer_prefill_missing_first_token";
+    } else {
+      result.computed_tokens = static_cast<int32_t>(prompt_tokens.size());
+      result.first_token = sampled.tokens[0];
+      result.first_tokens = {result.first_token};
+      result.src_pool = layer_request.src_pool;
+      result.layers.reserve(layer_request.src_pool.layer_num);
+      const int32_t required_blocks =
+          (result.computed_tokens + result.src_pool.block_size - 1) /
+          result.src_pool.block_size;
+      for (int32_t layer_idx = 0; layer_idx < result.src_pool.layer_num;
+           ++layer_idx) {
+        RemoteKVLayerPayload layer;
+        layer.layer_idx = layer_idx;
+        const auto& block_ids =
+            kv_cache_manager()->get_block_ids(src_request_id, layer_idx);
+        if (static_cast<int32_t>(block_ids.size()) < required_blocks) {
+          result.failed = true;
+          result.error = "remote_layer_prefill_source_block_count_insufficient";
+          break;
+        }
+        layer.src_block_ids.assign(block_ids.begin(),
+                                   block_ids.begin() + required_blocks);
+        result.layers.push_back(std::move(layer));
+      }
+    }
+  }
+
+  if (kv_cache_manager()->is_valid_request(src_request_id)) {
+    kv_cache_manager()->free_request(src_request_id);
+  }
+  return result;
+}
+
+base::Status ServingBenchmarkApp::run_remote_nccl_kv_send(
+    const KVBlockManifest& manifest,
+    const std::string& nccl_unique_id) const {
+  PendingRemotePrefill pending;
+  {
+    std::lock_guard<std::mutex> lock(pending_remote_prefills_mu_);
+    auto it = pending_remote_prefills_.find(manifest.handoff_id.value);
+    if (it == pending_remote_prefills_.end()) {
+      return base::error::InvalidArgument(
+          "remote nccl prefill handoff id not found");
+    }
+    pending = it->second;
+  }
+  if (pending.request_id < 0 || !kv_cache_manager()->is_valid_request(pending.request_id)) {
+    return base::error::InvalidArgument(
+        "remote nccl prefill source request is invalid");
+  }
+  for (const auto& mapping : manifest.layer_mappings) {
+    const auto& blocks =
+        kv_cache_manager()->get_block_ids(pending.request_id, mapping.layer_idx);
+    if (blocks.size() < mapping.src_block_ids.size()) {
+      return base::error::InvalidArgument(
+          "remote nccl prefill source block count is insufficient");
+    }
+    for (size_t i = 0; i < mapping.src_block_ids.size(); ++i) {
+      if (blocks[i] != mapping.src_block_ids[i]) {
+        return base::error::InvalidArgument(
+            "remote nccl prefill source block mapping changed");
+      }
+    }
+  }
+
+  RemoteNcclKVTransferOptions options;
+  options.role = RemoteNcclKVTransferRole::kProducer;
+  options.kv_manager = kv_cache_manager();
+  options.device_id = manifest.src_pool.device_id;
+  options.nccl_unique_id = nccl_unique_id;
+  options.stream = model_stream();
+  options.need_sync = true;
+  base::Status status = run_remote_nccl_kv_block_transfer(manifest, options);
+  {
+    std::lock_guard<std::mutex> lock(pending_remote_prefills_mu_);
+    pending_remote_prefills_.erase(manifest.handoff_id.value);
+  }
+  if (kv_cache_manager()->is_valid_request(pending.request_id)) {
+    kv_cache_manager()->free_request(pending.request_id);
+  }
+  return status;
+}
+
+void ServingBenchmarkApp::release_remote_prefill(HandoffId handoff_id) const {
+  if (!handoff_id.valid()) {
+    return;
+  }
+  PendingRemotePrefill pending;
+  bool found = false;
+  {
+    std::lock_guard<std::mutex> lock(pending_remote_prefills_mu_);
+    auto it = pending_remote_prefills_.find(handoff_id.value);
+    if (it != pending_remote_prefills_.end()) {
+      pending = it->second;
+      pending_remote_prefills_.erase(it);
+      found = true;
+    }
+  }
+  if (found && pending.request_id >= 0 &&
+      kv_cache_manager()->is_valid_request(pending.request_id)) {
+    kv_cache_manager()->free_request(pending.request_id);
+  }
+}
+
+ServingBenchmarkApp::PDGenerationResult
+ServingBenchmarkApp::run_remote_zmq_cpu_pd_generation(
+    std::vector<int32_t> prompt_tokens,
+    GenerationConfig generation_config,
+    const std::function<void(int32_t)>& on_token) const {
+  PDGenerationResult result;
+  generation_config.normalize();
+  if (prompt_tokens.empty()) {
+    result.failed = true;
+    result.error = "empty_prompt";
+    return result;
+  }
+
+  ZmqRpcConfig rpc = make_prefill_zmq_rpc_config(bench_config_);
+  std::unique_ptr<ZmqSocket> socket;
+  base::Status status = make_zmq_req_socket(rpc, &socket);
+  if (!status) {
+    result.failed = true;
+    result.error = status.get_err_msg();
+    return result;
+  }
+
+  nlohmann::json response;
+  status = socket->send_json(
+      {{"type", zmq_rpc_message_type_name(ZmqRpcMessageType::kPrefill)},
+       {"prompt_tokens", prompt_tokens},
+       {"generation_config", generation_config_to_json(generation_config)}});
+  if (status) {
+    status = socket->recv_json(&response);
+  }
+  if (!status) {
+    result.failed = true;
+    result.error = status.get_err_msg();
+    return result;
+  }
+  if (!response.value("ok", false)) {
+    result.failed = true;
+    result.error = response.value("error", "remote_prefill_failed");
+    return result;
+  }
+
+  RemotePrefillResult prefill =
+      remote_prefill_result_from_json(response.at("prefill_result"));
+  if (prefill.failed) {
+    result.failed = true;
+    result.error = prefill.error;
+    result.output_tokens = prefill.output_tokens;
+    return result;
+  }
+  if (prefill.first_token < 0 || prefill.computed_tokens <= 0) {
+    result.failed = true;
+    result.error = "remote_prefill_missing_decode_ready_metadata";
+    return result;
+  }
+  if (on_token && !is_sentence_ending(prefill.first_token)) {
+    on_token(prefill.first_token);
+  }
+
+  DecodeKVReservationRequest reservation_request;
+  reservation_request.client_request_id.value = "remote-zmq-cpu";
+  reservation_request.handoff_id.value = 1;
+  reservation_request.prompt_tokens = static_cast<int32_t>(prompt_tokens.size());
+  reservation_request.computed_tokens = prefill.computed_tokens;
+  reservation_request.first_token = prefill.first_token;
+  reservation_request.src_pool = prefill.src_pool;
+  reservation_request.src_block_ids_per_layer.resize(prefill.src_pool.layer_num);
+  for (const auto& layer : prefill.layers) {
+    if (layer.layer_idx >= 0 &&
+        layer.layer_idx < static_cast<int32_t>(
+                              reservation_request.src_block_ids_per_layer.size())) {
+      reservation_request.src_block_ids_per_layer[layer.layer_idx] =
+          layer.src_block_ids;
+    }
+  }
+
+  DecodeKVReservationManager reservation_manager(kv_cache_manager(),
+                                                 pd_decode_kv_pool());
+  DecodeKVReservation reservation;
+  KVBlockManifest manifest;
+  status = reservation_manager.reserve(reservation_request, &reservation, &manifest);
+  if (!status) {
+    result.failed = true;
+    result.error = status.get_err_msg();
+    return result;
+  }
+
+  for (const auto& layer : prefill.layers) {
+    if (layer.layer_idx < 0 || layer.layer_idx >= pd_decode_kv_pool().layer_num) {
+      result.failed = true;
+      result.error = "remote_prefill_layer_idx_out_of_range";
+      break;
+    }
+    auto& allocator = kv_cache_manager()->allocator_mut(layer.layer_idx);
+    if (layer.blocks.size() !=
+        reservation.dst_block_ids_per_layer[layer.layer_idx].size()) {
+      result.failed = true;
+      result.error = "remote_prefill_block_count_mismatch";
+      break;
+    }
+    for (size_t block_idx = 0; block_idx < layer.blocks.size(); ++block_idx) {
+      const int32_t dst_block_id =
+          reservation.dst_block_ids_per_layer[layer.layer_idx][block_idx];
+      const auto ptrs = allocator.get_block_payload_ptrs(dst_block_id);
+      status = copy_bytes_from_host(layer.blocks[block_idx].key, ptrs.key,
+                                    ptrs.key_value_bytes,
+                                    allocator.device_type(), model_stream());
+      if (!status) {
+        result.failed = true;
+        result.error = status.get_err_msg();
+        break;
+      }
+      status = copy_bytes_from_host(layer.blocks[block_idx].value, ptrs.value,
+                                    ptrs.key_value_bytes,
+                                    allocator.device_type(), model_stream());
+      if (!status) {
+        result.failed = true;
+        result.error = status.get_err_msg();
+        break;
+      }
+      if (ptrs.scale_bytes > 0) {
+        status = copy_bytes_from_host(layer.blocks[block_idx].key_scale,
+                                      ptrs.key_scale, ptrs.scale_bytes,
+                                      allocator.device_type(), model_stream());
+        if (!status) {
+          result.failed = true;
+          result.error = status.get_err_msg();
+          break;
+        }
+        status = copy_bytes_from_host(layer.blocks[block_idx].value_scale,
+                                      ptrs.value_scale, ptrs.scale_bytes,
+                                      allocator.device_type(), model_stream());
+        if (!status) {
+          result.failed = true;
+          result.error = status.get_err_msg();
+          break;
+        }
+      }
+    }
+    if (result.failed) {
+      break;
+    }
+  }
+  if (result.failed) {
+    reservation_manager.release(&reservation);
+    return result;
+  }
+
+  if (!status) {
+    result.failed = true;
+    result.error = status.get_err_msg();
+    reservation_manager.release(&reservation);
+    return result;
+  }
+
+  SchedulerConfig decode_config;
+  decode_config.max_num_seqs = max_model_batch_size();
+  decode_config.max_num_batched_tokens = bench_config_.max_num_batched_tokens;
+  decode_config.prefill_chunk_cap = bench_config_.prefill_chunk_cap;
+  decode_config.policy = bench_config_.scheduling_policy;
+  decode_config.long_prefill_token_threshold =
+      bench_config_.long_prefill_token_threshold;
+  decode_config.max_partial_prefills = bench_config_.max_partial_prefills;
+  decode_config.max_long_partial_prefills = bench_config_.max_long_partial_prefills;
+
+  Scheduler decode_scheduler(decode_config, kv_cache_manager());
+  const base::RequestId decode_request_id = reservation.decode_request_id;
+  const int64_t client_id = decode_scheduler.add_decode_ready_request(
+      decode_request_id, prompt_tokens, generation_config,
+      reservation.reserved_tokens, prefill.first_token);
+  reservation = {};
+
+  while (decode_scheduler.has_active_requests()) {
+    SchedulerOutput output = decode_scheduler.schedule_step();
+    if (output.total_tokens == 0) {
+      continue;
+    }
+    MixedBatchMetadata batch =
+        decode_scheduler.build_decode_batch(output, model_stream());
+    status = forward_decode_batch(batch);
+    if (!status) {
+      result.failed = true;
+      result.error = status.get_err_msg();
+      if (kv_cache_manager()->is_valid_request(decode_request_id)) {
+        kv_cache_manager()->free_request(decode_request_id);
+      }
+      return result;
+    }
+    SampledTokenView sampled = batch_sample(batch, output);
+    for (int32_t i = 0; i < sampled.size(); ++i) {
+      if (on_token && !is_sentence_ending(sampled.tokens[i])) {
+        on_token(sampled.tokens[i]);
+      }
+    }
+    decode_scheduler.process_outputs(
+        output, batch, sampled,
+        [&](int32_t token) { return is_sentence_ending(token); });
+  }
+
+  for (const auto& seq : decode_scheduler.pop_finished()) {
+    if (seq.client_request_id != client_id) {
+      continue;
+    }
+    result.output_tokens = seq.output_tokens;
+    result.failed = seq.failed;
+    result.error = seq.finish_reason;
+    return result;
+  }
+  result.failed = true;
+  result.error = "remote_decode_result_missing";
+  return result;
+}
+
+ServingBenchmarkApp::PDGenerationResult
+ServingBenchmarkApp::run_remote_zmq_nccl_pd_generation(
+    std::vector<int32_t> prompt_tokens,
+    GenerationConfig generation_config,
+    const std::function<void(int32_t)>& on_token) const {
+  PDGenerationResult result;
+  generation_config.normalize();
+  if (prompt_tokens.empty()) {
+    result.failed = true;
+    result.error = "empty_prompt";
+    return result;
+  }
+
+  ZmqRpcConfig rpc = make_prefill_zmq_rpc_config(bench_config_);
+  std::unique_ptr<ZmqSocket> socket;
+  base::Status status = make_zmq_req_socket(rpc, &socket);
+  if (!status) {
+    result.failed = true;
+    result.error = status.get_err_msg();
+    return result;
+  }
+
+  if (bench_config_.pd_mode == "remote-zmq-nccl-layer") {
+    const int32_t prompt_token_count =
+        static_cast<int32_t>(prompt_tokens.size());
+
+    KVPoolDescriptor src_pool = pd_decode_kv_pool();
+    src_pool.device_id = bench_config_.prefill_device_id;
+    const KVPoolDescriptor dst_pool = pd_decode_kv_pool();
+    const int32_t required_blocks =
+        (prompt_token_count + dst_pool.block_size - 1) / dst_pool.block_size;
+
+    const uint64_t now_id = static_cast<uint64_t>(
+        std::chrono::steady_clock::now().time_since_epoch().count());
+    DecodeKVReservationRequest reservation_request;
+    reservation_request.client_request_id.value =
+        "remote-zmq-nccl-layer-" + std::to_string(now_id);
+    reservation_request.handoff_id.value = now_id == 0 ? 1 : now_id;
+    reservation_request.prompt_tokens = prompt_token_count;
+    reservation_request.computed_tokens = prompt_token_count;
+    reservation_request.first_token = -1;
+    reservation_request.src_pool = src_pool;
+    reservation_request.src_block_ids_per_layer.assign(
+        src_pool.layer_num, std::vector<int32_t>(required_blocks, 0));
+
+    DecodeKVReservationManager reservation_manager(kv_cache_manager(),
+                                                   dst_pool);
+    DecodeKVReservation reservation;
+    KVBlockManifest unused_manifest;
+    status = reservation_manager.reserve(reservation_request, &reservation,
+                                         &unused_manifest);
+    if (!status) {
+      result.failed = true;
+      result.error = status.get_err_msg();
+      return result;
+    }
+
+    ncclUniqueId unique_id;
+    ncclResult_t nccl_status = ncclGetUniqueId(&unique_id);
+    if (nccl_status != ncclSuccess) {
+      reservation_manager.release(&reservation);
+      result.failed = true;
+      result.error = std::string("ncclGetUniqueId failed: ") +
+                     ncclGetErrorString(nccl_status);
+      return result;
+    }
+    const std::string unique_id_bytes(
+        reinterpret_cast<const char*>(&unique_id), sizeof(unique_id));
+
+    LayerKVTransferRequest layer_request;
+    layer_request.client_request_id = reservation_request.client_request_id;
+    layer_request.handoff_id = reservation_request.handoff_id;
+    layer_request.src_request_id = -1;
+    layer_request.dst_request_id = reservation.decode_request_id;
+    layer_request.prompt_tokens = prompt_token_count;
+    layer_request.computed_tokens = prompt_token_count;
+    layer_request.src_pool = src_pool;
+    layer_request.dst_pool = dst_pool;
+
+    RemoteNcclKVTransferOptions recv_options;
+    recv_options.role = RemoteNcclKVTransferRole::kConsumer;
+    recv_options.kv_manager = kv_cache_manager();
+    recv_options.device_id = dst_pool.device_id;
+    recv_options.nccl_unique_id = unique_id_bytes;
+    recv_options.stream = model_stream();
+    recv_options.need_sync = false;
+    RemoteNcclLayerKVTransferConnector layer_connector(std::move(recv_options));
+    status = layer_connector.prepare(layer_request);
+    if (!status) {
+      reservation_manager.release(&reservation);
+      result.failed = true;
+      result.error = status.get_err_msg();
+      return result;
+    }
+
+    pd_layer_diag("decode_recv_prepare request_id=" +
+                  std::to_string(layer_request.dst_request_id) +
+                  " layers=" + std::to_string(dst_pool.layer_num) +
+                  " blocks=" + std::to_string(required_blocks));
+    auto recv_future =
+        std::async(std::launch::async,
+                   [&layer_connector, layer_num = dst_pool.layer_num]() {
+                     for (int32_t layer_idx = 0; layer_idx < layer_num;
+                          ++layer_idx) {
+                       pd_layer_diag("decode_recv_layer start layer=" +
+                                     std::to_string(layer_idx));
+                       base::Status layer_status =
+                           layer_connector.save_kv_layer(layer_idx);
+                       pd_layer_diag("decode_recv_layer done layer=" +
+                                     std::to_string(layer_idx) + " status=" +
+                                     std::string(layer_status ? "ok"
+                                                              : layer_status.get_err_msg()));
+                       if (!layer_status) {
+                         return layer_status;
+                       }
+                     }
+                     return base::error::Success();
+                   });
+
+    pd_layer_diag("decode_send_layer_rpc");
+    nlohmann::json response;
+    status = socket->send_json(
+        {{"type", zmq_rpc_message_type_name(ZmqRpcMessageType::kLayerKvTransfer)},
+         {"backend", "nccl"},
+         {"prompt_tokens", prompt_tokens},
+         {"generation_config", generation_config_to_json(generation_config)},
+         {"layer_request", layer_kv_transfer_request_to_json(layer_request)},
+         {"nccl_unique_id", binary_to_hex_json(unique_id_bytes)}});
+    if (status) {
+      status = socket->recv_json(&response);
+    }
+    pd_layer_diag("decode_layer_rpc_done status=" +
+                  std::string(status ? "ok" : status.get_err_msg()));
+    if (!status) {
+      layer_connector.cancel(status.get_err_msg());
+      base::Status recv_status = recv_future.get();
+      UNUSED(recv_status);
+      reservation_manager.release(&reservation);
+      result.failed = true;
+      result.error = status.get_err_msg();
+      return result;
+    }
+
+    const base::Status recv_status = recv_future.get();
+    pd_layer_diag("decode_recv_future_done status=" +
+                  std::string(recv_status ? "ok" : recv_status.get_err_msg()));
+    if (!response.value("ok", false)) {
+      reservation_manager.release(&reservation);
+      result.failed = true;
+      result.error = response.value("error", "remote_layer_prefill_failed");
+      return result;
+    }
+    if (!recv_status) {
+      reservation_manager.release(&reservation);
+      result.failed = true;
+      result.error = recv_status.get_err_msg();
+      return result;
+    }
+
+    RemotePrefillResult prefill =
+        remote_prefill_result_from_json(response.at("prefill_result"));
+    if (prefill.failed) {
+      reservation_manager.release(&reservation);
+      result.failed = true;
+      result.error = prefill.error;
+      result.output_tokens = prefill.output_tokens;
+      return result;
+    }
+    if (prefill.first_token < 0 || prefill.computed_tokens != prompt_token_count) {
+      reservation_manager.release(&reservation);
+      result.failed = true;
+      result.error = "remote_layer_prefill_missing_metadata";
+      return result;
+    }
+
+    while (true) {
+      KVTransferStatus transfer_status = layer_connector.poll();
+      if (transfer_status.ok()) {
+        break;
+      }
+      if (transfer_status.state == KVTransferState::kFailed ||
+          transfer_status.state == KVTransferState::kCancelled) {
+        reservation_manager.release(&reservation);
+        result.failed = true;
+        result.error = transfer_status.error;
+        return result;
+      }
+      std::this_thread::sleep_for(std::chrono::milliseconds(1));
+    }
+
+    if (on_token && !is_sentence_ending(prefill.first_token)) {
+      on_token(prefill.first_token);
+    }
+
+    SchedulerConfig decode_config;
+    decode_config.max_num_seqs = max_model_batch_size();
+    decode_config.max_num_batched_tokens = bench_config_.max_num_batched_tokens;
+    decode_config.prefill_chunk_cap = bench_config_.prefill_chunk_cap;
+    decode_config.policy = bench_config_.scheduling_policy;
+    decode_config.long_prefill_token_threshold =
+        bench_config_.long_prefill_token_threshold;
+    decode_config.max_partial_prefills = bench_config_.max_partial_prefills;
+    decode_config.max_long_partial_prefills =
+        bench_config_.max_long_partial_prefills;
+
+    Scheduler decode_scheduler(decode_config, kv_cache_manager());
+    const base::RequestId decode_request_id = reservation.decode_request_id;
+    const int64_t client_id = decode_scheduler.add_decode_ready_request(
+        decode_request_id, prompt_tokens, generation_config,
+        reservation.reserved_tokens, prefill.first_token);
+    reservation = {};
+
+    set_pd_decode_layer_kv_connector(&layer_connector,
+                                     LayerKVConnectorRole::kConsumer);
+    while (decode_scheduler.has_active_requests()) {
+      SchedulerOutput output = decode_scheduler.schedule_step();
+      if (output.total_tokens == 0) {
+        continue;
+      }
+      MixedBatchMetadata batch =
+          decode_scheduler.build_decode_batch(output, model_stream());
+      status = pd_forward_decode_batch(batch);
+      if (!status) {
+        set_pd_decode_layer_kv_connector(nullptr,
+                                         LayerKVConnectorRole::kDisabled);
+        result.failed = true;
+        result.error = status.get_err_msg();
+        if (kv_cache_manager()->is_valid_request(decode_request_id)) {
+          kv_cache_manager()->free_request(decode_request_id);
+        }
+        return result;
+      }
+      SampledTokenView sampled = pd_batch_sample_decode(batch, output);
+      for (int32_t i = 0; i < sampled.size(); ++i) {
+        if (on_token && !is_sentence_ending(sampled.tokens[i])) {
+          on_token(sampled.tokens[i]);
+        }
+      }
+      decode_scheduler.process_outputs(
+          output, batch, sampled,
+          [&](int32_t token) { return is_sentence_ending(token); });
+    }
+    set_pd_decode_layer_kv_connector(nullptr, LayerKVConnectorRole::kDisabled);
+
+    for (const auto& seq : decode_scheduler.pop_finished()) {
+      if (seq.client_request_id != client_id) {
+        continue;
+      }
+      result.output_tokens = seq.output_tokens;
+      result.failed = seq.failed;
+      result.error = seq.finish_reason;
+      return result;
+    }
+    result.failed = true;
+    result.error = "remote_layer_nccl_decode_result_missing";
+    return result;
+  }
+
+  nlohmann::json response;
+  status = socket->send_json(
+      {{"type", zmq_rpc_message_type_name(ZmqRpcMessageType::kPrefill)},
+       {"prompt_tokens", prompt_tokens},
+       {"generation_config", generation_config_to_json(generation_config)}});
+  if (status) {
+    status = socket->recv_json(&response);
+  }
+  if (!status) {
+    result.failed = true;
+    result.error = status.get_err_msg();
+    return result;
+  }
+  if (!response.value("ok", false)) {
+    result.failed = true;
+    result.error = response.value("error", "remote_prefill_failed");
+    return result;
+  }
+
+  RemotePrefillResult prefill =
+      remote_prefill_result_from_json(response.at("prefill_result"));
+  if (prefill.failed) {
+    result.failed = true;
+    result.error = prefill.error;
+    result.output_tokens = prefill.output_tokens;
+    return result;
+  }
+  if (prefill.first_token < 0 || prefill.computed_tokens <= 0 ||
+      !prefill.handoff_id.valid()) {
+    result.failed = true;
+    result.error = "remote_prefill_missing_nccl_metadata";
+    return result;
+  }
+  auto release_prefill = [&]() {
+    ZmqRpcConfig release_rpc = make_prefill_zmq_rpc_config(bench_config_);
+    std::unique_ptr<ZmqSocket> release_socket;
+    base::Status release_status =
+        make_zmq_req_socket(release_rpc, &release_socket);
+    if (!release_status) {
+      return;
+    }
+    nlohmann::json release_response;
+    release_status = release_socket->send_json(
+        {{"type", zmq_rpc_message_type_name(ZmqRpcMessageType::kKvRelease)},
+         {"handoff_id", prefill.handoff_id.value}});
+    if (release_status) {
+      release_socket->recv_json(&release_response);
+    }
+  };
+  if (on_token && !is_sentence_ending(prefill.first_token)) {
+    on_token(prefill.first_token);
+  }
+
+  DecodeKVReservationRequest reservation_request;
+  reservation_request.client_request_id =
+      prefill.client_request_id.empty()
+          ? GlobalRequestId{"remote-zmq-nccl"}
+          : prefill.client_request_id;
+  reservation_request.handoff_id = prefill.handoff_id;
+  reservation_request.prompt_tokens = static_cast<int32_t>(prompt_tokens.size());
+  reservation_request.computed_tokens = prefill.computed_tokens;
+  reservation_request.first_token = prefill.first_token;
+  reservation_request.src_pool = prefill.src_pool;
+  reservation_request.src_block_ids_per_layer.resize(prefill.src_pool.layer_num);
+  for (const auto& layer : prefill.layers) {
+    if (layer.layer_idx >= 0 &&
+        layer.layer_idx < static_cast<int32_t>(
+                              reservation_request.src_block_ids_per_layer.size())) {
+      reservation_request.src_block_ids_per_layer[layer.layer_idx] =
+          layer.src_block_ids;
+    }
+  }
+
+  DecodeKVReservationManager reservation_manager(kv_cache_manager(),
+                                                 pd_decode_kv_pool());
+  DecodeKVReservation reservation;
+  KVBlockManifest manifest;
+  status = reservation_manager.reserve(reservation_request, &reservation, &manifest);
+  if (!status) {
+    release_prefill();
+    result.failed = true;
+    result.error = status.get_err_msg();
+    return result;
+  }
+
+  ncclUniqueId unique_id;
+  ncclResult_t nccl_status = ncclGetUniqueId(&unique_id);
+  if (nccl_status != ncclSuccess) {
+    reservation_manager.release(&reservation);
+    release_prefill();
+    result.failed = true;
+    result.error = std::string("ncclGetUniqueId failed: ") +
+                   ncclGetErrorString(nccl_status);
+    return result;
+  }
+  const std::string unique_id_bytes(
+      reinterpret_cast<const char*>(&unique_id), sizeof(unique_id));
+
+  auto send_future = std::async(std::launch::async, [this, manifest, unique_id_bytes]() {
+    ZmqRpcConfig transfer_rpc = make_prefill_zmq_rpc_config(bench_config_);
+    std::unique_ptr<ZmqSocket> transfer_socket;
+    base::Status transfer_status =
+        make_zmq_req_socket(transfer_rpc, &transfer_socket);
+    if (!transfer_status) {
+      return transfer_status;
+    }
+    nlohmann::json transfer_response;
+    transfer_status = transfer_socket->send_json(
+        {{"type", zmq_rpc_message_type_name(ZmqRpcMessageType::kKvTransfer)},
+         {"backend", "nccl"},
+         {"manifest", kv_block_manifest_to_json(manifest)},
+         {"nccl_unique_id", binary_to_hex_json(unique_id_bytes)}});
+    if (transfer_status) {
+      transfer_status = transfer_socket->recv_json(&transfer_response);
+    }
+    if (!transfer_status) {
+      return transfer_status;
+    }
+    if (!transfer_response.value("ok", false)) {
+      return base::error::InternalError(
+          transfer_response.value("error", "remote_nccl_prefill_send_failed"));
+    }
+    return base::error::Success();
+  });
+
+  RemoteNcclKVTransferOptions recv_options;
+  recv_options.role = RemoteNcclKVTransferRole::kConsumer;
+  recv_options.kv_manager = kv_cache_manager();
+  recv_options.device_id = manifest.dst_pool.device_id;
+  recv_options.nccl_unique_id = unique_id_bytes;
+  recv_options.stream = model_stream();
+  recv_options.need_sync = true;
+  status = run_remote_nccl_kv_block_transfer(manifest, recv_options);
+  const base::Status send_status = send_future.get();
+  if (!status || !send_status) {
+    reservation_manager.release(&reservation);
+    result.failed = true;
+    result.error = !status ? status.get_err_msg() : send_status.get_err_msg();
+    return result;
+  }
+
+  SchedulerConfig decode_config;
+  decode_config.max_num_seqs = max_model_batch_size();
+  decode_config.max_num_batched_tokens = bench_config_.max_num_batched_tokens;
+  decode_config.prefill_chunk_cap = bench_config_.prefill_chunk_cap;
+  decode_config.policy = bench_config_.scheduling_policy;
+  decode_config.long_prefill_token_threshold =
+      bench_config_.long_prefill_token_threshold;
+  decode_config.max_partial_prefills = bench_config_.max_partial_prefills;
+  decode_config.max_long_partial_prefills = bench_config_.max_long_partial_prefills;
+
+  Scheduler decode_scheduler(decode_config, kv_cache_manager());
+  const base::RequestId decode_request_id = reservation.decode_request_id;
+  const int64_t client_id = decode_scheduler.add_decode_ready_request(
+      decode_request_id, prompt_tokens, generation_config,
+      reservation.reserved_tokens, prefill.first_token);
+  reservation = {};
+
+  while (decode_scheduler.has_active_requests()) {
+    SchedulerOutput output = decode_scheduler.schedule_step();
+    if (output.total_tokens == 0) {
+      continue;
+    }
+    MixedBatchMetadata batch =
+        decode_scheduler.build_decode_batch(output, model_stream());
+    status = forward_decode_batch(batch);
+    if (!status) {
+      result.failed = true;
+      result.error = status.get_err_msg();
+      if (kv_cache_manager()->is_valid_request(decode_request_id)) {
+        kv_cache_manager()->free_request(decode_request_id);
+      }
+      return result;
+    }
+    SampledTokenView sampled = batch_sample(batch, output);
+    for (int32_t i = 0; i < sampled.size(); ++i) {
+      if (on_token && !is_sentence_ending(sampled.tokens[i])) {
+        on_token(sampled.tokens[i]);
+      }
+    }
+    decode_scheduler.process_outputs(
+        output, batch, sampled,
+        [&](int32_t token) { return is_sentence_ending(token); });
+  }
+
+  for (const auto& seq : decode_scheduler.pop_finished()) {
+    if (seq.client_request_id != client_id) {
+      continue;
+    }
+    result.output_tokens = seq.output_tokens;
+    result.failed = seq.failed;
+    result.error = seq.finish_reason;
+    return result;
+  }
+  result.failed = true;
+  result.error = "remote_nccl_decode_result_missing";
+  return result;
+}
+
+ServingBenchmarkApp::PDGenerationResult ServingBenchmarkApp::run_dual_gpu_pd_generation_with_mode(
+    const std::string& pd_mode,
+    std::vector<int32_t> prompt_tokens,
+    GenerationConfig generation_config,
+    const std::function<void(int32_t)>& on_token) const {
+  PDGenerationResult result;
+  generation_config.normalize();
+  if (!pd_dual_gpu_supported()) {
+    result.failed = true;
+    result.error = "pd_dual_gpu_not_supported";
+    return result;
+  }
+  if (prompt_tokens.empty()) {
+    result.failed = true;
+    result.error = "empty_prompt";
+    return result;
+  }
+
+  SchedulerConfig prefill_config;
+  prefill_config.max_num_seqs = max_model_batch_size();
+  prefill_config.max_num_batched_tokens = bench_config_.max_num_batched_tokens;
+  prefill_config.prefill_chunk_cap = bench_config_.prefill_chunk_cap;
+  prefill_config.policy = bench_config_.scheduling_policy;
+  prefill_config.long_prefill_token_threshold = bench_config_.long_prefill_token_threshold;
+  prefill_config.max_partial_prefills = bench_config_.max_partial_prefills;
+  prefill_config.max_long_partial_prefills = bench_config_.max_long_partial_prefills;
+
+  if (pd_mode == "dual-gpu-nccl-layer") {
+    const int32_t prompt_token_count = static_cast<int32_t>(prompt_tokens.size());
+    const base::RequestId prefill_request_id =
+        pd_prefill_kv_cache_manager()->register_request();
+    cudaSetDevice(bench_config_.decode_device_id);
+    DecodeKVReservationManager reservation_manager(pd_decode_kv_cache_manager(),
+                                                   pd_decode_kv_pool());
+    DecodeKVReservationRequest reservation_request;
+    reservation_request.client_request_id.value = "offline-layer-0";
+    reservation_request.handoff_id.value = 1;
+    reservation_request.prompt_tokens = prompt_token_count;
+    reservation_request.computed_tokens = prompt_token_count;
+    reservation_request.first_token = -1;
+    reservation_request.src_pool = pd_prefill_kv_pool();
+    reservation_request.src_block_ids_per_layer.resize(reservation_request.src_pool.layer_num);
+    const int32_t required_blocks =
+        (prompt_token_count + reservation_request.src_pool.block_size - 1) /
+        reservation_request.src_pool.block_size;
+    for (int32_t layer_idx = 0; layer_idx < reservation_request.src_pool.layer_num; ++layer_idx) {
+      reservation_request.src_block_ids_per_layer[layer_idx].assign(required_blocks, 0);
+    }
+    DecodeKVReservation reservation;
+    KVBlockManifest unused_manifest;
+    base::Status status =
+        reservation_manager.reserve(reservation_request, &reservation, &unused_manifest);
+    if (!status) {
+      result.failed = true;
+      result.error = status.get_err_msg();
+      if (pd_prefill_kv_cache_manager()->is_valid_request(prefill_request_id)) {
+        pd_prefill_kv_cache_manager()->free_request(prefill_request_id);
+      }
+      return result;
+    }
+
+    NcclLayerKVTransferConnector layer_connector(
+        pd_prefill_kv_cache_manager(),
+        pd_decode_kv_cache_manager(),
+        bench_config_.prefill_device_id,
+        bench_config_.decode_device_id,
+        pd_prefill_stream(),
+        pd_transfer_stream(),
+        false);
+    LayerKVTransferRequest layer_request;
+    layer_request.client_request_id.value = "offline-layer-0";
+    layer_request.handoff_id.value = 1;
+    layer_request.src_request_id = prefill_request_id;
+    layer_request.dst_request_id = reservation.decode_request_id;
+    layer_request.prompt_tokens = prompt_token_count;
+    layer_request.computed_tokens = prompt_token_count;
+    layer_request.src_pool = pd_prefill_kv_pool();
+    layer_request.dst_pool = pd_decode_kv_pool();
+
+    status = layer_connector.prepare(layer_request);
+    if (!status) {
+      result.failed = true;
+      result.error = status.get_err_msg();
+      reservation_manager.release(&reservation);
+      if (pd_prefill_kv_cache_manager()->is_valid_request(prefill_request_id)) {
+        pd_prefill_kv_cache_manager()->free_request(prefill_request_id);
+      }
+      return result;
+    }
+
+    cudaSetDevice(bench_config_.prefill_device_id);
+    Scheduler prefill_metadata_builder(prefill_config, pd_prefill_kv_cache_manager());
+    MixedBatchMetadata last_prefill_batch;
+    SchedulerOutput last_prefill_output;
+    int32_t computed_tokens = 0;
+    while (computed_tokens < prompt_token_count) {
+      const int32_t chunk = std::min({
+          prompt_token_count - computed_tokens,
+          prefill_config.max_num_batched_tokens,
+          prefill_config.prefill_chunk_cap});
+      if (chunk <= 0) {
+        result.failed = true;
+        result.error = "layer_prefill_zero_chunk";
+        reservation_manager.release(&reservation);
+        if (pd_prefill_kv_cache_manager()->is_valid_request(prefill_request_id)) {
+          pd_prefill_kv_cache_manager()->free_request(prefill_request_id);
+        }
+        return result;
+      }
+
+      cudaSetDevice(bench_config_.prefill_device_id);
+      SchedulerOutput prefill_output;
+      SequenceState prefill_seq;
+      prefill_seq.request_id = prefill_request_id;
+      prefill_seq.client_request_id = 0;
+      prefill_seq.prompt_tokens = prompt_tokens;
+      prefill_seq.generation_config = generation_config;
+      prefill_seq.computed_tokens = computed_tokens;
+      prefill_seq.scheduled_tokens = chunk;
+      prefill_seq.status = SequenceStatus::kRunning;
+      prefill_output.scheduled_seqs.push_back(&prefill_seq);
+      prefill_output.num_tokens_per_seq.push_back(chunk);
+      prefill_output.total_tokens = chunk;
+      prefill_output.num_prefill_seqs = 1;
+      MixedBatchMetadata prefill_batch =
+          prefill_metadata_builder.build_mixed_batch(prefill_output, pd_prefill_stream());
+
+      set_pd_prefill_layer_kv_connector(
+          &layer_connector, LayerKVConnectorRole::kProducer);
+      status = pd_forward_prefill_batch(prefill_batch);
+      set_pd_prefill_layer_kv_connector(nullptr, LayerKVConnectorRole::kDisabled);
+      if (!status) {
+        result.failed = true;
+        result.error = status.get_err_msg();
+        layer_connector.cancel(status.get_err_msg());
+        reservation_manager.release(&reservation);
+        if (pd_prefill_kv_cache_manager()->is_valid_request(prefill_request_id)) {
+          pd_prefill_kv_cache_manager()->free_request(prefill_request_id);
+        }
+        return result;
+      }
+
+      computed_tokens += chunk;
+      if (computed_tokens == prompt_token_count) {
+        last_prefill_batch = prefill_batch;
+        last_prefill_output = prefill_output;
+      }
+    }
+
+    for (int32_t layer_idx = 0; layer_idx < pd_prefill_kv_pool().layer_num; ++layer_idx) {
+      status = layer_connector.save_kv_layer(layer_idx);
+      if (!status) {
+        result.failed = true;
+        result.error = status.get_err_msg();
+        layer_connector.cancel(status.get_err_msg());
+        reservation_manager.release(&reservation);
+        if (pd_prefill_kv_cache_manager()->is_valid_request(prefill_request_id)) {
+          pd_prefill_kv_cache_manager()->free_request(prefill_request_id);
+        }
+        return result;
+      }
+    }
+
+    while (true) {
+      KVTransferStatus transfer_status = layer_connector.poll();
+      if (transfer_status.ok()) {
+        break;
+      }
+      if (transfer_status.state == KVTransferState::kFailed ||
+          transfer_status.state == KVTransferState::kCancelled) {
+        result.failed = true;
+        result.error = transfer_status.error;
+        reservation_manager.release(&reservation);
+        if (pd_prefill_kv_cache_manager()->is_valid_request(prefill_request_id)) {
+          pd_prefill_kv_cache_manager()->free_request(prefill_request_id);
+        }
+        return result;
+      }
+    }
+
+    SampledTokenView first_sampled =
+        pd_batch_sample_prefill(last_prefill_batch, last_prefill_output);
+    if (first_sampled.empty()) {
+      result.failed = true;
+      result.error = "layer_prefill_missing_first_token";
+      reservation_manager.release(&reservation);
+      if (pd_prefill_kv_cache_manager()->is_valid_request(prefill_request_id)) {
+        pd_prefill_kv_cache_manager()->free_request(prefill_request_id);
+      }
+      return result;
+    }
+    const int32_t first_token = first_sampled.tokens[0];
+    if (on_token && !is_sentence_ending(first_token)) {
+      on_token(first_token);
+    }
+    if (pd_prefill_kv_cache_manager()->is_valid_request(prefill_request_id)) {
+      pd_prefill_kv_cache_manager()->free_request(prefill_request_id);
+    }
+
+    SchedulerConfig decode_config = prefill_config;
+    cudaSetDevice(bench_config_.decode_device_id);
+    Scheduler decode_scheduler(decode_config, pd_decode_kv_cache_manager());
+    const base::RequestId decode_request_id = reservation.decode_request_id;
+    const int64_t d_client_id = decode_scheduler.add_decode_ready_request(
+        reservation.decode_request_id, prompt_tokens, generation_config,
+        reservation.reserved_tokens, first_token);
+    reservation = {};
+
+    set_pd_decode_layer_kv_connector(
+        &layer_connector, LayerKVConnectorRole::kConsumer);
+    while (decode_scheduler.has_active_requests()) {
+      cudaSetDevice(bench_config_.decode_device_id);
+      SchedulerOutput output = decode_scheduler.schedule_step();
+      if (output.total_tokens == 0) {
+        continue;
+      }
+      MixedBatchMetadata batch = decode_scheduler.build_decode_batch(output, pd_decode_stream());
+      status = pd_forward_decode_batch(batch);
+      if (!status) {
+        set_pd_decode_layer_kv_connector(nullptr, LayerKVConnectorRole::kDisabled);
+        result.failed = true;
+        result.error = status.get_err_msg();
+        if (pd_decode_kv_cache_manager()->is_valid_request(decode_request_id)) {
+          pd_decode_kv_cache_manager()->free_request(decode_request_id);
+        }
+        reservation = {};
+        return result;
+      }
+      SampledTokenView sampled = pd_batch_sample_decode(batch, output);
+      for (int32_t i = 0; i < sampled.size(); ++i) {
+        if (on_token && !is_sentence_ending(sampled.tokens[i])) {
+          on_token(sampled.tokens[i]);
+        }
+      }
+      decode_scheduler.process_outputs(
+          output, batch, sampled,
+          [&](int32_t token) { return is_sentence_ending(token); });
+    }
+    set_pd_decode_layer_kv_connector(nullptr, LayerKVConnectorRole::kDisabled);
+
+    auto finished = decode_scheduler.pop_finished();
+    for (const auto& seq : finished) {
+      if (seq.client_request_id != d_client_id) {
+        continue;
+      }
+      result.output_tokens = seq.output_tokens;
+      result.failed = seq.failed;
+      result.error = seq.finish_reason;
+      return result;
+    }
+    result.failed = true;
+    result.error = "decode_result_missing";
+    return result;
+  }
+
+  cudaSetDevice(bench_config_.prefill_device_id);
+  Scheduler prefill_scheduler(prefill_config, pd_prefill_kv_cache_manager());
+  const int64_t p_client_id = prefill_scheduler.add_request(prompt_tokens, generation_config);
+  base::RequestId src_request_id = -1;
+  const SequenceState* prefill_seq = nullptr;
+
+  while (prefill_scheduler.has_active_requests()) {
+    cudaSetDevice(bench_config_.prefill_device_id);
+    SchedulerOutput output = prefill_scheduler.schedule_step();
+    if (output.total_tokens == 0) {
+      continue;
+    }
+    MixedBatchMetadata batch = prefill_scheduler.build_mixed_batch(output, pd_prefill_stream());
+    base::Status status = pd_forward_prefill_batch(batch);
+    if (!status) {
+      result.failed = true;
+      result.error = status.get_err_msg();
+      return result;
+    }
+    SampledTokenView sampled = pd_batch_sample_prefill(batch, output);
+    prefill_scheduler.process_outputs(
+        output, batch, sampled,
+        [&](int32_t token) { return is_sentence_ending(token); });
+    auto finished_now = prefill_scheduler.pop_finished();
+    for (const auto& seq : finished_now) {
+      if (seq.client_request_id != p_client_id) {
+        continue;
+      }
+      result.output_tokens = seq.output_tokens;
+      result.failed = seq.failed;
+      result.error = seq.finish_reason;
+      if (on_token) {
+        for (int32_t token : result.output_tokens) {
+          on_token(token);
+        }
+      }
+      return result;
+    }
+    for (const auto* seq : output.scheduled_seqs) {
+      if (seq != nullptr && seq->client_request_id == p_client_id &&
+          !seq->is_prefill() && !seq->output_tokens.empty()) {
+        src_request_id = seq->request_id;
+        prefill_seq = seq;
+        break;
+      }
+    }
+    if (prefill_seq != nullptr) {
+      break;
+    }
+  }
+  if (prefill_seq == nullptr || src_request_id < 0 ||
+      prefill_seq->output_tokens.empty()) {
+    result.failed = true;
+    result.error = "prefill_did_not_produce_first_token";
+    return result;
+  }
+
+  const int32_t first_token = prefill_seq->output_tokens.front();
+  if (on_token && !is_sentence_ending(first_token)) {
+    on_token(first_token);
+  }
+
+  DecodeKVReservationManager reservation_manager(pd_decode_kv_cache_manager(),
+                                                 pd_decode_kv_pool());
+  PDHandoffBuilder handoff_builder(pd_prefill_kv_cache_manager(), pd_prefill_kv_pool());
+  PrefillHandoffBuildRequest build_request;
+  build_request.scheduled_request_index = 0;
+  build_request.client_request_id.value = "offline-" + std::to_string(p_client_id);
+  build_request.handoff_id.value = static_cast<uint64_t>(p_client_id + 1);
+  DecodeKVReservationRequest reservation_request;
+  SchedulerOutput handoff_output;
+  handoff_output.scheduled_seqs.push_back(const_cast<SequenceState*>(prefill_seq));
+  handoff_output.num_tokens_per_seq.push_back(0);
+  base::Status status = handoff_builder.build_decode_reservation_request(
+      handoff_output, build_request, &reservation_request);
+  if (!status) {
+    result.failed = true;
+    result.error = status.get_err_msg();
+    pd_prefill_kv_cache_manager()->free_request(src_request_id);
+    return result;
+  }
+
+  DecodeKVReservation reservation;
+  KVBlockManifest manifest;
+  cudaSetDevice(bench_config_.decode_device_id);
+  status = reservation_manager.reserve(reservation_request, &reservation, &manifest);
+  if (!status) {
+    result.failed = true;
+    result.error = status.get_err_msg();
+    pd_prefill_kv_cache_manager()->free_request(src_request_id);
+    return result;
+  }
+
+  std::unique_ptr<KVTransferConnector> connector;
+  if (pd_mode == "dual-gpu-nccl") {
+    connector = std::make_unique<NcclKVBlockTransferConnector>(
+        pd_prefill_kv_cache_manager(),
+        pd_decode_kv_cache_manager(),
+        bench_config_.prefill_device_id,
+        bench_config_.decode_device_id,
+        pd_transfer_stream(),
+        false);
+  } else {
+    connector = std::make_unique<CudaP2PKVTransferConnector>(
+        pd_prefill_kv_cache_manager(),
+        pd_decode_kv_cache_manager(),
+        bench_config_.prefill_device_id,
+        bench_config_.decode_device_id,
+        pd_transfer_stream(),
+        false);
+  }
+  PDCoordinator coordinator(connector.get());
+  PDHandoffState handoff_state;
+  status = coordinator.start_prefill_handoff(manifest, &handoff_state);
+  if (!status) {
+    result.failed = true;
+    result.error = status.get_err_msg();
+    reservation_manager.release(&reservation);
+    pd_prefill_kv_cache_manager()->free_request(src_request_id);
+    return result;
+  }
+  while (!handoff_state.terminal()) {
+    status = coordinator.advance(&handoff_state);
+    if (!status) {
+      result.failed = true;
+      result.error = status.get_err_msg();
+      reservation_manager.release(&reservation);
+      pd_prefill_kv_cache_manager()->free_request(src_request_id);
+      return result;
+    }
+  }
+  if (pd_transfer_stream() != nullptr) {
+    cudaStreamSynchronize(static_cast<cudaStream_t>(pd_transfer_stream()));
+  }
+  if (!handoff_state.ready_for_decode()) {
+    result.failed = true;
+    result.error = handoff_state.error.empty() ? "pd_handoff_failed" : handoff_state.error;
+    reservation_manager.release(&reservation);
+    pd_prefill_kv_cache_manager()->free_request(src_request_id);
+    return result;
+  }
+
+  pd_prefill_kv_cache_manager()->free_request(src_request_id);
+
+  SchedulerConfig decode_config = prefill_config;
+  cudaSetDevice(bench_config_.decode_device_id);
+  Scheduler decode_scheduler(decode_config, pd_decode_kv_cache_manager());
+  const int64_t d_client_id = decode_scheduler.add_decode_ready_request(
+      reservation.decode_request_id, prompt_tokens, generation_config,
+      reservation.reserved_tokens, first_token);
+
+  while (decode_scheduler.has_active_requests()) {
+    cudaSetDevice(bench_config_.decode_device_id);
+    SchedulerOutput output = decode_scheduler.schedule_step();
+    if (output.total_tokens == 0) {
+      continue;
+    }
+    MixedBatchMetadata batch = decode_scheduler.build_decode_batch(output, pd_decode_stream());
+    status = pd_forward_decode_batch(batch);
+    if (!status) {
+      result.failed = true;
+      result.error = status.get_err_msg();
+      if (pd_decode_kv_cache_manager()->is_valid_request(reservation.decode_request_id)) {
+        pd_decode_kv_cache_manager()->free_request(reservation.decode_request_id);
+      }
+      reservation = {};
+      return result;
+    }
+    SampledTokenView sampled = pd_batch_sample_decode(batch, output);
+    for (int32_t i = 0; i < sampled.size(); ++i) {
+      if (on_token && !is_sentence_ending(sampled.tokens[i])) {
+        on_token(sampled.tokens[i]);
+      }
+    }
+    decode_scheduler.process_outputs(
+        output, batch, sampled,
+        [&](int32_t token) { return is_sentence_ending(token); });
+  }
+
+  auto finished = decode_scheduler.pop_finished();
+  reservation = {};
+  for (const auto& seq : finished) {
+    if (seq.client_request_id != d_client_id) {
+      continue;
+    }
+    result.output_tokens = seq.output_tokens;
+    result.failed = seq.failed;
+    result.error = seq.finish_reason;
+    return result;
+  }
+  result.failed = true;
+  result.error = "decode_result_missing";
+  return result;
+}
+
+int ServingBenchmarkApp::run_dual_gpu_pd_offline() {
+  if (!pd_dual_gpu_supported()) {
+    LOG(ERROR) << "pd-mode=" << bench_config_.pd_mode
+               << " requested, but this app does not provide P/D models";
+    return -1;
+  }
+  if (!bench_config_.quiet) {
+    std::cout << "\n=== Starting " << bench_config_.pd_mode
+              << " PD offline ===" << std::endl;
+  }
+  summary_.request_ttft_ms.reserve(prompts_.size());
+  summary_.request_itl_ms.reserve(prompts_.size());
+  summary_.request_latency_ms.reserve(prompts_.size());
+  const auto start = Clock::now();
+  for (size_t i = 0; i < prompts_.size(); ++i) {
+    const auto request_start = Clock::now();
+    auto tokens = encode_prompt(prompts_[i]);
+    PDGenerationResult generation = run_dual_gpu_pd_generation(
+        std::move(tokens), GenerationConfig(bench_config_.max_new_tokens));
+    const auto request_end = Clock::now();
+    if (generation.failed) {
+      ++summary_.failed_requests;
+    } else {
+      ++summary_.completed_requests;
+      total_decode_steps_ += static_cast<int32_t>(generation.output_tokens.size());
+    }
+    const double latency = Duration(request_end - request_start).count();
+    summary_.request_latency_ms.push_back(latency);
+    std::cout << "PD_REQUEST_METRIC"
+              << " client_request_id=" << i
+              << " status=" << (generation.failed ? "failed" : "ok")
+              << " output_tokens=" << generation.output_tokens.size()
+              << " latency_ms=" << format_double(latency)
+              << " finish_reason="
+              << (generation.error.empty() ? "completed" : generation.error)
+              << "\n";
+    if (!bench_config_.quiet) {
+      std::cout << "\n--- Request " << i
+                << (generation.failed ? " failed" : " finished") << " ---\n";
+      if (generation.failed) {
+        std::cout << "reason: " << generation.error << "\n";
+      } else {
+        std::cout << postprocess_decoded_text(decode_tokens(generation.output_tokens))
+                  << "\n";
+      }
+    }
+  }
+  const auto end = Clock::now();
+  const double duration = std::chrono::duration<double>(end - start).count();
+  const double wall_ms = Duration(end - start).count();
+  const double throughput = duration > 0.0 ? total_decode_steps_ / duration : 0.0;
+  print_done(duration, throughput);
+  if (bench_config_.print_final_summary) {
+    const auto* kv_manager = pd_decode_kv_cache_manager();
+    print_final_summary(summary_, wall_ms, throughput,
+                        kv_manager->radix_cache_stats(),
+                        kv_manager->radix_cache_node_count(),
+                        kv_manager->radix_cache_split_count(),
+                        kv_manager->radix_cache_evictable_blocks());
+  }
+  return summary_.failed_requests == 0 ? 0 : -1;
 }
 
 std::vector<std::string> ServingBenchmarkApp::default_prompts() const {
@@ -536,26 +2325,47 @@ std::string ServingBenchmarkApp::postprocess_decoded_text(std::string text) cons
 }
 
 bool ServingBenchmarkApp::parse_args(int argc, char* argv[]) {
-  if (argc < 3) {
+  bool api_only_short_form = false;
+  for (int i = 1; i < argc; ++i) {
+    if (std::string_view(argv[i]) == "--online-process-role=zmq-http-api") {
+      api_only_short_form = true;
+      break;
+    }
+  }
+  if (argc < 3 && !api_only_short_form) {
     LOG(INFO) << "Usage: " << usage_name()
               << " <model.bin> <tokenizer.json> [prompt1] [prompt2] ..."
               << " [--max-new-tokens=N] [--max-batched-tokens=N]"
               << " [--prefill-chunk-cap=N] [--scheduling-policy=fcfs|priority]"
               << " [--long-prefill-token-threshold=N] [--max-partial-prefills=N]"
               << " [--max-long-partial-prefills=N]"
-              << " [--kv-cache-memory-utilization=0.8] [--quiet=0|1]"
+              << " [--device-id=N] [--kv-cache-memory-utilization=0.8] [--quiet=0|1]"
+              << " [--pd-mode=off|dual-gpu-p2p|dual-gpu-nccl|dual-gpu-nccl-layer|remote-zmq-cpu|remote-zmq-nccl|remote-zmq-nccl-layer]"
+              << " [--prefill-device-id=N]"
+              << " [--decode-device-id=N]"
               << " [--warmup-rounds=N]"
               << " [--step-profile=0|1] [--step-trace=0|1] [--final-summary=0|1]"
               << " [--online-server=0|1] [--listen-host=127.0.0.1]"
               << " [--listen-port=8080] [--http-worker-threads=N]"
               << " [--http-listen-backlog=N] [--max-queue-size=N]"
-              << " [--request-timeout-ms=N] [--max-prompt-tokens=N]";
+              << " [--request-timeout-ms=N] [--max-prompt-tokens=N]"
+              << " [--online-process-role=inproc|zmq-http-api|zmq-engine-core|zmq-prefill-engine-core|zmq-decode-engine-core]"
+              << " [--engine-zmq-endpoint=tcp://127.0.0.1:19090]"
+              << " [--prefill-zmq-endpoint=tcp://127.0.0.1:19091]"
+              << " [--engine-zmq-timeout-ms=N]";
     return false;
   }
 
-  model_path_ = argv[1];
-  tokenizer_path_ = argv[2];
-  bench_config_ = parse_bench_config(argc, argv, 3);
+  if (api_only_short_form) {
+    model_path_.clear();
+    tokenizer_path_.clear();
+    bench_config_ = parse_bench_config(argc, argv, 1);
+    bench_config_.online_server = true;
+  } else {
+    model_path_ = argv[1];
+    tokenizer_path_ = argv[2];
+    bench_config_ = parse_bench_config(argc, argv, 3);
+  }
   collect_prompts(argc, argv);
   return true;
 }

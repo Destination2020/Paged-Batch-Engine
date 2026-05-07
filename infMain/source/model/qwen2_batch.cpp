@@ -604,9 +604,26 @@ base::Status Qwen2Model::forward_mixed_batch(const serving::MixedBatchMetadata& 
 
     // 2g. Batched scatter KV to pages
     CHECK(paged_kv_runtime_ != nullptr);
+    if (layer_kv_connector_ != nullptr &&
+        layer_kv_connector_role_ == serving::LayerKVConnectorRole::kConsumer &&
+        batch.num_decode_tokens > 0) {
+      base::Status status =
+          layer_kv_connector_->wait_for_layer_load(layer, queue);
+      if (!status) {
+        return status;
+      }
+    }
     paged_kv_runtime_->scatter(
         key_buf, val_buf, layer_allocator, row_meta.slot_mapping,
         model_block_size, kv_head_num, head_size, bs);
+    if (layer_kv_connector_ != nullptr &&
+        layer_kv_connector_role_ == serving::LayerKVConnectorRole::kProducer &&
+        batch.num_prefill_tokens > 0) {
+      base::Status status = layer_kv_connector_->save_kv_layer(layer);
+      if (!status) {
+        return status;
+      }
+    }
 
     // 2h. Mixed attention split:
     // decode rows keep the fast decode path; prefill rows use a dedicated
@@ -879,6 +896,14 @@ base::Status Qwen2Model::forward_decode_batch(const serving::MixedBatchMetadata&
       auto scatter_range =
           make_detailed_range(detailed_nvtx, "decode_scatter_kv", base::nvtx::kColorMemcpy);
       CHECK(paged_kv_runtime_ != nullptr);
+      if (layer_kv_connector_ != nullptr &&
+          layer_kv_connector_role_ == serving::LayerKVConnectorRole::kConsumer) {
+        base::Status status =
+            layer_kv_connector_->wait_for_layer_load(layer, queue);
+        if (!status) {
+          return status;
+        }
+      }
       paged_kv_runtime_->scatter(
           key_buf, val_buf, layer_allocator, batch.slot_mapping,
           model_block_size, kv_head_num, head_size, bs);
@@ -969,6 +994,15 @@ base::Status Qwen2Model::forward_decode_batch(const serving::MixedBatchMetadata&
   }
 
   return base::error::Success();
+}
+
+void Qwen2Model::set_layer_kv_transfer_connector(
+    serving::LayerKVTransferConnector* connector,
+    serving::LayerKVConnectorRole role) const {
+  layer_kv_connector_ = connector;
+  layer_kv_connector_role_ = connector == nullptr
+                                 ? serving::LayerKVConnectorRole::kDisabled
+                                 : role;
 }
 
 }  // namespace model

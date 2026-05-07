@@ -412,6 +412,10 @@ void Qwen2Model::set_serving_workspace_token_capacity(int32_t token_capacity) {
 }
 
 base::Status Qwen2Model::init(base::DeviceType device_type) {
+  return init(device_type, 0);
+}
+
+base::Status Qwen2Model::init(base::DeviceType device_type, int32_t device_id) {
   using namespace base;
   if (token_path_.empty()) {
     return error::PathNotValid(token_path_);
@@ -431,7 +435,7 @@ base::Status Qwen2Model::init(base::DeviceType device_type) {
   device_type_ = device_type;
   if (device_type != DeviceType::kDeviceCPU) {
     std::shared_ptr<base::DeviceContext> context;
-    auto init_status = base::initialize_device_context(&context, device_type, 0);
+    auto init_status = base::initialize_device_context(&context, device_type, device_id);
     if (!init_status) {
       return init_status;
     }
