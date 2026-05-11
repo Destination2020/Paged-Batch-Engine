@@ -8,7 +8,9 @@
 #include <utility>
 #include <unordered_map>
 #include <cuda_runtime_api.h>
+#if defined(KUIPER_ENABLE_NCCL)
 #include <nccl.h>
+#endif
 
 #include "base/base.h"
 #include "base/nvtx_utils.h"
@@ -598,6 +600,7 @@ void OnlineServingEngine::run_remote_pd_batch_loop() {
         continue;
       }
 
+#if defined(KUIPER_ENABLE_NCCL)
       ncclUniqueId unique_id;
       ncclResult_t nccl_status = ncclGetUniqueId(&unique_id);
       if (nccl_status != ncclSuccess) {
@@ -654,6 +657,15 @@ void OnlineServingEngine::run_remote_pd_batch_loop() {
             return run_remote_nccl_kv_block_transfer(manifest, recv_options);
           });
       state->stage = RequestStage::kTransferringKV;
+#else
+      release_remote_prefill(state->prefill);
+      finish_remote(state, true,
+                    "NCCL support is not enabled. Reconfigure with "
+                    "-DKUIPER_ENABLE_NCCL=ON for remote-zmq-nccl modes.",
+                    {});
+      to_finish.push_back(item.first);
+      continue;
+#endif
     }
     for (int64_t id : to_finish) {
       active.erase(id);

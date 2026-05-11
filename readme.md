@@ -147,10 +147,11 @@ need to compute attention scores for the entire sequence at each step.
 - Ubuntu 22.04
 - CMake 3.16+
 - C++17 编译器
-- CUDA Toolkit，项目默认使用 `/usr/local/cuda/bin/nvcc`
+- CUDA Toolkit；CMake 会自动查找 `nvcc`，也可以通过 `-DCMAKE_CUDA_COMPILER=/path/to/nvcc` 指定
 - NVIDIA GPU，Qwen2 serving/paged KV 路径需要 CUDA
-- NCCL，P/D 分离和多 GPU KV 传输需要
-- glog、GTest、Armadillo、SentencePiece
+- NCCL，可选；`dual-gpu-nccl`、`dual-gpu-nccl-layer`、`remote-zmq-nccl` 和 `remote-zmq-nccl-layer` 需要
+- glog、Armadillo、SentencePiece
+- GTest，仅在 `-DKUIPER_BUILD_TESTS=ON` 时需要
 - abseil、re2、nlohmann_json，启用 Llama3/Qwen2/Qwen3/Qwen-MoE 时需要
 - libzmq，可选；启用远程 ZMQ 进程拆分时需要
 
@@ -172,9 +173,29 @@ cmake -S . -B build -DQWEN2_SUPPORT=ON -DUSE_CPM=OFF
 cmake --build build -j
 ```
 
+如果只需要构建 serving/demo，且目标机器暂时没有 GTest、NCCL 或 ZeroMQ，可以关闭对应组件：
+
+```bash
+cmake -S . -B build \
+  -DQWEN2_SUPPORT=ON \
+  -DUSE_CPM=OFF \
+  -DKUIPER_BUILD_TESTS=OFF \
+  -DKUIPER_ENABLE_NCCL=OFF \
+  -DKUIPER_ENABLE_ZMQ=OFF
+cmake --build build -j
+```
+
+常用 CMake 开关：
+
+- `KUIPER_BUILD_TESTS=ON|OFF`：是否构建 GTest 单测和测试 benchmark，默认 `ON`
+- `KUIPER_BUILD_DEMOS=ON|OFF`：是否构建 demo 可执行文件，默认 `ON`
+- `KUIPER_ENABLE_NCCL=AUTO|ON|OFF`：NCCL 支持，默认 `AUTO`
+- `KUIPER_ENABLE_ZMQ=AUTO|ON|OFF`：ZeroMQ 支持，默认 `AUTO`
+- `CMAKE_CUDA_ARCHITECTURES=89`：手动指定 CUDA 架构；自动检测不合适时建议显式设置
+
 主要产物：
 
-- `build/libllama.so`：核心共享库
+- `build/lib/libllama.so`：核心共享库
 - `build/demo/serving_qwen`：Qwen2 continuous batching/online serving demo
 - `build/demo/qwen_infer`、`qwen_instruct_infer`、`qwen_instruct_chat`：Qwen2 单请求 demo
 - `build/test/test_llm`：单元测试集合

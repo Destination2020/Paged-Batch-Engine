@@ -17,7 +17,9 @@
 #include <string_view>
 #include <thread>
 #include <cuda_runtime_api.h>
+#if defined(KUIPER_ENABLE_NCCL)
 #include <nccl.h>
+#endif
 #include "base/nvtx_utils.h"
 #include "base/alloc.h"
 #include "serving/decode_kv_reservation.h"
@@ -893,6 +895,13 @@ RemotePrefillResult ServingBenchmarkApp::run_remote_prefill_generation(
 base::Status ServingBenchmarkApp::run_remote_nccl_kv_send(
     const KVBlockManifest& manifest,
     const std::string& nccl_unique_id) const {
+#if !defined(KUIPER_ENABLE_NCCL)
+  (void)manifest;
+  (void)nccl_unique_id;
+  return base::error::FunctionNotImplement(
+      "NCCL support is not enabled. Reconfigure with "
+      "-DKUIPER_ENABLE_NCCL=ON for remote-zmq-nccl modes.");
+#else
   PendingRemotePrefill pending;
   {
     std::lock_guard<std::mutex> lock(pending_remote_prefills_mu_);
@@ -938,6 +947,7 @@ base::Status ServingBenchmarkApp::run_remote_nccl_kv_send(
     kv_cache_manager()->free_request(pending.request_id);
   }
   return status;
+#endif
 }
 
 void ServingBenchmarkApp::retain_remote_prefill(
@@ -1179,6 +1189,16 @@ ServingBenchmarkApp::run_remote_zmq_nccl_pd_generation(
     GenerationConfig generation_config,
     const std::function<void(int32_t)>& on_token) const {
   PDGenerationResult result;
+#if !defined(KUIPER_ENABLE_NCCL)
+  (void)prompt_tokens;
+  (void)generation_config;
+  (void)on_token;
+  result.failed = true;
+  result.error =
+      "NCCL support is not enabled. Reconfigure with "
+      "-DKUIPER_ENABLE_NCCL=ON for remote-zmq-nccl modes.";
+  return result;
+#else
   generation_config.normalize();
   if (prompt_tokens.empty()) {
     result.failed = true;
@@ -1370,6 +1390,7 @@ ServingBenchmarkApp::run_remote_zmq_nccl_pd_generation(
   result.failed = true;
   result.error = "remote_nccl_decode_result_missing";
   return result;
+#endif
 }
 
 ServingBenchmarkApp::PDGenerationResult ServingBenchmarkApp::run_dual_gpu_pd_generation_with_mode(
@@ -1400,6 +1421,13 @@ ServingBenchmarkApp::PDGenerationResult ServingBenchmarkApp::run_dual_gpu_pd_gen
   prefill_config.max_long_partial_prefills = bench_config_.max_long_partial_prefills;
 
   if (pd_mode == "dual-gpu-nccl-layer") {
+#if !defined(KUIPER_ENABLE_NCCL)
+    result.failed = true;
+    result.error =
+        "NCCL support is not enabled. Reconfigure with "
+        "-DKUIPER_ENABLE_NCCL=ON for dual-gpu-nccl-layer mode.";
+    return result;
+#else
     const int32_t prompt_token_count = static_cast<int32_t>(prompt_tokens.size());
     const base::RequestId prefill_request_id =
         pd_prefill_kv_cache_manager()->register_request();
@@ -1625,6 +1653,7 @@ ServingBenchmarkApp::PDGenerationResult ServingBenchmarkApp::run_dual_gpu_pd_gen
     result.failed = true;
     result.error = "decode_result_missing";
     return result;
+#endif
   }
 
   cudaSetDevice(bench_config_.prefill_device_id);
@@ -1722,6 +1751,15 @@ ServingBenchmarkApp::PDGenerationResult ServingBenchmarkApp::run_dual_gpu_pd_gen
 
   std::unique_ptr<KVTransferConnector> connector;
   if (pd_mode == "dual-gpu-nccl") {
+#if !defined(KUIPER_ENABLE_NCCL)
+    result.failed = true;
+    result.error =
+        "NCCL support is not enabled. Reconfigure with "
+        "-DKUIPER_ENABLE_NCCL=ON for dual-gpu-nccl mode.";
+    reservation_manager.release(&reservation);
+    pd_prefill_kv_cache_manager()->free_request(src_request_id);
+    return result;
+#else
     connector = std::make_unique<NcclKVBlockTransferConnector>(
         pd_prefill_kv_cache_manager(),
         pd_decode_kv_cache_manager(),
@@ -1729,6 +1767,7 @@ ServingBenchmarkApp::PDGenerationResult ServingBenchmarkApp::run_dual_gpu_pd_gen
         bench_config_.decode_device_id,
         pd_transfer_stream(),
         false);
+#endif
   } else {
     connector = std::make_unique<CudaP2PKVTransferConnector>(
         pd_prefill_kv_cache_manager(),

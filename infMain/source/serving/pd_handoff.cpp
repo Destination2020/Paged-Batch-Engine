@@ -7,7 +7,9 @@
 #include <utility>
 
 #include <cuda_runtime_api.h>
+#if defined(KUIPER_ENABLE_NCCL)
 #include <nccl.h>
+#endif
 
 #include "base/alloc.h"
 #include "base/nvtx_utils.h"
@@ -15,9 +17,17 @@
 namespace serving {
 namespace {
 
+#if defined(KUIPER_ENABLE_NCCL)
 std::string nccl_error_string(const char* stage, ncclResult_t result) {
   return std::string(stage) + " failed: " + ncclGetErrorString(result) +
          " (" + std::to_string(static_cast<int>(result)) + ")";
+}
+#endif
+
+base::Status nccl_unavailable_status() {
+  return base::error::FunctionNotImplement(
+      "NCCL support is not enabled. Install NCCL development headers/libraries "
+      "and configure with -DKUIPER_ENABLE_NCCL=ON.");
 }
 
 base::MemcpyKind copy_kind_for_devices(base::DeviceType src, base::DeviceType dst) {
@@ -130,9 +140,11 @@ base::Status validate_remote_nccl_options(
   if (options.kv_manager == nullptr) {
     return base::error::InvalidArgument("remote nccl connector KV manager is null");
   }
+#if defined(KUIPER_ENABLE_NCCL)
   if (options.nccl_unique_id.size() != sizeof(ncclUniqueId)) {
     return base::error::InvalidArgument("remote nccl connector invalid unique id size");
   }
+#endif
   const KVPoolDescriptor& local_pool =
       options.role == RemoteNcclKVTransferRole::kProducer ? manifest.src_pool
                                                           : manifest.dst_pool;
@@ -705,6 +717,7 @@ base::Status CudaP2PKVTransferConnector::copy_blocks(const KVBlockManifest& mani
   return base::error::Success();
 }
 
+#if defined(KUIPER_ENABLE_NCCL)
 NcclKVBlockTransferConnector::NcclKVBlockTransferConnector(
     base::KVCacheManager* src_kv_manager,
     base::KVCacheManager* dst_kv_manager,
@@ -2172,5 +2185,186 @@ void NcclLayerKVTransferConnector::cancel(const std::string& reason) {
   }
   cv_.notify_all();
 }
+#else
+NcclKVBlockTransferConnector::NcclKVBlockTransferConnector(
+    base::KVCacheManager* src_kv_manager,
+    base::KVCacheManager* dst_kv_manager,
+    int32_t src_device_id,
+    int32_t dst_device_id,
+    void* transfer_queue,
+    bool need_sync)
+    : src_kv_manager_(src_kv_manager),
+      dst_kv_manager_(dst_kv_manager),
+      src_device_id_(src_device_id),
+      dst_device_id_(dst_device_id),
+      transfer_queue_(transfer_queue),
+      need_sync_(need_sync) {}
+
+NcclKVBlockTransferConnector::~NcclKVBlockTransferConnector() = default;
+
+base::Status NcclKVBlockTransferConnector::ensure_comms() {
+  return nccl_unavailable_status();
+}
+
+base::Status NcclKVBlockTransferConnector::submit(const KVBlockManifest&,
+                                                  HandoffId* handle) {
+  if (handle != nullptr) {
+    *handle = {next_handoff_id_++};
+  }
+  return nccl_unavailable_status();
+}
+
+KVTransferStatus NcclKVBlockTransferConnector::poll(HandoffId) {
+  return KVTransferStatus::Failed(nccl_unavailable_status().get_err_msg());
+}
+
+void NcclKVBlockTransferConnector::cancel(HandoffId, const std::string&) {}
+
+KVTransferStatus NcclKVBlockTransferConnector::poll_transfer(size_t) {
+  return KVTransferStatus::Failed(nccl_unavailable_status().get_err_msg());
+}
+
+base::Status NcclKVBlockTransferConnector::copy_blocks(const KVBlockManifest&) {
+  return nccl_unavailable_status();
+}
+
+base::Status run_remote_nccl_kv_block_transfer(
+    const KVBlockManifest&,
+    const RemoteNcclKVTransferOptions&) {
+  return nccl_unavailable_status();
+}
+
+RemoteNcclLayerKVTransferConnector::RemoteNcclLayerKVTransferConnector(
+    RemoteNcclKVTransferOptions options)
+    : options_(std::move(options)) {}
+
+RemoteNcclLayerKVTransferConnector::~RemoteNcclLayerKVTransferConnector() = default;
+
+base::Status RemoteNcclLayerKVTransferConnector::validate_request(
+    const LayerKVTransferRequest&) const {
+  return nccl_unavailable_status();
+}
+
+int32_t RemoteNcclLayerKVTransferConnector::required_blocks(int32_t) const {
+  return 0;
+}
+
+base::Status RemoteNcclLayerKVTransferConnector::ensure_comm() {
+  return nccl_unavailable_status();
+}
+
+base::Status RemoteNcclLayerKVTransferConnector::prepare(
+    const LayerKVTransferRequest&) {
+  return nccl_unavailable_status();
+}
+
+base::Status RemoteNcclLayerKVTransferConnector::copy_layer(int32_t,
+                                                            void**) {
+  return nccl_unavailable_status();
+}
+
+base::Status RemoteNcclLayerKVTransferConnector::save_kv_layer(int32_t) {
+  return nccl_unavailable_status();
+}
+
+base::Status RemoteNcclLayerKVTransferConnector::wait_for_layer_load(
+    int32_t,
+    void*) {
+  return nccl_unavailable_status();
+}
+
+KVTransferStatus RemoteNcclLayerKVTransferConnector::poll_layer_unlocked(
+    int32_t) {
+  return KVTransferStatus::Failed(nccl_unavailable_status().get_err_msg());
+}
+
+KVTransferStatus RemoteNcclLayerKVTransferConnector::poll_layer(int32_t) {
+  return KVTransferStatus::Failed(nccl_unavailable_status().get_err_msg());
+}
+
+KVTransferStatus RemoteNcclLayerKVTransferConnector::poll() {
+  return KVTransferStatus::Failed(nccl_unavailable_status().get_err_msg());
+}
+
+void RemoteNcclLayerKVTransferConnector::cancel(const std::string& reason) {
+  std::lock_guard<std::mutex> lock(mu_);
+  cancelled_ = true;
+  cancel_reason_ = reason.empty() ? nccl_unavailable_status().get_err_msg() : reason;
+}
+
+NcclLayerKVTransferConnector::NcclLayerKVTransferConnector(
+    base::KVCacheManager* src_kv_manager,
+    base::KVCacheManager* dst_kv_manager,
+    int32_t src_device_id,
+    int32_t dst_device_id,
+    void* src_ready_queue,
+    void* dst_transfer_queue,
+    bool need_sync)
+    : src_kv_manager_(src_kv_manager),
+      dst_kv_manager_(dst_kv_manager),
+      src_device_id_(src_device_id),
+      dst_device_id_(dst_device_id),
+      src_ready_queue_(src_ready_queue),
+      dst_transfer_queue_(dst_transfer_queue),
+      need_sync_(need_sync) {}
+
+NcclLayerKVTransferConnector::~NcclLayerKVTransferConnector() = default;
+
+base::Status NcclLayerKVTransferConnector::validate_request(
+    const LayerKVTransferRequest&) const {
+  return nccl_unavailable_status();
+}
+
+int32_t NcclLayerKVTransferConnector::required_blocks(int32_t) const {
+  return 0;
+}
+
+base::Status NcclLayerKVTransferConnector::prepare(
+    const LayerKVTransferRequest&) {
+  return nccl_unavailable_status();
+}
+
+base::Status NcclLayerKVTransferConnector::ensure_comms() {
+  return nccl_unavailable_status();
+}
+
+base::Status NcclLayerKVTransferConnector::enqueue_source_ready_wait() {
+  return nccl_unavailable_status();
+}
+
+base::Status NcclLayerKVTransferConnector::save_kv_layer(int32_t) {
+  return nccl_unavailable_status();
+}
+
+base::Status NcclLayerKVTransferConnector::copy_layer(
+    const KVBlockMapping&,
+    void**) {
+  return nccl_unavailable_status();
+}
+
+KVTransferStatus NcclLayerKVTransferConnector::poll_layer_unlocked(int32_t) {
+  return KVTransferStatus::Failed(nccl_unavailable_status().get_err_msg());
+}
+
+KVTransferStatus NcclLayerKVTransferConnector::poll_layer(int32_t) {
+  return KVTransferStatus::Failed(nccl_unavailable_status().get_err_msg());
+}
+
+KVTransferStatus NcclLayerKVTransferConnector::poll() {
+  return KVTransferStatus::Failed(nccl_unavailable_status().get_err_msg());
+}
+
+base::Status NcclLayerKVTransferConnector::wait_for_layer_load(
+    int32_t,
+    void*) {
+  return nccl_unavailable_status();
+}
+
+void NcclLayerKVTransferConnector::cancel(const std::string& reason) {
+  std::lock_guard<std::mutex> lock(mu_);
+  cancelled_ = true;
+  cancel_reason_ = reason.empty() ? nccl_unavailable_status().get_err_msg() : reason;
+}
+#endif
 
 }  // namespace serving

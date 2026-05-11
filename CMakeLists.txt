@@ -3,9 +3,6 @@ cmake_minimum_required(VERSION 3.16)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-# Set the CUDA compiler path or name
-set(CMAKE_CUDA_COMPILER "/usr/local/cuda/bin/nvcc")
-
 project(HighPerInfFram CXX CUDA)
 include(cmake/cuda.cmake)
 
@@ -39,16 +36,20 @@ endif()
 # ---- Add dependencies via CPM ----
 # see https://github.com/TheLartians/CPM.cmake for more info
 option(USE_CPM "Use CPM for dependency management" OFF)
+option(KUIPER_BUILD_TESTS "Build unit tests and benchmark test binaries" ON)
+option(KUIPER_BUILD_DEMOS "Build demo binaries" ON)
 
 if(USE_CPM)
   # Use CPM to manage dependencies
   include(cmake/CPM.cmake)
 
-  CPMAddPackage(
-    NAME GTest
-    GITHUB_REPOSITORY google/googletest
-    VERSION 1.15.0
-  )
+  if(KUIPER_BUILD_TESTS)
+    CPMAddPackage(
+      NAME GTest
+      GITHUB_REPOSITORY google/googletest
+      VERSION 1.15.0
+    )
+  endif()
 
   CPMAddPackage(
     NAME glog
@@ -159,12 +160,16 @@ function(kuiper_report_package_origin package_name)
   endif()
 endfunction()
 
-kuiper_maybe_align_package_dir(GTest "lib/cmake/GTest")
+if(KUIPER_BUILD_TESTS)
+  kuiper_maybe_align_package_dir(GTest "lib/cmake/GTest")
+endif()
 if(LLAMA3_SUPPORT OR QWEN2_SUPPORT OR QWEN3_SUPPORT OR QWEN_MOE_SUPPORT)
   kuiper_maybe_align_package_dir(nlohmann_json "share/cmake/nlohmann_json")
 endif()
 
-find_package(GTest CONFIG REQUIRED)
+if(KUIPER_BUILD_TESTS)
+  find_package(GTest CONFIG REQUIRED)
+endif()
 find_package(glog REQUIRED)
 find_package(Armadillo REQUIRED)
 if (LLAMA3_SUPPORT OR QWEN2_SUPPORT OR QWEN3_SUPPORT OR QWEN_MOE_SUPPORT)
@@ -173,21 +178,25 @@ if (LLAMA3_SUPPORT OR QWEN2_SUPPORT OR QWEN3_SUPPORT OR QWEN_MOE_SUPPORT)
   find_package(nlohmann_json CONFIG REQUIRED)
 endif()
 
-kuiper_report_package_origin(GTest)
+if(KUIPER_BUILD_TESTS)
+  kuiper_report_package_origin(GTest)
+endif()
 if (LLAMA3_SUPPORT OR QWEN2_SUPPORT OR QWEN3_SUPPORT OR QWEN_MOE_SUPPORT)
   kuiper_report_package_origin(nlohmann_json)
   if(KUIPER_AUTO_ALIGN_CONDA_PACKAGES AND NOT USE_CPM AND
      NOT "${KUIPER_CONDA_PREFIX}" STREQUAL "")
-    kuiper_path_is_under_prefix(_gtest_is_conda "${GTest_DIR}" "${KUIPER_CONDA_PREFIX}")
     kuiper_path_is_under_prefix(_json_is_conda "${nlohmann_json_DIR}" "${KUIPER_CONDA_PREFIX}")
-    if(_gtest_is_conda AND NOT _json_is_conda)
-      message(WARNING
-              "GTest is using Conda while nlohmann_json is not. This is supported, "
-              "but keep an eye on mixed package roots if test targets start failing.")
-    elseif(_json_is_conda AND NOT _gtest_is_conda)
-      message(WARNING
-              "nlohmann_json is using Conda while GTest is not. This can reintroduce "
-              "test_llm header/library mismatches; consider clearing the build cache.")
+    if(KUIPER_BUILD_TESTS)
+      kuiper_path_is_under_prefix(_gtest_is_conda "${GTest_DIR}" "${KUIPER_CONDA_PREFIX}")
+      if(_gtest_is_conda AND NOT _json_is_conda)
+        message(WARNING
+                "GTest is using Conda while nlohmann_json is not. This is supported, "
+                "but keep an eye on mixed package roots if test targets start failing.")
+      elseif(_json_is_conda AND NOT _gtest_is_conda)
+        message(WARNING
+                "nlohmann_json is using Conda while GTest is not. This can reintroduce "
+                "test_llm header/library mismatches; consider clearing the build cache.")
+      endif()
     endif()
   endif()
 endif()
@@ -302,7 +311,7 @@ if (QWEN_MOE_SUPPORT)
        infMain/source/model/qwen_moe.cpp)
 endif()
 
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/lib)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 
 add_library(llama SHARED ${DIR_TENSOR} ${DIR_BASE} ${DIR_OP} ${DIR_KERNEL} ${DIR_MODEL} ${DIR_KERNEL_CPU} ${DIR_KERNEL_CUDA} ${DIR_KERNEL} ${DIR_SAMPLE} ${DIR_SERVING})
 target_link_libraries(llama
@@ -349,5 +358,9 @@ if (LLAMA3_SUPPORT OR QWEN2_SUPPORT OR QWEN3_SUPPORT OR QWEN_MOE_SUPPORT)
 endif()
 
 set_target_properties(llama PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
-add_subdirectory(test)
-add_subdirectory(demo)
+if(KUIPER_BUILD_TESTS)
+  add_subdirectory(test)
+endif()
+if(KUIPER_BUILD_DEMOS)
+  add_subdirectory(demo)
+endif()
