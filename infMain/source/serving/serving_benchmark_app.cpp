@@ -890,178 +890,6 @@ RemotePrefillResult ServingBenchmarkApp::run_remote_prefill_generation(
   return result;
 }
 
-RemotePrefillResult ServingBenchmarkApp::run_remote_prefill_layer_generation(
-    std::vector<int32_t> prompt_tokens,
-    GenerationConfig generation_config,
-    const LayerKVTransferRequest& layer_request,
-    const std::string& nccl_unique_id) const {
-  RemotePrefillResult result;
-  result.prompt_tokens = prompt_tokens;
-  result.client_request_id = layer_request.client_request_id;
-  result.handoff_id = layer_request.handoff_id;
-  generation_config.normalize();
-  if (prompt_tokens.empty()) {
-    result.failed = true;
-    result.error = "empty_prompt";
-    return result;
-  }
-
-  base::RequestId src_request_id = kv_cache_manager()->register_request();
-  LayerKVTransferRequest producer_request = layer_request;
-  producer_request.src_request_id = src_request_id;
-  RemoteNcclKVTransferOptions options;
-  options.role = RemoteNcclKVTransferRole::kProducer;
-  options.kv_manager = kv_cache_manager();
-  options.device_id = layer_request.src_pool.device_id;
-  options.nccl_unique_id = nccl_unique_id;
-  options.stream = model_stream();
-  options.need_sync = false;
-  RemoteNcclLayerKVTransferConnector layer_connector(std::move(options));
-  base::Status status = layer_connector.prepare(producer_request);
-  if (!status) {
-    result.failed = true;
-    result.error = status.get_err_msg();
-    if (kv_cache_manager()->is_valid_request(src_request_id)) {
-      kv_cache_manager()->free_request(src_request_id);
-    }
-    return result;
-  }
-
-  SchedulerConfig prefill_config;
-  prefill_config.max_num_seqs = max_model_batch_size();
-  prefill_config.max_num_batched_tokens = bench_config_.max_num_batched_tokens;
-  prefill_config.prefill_chunk_cap = bench_config_.prefill_chunk_cap;
-  prefill_config.policy = bench_config_.scheduling_policy;
-  prefill_config.long_prefill_token_threshold =
-      bench_config_.long_prefill_token_threshold;
-  prefill_config.max_partial_prefills = bench_config_.max_partial_prefills;
-  prefill_config.max_long_partial_prefills =
-      bench_config_.max_long_partial_prefills;
-
-  Scheduler prefill_metadata_builder(prefill_config, kv_cache_manager());
-  MixedBatchMetadata last_prefill_batch;
-  SchedulerOutput last_prefill_output;
-  int32_t computed_tokens = 0;
-  SequenceState prefill_seq;
-  prefill_seq.request_id = src_request_id;
-  prefill_seq.client_request_id = 0;
-  prefill_seq.prompt_tokens = prompt_tokens;
-  prefill_seq.generation_config = generation_config;
-  prefill_seq.status = SequenceStatus::kRunning;
-  while (computed_tokens < static_cast<int32_t>(prompt_tokens.size())) {
-    const int32_t chunk = std::min({
-        static_cast<int32_t>(prompt_tokens.size()) - computed_tokens,
-        prefill_config.max_num_batched_tokens,
-        prefill_config.prefill_chunk_cap});
-    if (chunk <= 0) {
-      result.failed = true;
-      result.error = "remote_layer_prefill_zero_chunk";
-      layer_connector.cancel(result.error);
-      break;
-    }
-
-    SchedulerOutput prefill_output;
-    prefill_seq.computed_tokens = computed_tokens;
-    prefill_seq.scheduled_tokens = chunk;
-    prefill_output.scheduled_seqs.push_back(&prefill_seq);
-    prefill_output.num_tokens_per_seq.push_back(chunk);
-    prefill_output.total_tokens = chunk;
-    prefill_output.num_prefill_seqs = 1;
-    pd_layer_diag("prefill_forward start chunk=" + std::to_string(chunk) +
-                  " computed=" + std::to_string(computed_tokens));
-    MixedBatchMetadata prefill_batch =
-        prefill_metadata_builder.build_mixed_batch(prefill_output, model_stream());
-
-    status = pd_forward_prefill_batch(prefill_batch);
-    pd_layer_diag("prefill_forward done status=" +
-                  std::string(status ? "ok" : status.get_err_msg()));
-    if (!status) {
-      result.failed = true;
-      result.error = status.get_err_msg();
-      layer_connector.cancel(result.error);
-      break;
-    }
-
-    computed_tokens += chunk;
-    if (computed_tokens == static_cast<int32_t>(prompt_tokens.size())) {
-      last_prefill_batch = prefill_batch;
-      last_prefill_output = prefill_output;
-    }
-  }
-
-  if (!result.failed) {
-    for (int32_t layer_idx = 0; layer_idx < layer_request.src_pool.layer_num;
-         ++layer_idx) {
-      pd_layer_diag("prefill_send_layer start layer=" +
-                    std::to_string(layer_idx));
-      status = layer_connector.save_kv_layer(layer_idx);
-      pd_layer_diag("prefill_send_layer done layer=" +
-                    std::to_string(layer_idx) + " status=" +
-                    std::string(status ? "ok" : status.get_err_msg()));
-      if (!status) {
-        result.failed = true;
-        result.error = status.get_err_msg();
-        layer_connector.cancel(result.error);
-        break;
-      }
-    }
-  }
-
-  if (!result.failed) {
-    while (true) {
-      KVTransferStatus transfer_status = layer_connector.poll();
-      if (transfer_status.ok()) {
-        break;
-      }
-      if (transfer_status.state == KVTransferState::kFailed ||
-          transfer_status.state == KVTransferState::kCancelled) {
-        result.failed = true;
-        result.error = transfer_status.error;
-        break;
-      }
-      std::this_thread::sleep_for(std::chrono::milliseconds(1));
-    }
-  }
-
-  if (!result.failed) {
-    SampledTokenView sampled =
-        pd_batch_sample_prefill(last_prefill_batch, last_prefill_output);
-    if (sampled.empty()) {
-      result.failed = true;
-      result.error = "remote_layer_prefill_missing_first_token";
-    } else {
-      result.computed_tokens = static_cast<int32_t>(prompt_tokens.size());
-      result.first_token = sampled.tokens[0];
-      result.first_tokens = {result.first_token};
-      result.src_pool = layer_request.src_pool;
-      result.layers.reserve(layer_request.src_pool.layer_num);
-      const int32_t required_blocks =
-          (result.computed_tokens + result.src_pool.block_size - 1) /
-          result.src_pool.block_size;
-      for (int32_t layer_idx = 0; layer_idx < result.src_pool.layer_num;
-           ++layer_idx) {
-        RemoteKVLayerPayload layer;
-        layer.layer_idx = layer_idx;
-        const auto& block_ids =
-            kv_cache_manager()->get_block_ids(src_request_id, layer_idx);
-        if (static_cast<int32_t>(block_ids.size()) < required_blocks) {
-          result.failed = true;
-          result.error = "remote_layer_prefill_source_block_count_insufficient";
-          break;
-        }
-        layer.src_block_ids.assign(block_ids.begin(),
-                                   block_ids.begin() + required_blocks);
-        result.layers.push_back(std::move(layer));
-      }
-    }
-  }
-
-  if (kv_cache_manager()->is_valid_request(src_request_id)) {
-    kv_cache_manager()->free_request(src_request_id);
-  }
-  return result;
-}
-
 base::Status ServingBenchmarkApp::run_remote_nccl_kv_send(
     const KVBlockManifest& manifest,
     const std::string& nccl_unique_id) const {
@@ -1112,6 +940,15 @@ base::Status ServingBenchmarkApp::run_remote_nccl_kv_send(
   return status;
 }
 
+void ServingBenchmarkApp::retain_remote_prefill(
+    HandoffId handoff_id, base::RequestId request_id) const {
+  if (!handoff_id.valid() || request_id < 0) {
+    return;
+  }
+  std::lock_guard<std::mutex> lock(pending_remote_prefills_mu_);
+  pending_remote_prefills_[handoff_id.value] = {request_id};
+}
+
 void ServingBenchmarkApp::release_remote_prefill(HandoffId handoff_id) const {
   if (!handoff_id.valid()) {
     return;
@@ -1147,22 +984,13 @@ ServingBenchmarkApp::run_remote_zmq_cpu_pd_generation(
   }
 
   ZmqRpcConfig rpc = make_prefill_zmq_rpc_config(bench_config_);
-  std::unique_ptr<ZmqSocket> socket;
-  base::Status status = make_zmq_req_socket(rpc, &socket);
-  if (!status) {
-    result.failed = true;
-    result.error = status.get_err_msg();
-    return result;
-  }
-
   nlohmann::json response;
-  status = socket->send_json(
+  base::Status status = zmq_request_response(
+      rpc,
       {{"type", zmq_rpc_message_type_name(ZmqRpcMessageType::kPrefill)},
        {"prompt_tokens", prompt_tokens},
-       {"generation_config", generation_config_to_json(generation_config)}});
-  if (status) {
-    status = socket->recv_json(&response);
-  }
+       {"generation_config", generation_config_to_json(generation_config)}},
+      &response);
   if (!status) {
     result.failed = true;
     result.error = status.get_err_msg();
@@ -1359,258 +1187,13 @@ ServingBenchmarkApp::run_remote_zmq_nccl_pd_generation(
   }
 
   ZmqRpcConfig rpc = make_prefill_zmq_rpc_config(bench_config_);
-  std::unique_ptr<ZmqSocket> socket;
-  base::Status status = make_zmq_req_socket(rpc, &socket);
-  if (!status) {
-    result.failed = true;
-    result.error = status.get_err_msg();
-    return result;
-  }
-
-  if (bench_config_.pd_mode == "remote-zmq-nccl-layer") {
-    const int32_t prompt_token_count =
-        static_cast<int32_t>(prompt_tokens.size());
-
-    KVPoolDescriptor src_pool = pd_decode_kv_pool();
-    src_pool.device_id = bench_config_.prefill_device_id;
-    const KVPoolDescriptor dst_pool = pd_decode_kv_pool();
-    const int32_t required_blocks =
-        (prompt_token_count + dst_pool.block_size - 1) / dst_pool.block_size;
-
-    const uint64_t now_id = static_cast<uint64_t>(
-        std::chrono::steady_clock::now().time_since_epoch().count());
-    DecodeKVReservationRequest reservation_request;
-    reservation_request.client_request_id.value =
-        "remote-zmq-nccl-layer-" + std::to_string(now_id);
-    reservation_request.handoff_id.value = now_id == 0 ? 1 : now_id;
-    reservation_request.prompt_tokens = prompt_token_count;
-    reservation_request.computed_tokens = prompt_token_count;
-    reservation_request.first_token = -1;
-    reservation_request.src_pool = src_pool;
-    reservation_request.src_block_ids_per_layer.assign(
-        src_pool.layer_num, std::vector<int32_t>(required_blocks, 0));
-
-    DecodeKVReservationManager reservation_manager(kv_cache_manager(),
-                                                   dst_pool);
-    DecodeKVReservation reservation;
-    KVBlockManifest unused_manifest;
-    status = reservation_manager.reserve(reservation_request, &reservation,
-                                         &unused_manifest);
-    if (!status) {
-      result.failed = true;
-      result.error = status.get_err_msg();
-      return result;
-    }
-
-    ncclUniqueId unique_id;
-    ncclResult_t nccl_status = ncclGetUniqueId(&unique_id);
-    if (nccl_status != ncclSuccess) {
-      reservation_manager.release(&reservation);
-      result.failed = true;
-      result.error = std::string("ncclGetUniqueId failed: ") +
-                     ncclGetErrorString(nccl_status);
-      return result;
-    }
-    const std::string unique_id_bytes(
-        reinterpret_cast<const char*>(&unique_id), sizeof(unique_id));
-
-    LayerKVTransferRequest layer_request;
-    layer_request.client_request_id = reservation_request.client_request_id;
-    layer_request.handoff_id = reservation_request.handoff_id;
-    layer_request.src_request_id = -1;
-    layer_request.dst_request_id = reservation.decode_request_id;
-    layer_request.prompt_tokens = prompt_token_count;
-    layer_request.computed_tokens = prompt_token_count;
-    layer_request.src_pool = src_pool;
-    layer_request.dst_pool = dst_pool;
-
-    RemoteNcclKVTransferOptions recv_options;
-    recv_options.role = RemoteNcclKVTransferRole::kConsumer;
-    recv_options.kv_manager = kv_cache_manager();
-    recv_options.device_id = dst_pool.device_id;
-    recv_options.nccl_unique_id = unique_id_bytes;
-    recv_options.stream = model_stream();
-    recv_options.need_sync = false;
-    RemoteNcclLayerKVTransferConnector layer_connector(std::move(recv_options));
-    status = layer_connector.prepare(layer_request);
-    if (!status) {
-      reservation_manager.release(&reservation);
-      result.failed = true;
-      result.error = status.get_err_msg();
-      return result;
-    }
-
-    pd_layer_diag("decode_recv_prepare request_id=" +
-                  std::to_string(layer_request.dst_request_id) +
-                  " layers=" + std::to_string(dst_pool.layer_num) +
-                  " blocks=" + std::to_string(required_blocks));
-    auto recv_future =
-        std::async(std::launch::async,
-                   [&layer_connector, layer_num = dst_pool.layer_num]() {
-                     for (int32_t layer_idx = 0; layer_idx < layer_num;
-                          ++layer_idx) {
-                       pd_layer_diag("decode_recv_layer start layer=" +
-                                     std::to_string(layer_idx));
-                       base::Status layer_status =
-                           layer_connector.save_kv_layer(layer_idx);
-                       pd_layer_diag("decode_recv_layer done layer=" +
-                                     std::to_string(layer_idx) + " status=" +
-                                     std::string(layer_status ? "ok"
-                                                              : layer_status.get_err_msg()));
-                       if (!layer_status) {
-                         return layer_status;
-                       }
-                     }
-                     return base::error::Success();
-                   });
-
-    pd_layer_diag("decode_send_layer_rpc");
-    nlohmann::json response;
-    status = socket->send_json(
-        {{"type", zmq_rpc_message_type_name(ZmqRpcMessageType::kLayerKvTransfer)},
-         {"backend", "nccl"},
-         {"prompt_tokens", prompt_tokens},
-         {"generation_config", generation_config_to_json(generation_config)},
-         {"layer_request", layer_kv_transfer_request_to_json(layer_request)},
-         {"nccl_unique_id", binary_to_hex_json(unique_id_bytes)}});
-    if (status) {
-      status = socket->recv_json(&response);
-    }
-    pd_layer_diag("decode_layer_rpc_done status=" +
-                  std::string(status ? "ok" : status.get_err_msg()));
-    if (!status) {
-      layer_connector.cancel(status.get_err_msg());
-      base::Status recv_status = recv_future.get();
-      UNUSED(recv_status);
-      reservation_manager.release(&reservation);
-      result.failed = true;
-      result.error = status.get_err_msg();
-      return result;
-    }
-
-    const base::Status recv_status = recv_future.get();
-    pd_layer_diag("decode_recv_future_done status=" +
-                  std::string(recv_status ? "ok" : recv_status.get_err_msg()));
-    if (!response.value("ok", false)) {
-      reservation_manager.release(&reservation);
-      result.failed = true;
-      result.error = response.value("error", "remote_layer_prefill_failed");
-      return result;
-    }
-    if (!recv_status) {
-      reservation_manager.release(&reservation);
-      result.failed = true;
-      result.error = recv_status.get_err_msg();
-      return result;
-    }
-
-    RemotePrefillResult prefill =
-        remote_prefill_result_from_json(response.at("prefill_result"));
-    if (prefill.failed) {
-      reservation_manager.release(&reservation);
-      result.failed = true;
-      result.error = prefill.error;
-      result.output_tokens = prefill.output_tokens;
-      return result;
-    }
-    if (prefill.first_token < 0 || prefill.computed_tokens != prompt_token_count) {
-      reservation_manager.release(&reservation);
-      result.failed = true;
-      result.error = "remote_layer_prefill_missing_metadata";
-      return result;
-    }
-
-    while (true) {
-      KVTransferStatus transfer_status = layer_connector.poll();
-      if (transfer_status.ok()) {
-        break;
-      }
-      if (transfer_status.state == KVTransferState::kFailed ||
-          transfer_status.state == KVTransferState::kCancelled) {
-        reservation_manager.release(&reservation);
-        result.failed = true;
-        result.error = transfer_status.error;
-        return result;
-      }
-      std::this_thread::sleep_for(std::chrono::milliseconds(1));
-    }
-
-    if (on_token && !is_sentence_ending(prefill.first_token)) {
-      on_token(prefill.first_token);
-    }
-
-    SchedulerConfig decode_config;
-    decode_config.max_num_seqs = max_model_batch_size();
-    decode_config.max_num_batched_tokens = bench_config_.max_num_batched_tokens;
-    decode_config.prefill_chunk_cap = bench_config_.prefill_chunk_cap;
-    decode_config.policy = bench_config_.scheduling_policy;
-    decode_config.long_prefill_token_threshold =
-        bench_config_.long_prefill_token_threshold;
-    decode_config.max_partial_prefills = bench_config_.max_partial_prefills;
-    decode_config.max_long_partial_prefills =
-        bench_config_.max_long_partial_prefills;
-
-    Scheduler decode_scheduler(decode_config, kv_cache_manager());
-    const base::RequestId decode_request_id = reservation.decode_request_id;
-    const int64_t client_id = decode_scheduler.add_decode_ready_request(
-        decode_request_id, prompt_tokens, generation_config,
-        reservation.reserved_tokens, prefill.first_token);
-    reservation = {};
-
-    set_pd_decode_layer_kv_connector(&layer_connector,
-                                     LayerKVConnectorRole::kConsumer);
-    while (decode_scheduler.has_active_requests()) {
-      SchedulerOutput output = decode_scheduler.schedule_step();
-      if (output.total_tokens == 0) {
-        continue;
-      }
-      MixedBatchMetadata batch =
-          decode_scheduler.build_decode_batch(output, model_stream());
-      status = pd_forward_decode_batch(batch);
-      if (!status) {
-        set_pd_decode_layer_kv_connector(nullptr,
-                                         LayerKVConnectorRole::kDisabled);
-        result.failed = true;
-        result.error = status.get_err_msg();
-        if (kv_cache_manager()->is_valid_request(decode_request_id)) {
-          kv_cache_manager()->free_request(decode_request_id);
-        }
-        return result;
-      }
-      SampledTokenView sampled = pd_batch_sample_decode(batch, output);
-      for (int32_t i = 0; i < sampled.size(); ++i) {
-        if (on_token && !is_sentence_ending(sampled.tokens[i])) {
-          on_token(sampled.tokens[i]);
-        }
-      }
-      decode_scheduler.process_outputs(
-          output, batch, sampled,
-          [&](int32_t token) { return is_sentence_ending(token); });
-    }
-    set_pd_decode_layer_kv_connector(nullptr, LayerKVConnectorRole::kDisabled);
-
-    for (const auto& seq : decode_scheduler.pop_finished()) {
-      if (seq.client_request_id != client_id) {
-        continue;
-      }
-      result.output_tokens = seq.output_tokens;
-      result.failed = seq.failed;
-      result.error = seq.finish_reason;
-      return result;
-    }
-    result.failed = true;
-    result.error = "remote_layer_nccl_decode_result_missing";
-    return result;
-  }
-
   nlohmann::json response;
-  status = socket->send_json(
+  base::Status status = zmq_request_response(
+      rpc,
       {{"type", zmq_rpc_message_type_name(ZmqRpcMessageType::kPrefill)},
        {"prompt_tokens", prompt_tokens},
-       {"generation_config", generation_config_to_json(generation_config)}});
-  if (status) {
-    status = socket->recv_json(&response);
-  }
+       {"generation_config", generation_config_to_json(generation_config)}},
+      &response);
   if (!status) {
     result.failed = true;
     result.error = status.get_err_msg();
@@ -1638,19 +1221,12 @@ ServingBenchmarkApp::run_remote_zmq_nccl_pd_generation(
   }
   auto release_prefill = [&]() {
     ZmqRpcConfig release_rpc = make_prefill_zmq_rpc_config(bench_config_);
-    std::unique_ptr<ZmqSocket> release_socket;
-    base::Status release_status =
-        make_zmq_req_socket(release_rpc, &release_socket);
-    if (!release_status) {
-      return;
-    }
     nlohmann::json release_response;
-    release_status = release_socket->send_json(
+    zmq_request_response(
+        release_rpc,
         {{"type", zmq_rpc_message_type_name(ZmqRpcMessageType::kKvRelease)},
-         {"handoff_id", prefill.handoff_id.value}});
-    if (release_status) {
-      release_socket->recv_json(&release_response);
-    }
+         {"handoff_id", prefill.handoff_id.value}},
+        &release_response);
   };
   if (on_token && !is_sentence_ending(prefill.first_token)) {
     on_token(prefill.first_token);
@@ -1703,21 +1279,14 @@ ServingBenchmarkApp::run_remote_zmq_nccl_pd_generation(
 
   auto send_future = std::async(std::launch::async, [this, manifest, unique_id_bytes]() {
     ZmqRpcConfig transfer_rpc = make_prefill_zmq_rpc_config(bench_config_);
-    std::unique_ptr<ZmqSocket> transfer_socket;
-    base::Status transfer_status =
-        make_zmq_req_socket(transfer_rpc, &transfer_socket);
-    if (!transfer_status) {
-      return transfer_status;
-    }
     nlohmann::json transfer_response;
-    transfer_status = transfer_socket->send_json(
+    base::Status transfer_status = zmq_request_response(
+        transfer_rpc,
         {{"type", zmq_rpc_message_type_name(ZmqRpcMessageType::kKvTransfer)},
          {"backend", "nccl"},
          {"manifest", kv_block_manifest_to_json(manifest)},
-         {"nccl_unique_id", binary_to_hex_json(unique_id_bytes)}});
-    if (transfer_status) {
-      transfer_status = transfer_socket->recv_json(&transfer_response);
-    }
+         {"nccl_unique_id", binary_to_hex_json(unique_id_bytes)}},
+        &transfer_response);
     if (!transfer_status) {
       return transfer_status;
     }
@@ -1739,6 +1308,7 @@ ServingBenchmarkApp::run_remote_zmq_nccl_pd_generation(
   const base::Status send_status = send_future.get();
   if (!status || !send_status) {
     reservation_manager.release(&reservation);
+    release_prefill();
     result.failed = true;
     result.error = !status ? status.get_err_msg() : send_status.get_err_msg();
     return result;

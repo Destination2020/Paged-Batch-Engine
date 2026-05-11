@@ -82,6 +82,12 @@ public:
 class QwenEncodeLayer : public BpeEncodeLayer {
 public:
   explicit QwenEncodeLayer(std::string token_model_path, bool has_bos, bool has_eos);
+
+  std::vector<int32_t> encode(const std::string& sentence) const override;
+
+  std::string decode(int32_t token_id) const override;
+
+  std::string decode(const std::vector<int32_t>& token_ids) const override;
 };
 #endif
 

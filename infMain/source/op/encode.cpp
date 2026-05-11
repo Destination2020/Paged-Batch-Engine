@@ -187,5 +187,28 @@ QwenEncodeLayer::QwenEncodeLayer(std::string token_model_path, bool has_bos, boo
   tiktoken_ = std::make_unique<tiktoken::tiktoken>(encoder, special_tokens, PAT_STR);
 }
 
+std::vector<int32_t> QwenEncodeLayer::encode(const std::string& sentence) const {
+  CHECK(this->tiktoken_ != nullptr);
+  auto input_ids = this->tiktoken_->encode(sentence);
+
+  if (has_bos_) {
+    input_ids.insert(input_ids.begin(), bos_id_);
+  }
+  if (has_eos_) {
+    input_ids.push_back(eos_id_);
+  }
+  return input_ids;
+}
+
+std::string QwenEncodeLayer::decode(int32_t token_id) const {
+  CHECK(this->tiktoken_ != nullptr);
+  return tiktoken_->decode(token_id);
+}
+
+std::string QwenEncodeLayer::decode(const std::vector<int32_t>& token_ids) const {
+  CHECK(this->tiktoken_ != nullptr);
+  return tiktoken_->decode(token_ids);
+}
+
 #endif
 }  // namespace op

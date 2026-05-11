@@ -6,6 +6,8 @@
 
 #include <utility>
 
+#include "base/nvtx_utils.h"
+
 namespace serving {
 namespace {
 
@@ -378,8 +380,10 @@ std::string zmq_rpc_message_type_name(ZmqRpcMessageType type) {
       return "kv_transfer_result";
     case ZmqRpcMessageType::kKvRelease:
       return "kv_release";
-    case ZmqRpcMessageType::kLayerKvTransfer:
-      return "layer_kv_transfer";
+    case ZmqRpcMessageType::kPrefillSubmit:
+      return "prefill_submit";
+    case ZmqRpcMessageType::kPrefillPoll:
+      return "prefill_poll";
     case ZmqRpcMessageType::kUnknown:
     default:
       return "unknown";
@@ -398,7 +402,8 @@ ZmqRpcMessageType zmq_rpc_message_type_from_string(const std::string& name) {
   if (name == "kv_transfer") return ZmqRpcMessageType::kKvTransfer;
   if (name == "kv_transfer_result") return ZmqRpcMessageType::kKvTransferResult;
   if (name == "kv_release") return ZmqRpcMessageType::kKvRelease;
-  if (name == "layer_kv_transfer") return ZmqRpcMessageType::kLayerKvTransfer;
+  if (name == "prefill_submit") return ZmqRpcMessageType::kPrefillSubmit;
+  if (name == "prefill_poll") return ZmqRpcMessageType::kPrefillPoll;
   return ZmqRpcMessageType::kUnknown;
 }
 
@@ -591,6 +596,31 @@ base::Status make_zmq_rep_socket(const ZmqRpcConfig& config,
 #else
   (void)config;
   (void)socket;
+  return zmq_unavailable_status();
+#endif
+}
+
+base::Status zmq_request_response(const ZmqRpcConfig& config,
+                                  const nlohmann::json& request,
+                                  nlohmann::json* response) {
+#if defined(KUIPER_ENABLE_ZMQ)
+  const std::string type = request.value("type", std::string("unknown"));
+  base::nvtx::ScopedRange range("zmq_rpc:" + type,
+                                base::nvtx::kColorProcess);
+  std::unique_ptr<ZmqSocket> socket;
+  auto status = make_zmq_req_socket(config, &socket);
+  if (!status) {
+    return status;
+  }
+  status = socket->send_json(request);
+  if (!status) {
+    return status;
+  }
+  return socket->recv_json(response);
+#else
+  (void)config;
+  (void)request;
+  (void)response;
   return zmq_unavailable_status();
 #endif
 }

@@ -9,6 +9,7 @@
 #include <thread>
 #include <utility>
 
+#include "base/nvtx_utils.h"
 #include "serving/serving_config.h"
 #include "serving/serving_zmq_rpc.h"
 
@@ -72,26 +73,23 @@ struct ZmqOnlineEnginePool::Impl {
 
   base::Status request_response(const nlohmann::json& request,
                                 nlohmann::json* response) const {
-    std::unique_ptr<ZmqSocket> socket;
-    auto status = make_zmq_req_socket(rpc, &socket);
-    if (!status) {
-      return status;
-    }
-    status = socket->send_json(request);
-    if (!status) {
-      return status;
-    }
-    return socket->recv_json(response);
+    return zmq_request_response(rpc, request, response);
   }
 
   void poll_tokens(std::shared_ptr<ZmqRemoteRequestHandle> handle) {
     while (!stopping.load() && !handle->cancelled()) {
       nlohmann::json response;
-      auto status = request_response(
-          {{"type", zmq_rpc_message_type_name(ZmqRpcMessageType::kToken)},
-           {"request_id", handle->remote_request_id()},
-           {"timeout_ms", std::max(1, std::min(config.engine_zmq_timeout_ms, 1000))}},
-          &response);
+      base::Status status;
+      {
+        base::nvtx::ScopedRange range("zmq_token_poll_rpc",
+                                      base::nvtx::kColorProcess);
+        status = request_response(
+            {{"type", zmq_rpc_message_type_name(ZmqRpcMessageType::kToken)},
+             {"request_id", handle->remote_request_id()},
+             {"timeout_ms",
+              std::max(1, std::min(config.engine_zmq_timeout_ms, 1000))}},
+            &response);
+      }
       if (!status) {
         handle->finish("", true, status.get_err_msg());
         return;

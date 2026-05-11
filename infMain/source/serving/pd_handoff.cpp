@@ -10,6 +10,7 @@
 #include <nccl.h>
 
 #include "base/alloc.h"
+#include "base/nvtx_utils.h"
 
 namespace serving {
 namespace {
@@ -1033,6 +1034,12 @@ base::Status NcclKVBlockTransferConnector::copy_blocks(const KVBlockManifest& ma
 base::Status run_remote_nccl_kv_block_transfer(
     const KVBlockManifest& manifest,
     const RemoteNcclKVTransferOptions& options) {
+  const char* role_name =
+      options.role == RemoteNcclKVTransferRole::kProducer
+          ? "remote_nccl_transfer:producer"
+          : "remote_nccl_transfer:consumer";
+  base::nvtx::ScopedRange transfer_range(role_name,
+                                         base::nvtx::kColorMemcpy);
   base::Status status = validate_remote_nccl_options(manifest, options);
   if (!status) {
     return status;
@@ -1065,7 +1072,12 @@ base::Status run_remote_nccl_kv_block_transfer(
   ncclComm_t comm = nullptr;
   const int rank =
       options.role == RemoteNcclKVTransferRole::kProducer ? 0 : 1;
-  ncclResult_t nccl_status = ncclCommInitRank(&comm, 2, unique_id, rank);
+  ncclResult_t nccl_status = ncclSuccess;
+  {
+    base::nvtx::ScopedRange range("remote_nccl_comm_init",
+                                  base::nvtx::kColorMemcpy);
+    nccl_status = ncclCommInitRank(&comm, 2, unique_id, rank);
+  }
   if (nccl_status != ncclSuccess) {
     if (owns_stream) {
       cudaStreamDestroy(stream);
@@ -1112,6 +1124,9 @@ base::Status run_remote_nccl_kv_block_transfer(
   };
 
   for (const auto& mapping : manifest.layer_mappings) {
+    base::nvtx::ScopedRange layer_range(
+        "remote_nccl_transfer_layer_" + std::to_string(mapping.layer_idx),
+        base::nvtx::kColorMemcpy);
     base::BlockAllocator& allocator =
         options.kv_manager->allocator_mut(mapping.layer_idx);
     const auto& local_block_ids =
@@ -1146,6 +1161,8 @@ base::Status run_remote_nccl_kv_block_transfer(
   }
 
   if (options.need_sync) {
+    base::nvtx::ScopedRange range("remote_nccl_stream_sync",
+                                  base::nvtx::kColorMemcpy);
     cuda_status = cudaStreamSynchronize(stream);
     if (cuda_status != cudaSuccess) {
       close_comm();

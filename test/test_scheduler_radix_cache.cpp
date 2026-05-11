@@ -178,3 +178,74 @@ TEST(SchedulerPolicyTest, LongPrefillThresholdCapsChunkSize) {
   EXPECT_EQ(output.num_prefill_seqs, 1);
   EXPECT_EQ(output.num_tokens_per_seq[0], 3);
 }
+
+TEST(SchedulerDecodeReadyTest, AdmissionRespectsMaxNumSeqs) {
+  constexpr int32_t kBlockSize = 4;
+  constexpr int32_t kNumLayers = 1;
+  base::KVCacheManager kv_manager(
+      kBlockSize, kNumLayers, make_allocators(kNumLayers, 64, kBlockSize));
+
+  serving::SchedulerConfig config;
+  config.max_num_seqs = 2;
+  config.max_num_batched_tokens = 16;
+  config.prefill_chunk_cap = 4;
+
+  serving::Scheduler scheduler(config, &kv_manager);
+  serving::GenerationConfig generation_config(4);
+
+  std::vector<base::RequestId> request_ids;
+  for (int i = 0; i < 4; ++i) {
+    const base::RequestId request_id = kv_manager.register_request();
+    ASSERT_TRUE(kv_manager.append_slots(request_id, 4));
+    request_ids.push_back(request_id);
+    scheduler.add_decode_ready_request(request_id, Tokens({1, 2, 3, 4}),
+                                       generation_config, 4, 100 + i);
+  }
+
+  auto output = scheduler.schedule_step();
+  EXPECT_EQ(output.num_decode_seqs, 2);
+  EXPECT_EQ(output.total_tokens, 2);
+  EXPECT_EQ(output.running_queue_size, 2);
+  EXPECT_EQ(output.waiting_queue_size, 2);
+
+  auto batch = scheduler.build_decode_batch(output, nullptr);
+  std::vector<int32_t> sample_tokens = {200, 201};
+  serving::SampledTokenView sampled{
+      sample_tokens.data(), static_cast<int32_t>(sample_tokens.size())};
+  scheduler.process_outputs(output, batch, sampled,
+                            [](int32_t /*token*/) { return true; });
+  scheduler.pop_finished();
+
+  output = scheduler.schedule_step();
+  EXPECT_EQ(output.num_decode_seqs, 2);
+  EXPECT_EQ(output.running_queue_size, 2);
+  EXPECT_EQ(output.waiting_queue_size, 0);
+}
+
+TEST(SchedulerDecodeReadyTest, AdmissionRespectsEstimatedRemainingBlocks) {
+  constexpr int32_t kBlockSize = 4;
+  constexpr int32_t kNumLayers = 1;
+  base::KVCacheManager kv_manager(
+      kBlockSize, kNumLayers, make_allocators(kNumLayers, 5, kBlockSize));
+
+  serving::SchedulerConfig config;
+  config.max_num_seqs = 4;
+  config.max_num_batched_tokens = 16;
+  config.prefill_chunk_cap = 4;
+
+  serving::Scheduler scheduler(config, &kv_manager);
+  serving::GenerationConfig generation_config(8);
+
+  for (int i = 0; i < 2; ++i) {
+    const base::RequestId request_id = kv_manager.register_request();
+    ASSERT_TRUE(kv_manager.append_slots(request_id, 4));
+    scheduler.add_decode_ready_request(request_id, Tokens({1, 2, 3, 4}),
+                                       generation_config, 4, 10 + i);
+  }
+
+  auto output = scheduler.schedule_step();
+  EXPECT_EQ(output.num_decode_seqs, 1);
+  EXPECT_EQ(output.total_tokens, 1);
+  EXPECT_EQ(output.running_queue_size, 1);
+  EXPECT_EQ(output.waiting_queue_size, 1);
+}

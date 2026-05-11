@@ -137,6 +137,14 @@ class Scheduler {
   bool can_schedule_prefill_now(const SequenceState& seq) const;
   bool maybe_preempt_for_waiting_sequence(const SequenceState& waiting_seq,
                                           int32_t* remaining_free_blocks);
+  int32_t min_unused_blocks_across_layers() const;
+  int32_t estimate_decode_remaining_blocks(const SequenceState& seq) const;
+  int32_t committed_running_decode_blocks() const;
+  int32_t available_decode_admission_blocks() const;
+  bool can_admit_decode_ready_sequence(const SequenceState& seq,
+                                       int32_t available_blocks) const;
+  void admit_decode_ready_sequence(SequenceState seq);
+  void admit_waiting_decode_ready_requests();
   void schedule_decode_sequences(SchedulerOutput* output,
                                  int32_t* remaining_budget);
   void schedule_running_prefills(SchedulerOutput* output,

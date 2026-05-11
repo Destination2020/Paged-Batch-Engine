@@ -256,9 +256,7 @@ int64_t Scheduler::add_decode_ready_request(base::RequestId request_id,
     return client_request_id;
   }
 
-  running_.push_back(std::move(seq));
-  metrics_.max_running_queue = std::max(
-      metrics_.max_running_queue, static_cast<int32_t>(running_.size()));
+  admit_decode_ready_sequence(std::move(seq));
   return client_request_id;
 }
 
@@ -297,6 +295,7 @@ SchedulerOutput Scheduler::schedule_step() {
   int32_t remaining_budget = config_.max_num_batched_tokens;
   int32_t remaining_free_blocks = 0;
 
+  admit_waiting_decode_ready_requests();
   schedule_decode_sequences(&output, &remaining_budget);
   remaining_free_blocks = reusable_free_blocks();
   schedule_running_prefills(&output, &remaining_budget, &remaining_free_blocks);
@@ -572,12 +571,103 @@ bool Scheduler::maybe_preempt_for_waiting_sequence(
   return true;
 }
 
+int32_t Scheduler::min_unused_blocks_across_layers() const {
+  int32_t min_blocks = kv_manager_->num_free_blocks(0);
+  for (int32_t layer_idx = 1; layer_idx < kv_manager_->num_layers(); ++layer_idx) {
+    min_blocks = std::min(min_blocks, kv_manager_->num_free_blocks(layer_idx));
+  }
+  return min_blocks;
+}
+
+int32_t Scheduler::estimate_decode_remaining_blocks(const SequenceState& seq) const {
+  if (seq.is_prefill() || !kv_manager_->is_valid_request(seq.request_id)) {
+    return 0;
+  }
+  const int32_t current_tokens = kv_manager_->get_context_len(seq.request_id);
+  const int32_t remaining_new_tokens =
+      std::max(0, seq.generation_config.max_new_tokens - seq.generated_tokens);
+  return additional_blocks_needed(current_tokens, remaining_new_tokens,
+                                  kv_manager_->block_size());
+}
+
+int32_t Scheduler::committed_running_decode_blocks() const {
+  int32_t blocks = 0;
+  for (const auto& seq : running_) {
+    blocks += estimate_decode_remaining_blocks(seq);
+  }
+  return blocks;
+}
+
+int32_t Scheduler::available_decode_admission_blocks() const {
+  return std::max(0, min_unused_blocks_across_layers() -
+                         committed_running_decode_blocks());
+}
+
+bool Scheduler::can_admit_decode_ready_sequence(
+    const SequenceState& seq, int32_t available_blocks) const {
+  if (seq.is_prefill()) {
+    return false;
+  }
+  if (static_cast<int32_t>(running_.size()) >= config_.max_num_seqs) {
+    return false;
+  }
+  return estimate_decode_remaining_blocks(seq) <= available_blocks;
+}
+
+void Scheduler::admit_decode_ready_sequence(SequenceState seq) {
+  if (can_admit_decode_ready_sequence(seq, available_decode_admission_blocks())) {
+    seq.status = SequenceStatus::kRunning;
+    running_.push_back(std::move(seq));
+    metrics_.max_running_queue = std::max(
+        metrics_.max_running_queue, static_cast<int32_t>(running_.size()));
+    return;
+  }
+  seq.status = SequenceStatus::kWaiting;
+  seq.ready_step = scheduler_step_ + 1;
+  enqueue_waiting_sequence(std::move(seq));
+}
+
+void Scheduler::admit_waiting_decode_ready_requests() {
+  if (waiting_.empty()) {
+    return;
+  }
+
+  int32_t available_blocks = available_decode_admission_blocks();
+  auto it = waiting_.begin();
+  while (it != waiting_.end() &&
+         static_cast<int32_t>(running_.size()) < config_.max_num_seqs) {
+    if (it->ready_step > scheduler_step_) {
+      ++it;
+      continue;
+    }
+    if (it->is_prefill()) {
+      ++it;
+      continue;
+    }
+
+    const int32_t required_blocks = estimate_decode_remaining_blocks(*it);
+    if (required_blocks > available_blocks) {
+      ++it;
+      continue;
+    }
+
+    available_blocks -= required_blocks;
+    auto seq = std::move(*it);
+    it = waiting_.erase(it);
+    seq.status = SequenceStatus::kRunning;
+    running_.push_back(std::move(seq));
+    metrics_.max_running_queue = std::max(
+        metrics_.max_running_queue, static_cast<int32_t>(running_.size()));
+  }
+}
+
 void Scheduler::schedule_decode_sequences(SchedulerOutput* output,
                                           int32_t* remaining_budget) {
   CHECK_NE(output, nullptr);
   CHECK_NE(remaining_budget, nullptr);
   for (auto& seq : running_) {
-    if (*remaining_budget <= 0) {
+    if (*remaining_budget <= 0 ||
+        output->num_decode_seqs >= config_.max_num_seqs) {
       break;
     }
     if (seq.is_prefill()) {
@@ -816,6 +906,27 @@ bool Scheduler::reject_waiting_request_that_cannot_start() {
   auto& seq = waiting_.front();
   if (seq.ready_step > scheduler_step_) {
     return false;
+  }
+  if (!seq.is_prefill()) {
+    if (can_admit_decode_ready_sequence(seq, available_decode_admission_blocks()) ||
+        !running_.empty()) {
+      return false;
+    }
+
+    auto failed = std::move(seq);
+    waiting_.pop_front();
+    const int32_t required_blocks = estimate_decode_remaining_blocks(failed);
+    const int32_t free_blocks = min_unused_blocks_across_layers();
+    ++metrics_.waiting_rejections;
+    fail_sequence(&failed, std::chrono::steady_clock::now(),
+                  "decode_ready_cannot_start(context_len=" +
+                      std::to_string(kv_manager_->get_context_len(failed.request_id)) +
+                      ", required_remaining_blocks=" +
+                      std::to_string(required_blocks) +
+                      ", free_kv_blocks=" + std::to_string(free_blocks) + ")");
+    kv_manager_->free_request(failed.request_id);
+    finished_.push_back(std::move(failed));
+    return true;
   }
   const int32_t desired_chunk = std::min({
       seq.remaining_tokens(),

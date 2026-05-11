@@ -134,13 +134,10 @@ class ServingBenchmarkApp {
   RemotePrefillResult run_remote_prefill_generation(
       std::vector<int32_t> prompt_tokens,
       GenerationConfig generation_config) const;
-  RemotePrefillResult run_remote_prefill_layer_generation(
-      std::vector<int32_t> prompt_tokens,
-      GenerationConfig generation_config,
-      const LayerKVTransferRequest& layer_request,
-      const std::string& nccl_unique_id) const;
   base::Status run_remote_nccl_kv_send(const KVBlockManifest& manifest,
                                        const std::string& nccl_unique_id) const;
+  void retain_remote_prefill(HandoffId handoff_id,
+                             base::RequestId request_id) const;
   void release_remote_prefill(HandoffId handoff_id) const;
   PDGenerationResult run_remote_zmq_cpu_pd_generation(
       std::vector<int32_t> prompt_tokens,

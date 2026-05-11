@@ -82,6 +82,7 @@ class OnlineServingEngine {
 
   void run_loop();
   void run_pd_loop();
+  void run_remote_pd_batch_loop();
   void run_pd_submission(PendingSubmission submission);
   void flush_submissions();
   void flush_cancellations();

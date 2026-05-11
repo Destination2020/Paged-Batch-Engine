@@ -101,11 +101,9 @@ inline const char* pd_transfer_backend(const std::string& pd_mode) {
   if (pd_mode == "remote-zmq-cpu") {
     return "zmq-cpu";
   }
-  if (pd_mode == "remote-zmq-nccl") {
-    return "zmq-nccl";
-  }
-  if (pd_mode == "remote-zmq-nccl-layer") {
-    return "zmq-nccl-layer";
+  if (pd_mode == "remote-zmq-nccl" ||
+      pd_mode == "remote-zmq-nccl-layer") {
+    return "zmq-nccl-request";
   }
   if (pd_mode == "dual-gpu-nccl" || pd_mode == "dual-gpu-nccl-layer") {
     return "nccl";

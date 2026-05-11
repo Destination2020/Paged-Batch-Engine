@@ -36,7 +36,8 @@ enum class ZmqRpcMessageType {
   kKvTransfer = 9,
   kKvTransferResult = 10,
   kKvRelease = 11,
-  kLayerKvTransfer = 12,
+  kPrefillSubmit = 13,
+  kPrefillPoll = 14,
 };
 
 struct ZmqRpcConfig {
@@ -131,6 +132,9 @@ base::Status make_zmq_req_socket(const ZmqRpcConfig& config,
                                  std::unique_ptr<ZmqSocket>* socket);
 base::Status make_zmq_rep_socket(const ZmqRpcConfig& config,
                                  std::unique_ptr<ZmqSocket>* socket);
+base::Status zmq_request_response(const ZmqRpcConfig& config,
+                                  const nlohmann::json& request,
+                                  nlohmann::json* response);
 
 }  // namespace serving
 
