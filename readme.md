@@ -24,7 +24,7 @@ PagedBatchEngine 是一个面向大模型推理服务的 C++/CUDA 推理框架�
 
 ### 256 多请求并发效果
 
-该实验用于验证在线 serving 在高并发请求下的吞吐能力和生成稳定性。
+该实验用于验证在线 serving 在高并发请求下的吞吐能力和生成稳定性，使用 'Qwen2-0.5B-Instruct' 模型。
 
 | Concurrency | Generated tokens | Wall time (s) | Throughput (tok/s) |
 | ---: | ---: | ---: | ---: |
@@ -42,6 +42,7 @@ The tradeoffs of serving many small models versus one large model in the context
 
 ### vLLM 对比效果
 
+以下对比使用 'Qwen2-7B-Instruct' 模型
 Prompt tokens are shown as `p50/p95/max`. Throughput is output tokens per second.
 
 | Engine | Workload | Requests | Prompt tokens p50/p95/max | Max new tokens | Output tok/s | TTFT p95 ms | ITL p95 ms | E2E p99 ms | Success |
