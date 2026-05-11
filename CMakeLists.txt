@@ -196,6 +196,68 @@ if (NVTOOLSEXT_LIBRARY)
   message(STATUS "Found NVTX library: ${NVTOOLSEXT_LIBRARY}")
 endif()
 
+set(KUIPER_ENABLE_NCCL "AUTO" CACHE STRING
+    "Enable NCCL-backed PD handoff support: AUTO, ON, or OFF")
+set_property(CACHE KUIPER_ENABLE_NCCL PROPERTY STRINGS AUTO ON OFF)
+string(TOUPPER "${KUIPER_ENABLE_NCCL}" KUIPER_ENABLE_NCCL_VALUE)
+if(NOT KUIPER_ENABLE_NCCL_VALUE MATCHES "^(AUTO|ON|OFF)$")
+  message(FATAL_ERROR "KUIPER_ENABLE_NCCL must be AUTO, ON, or OFF")
+endif()
+if(NOT KUIPER_ENABLE_NCCL_VALUE STREQUAL "OFF")
+  find_path(NCCL_INCLUDE_DIR nccl.h
+            PATHS /usr/local/cuda/include
+                  /usr/local/cuda/targets/x86_64-linux/include
+                  /usr/local/include
+                  /usr/include)
+  find_library(NCCL_LIBRARY nccl
+               PATHS /usr/local/cuda/lib64
+                     /usr/local/lib
+                     /usr/lib
+                     /usr/lib/x86_64-linux-gnu)
+  if(NCCL_INCLUDE_DIR AND NCCL_LIBRARY)
+    set(KUIPER_HAS_NCCL ON)
+    message(STATUS "Found NCCL: include=${NCCL_INCLUDE_DIR} library=${NCCL_LIBRARY}")
+  elseif(KUIPER_ENABLE_NCCL_VALUE STREQUAL "ON")
+    message(FATAL_ERROR
+            "KUIPER_ENABLE_NCCL=ON but NCCL was not found. Install NCCL "
+            "development headers/libraries or configure with -DKUIPER_ENABLE_NCCL=OFF.")
+  else()
+    set(KUIPER_HAS_NCCL OFF)
+    message(STATUS "NCCL not found; building without NCCL-backed PD handoff")
+  endif()
+else()
+  set(KUIPER_HAS_NCCL OFF)
+  message(STATUS "NCCL support disabled")
+endif()
+
+set(KUIPER_ENABLE_ZMQ "AUTO" CACHE STRING
+    "Enable ZeroMQ online API/engine process support: AUTO, ON, or OFF")
+set_property(CACHE KUIPER_ENABLE_ZMQ PROPERTY STRINGS AUTO ON OFF)
+string(TOUPPER "${KUIPER_ENABLE_ZMQ}" KUIPER_ENABLE_ZMQ_VALUE)
+if(NOT KUIPER_ENABLE_ZMQ_VALUE MATCHES "^(AUTO|ON|OFF)$")
+  message(FATAL_ERROR "KUIPER_ENABLE_ZMQ must be AUTO, ON, or OFF")
+endif()
+if(NOT KUIPER_ENABLE_ZMQ_VALUE STREQUAL "OFF")
+  find_path(ZMQ_INCLUDE_DIR zmq.h
+            PATHS /usr/local/include /usr/include)
+  find_library(ZMQ_LIBRARY zmq
+               PATHS /usr/local/lib /usr/lib /usr/lib/x86_64-linux-gnu)
+  if(ZMQ_INCLUDE_DIR AND ZMQ_LIBRARY)
+    set(KUIPER_HAS_ZMQ ON)
+    message(STATUS "Found ZeroMQ: include=${ZMQ_INCLUDE_DIR} library=${ZMQ_LIBRARY}")
+  elseif(KUIPER_ENABLE_ZMQ_VALUE STREQUAL "ON")
+    message(FATAL_ERROR
+            "KUIPER_ENABLE_ZMQ=ON but ZeroMQ was not found. Install libzmq "
+            "development headers/libraries or configure with -DKUIPER_ENABLE_ZMQ=OFF.")
+  else()
+    set(KUIPER_HAS_ZMQ OFF)
+    message(STATUS "ZeroMQ not found; building ZMQ process roles as unavailable stubs")
+  endif()
+else()
+  set(KUIPER_HAS_ZMQ OFF)
+  message(STATUS "ZeroMQ support disabled")
+endif()
+
 aux_source_directory(infMain/source/tensor/ DIR_TENSOR)
 aux_source_directory(infMain/source/base/ DIR_BASE)
 aux_source_directory(infMain/source/op/ DIR_OP)
@@ -204,6 +266,18 @@ aux_source_directory(infMain/source/op/kernels/cuda DIR_KERNEL_CUDA)
 aux_source_directory(infMain/source/op/kernels/ DIR_KERNEL)
 aux_source_directory(infMain/source/sampler DIR_SAMPLE)
 aux_source_directory(infMain/source/serving DIR_SERVING)
+list(APPEND DIR_SERVING infMain/source/serving/serving_online_server.cpp)
+list(APPEND DIR_SERVING infMain/source/serving/serving_http_server.cpp)
+list(APPEND DIR_SERVING infMain/source/serving/serving_online_engine.cpp)
+list(APPEND DIR_SERVING infMain/source/serving/serving_online_engine_pool.cpp)
+list(APPEND DIR_SERVING infMain/source/serving/gpu_worker.cpp)
+list(APPEND DIR_SERVING infMain/source/serving/pd_handoff.cpp)
+list(APPEND DIR_SERVING infMain/source/serving/pd_coordinator.cpp)
+list(APPEND DIR_SERVING infMain/source/serving/decode_kv_reservation.cpp)
+list(APPEND DIR_SERVING infMain/source/serving/pd_worker.cpp)
+list(APPEND DIR_SERVING infMain/source/serving/pd_engine.cpp)
+list(APPEND DIR_SERVING infMain/source/serving/pd_handoff_builder.cpp)
+list(REMOVE_DUPLICATES DIR_SERVING)
 
 set(DIR_MODEL
     infMain/source/model/model.cpp
@@ -242,6 +316,16 @@ target_link_libraries(llama
     armadillo)
 if (NVTOOLSEXT_LIBRARY)
   target_link_libraries(llama PUBLIC ${NVTOOLSEXT_LIBRARY})
+endif()
+if (KUIPER_HAS_NCCL)
+  target_compile_definitions(llama PUBLIC KUIPER_ENABLE_NCCL=1)
+  target_include_directories(llama PUBLIC ${NCCL_INCLUDE_DIR})
+  target_link_libraries(llama PUBLIC ${NCCL_LIBRARY})
+endif()
+if (KUIPER_HAS_ZMQ)
+  target_compile_definitions(llama PUBLIC KUIPER_ENABLE_ZMQ=1)
+  target_include_directories(llama PUBLIC ${ZMQ_INCLUDE_DIR})
+  target_link_libraries(llama PUBLIC ${ZMQ_LIBRARY})
 endif()
 target_link_directories(llama PUBLIC ${CMAKE_CUDA_COMPILER_LIBRARY_ROOT}/lib64)
 
