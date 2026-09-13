@@ -1,5 +1,6 @@
 # PBE V4 diagrams
 
+- `pbe_overview_visual.png`: the README's visual overview, generated with imagegen; intentionally focuses on request flow, compute roles and the shared data layer. The detailed module map below remains available for implementation reading. Flow arrows are conceptual; cached requests may skip computation.
 - `pbe_v4_overall_architecture.png` / `.svg`: full-project module map, following the original overview's level of detail; includes engine scheduling, model operators, role orchestration, cache/data ownership, deployment and validation. Regenerate both with `python3 imgs/build_overall_architecture.py` (Pillow + fontconfig).
 - `pbe_v4_architecture.png`: conceptual control / compute / data / resource layers. Arrows indicate logical integration, not tensor copies through the Coordinator.
 - `pbe_v4_same_gpu_sharing.png`: one-GPU 1P1D shared allocations and private execution state. It is not a claim of arbitrary multi-worker scaling or hardware-enforced read-only memory.
