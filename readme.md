@@ -1,10 +1,16 @@
 # PagedBatchEngine
 
-PagedBatchEngine 是一个面向大模型推理服务的 C++/CUDA 推理框架。项目以 Qwen2/Qwen2.5 serving 路径为主线，实现了 paged KV cache、continuous batching、chunked prefill、prefix cache、FP8 KV Cache、在线 HTTP 服务、P/D 分离等特性。
+PagedBatchEngine（PBE）是一个支持多角色与多模态数据共享的 C++/CUDA 分页推理引擎。当前 V4 主线使用 Qwen2.5-VL BF16，连接独立常驻的 Vision、Prefill、Decode 角色，由框架管理视觉特征、KV 页和同卡只读权重。原 Qwen2/Qwen2.5 文本 serving、continuous batching、chunked prefill 和 FP8 KV 路径继续保留。
+
+当前架构与验收范围见 [V4 架构](docs/PBE_MULTI_ROLE_MULTIMODAL_ARCHITECTURE_V4_20260912.md)、[执行计划](docs/PBE_MULTI_ROLE_MULTIMODAL_EXECUTION_PLAN_V4_20260912.md)及[权重共享完成报告](docs/V4_E4_SHARED_WEIGHT_COMPLETION_20260913.md)。实验文件的发布范围见[证据说明](docs/EVIDENCE_PUBLICATION.md)。
 
 ## 功能概览
 
-- **模型支持**：Qwen2/Qwen2.5
+- **模型支持**：Qwen2/Qwen2.5 文本推理；Qwen2.5-VL BF16 图文推理，语言计算运行于 PBE，视觉编码运行于 Python/PyTorch worker。
+- **多模态缓存身份**：区分可复用视觉特征与上下文相关 KV，结合媒体、模型/processor 版本和位置语义查询最长连续前缀，按需获取缺页。
+- **框架持有数据**：Data service/Node Agent 管理共享资源，计算进程借用 GPU view；通过代际 lease、完成事件和 COW 管理共享与回收。
+- **同卡权重共享**：兼容模型/布局的 P/D 进程映射同一物理权重 allocation；workspace、激活和请求状态保持私有，物理权重单次计费。
+- **资源调度与恢复**：数据位置感知选路、联合准入、跨阶段 deadline，以及依赖约束下的 GPU/Host 下沉与恢复。
 - **执行后端**：CPU 基础算子与 CUDA 高性能路径；paged KV serving 主要面向 CUDA。
 - **核心算子**：Embedding、Matmul、RMSNorm、RoPE、SwiGLU、MHA、PagedAttention、MoE、Sampler。
 - **Paged KV cache**：按 block 管理 KV 池，支持 page table、引用计数、请求级释放和容量统计。
@@ -16,11 +22,21 @@ PagedBatchEngine 是一个面向大模型推理服务的 C++/CUDA 推理框架�
 
 ## 整体架构
 
-下图展示了项目从入口层、serving runtime、Qwen2 模型执行、KV cache 管理到可选 P/D 分离的主流程。
+下图展示当前 V4 的逻辑分层：Coordinator 管理请求和角色选择，Vision/PBE worker 执行计算，数据层统一持有共享对象，资源层管理容量、迁移与恢复。层间箭头表示依赖关系，不代表 tensor 必须经过 Coordinator 拷贝。
 
-![PagedBatchEngine overall_architecture](<Overall_Architecture.png>)
+![PBE V4 多角色与多模态推理架构](imgs/pbe_v4_architecture.png)
 
-## 实验结果
+### 同卡 P/D：物理共享与私有状态
+
+Prefill 与 Decode 是独立进程，通过 handoff 元数据安装 KV 页表。同卡兼容配置下，两者借用同一份物理权重和符合语义条件的 KV 前缀；尾页写入遵循 COW，workspace、激活、调度及请求状态独立管理。
+
+![PBE 同 GPU Prefill Decode 权重与 KV 共享](imgs/pbe_v4_same_gpu_sharing.png)
+
+图示为 1P1D 配置，不代表任意 N:P/D 拓扑均已验收。CUDA IPC 的只读是可信 worker 合同，不是硬件写保护；跨卡路径需要实际 copy，exporter 故障按 fail-stop 合同处理。重放入口见[常驻 PD 报告](docs/V4_PERSISTENT_PD_CLOSURE_20260913.md)与[同卡权重共享报告](docs/V4_E4_SHARED_WEIGHT_COMPLETION_20260913.md)。
+
+## 历史文本推理实验结果
+
+本节为早期 Qwen2 文本实验，不能作为当前 V4 多模态或权重共享的性能结论。当前实验及补测协议见 [V4 计划第 20 节](docs/PBE_MULTI_ROLE_MULTIMODAL_EXECUTION_PLAN_V4_20260912.md#20-性能证据整理与补测面向简历和技术面试b1b6待执行)。
 
 ### 256 多请求并发效果
 
@@ -126,9 +142,11 @@ need to compute attention scores for the entire sequence at each step.
 
 ```text
 .
-├── infMain/include        # 公开头文件：base、tensor、op、model、serving
+├── infMain/include        # 公开头文件：base、cache、data、tensor、op、model、serving
 ├── infMain/source         # C++/CUDA 实现
 │   ├── base               # allocator、KV cache、runtime、radix cache
+│   ├── cache              # 页面目录、迁移、Host 缓存与传输调度
+│   ├── data               # 数据服务、IPC、共享权重、内容身份与租约
 │   ├── model              # Llama/Qwen 模型与 paged KV runtime
 │   ├── op                 # 算子封装与 CPU/CUDA kernel
 │   ├── sampler            # sampler 抽象与 argmax sampler
@@ -136,6 +154,8 @@ need to compute attention scores for the entire sequence at each step.
 ├── demo                   # 离线推理与 serving demo
 ├── test                   # GTest 单测和算子/serving 测试
 ├── tools                  # 模型导出与 benchmark 工具
+├── python/pbe_roles       # Vision role、typed Coordinator 与客户端
+├── docs                   # V4 架构、执行计划、验收与实验说明
 ├── docs/benchmarks        # benchmark JSON/Markdown 报告
 └── hf_infer               # HuggingFace 对照推理脚本
 ```
@@ -299,7 +319,9 @@ curl -sS http://127.0.0.1:8080/v1/chat/completions \
   }'
 ```
 
-## P/D 分离模式
+## 兼容文本路径：P/D 分离模式
+
+本节保留原 `serving_qwen` 的 ZMQ/NCCL 架构图和启动命令；当前 V4 的框架持有 KV/权重路径见上方新图及对应交付报告。两种路径的所有权和传输方式不同。
 
 `serving_qwen` 支持以下 `--pd-mode`：
 

@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1536" height="1024" viewBox="0 0 1536 1024" role="img" aria-labelledby="title desc">
+  <title id="title">PBE — Same-GPU Prefill / Decode Sharing</title>
+  <desc id="desc">Two independent processes borrow one immutable weight allocation and semantically compatible KV pages from the data service. Workspace and request state remain private.</desc>
+  <style>
+    text { font-family: DejaVu Sans, Arial, sans-serif; fill: #10244c; }
+    .title { font-size: 40px; font-weight: 700; }
+    .subtitle { font-size: 22px; fill: #526782; }
+    .heading { font-size: 26px; font-weight: 700; }
+    .body { font-size: 20px; }
+    .small { font-size: 17px; }
+    .white { fill: white; }
+    .muted { fill: #526782; }
+  </style>
+  <rect width="1536" height="1024" fill="#ffffff"/>
+  <text x="768" y="64" text-anchor="middle" class="title">PBE | Same-GPU Prefill / Decode Sharing</text>
+  <text x="768" y="106" text-anchor="middle" class="subtitle">Independent processes · Framework-owned memory · Private execution state</text>
+  <rect x="40" y="143" width="1456" height="620" rx="22" fill="#f5f9ff" stroke="#9fb4d3" stroke-width="2"/>
+  <text x="72" y="184" class="heading">ONE GPU</text>
+  <text x="1460" y="184" text-anchor="end" class="body muted">TP=1 · Compatible BF16 language model</text>
+
+  <rect x="72" y="208" width="1392" height="112" rx="14" fill="#6b46c1"/>
+  <text x="768" y="249" text-anchor="middle" class="heading white">SHARED IMMUTABLE WEIGHTS</text>
+  <text x="768" y="282" text-anchor="middle" class="body white">Data service owns ONE physical allocation; P and D import the SAME allocation via CUDA IPC.</text>
+  <text x="768" y="307" text-anchor="middle" class="small white">One upload · Compatible model / layout / device identity · Separate consumer leases</text>
+
+  <rect x="72" y="344" width="680" height="174" rx="14" fill="#e8f2ff" stroke="#5092dc"/>
+  <rect x="784" y="344" width="680" height="174" rx="14" fill="#e8f2ff" stroke="#5092dc"/>
+  <text x="412" y="385" text-anchor="middle" class="heading">Prefill process — PID P</text>
+  <text x="1124" y="385" text-anchor="middle" class="heading">Decode process — PID D</text>
+  <text x="412" y="421" text-anchor="middle" class="body">Computes prompt KV and publishes handoff</text>
+  <text x="1124" y="421" text-anchor="middle" class="body">Restores KV page table and runs Decode</text>
+  <line x1="96" y1="443" x2="728" y2="443" stroke="#b8d2ef"/>
+  <line x1="808" y1="443" x2="1440" y2="443" stroke="#b8d2ef"/>
+  <text x="412" y="474" text-anchor="middle" class="small">PRIVATE: workspace · activations · scheduler</text>
+  <text x="412" y="500" text-anchor="middle" class="small">Request state and writable tail pages</text>
+  <text x="1124" y="474" text-anchor="middle" class="small">PRIVATE: workspace · activations · scheduler</text>
+  <text x="1124" y="500" text-anchor="middle" class="small">Request state and writable tail pages</text>
+
+  <rect x="72" y="534" width="1392" height="42" rx="10" fill="#d6e8fb"/>
+  <text x="768" y="562" text-anchor="middle" class="body">Typed P→D handoff: KV identity + generation + page metadata + decode start state</text>
+  <rect x="72" y="593" width="1392" height="146" rx="14" fill="#dff5f1" stroke="#2ba391"/>
+  <text x="768" y="628" text-anchor="middle" class="heading">PAGED KV POOL — PHYSICAL OWNERSHIP: DATA SERVICE</text>
+  <g class="body" text-anchor="middle">
+    <rect x="120" y="647" width="244" height="40" rx="7" fill="#a5e4d9"/><text x="242" y="674">Shared prefix 0</text>
+    <rect x="383" y="647" width="244" height="40" rx="7" fill="#a5e4d9"/><text x="505" y="674">Shared prefix 1</text>
+    <rect x="646" y="647" width="244" height="40" rx="7" fill="#a5e4d9"/><text x="768" y="674">Shared prefix 2</text>
+    <rect x="909" y="647" width="244" height="40" rx="7" fill="#f8e6b3"/><text x="1031" y="674">P private tail</text>
+    <rect x="1172" y="647" width="244" height="40" rx="7" fill="#c4dcfa"/><text x="1294" y="674">D private tail</text>
+  </g>
+  <text x="768" y="721" text-anchor="middle" class="small">Reuse requires matching prefix semantics. Shared tail writes require COW; private does not mean process-owned allocation.</text>
+
+  <rect x="40" y="786" width="1456" height="51" rx="12" fill="#17345a"/>
+  <text x="768" y="819" text-anchor="middle" class="body white">Leases + generation + completion fences govern access and reclamation</text>
+  <text x="60" y="878" class="body">1. Publish after upload completes</text>
+  <text x="570" y="878" class="body">2. Attach views before compute</text>
+  <text x="1050" y="878" class="body">3. Drain before releasing memory</text>
+  <text x="768" y="923" text-anchor="middle" class="body muted">Shared weights reduce duplication. Workspaces, CUDA contexts and GPU contention still have a cost.</text>
+  <line x1="40" y1="946" x2="1496" y2="946" stroke="#d8e1ed"/>
+  <text x="768" y="976" text-anchor="middle" class="small muted">Read-only is a trusted-worker contract, not hardware protection. Exporter failure requires fail-stop recovery.</text>
+  <text x="768" y="1003" text-anchor="middle" class="small muted">Conceptual 1P1D deployment · No claim of arbitrary worker scaling or throughput improvement</text>
+</svg>
