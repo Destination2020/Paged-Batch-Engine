@@ -20,9 +20,11 @@ STYLES = {
 }
 
 
-def main():
-    root = ET.parse(ROOT / 'pbe_v4_same_gpu_sharing.svg').getroot()
-    canvas = Image.new('RGB', (1536 * SCALE, 1024 * SCALE), 'white')
+def render_diagram(source):
+    source = Path(source)
+    root = ET.parse(source).getroot()
+    canvas = Image.new('RGB', (int(root.get('width')) * SCALE,
+                               int(root.get('height')) * SCALE), 'white')
     draw = ImageDraw.Draw(canvas)
     fonts = {}
     for bold in (False, True):
@@ -49,6 +51,10 @@ def main():
         elif tag == 'line':
             draw.line((value('x1'), value('y1'), value('x2'), value('y2')),
                       fill=node.get('stroke'), width=SCALE)
+        elif tag == 'polygon':
+            points = [tuple(float(v) * SCALE for v in pair.split(','))
+                      for pair in node.get('points').split()]
+            draw.polygon(points, fill=style.get('fill', '#10244c'))
         elif tag == 'text':
             font = ImageFont.truetype(fonts[style.get('bold', False)],
                                       int(style.get('size', 20) * SCALE))
@@ -59,8 +65,12 @@ def main():
             for child in node:
                 render(child, style)
     render(root, {})
-    canvas.save(ROOT / 'pbe_v4_same_gpu_sharing.png')
+    canvas.save(source.with_suffix('.png'))
 
 
 if __name__ == '__main__':
-    main()
+    import argparse
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('source', nargs='?', type=Path,
+                        default=ROOT / 'pbe_v4_same_gpu_sharing.svg')
+    render_diagram(parser.parse_args().source)

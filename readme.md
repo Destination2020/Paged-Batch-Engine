@@ -22,9 +22,11 @@ PagedBatchEngine（PBE）是一个支持多角色与多模态数据共享的 C++
 
 ## 整体架构
 
-下图展示当前 V4 的逻辑分层：Coordinator 管理请求和角色选择，Vision/PBE worker 执行计算，数据层统一持有共享对象，资源层管理容量、迁移与恢复。层间箭头表示依赖关系，不代表 tensor 必须经过 Coordinator 拷贝。
+下图沿用原整体架构图的模块粒度，覆盖入口、请求生命周期、Scheduler/MixedBatchBuilder、采样与模型执行、CUDA 算子、多模态角色编排、共享数据与分页缓存，以及部署和验证工具。右侧的 Prefill/Decode 角色使用中间的 PBE 执行核心；各面板是逻辑模块，不代表一一对应的进程或 GPU。
 
-![PBE V4 多角色与多模态推理架构](imgs/pbe_v4_architecture.png)
+![PBE V4 整个项目架构与请求流](imgs/pbe_v4_overall_architecture.png)
+
+[下载可编辑 SVG](imgs/pbe_v4_overall_architecture.svg) · [V4 四层概览图](imgs/pbe_v4_architecture.png)
 
 ### 同卡 P/D：物理共享与私有状态
 

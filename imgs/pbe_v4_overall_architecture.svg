@@ -1,0 +1,176 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2400" height="1670" viewBox="0 0 2400 1670" role="img" aria-labelledby="title"><title id="title">PBE complete project architecture and request flow</title><style>text {font-family:Arial,sans-serif;} .title {font-size:40px;font-weight:700;}
+    .heading {font-size:26px;font-weight:700;} .subtitle {font-size:22px;}
+    .body {font-size:20px;} .small {font-size:17px;}</style><rect x="0" y="0" width="2400" height="1670" rx="0" fill="#ffffff" stroke="#ffffff"/>
+<text x="40" y="65" class="title" fill="#10244c" text-anchor="start">PBE | Overall Architecture &amp; Request Flow</text>
+<text x="40" y="108" class="subtitle" fill="#10244c" text-anchor="start">C++ / CUDA paged inference • Multimodal roles • Framework-owned KV, features and weights</text>
+<text x="2360" y="65" class="heading" fill="#526782" text-anchor="end">V4 + E1–E4</text>
+<rect x="40" y="148" width="330" height="710" rx="20" fill="#f1f7ff" stroke="#2563a0"/>
+<text x="62" y="188" class="heading" fill="#2563a0" text-anchor="start">01  ENTRYPOINTS</text>
+<text x="62" y="219" class="small" fill="#526782" text-anchor="start">Text, multimodal and offline paths</text>
+<rect x="60" y="247" width="290" height="155" rx="14" fill="#ffffff" stroke="#d6dfeb"/>
+<text x="78" y="280" class="heading" fill="#10244c" text-anchor="start">Text HTTP / SSE</text>
+<text x="78" y="311" class="body" fill="#10244c" text-anchor="start">/generate</text>
+<text x="78" y="339" class="body" fill="#10244c" text-anchor="start">/v1/chat/completions</text>
+<text x="78" y="367" class="body" fill="#10244c" text-anchor="start">Health / metrics</text>
+<rect x="60" y="426" width="290" height="155" rx="14" fill="#ffffff" stroke="#d6dfeb"/>
+<text x="78" y="459" class="heading" fill="#10244c" text-anchor="start">Multimodal input</text>
+<text x="78" y="490" class="body" fill="#10244c" text-anchor="start">Image + text</text>
+<text x="78" y="518" class="body" fill="#10244c" text-anchor="start">Typed role requests</text>
+<text x="78" y="546" class="body" fill="#10244c" text-anchor="start">Processor / position plan</text>
+<rect x="60" y="605" width="290" height="146" rx="14" fill="#ffffff" stroke="#d6dfeb"/>
+<text x="78" y="638" class="heading" fill="#10244c" text-anchor="start">Offline / tools</text>
+<text x="78" y="669" class="body" fill="#10244c" text-anchor="start">CLI and model export</text>
+<text x="78" y="697" class="body" fill="#10244c" text-anchor="start">Benchmark runners</text>
+<text x="78" y="725" class="body" fill="#10244c" text-anchor="start">Frozen model manifests</text>
+<text x="60" y="792" class="small" fill="#526782" text-anchor="start">Legacy text API and typed VLM</text>
+<text x="60" y="818" class="small" fill="#526782" text-anchor="start">entry are distinct paths.</text>
+<rect x="400" y="148" width="630" height="710" rx="20" fill="#eff9f5" stroke="#19765d"/>
+<text x="422" y="188" class="heading" fill="#19765d" text-anchor="start">02  SERVING RUNTIME</text>
+<text x="422" y="219" class="small" fill="#526782" text-anchor="start">Inside a PBE language execution process</text>
+<rect x="420" y="247" width="270" height="184" rx="14" fill="#ffffff" stroke="#d6dfeb"/>
+<text x="438" y="280" class="heading" fill="#10244c" text-anchor="start">Request lifecycle</text>
+<text x="438" y="311" class="body" fill="#10244c" text-anchor="start">OnlineServingEngine</text>
+<text x="438" y="339" class="body" fill="#10244c" text-anchor="start">Queue / submit / cancel</text>
+<text x="438" y="367" class="body" fill="#10244c" text-anchor="start">SequenceState</text>
+<text x="438" y="395" class="body" fill="#10244c" text-anchor="start">Output / finish events</text>
+<rect x="720" y="247" width="290" height="184" rx="14" fill="#ffffff" stroke="#d6dfeb"/>
+<text x="738" y="280" class="heading" fill="#10244c" text-anchor="start">Scheduler</text>
+<text x="738" y="311" class="body" fill="#10244c" text-anchor="start">Continuous batching</text>
+<text x="738" y="339" class="body" fill="#10244c" text-anchor="start">Token / sequence budgets</text>
+<text x="738" y="367" class="body" fill="#10244c" text-anchor="start">Chunked prefill</text>
+<text x="738" y="395" class="body" fill="#10244c" text-anchor="start">FCFS / priority</text>
+<line x1="690" y1="338" x2="720" y2="338" stroke="#527391"/>
+<polygon points="720,338 708,331 708,345" fill="#527391"/>
+<rect x="720" y="485" width="290" height="170" rx="14" fill="#ffffff" stroke="#d6dfeb"/>
+<text x="738" y="518" class="heading" fill="#10244c" text-anchor="start">MixedBatchBuilder</text>
+<text x="738" y="549" class="body" fill="#10244c" text-anchor="start">Token IDs / positions</text>
+<text x="738" y="577" class="body" fill="#10244c" text-anchor="start">Slot mapping</text>
+<text x="738" y="605" class="body" fill="#10244c" text-anchor="start">Block tables / lengths</text>
+<line x1="865" y1="431" x2="865" y2="485" stroke="#527391"/>
+<polygon points="865,485 858,473 872,473" fill="#527391"/>
+<rect x="420" y="485" width="270" height="170" rx="14" fill="#ffffff" stroke="#d6dfeb"/>
+<text x="438" y="518" class="heading" fill="#10244c" text-anchor="start">Sampling / output</text>
+<text x="438" y="549" class="body" fill="#10244c" text-anchor="start">Logits → token samples</text>
+<text x="438" y="577" class="body" fill="#10244c" text-anchor="start">Update sequence state</text>
+<text x="438" y="605" class="body" fill="#10244c" text-anchor="start">Finish or next step</text>
+<line x1="555" y1="485" x2="555" y2="431" stroke="#527391"/>
+<polygon points="555,431 548,443 562,443" fill="#527391"/>
+<rect x="420" y="697" width="590" height="133" rx="14" fill="#ffffff" stroke="#d6dfeb"/>
+<text x="438" y="730" class="heading" fill="#10244c" text-anchor="start">Preemption &amp; continuation</text>
+<text x="438" y="761" class="body" fill="#10244c" text-anchor="start">RequestCheckpoint • suspend / restore</text>
+<text x="438" y="789" class="body" fill="#10244c" text-anchor="start">KV + multimodal position / progress state</text>
+<rect x="1060" y="148" width="600" height="710" rx="20" fill="#fffaef" stroke="#b56a16"/>
+<text x="1082" y="188" class="heading" fill="#b56a16" text-anchor="start">03  MODEL &amp; CUDA EXECUTION</text>
+<text x="1082" y="219" class="small" fill="#526782" text-anchor="start">Qwen2 / Qwen2.5 text + Qwen2.5-VL BF16 language</text>
+<rect x="1080" y="247" width="560" height="128" rx="14" fill="#ffffff" stroke="#d6dfeb"/>
+<text x="1098" y="280" class="heading" fill="#10244c" text-anchor="start">Qwen2Model forward</text>
+<text x="1098" y="311" class="body" fill="#10244c" text-anchor="start">forward_mixed_batch / forward_decode_batch</text>
+<text x="1098" y="339" class="body" fill="#10244c" text-anchor="start">Token / visual embeddings and position inputs</text>
+<line x1="1360" y1="375" x2="1360" y2="405" stroke="#527391"/>
+<polygon points="1360,405 1353,393 1367,393" fill="#527391"/>
+<rect x="1080" y="405" width="560" height="128" rx="14" fill="#ffffff" stroke="#d6dfeb"/>
+<text x="1098" y="438" class="heading" fill="#10244c" text-anchor="start">Transformer operators</text>
+<text x="1098" y="469" class="body" fill="#10244c" text-anchor="start">Embedding • RMSNorm • Q/K/V • RoPE / mRoPE</text>
+<text x="1098" y="497" class="body" fill="#10244c" text-anchor="start">Attention • output projection • SwiGLU / MLP</text>
+<line x1="1360" y1="533" x2="1360" y2="563" stroke="#527391"/>
+<polygon points="1360,563 1353,551 1367,551" fill="#527391"/>
+<rect x="1080" y="563" width="560" height="128" rx="14" fill="#ffffff" stroke="#d6dfeb"/>
+<text x="1098" y="596" class="heading" fill="#10244c" text-anchor="start">Paged attention runtime</text>
+<text x="1098" y="627" class="body" fill="#10244c" text-anchor="start">Scatter KV • prefill attention • decode attention</text>
+<text x="1098" y="655" class="body" fill="#10244c" text-anchor="start">External GPU page views or process-owned pool</text>
+<line x1="1360" y1="691" x2="1360" y2="721" stroke="#527391"/>
+<polygon points="1360,721 1353,709 1367,709" fill="#527391"/>
+<rect x="1080" y="721" width="560" height="109" rx="14" fill="#ffffff" stroke="#d6dfeb"/>
+<text x="1098" y="754" class="heading" fill="#10244c" text-anchor="start">CUDA kernels &amp; cuBLAS</text>
+<text x="1098" y="785" class="body" fill="#10244c" text-anchor="start">BF16 mainline; existing text FP8 KV path retained</text>
+<rect x="1690" y="148" width="670" height="710" rx="20" fill="#f0f6ff" stroke="#3564a2"/>
+<text x="1712" y="188" class="heading" fill="#3564a2" text-anchor="start">04  MULTIMODAL ROLE ORCHESTRATION</text>
+<text x="1712" y="219" class="small" fill="#526782" text-anchor="start">Logical role graph; deployment is configured separately</text>
+<rect x="1710" y="247" width="630" height="154" rx="14" fill="#ffffff" stroke="#d6dfeb"/>
+<text x="1728" y="280" class="heading" fill="#10244c" text-anchor="start">Typed Coordinator</text>
+<text x="1728" y="311" class="body" fill="#10244c" text-anchor="start">Absolute deadline • external cancellation</text>
+<text x="1728" y="339" class="body" fill="#10244c" text-anchor="start">Queue / locality / transfer-cost placement</text>
+<text x="1728" y="367" class="body" fill="#10244c" text-anchor="start">Joint resource admission and bounded retry</text>
+<rect x="1710" y="440" width="630" height="116" rx="14" fill="#ffffff" stroke="#d6dfeb"/>
+<text x="1728" y="473" class="heading" fill="#10244c" text-anchor="start">Vision role  |  Python / PyTorch</text>
+<text x="1728" y="504" class="body" fill="#10244c" text-anchor="start">Variable-length batches • reusable feature cache</text>
+<line x1="2025" y1="401" x2="2025" y2="440" stroke="#3564a2"/>
+<polygon points="2025,440 2018,428 2032,428" fill="#3564a2"/>
+<rect x="1710" y="587" width="297" height="141" rx="14" fill="#ffffff" stroke="#d6dfeb"/>
+<text x="1728" y="620" class="heading" fill="#10244c" text-anchor="start">Prefill role</text>
+<text x="1728" y="651" class="body" fill="#10244c" text-anchor="start">PBE C++ / CUDA</text>
+<text x="1728" y="679" class="body" fill="#10244c" text-anchor="start">Compute / publish KV</text>
+<text x="1728" y="707" class="body" fill="#10244c" text-anchor="start">Uses engine core at left</text>
+<rect x="2043" y="587" width="297" height="141" rx="14" fill="#ffffff" stroke="#d6dfeb"/>
+<text x="2061" y="620" class="heading" fill="#10244c" text-anchor="start">Decode role</text>
+<text x="2061" y="651" class="body" fill="#10244c" text-anchor="start">PBE C++ / CUDA</text>
+<text x="2061" y="679" class="body" fill="#10244c" text-anchor="start">Restore KV / generate</text>
+<text x="2061" y="707" class="body" fill="#10244c" text-anchor="start">Uses engine core at left</text>
+<line x1="2007" y1="655" x2="2043" y2="655" stroke="#527391"/>
+<polygon points="2043,655 2031,648 2031,662" fill="#527391"/>
+<text x="2025" y="762" class="small" fill="#526782" text-anchor="middle">P→D handoff carries identity, generation and page metadata.</text>
+<text x="2025" y="797" class="small" fill="#526782" text-anchor="middle">Same-GPU IPC / cross-GPU copy are separate paths.</text>
+<text x="2025" y="824" class="small" fill="#526782" text-anchor="middle">Shared weights: same GPU + compatible model / layout.</text>
+<line x1="370" y1="323" x2="400" y2="323" stroke="#2563a0"/>
+<polygon points="400,323 388,316 388,330" fill="#2563a0"/>
+<line x1="1010" y1="570" x2="1045" y2="570" stroke="#b56a16"/>
+<line x1="1045" y1="570" x2="1045" y2="311" stroke="#b56a16"/>
+<line x1="1045" y1="311" x2="1080" y2="311" stroke="#b56a16"/>
+<polygon points="1080,311 1068,304 1068,318" fill="#b56a16"/>
+<line x1="1060" y1="676" x2="555" y2="676" stroke="#b56a16"/>
+<line x1="555" y1="676" x2="555" y2="655" stroke="#b56a16"/>
+<polygon points="555,655 548,667 562,667" fill="#b56a16"/>
+<text x="1065" y="891" class="small" fill="#526782" text-anchor="middle">Batch metadata → model; logits → sampler; sampled outputs advance Scheduler state.</text>
+<rect x="40" y="923" width="2320" height="488" rx="20" fill="#f8f5ff" stroke="#6b46c1"/>
+<text x="62" y="963" class="heading" fill="#6b46c1" text-anchor="start">05  SHARED DATA, PAGED CACHE &amp; RESOURCE LIFECYCLE</text>
+<text x="62" y="994" class="small" fill="#526782" text-anchor="start">Workers manage logical execution views; framework owners manage shared physical allocations and grants.</text>
+<line x1="865" y1="858" x2="865" y2="923" stroke="#6b46c1"/>
+<polygon points="865,923 858,911 872,911" fill="#6b46c1"/>
+<line x1="2025" y1="858" x2="2025" y2="923" stroke="#6b46c1"/>
+<polygon points="2025,923 2018,911 2032,911" fill="#6b46c1"/>
+<text x="880" y="916" class="small" fill="#6b46c1" text-anchor="start">Page tables / checkpoint dependencies</text>
+<text x="2040" y="916" class="small" fill="#6b46c1" text-anchor="start">Acquire / publish / release</text>
+<rect x="60" y="1020" width="545" height="220" rx="14" fill="#ffffff" stroke="#d6dfeb"/>
+<text x="78" y="1053" class="heading" fill="#6b46c1" text-anchor="start">Data service / Node Agent</text>
+<text x="78" y="1084" class="body" fill="#10244c" text-anchor="start">ContentRegistry • DataClient • typed wire protocol</text>
+<text x="78" y="1112" class="body" fill="#10244c" text-anchor="start">Content / representation / allocation identities</text>
+<text x="78" y="1140" class="body" fill="#10244c" text-anchor="start">Generation-bound leases • idempotent operations</text>
+<text x="78" y="1168" class="body" fill="#10244c" text-anchor="start">CUDA IPC pool and shared-weight owner</text>
+<text x="78" y="1196" class="body" fill="#10244c" text-anchor="start">TensorBundle: features + request-specific metadata</text>
+<rect x="625" y="1020" width="545" height="220" rx="14" fill="#ffffff" stroke="#d6dfeb"/>
+<text x="643" y="1053" class="heading" fill="#6b46c1" text-anchor="start">KVCacheManager &amp; prefix reuse</text>
+<text x="643" y="1084" class="body" fill="#10244c" text-anchor="start">Per-request page tables • grants / pool views</text>
+<text x="643" y="1112" class="body" fill="#10244c" text-anchor="start">Semantic multimodal prefix identity</text>
+<text x="643" y="1140" class="body" fill="#10244c" text-anchor="start">Longest continuous prefix • missing-page fetch</text>
+<text x="643" y="1168" class="body" fill="#10244c" text-anchor="start">Radix index • shared prefix • tail-page COW</text>
+<text x="643" y="1196" class="body" fill="#10244c" text-anchor="start">New content or position semantics → distinct KV</text>
+<rect x="1190" y="1020" width="545" height="220" rx="14" fill="#ffffff" stroke="#d6dfeb"/>
+<text x="1208" y="1053" class="heading" fill="#6b46c1" text-anchor="start">Tiering &amp; physical transfer</text>
+<text x="1208" y="1084" class="body" fill="#10244c" text-anchor="start">PageDirectory • HostStore • PageMigration</text>
+<text x="1208" y="1112" class="body" fill="#10244c" text-anchor="start">TransferScheduler • singleflight</text>
+<text x="1208" y="1140" class="body" fill="#10244c" text-anchor="start">Demand / prefetch / background lanes</text>
+<text x="1208" y="1168" class="body" fill="#10244c" text-anchor="start">GPU ↔ Host • dependency-aware recovery</text>
+<text x="1208" y="1196" class="body" fill="#10244c" text-anchor="start">Cross-GPU copy is measured data movement</text>
+<rect x="1755" y="1020" width="585" height="220" rx="14" fill="#ffffff" stroke="#d6dfeb"/>
+<text x="1773" y="1053" class="heading" fill="#6b46c1" text-anchor="start">Memory budget &amp; safety</text>
+<text x="1773" y="1084" class="body" fill="#10244c" text-anchor="start">Weights + KV + workspace + staging + features</text>
+<text x="1773" y="1112" class="body" fill="#10244c" text-anchor="start">Shared physical weights counted once</text>
+<text x="1773" y="1140" class="body" fill="#10244c" text-anchor="start">Private state and CUDA overhead counted separately</text>
+<text x="1773" y="1168" class="body" fill="#10244c" text-anchor="start">Producer / consumer completion fences</text>
+<text x="1773" y="1196" class="body" fill="#10244c" text-anchor="start">Drain / release / quarantine / fail-stop recovery</text>
+<rect x="60" y="1261" width="2280" height="123" rx="14" fill="#eee8fa" stroke="#ded3f3"/>
+<text x="85" y="1295" class="heading" fill="#6b46c1" text-anchor="start">PHYSICAL OWNERSHIP</text>
+<text x="85" y="1330" class="body" fill="#10244c" text-anchor="start">Shared weight allocation  |  Agent-owned KV pages  |  Feature / request bundles  |  Host recovery copies</text>
+<text x="85" y="1362" class="body" fill="#10244c" text-anchor="start">Immutable views may be shared; workspace, activations, scheduler state and writable tails stay private to their consumers.</text>
+<rect x="40" y="1441" width="1130" height="158" rx="20" fill="#f4f6f9" stroke="#526782"/>
+<text x="62" y="1481" class="heading" fill="#526782" text-anchor="start">06  DEPLOYMENT &amp; COMPATIBILITY</text>
+<text x="62" y="1512" class="small" fill="#526782" text-anchor="start">Single-node V4: TP=1, image + text, trusted processes</text>
+<text x="62" y="1545" class="body" fill="#10244c" text-anchor="start">Launchers: Data service + Vision + persistent P / D • same-GPU IPC / cross-GPU copy</text>
+<text x="62" y="1576" class="body" fill="#10244c" text-anchor="start">Legacy serving_qwen modes retained: local P+D • P2P • ZMQ / NCCL (build-dependent)</text>
+<rect x="1200" y="1441" width="1160" height="158" rx="20" fill="#f4f6f9" stroke="#526782"/>
+<text x="1222" y="1481" class="heading" fill="#526782" text-anchor="start">07  VALIDATION &amp; OBSERVABILITY</text>
+<text x="1222" y="1512" class="small" fill="#526782" text-anchor="start">Correctness / faults / resources / performance are separate gates</text>
+<text x="1222" y="1545" class="body" fill="#10244c" text-anchor="start">C++ / CUDA tests • real VLM numerics • lifecycle faults • compute-sanitizer</text>
+<text x="1222" y="1576" class="body" fill="#10244c" text-anchor="start">Request traces • memory accounting • repeated A/B • raw evidence / manifests</text>
+<text x="40" y="1641" class="small" fill="#526782" text-anchor="start">Architecture map, not a performance claim. No implication of arbitrary TP, cross-node RDMA or unrestricted multi-P/D scaling.</text>
+<text x="2360" y="1641" class="small" fill="#526782" text-anchor="end">PAGED BATCH ENGINE</text></svg>
