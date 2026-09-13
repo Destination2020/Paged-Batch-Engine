@@ -1,0 +1,42 @@
+[
+  {
+    "argv": [
+      "tools/launch/persistent_vlm_online.sh",
+      "build-v3",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct.pbe-bf16-v1.bin",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct/tokenizer.json",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct",
+      "/tmp/pbe-e1-different.png"
+    ],
+    "arm": "00",
+    "environment": {
+      "CUBLAS_WORKSPACE_CONFIG": ":4096:8",
+      "PBE_DETERMINISTIC_VISION": "1",
+      "PBE_DEVICE": "0",
+      "PBE_DISABLE_FEATURE_CACHE": "1",
+      "PBE_DISABLE_RADIX_CACHE": "1",
+      "PBE_RUN_DIR": "docs/data_flow_evidence/v4/performance_characterization/B2_divergence_audit/arm00",
+      "PBE_SPEC": "docs/data_flow_evidence/v4/performance_characterization/B2_divergence_audit/spec.json",
+      "PBE_WEIGHT_MODE": "shared"
+    }
+  },
+  {
+    "argv": [
+      "tools/launch/persistent_vlm_online.sh",
+      "build-v3",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct.pbe-bf16-v1.bin",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct/tokenizer.json",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct",
+      "/tmp/pbe-e1-different.png"
+    ],
+    "arm": "11",
+    "environment": {
+      "CUBLAS_WORKSPACE_CONFIG": ":4096:8",
+      "PBE_DETERMINISTIC_VISION": "1",
+      "PBE_DEVICE": "0",
+      "PBE_RUN_DIR": "docs/data_flow_evidence/v4/performance_characterization/B2_divergence_audit/arm11",
+      "PBE_SPEC": "docs/data_flow_evidence/v4/performance_characterization/B2_divergence_audit/spec.json",
+      "PBE_WEIGHT_MODE": "shared"
+    }
+  }
+]

@@ -1,0 +1,9 @@
+{
+  "stage": "E1", "status": "accepted", "date": "2026-09-13",
+  "semantic_identity": ["model", "representation", "tokens", "media_content", "processor", "media_span", "mrope"],
+  "exact_replay_matched_tokens": 80, "same_image_different_question_matched_tokens": 80,
+  "negative_identity_cases_rejected": 2, "cross_gpu_sparse_copy_bytes": 3538944,
+  "cross_gpu_full_pool_bytes": 37748736, "same_history_numeric_gate": true,
+  "contract_tests": 25,
+  "evidence": ["final_run_diagnostic/validation.json", "cross_gpu_page_subset_final", "faults/contract_tests.log", "../M9/kv_cache_ab/results.json"]
+}

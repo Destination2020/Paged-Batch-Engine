@@ -333,11 +333,14 @@ __global__ void sample_topk_topp_selected_rows_kernel(
       for (int32_t candidate_idx = 0; candidate_idx < top_k; ++candidate_idx) {
         const float value = shared_values[thread_idx * kMaxCudaTopK + candidate_idx];
         const int32_t token = shared_indices[thread_idx * kMaxCudaTopK + candidate_idx];
-        if (value <= final_values[top_k - 1]) {
+        if (value < final_values[top_k - 1] ||
+            (value == final_values[top_k - 1] && token >= final_indices[top_k - 1])) {
           continue;
         }
         int32_t insert_pos = top_k - 1;
-        while (insert_pos > 0 && value > final_values[insert_pos - 1]) {
+        while (insert_pos > 0 &&
+               (value > final_values[insert_pos - 1] ||
+                (value == final_values[insert_pos - 1] && token < final_indices[insert_pos - 1]))) {
           final_values[insert_pos] = final_values[insert_pos - 1];
           final_indices[insert_pos] = final_indices[insert_pos - 1];
           --insert_pos;

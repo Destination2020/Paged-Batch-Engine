@@ -244,4 +244,81 @@ void rope_kernel_batched_cu(int32_t dim, int32_t kv_dim, int32_t head_size,
   }
 }
 
+template <typename T>
+__global__ void mrope_kernel_batched_impl(int dim, int kv_dim, int head_size,
+                                          T* input_q, T* input_k,
+                                          const int32_t* positions,
+                                          const float* sin_cache,
+                                          const float* cos_cache,
+                                          int temporal_section,
+                                          int height_section,
+                                          int batch_tokens) {
+  const int token_idx = blockIdx.y;
+  const int pair_idx = threadIdx.x + blockDim.x * blockIdx.x;
+  const int pairs_per_head = head_size / 2;
+  const int total_pairs = (dim / head_size) * pairs_per_head;
+  if (token_idx >= batch_tokens || pair_idx >= total_pairs) {
+    return;
+  }
+  const int head_idx = pair_idx / pairs_per_head;
+  const int pair_in_head = pair_idx % pairs_per_head;
+  int axis = 2;
+  if (pair_in_head < temporal_section) {
+    axis = 0;
+  } else if (pair_in_head < temporal_section + height_section) {
+    axis = 1;
+  }
+  const int pos = positions[axis * batch_tokens + token_idx];
+  const int cache_offset = pos * head_size + pair_in_head * 2;
+  const float fci = sin_cache[cache_offset];
+  const float fcr = cos_cache[cache_offset];
+  const int first = head_idx * head_size + pair_in_head;
+  const int second = first + pairs_per_head;
+  T* q = input_q + token_idx * dim;
+  T* k = input_k + token_idx * kv_dim;
+  const int rotations = first < kv_dim ? 2 : 1;
+  for (int rotation = 0; rotation < rotations; ++rotation) {
+    T* vector = rotation == 0 ? q : k;
+    const float v0 = scalar_to_float(vector[first]);
+    const float v1 = scalar_to_float(vector[second]);
+    vector[first] = float_to_scalar<T>(fcr * v0 - fci * v1);
+    vector[second] = float_to_scalar<T>(fcr * v1 + fci * v0);
+  }
+}
+
+void mrope_kernel_batched_cu(int32_t dim, int32_t kv_dim, int32_t head_size,
+                             const tensor::Tensor& input_q,
+                             const tensor::Tensor& input_k,
+                             const tensor::Tensor& positions,
+                             const tensor::Tensor& sin_cache,
+                             const tensor::Tensor& cos_cache,
+                             int32_t temporal_section,
+                             int32_t height_section,
+                             int32_t batch_tokens, void* stream) {
+  CHECK_EQ(positions.data_type(), base::DataType::kDataTypeInt32);
+  CHECK_EQ(positions.size(), static_cast<size_t>(3 * batch_tokens));
+  CHECK_GT(temporal_section, 0);
+  CHECK_GT(height_section, 0);
+  CHECK_LT(temporal_section + height_section, head_size / 2);
+  constexpr int threads = 128;
+  const int total_pairs = (dim / head_size) * (head_size / 2);
+  dim3 grid((total_pairs + threads - 1) / threads, batch_tokens);
+  cudaStream_t stream_ = stream ? static_cast<cudaStream_t>(stream) : nullptr;
+  if (input_q.data_type() == base::DataType::kDataTypeFp32) {
+    mrope_kernel_batched_impl<float><<<grid, threads, 0, stream_>>>(
+        dim, kv_dim, head_size, const_cast<float*>(input_q.ptr<float>()),
+        const_cast<float*>(input_k.ptr<float>()), positions.ptr<int32_t>(),
+        sin_cache.ptr<float>(), cos_cache.ptr<float>(), temporal_section,
+        height_section, batch_tokens);
+  } else {
+    CHECK_EQ(input_q.data_type(), base::DataType::kDataTypeBf16);
+    auto* q = reinterpret_cast<base::CudaBF16*>(const_cast<uint16_t*>(input_q.ptr<uint16_t>()));
+    auto* k = reinterpret_cast<base::CudaBF16*>(const_cast<uint16_t*>(input_k.ptr<uint16_t>()));
+    mrope_kernel_batched_impl<base::CudaBF16><<<grid, threads, 0, stream_>>>(
+        dim, kv_dim, head_size, q, k, positions.ptr<int32_t>(),
+        sin_cache.ptr<float>(), cos_cache.ptr<float>(), temporal_section,
+        height_section, batch_tokens);
+  }
+}
+
 }  // namespace kernel

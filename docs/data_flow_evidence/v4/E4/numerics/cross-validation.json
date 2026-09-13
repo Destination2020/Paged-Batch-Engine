@@ -1,0 +1,112 @@
+{
+  "checks": {
+    "both_runs_ok": true,
+    "four_observed_cases": true,
+    "frozen_logits_rule_all": true,
+    "same_history_all": true
+  },
+  "ok": true,
+  "rows": [
+    {
+      "accepted": true,
+      "case": "case-05",
+      "logits_max_abs": 0.1875,
+      "logits_mean_abs": 0.02949047848431624,
+      "private_margin": 0.0,
+      "private_token": 7952,
+      "private_top2_ids": [
+        374,
+        7952
+      ],
+      "same_history": true,
+      "selected_equal": false,
+      "shared_margin": 0.125,
+      "shared_token": 374,
+      "shared_top2_ids": [
+        374,
+        7952
+      ],
+      "step": 2,
+      "top2_union": [
+        374,
+        7952
+      ]
+    },
+    {
+      "accepted": true,
+      "case": "case-09",
+      "logits_max_abs": 0.171875,
+      "logits_mean_abs": 0.031168436972862194,
+      "private_margin": 0.0,
+      "private_token": 7952,
+      "private_top2_ids": [
+        374,
+        7952
+      ],
+      "same_history": true,
+      "selected_equal": true,
+      "shared_margin": 0.0,
+      "shared_token": 7952,
+      "shared_top2_ids": [
+        374,
+        7952
+      ],
+      "step": 2,
+      "top2_union": [
+        374,
+        7952
+      ]
+    },
+    {
+      "accepted": true,
+      "case": "case-15",
+      "logits_max_abs": 0.1875,
+      "logits_mean_abs": 0.02874722483661261,
+      "private_margin": 0.125,
+      "private_token": 6396,
+      "private_top2_ids": [
+        6396,
+        11682
+      ],
+      "same_history": true,
+      "selected_equal": false,
+      "shared_margin": 0.0,
+      "shared_token": 11682,
+      "shared_top2_ids": [
+        6396,
+        11682
+      ],
+      "step": 4,
+      "top2_union": [
+        6396,
+        11682
+      ]
+    },
+    {
+      "accepted": true,
+      "case": "case-19",
+      "logits_max_abs": 0.21875,
+      "logits_mean_abs": 0.03764076319718521,
+      "private_margin": 0.125,
+      "private_token": 6396,
+      "private_top2_ids": [
+        6396,
+        11682
+      ],
+      "same_history": true,
+      "selected_equal": true,
+      "shared_margin": 0.125,
+      "shared_token": 6396,
+      "shared_top2_ids": [
+        6396,
+        11682
+      ],
+      "step": 4,
+      "top2_union": [
+        6396,
+        11682
+      ]
+    }
+  ],
+  "schema": "pbe-e4-cross-mode-logits-v1"
+}

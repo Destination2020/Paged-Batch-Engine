@@ -1,0 +1,46 @@
+{
+  "rounds": [
+    [
+      {
+        "request_id": "gpu-prefix-producer",
+        "generation": 1,
+        "parts": [
+          {
+            "type": "image",
+            "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/image.png",
+            "size": 224
+          },
+          {
+            "type": "text",
+            "text": "Describe this image in one sentence."
+          }
+        ],
+        "max_new_tokens": 24,
+        "diagnostic_key": "tiered-recovery",
+        "diagnostic_mode": "producer"
+      }
+    ],
+    [
+      {
+        "request_id": "host-prefix-checkpoint-recovery",
+        "generation": 1,
+        "parts": [
+          {
+            "type": "image",
+            "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/image.png",
+            "size": 224
+          },
+          {
+            "type": "text",
+            "text": "Describe this image in one sentence."
+          }
+        ],
+        "max_new_tokens": 24,
+        "diagnostic_key": "tiered-recovery",
+        "diagnostic_mode": "recovered",
+        "demote_prefix_before": true,
+        "external_checkpoint_after_ms": 120
+      }
+    ]
+  ]
+}

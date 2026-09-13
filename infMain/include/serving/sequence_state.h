@@ -16,8 +16,19 @@ enum class SequenceStatus {
   kWaiting,
   kRunning,
   kPreempted,
+  kSuspend,
+  kOffloading,
+  kSuspended,
+  kRestoring,
   kFinished,
   kFailed,
+};
+
+struct ProcessOutboxItem {
+  uint64_t sequence = 0;
+  uint64_t sampled_token_begin = 0;
+  uint64_t sampled_token_end = 0;
+  std::string text;
 };
 
 struct SequenceState {
@@ -25,8 +36,22 @@ struct SequenceState {
   int64_t client_request_id = -1;
   std::vector<int32_t> prompt_tokens;
   std::vector<int32_t> output_tokens;
+  // Exact multimodal continuation state. These values are checkpointed with
+  // KV/RNG/outbox state; a restore must not silently re-encode a dependency.
+  std::vector<int32_t> multimodal_positions;
+  int64_t multimodal_rope_delta = 0;
+  int32_t multimodal_image_begin = -1;
+  int32_t multimodal_feature_rows = 0;
+  int32_t multimodal_hidden_size = 0;
+  std::string multimodal_feature_content;
+  std::string multimodal_feature_representation;
+  bool multimodal_exact_dependency = false;
   GenerationConfig generation_config;
   int32_t generated_tokens = 0;
+  uint64_t sampling_counter = 0;  // Committed draws; independent of metric resets.
+  uint64_t emitted_cursor = 0;    // Output tokens already delivered externally.
+  uint64_t output_enqueued_cursor = 0;  // Contiguous process-local outbox sequence.
+  std::vector<ProcessOutboxItem> outbox;
   int32_t next_token = -1;
   bool finished = false;
   bool failed = false;
@@ -44,6 +69,8 @@ struct SequenceState {
   std::chrono::steady_clock::time_point first_token_time;
   std::chrono::steady_clock::time_point last_token_time;
   std::chrono::steady_clock::time_point finished_time;
+
+  std::vector<std::chrono::steady_clock::time_point> token_times;
 
   // Unified token progress for prefill/recompute. computed_tokens is the
   // number of prompt/recomputed output tokens already present in KV.
@@ -89,8 +116,10 @@ struct SequenceState {
       first_token_time = now;
       first_token_recorded = true;
     }
+    token_times.push_back(now);
     last_token_time = now;
     ++generated_tokens;
+    ++sampling_counter;
   }
 
   void mark_finished(std::chrono::steady_clock::time_point now) {
@@ -113,7 +142,18 @@ struct SequenceState {
     return duration_ms(arrival_time, first_token_time);
   }
 
-  double itl_ms() const {
+  std::vector<double> token_gaps_ms() const {
+    std::vector<double> gaps;
+    for (size_t i = 1; i < token_times.size(); ++i) {
+      gaps.push_back(duration_ms(token_times[i - 1], token_times[i]));
+    }
+    return gaps;
+  }
+
+  // Compatibility alias: this is a per-request mean, not a token percentile.
+  double itl_ms() const { return mean_token_gap_ms(); }
+
+  double mean_token_gap_ms() const {
     if (generated_tokens <= 1 || !first_token_recorded) return 0.0;
     return duration_ms(first_token_time, last_token_time) /
            static_cast<double>(generated_tokens - 1);

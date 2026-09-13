@@ -56,7 +56,7 @@ class PagedKVRuntime {
   virtual void scatter(
       const tensor::Tensor& key_tensor,
       const tensor::Tensor& value_tensor,
-      base::BlockAllocator& allocator,
+      const base::KVPoolView& pool,
       const tensor::Tensor& slot_mapping,
       int32_t block_size,
       int32_t num_kv_heads,
@@ -66,17 +66,17 @@ class PagedKVRuntime {
   virtual void scatter_single_token(
       const tensor::Tensor& key_tensor,
       const tensor::Tensor& value_tensor,
-      base::BlockAllocator& allocator,
+      const base::KVPoolView& pool,
       int32_t physical_block_id,
       int32_t offset_in_block,
       int32_t block_size,
       int32_t num_kv_heads,
       int32_t head_size) const = 0;
 
-  virtual bool decode(const base::BlockAllocator& allocator,
+  virtual bool decode(const base::KVPoolView& pool,
                       const PagedKVDecodeRuntimeArgs& args) const = 0;
 
-  virtual void prefill(const base::BlockAllocator& allocator,
+  virtual void prefill(const base::KVPoolView& pool,
                        const PagedKVPrefillRuntimeArgs& args) const = 0;
 };
 

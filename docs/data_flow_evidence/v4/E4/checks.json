@@ -1,0 +1,84 @@
+{
+  "checks": {
+    "capacity_admission_improves": true,
+    "capacity_pages_really_accessed": true,
+    "device_memory_recovered": true,
+    "five_repeats_each": true,
+    "fresh_owner_each_shared_trial": true,
+    "layout_identity": true,
+    "manifest_exact_coverage": true,
+    "model_content_identity": true,
+    "no_private_full_weight_copy": true,
+    "normal_kv_grant_recovery": true,
+    "normal_lease_recovery": true,
+    "physical_budget_capacity": true,
+    "raw_trial_files": true,
+    "real_attention_views": true,
+    "real_pd_handoff": true,
+    "runner_gate": true,
+    "same_generation_and_allocation": true,
+    "single_physical_upload_each": true,
+    "survivor_and_new_importer": true,
+    "trial_count": true,
+    "two_independent_import_leases": true
+  },
+  "model_sha256": "526ed2ed568a8d639211d9eb3cd91aaba56f67bbe89017ec2d2bf2bed6a0bf52",
+  "ok": true,
+  "physical_accounting": {
+    "kv_increment_bytes": 4794089472,
+    "private_capacity_kv_bytes": 37748736,
+    "private_capacity_steady_mib_p50": 16836,
+    "shared_capacity_kv_bytes": 4831838208,
+    "shared_capacity_steady_mib_p50": 14144,
+    "weight_file_bytes": 6173974564
+  },
+  "schema": "pbe-e4-acceptance-v1",
+  "shared_trials": 10,
+  "summary": {
+    "fixed_budget.private": {
+      "admitted_total": 5,
+      "error_rate": 0.5,
+      "rejected_total": 5,
+      "startup_peak_mib_p50": 16836,
+      "steady_mib_p50": 16836,
+      "throughput_requests_per_s": 0.28703337564295156,
+      "trials": 5,
+      "wall_ms_p50": 3417.590007185936,
+      "wall_ms_p95": 3946.412719786167
+    },
+    "fixed_budget.shared": {
+      "admitted_total": 10,
+      "error_rate": 0.0,
+      "rejected_total": 0,
+      "startup_peak_mib_p50": 14144,
+      "steady_mib_p50": 14144,
+      "throughput_requests_per_s": 0.714254528125213,
+      "trials": 5,
+      "wall_ms_p50": 2674.4983792304993,
+      "wall_ms_p95": 3172.495198249817
+    },
+    "fixed_kv.private": {
+      "admitted_total": 5,
+      "error_rate": 0.0,
+      "rejected_total": 0,
+      "startup_peak_mib_p50": 16872,
+      "steady_mib_p50": 16872,
+      "throughput_requests_per_s": 0.6713508548741951,
+      "trials": 5,
+      "wall_ms_p50": 1488.592654466629,
+      "wall_ms_p95": 1493.8895836472511
+    },
+    "fixed_kv.shared": {
+      "admitted_total": 5,
+      "error_rate": 0.0,
+      "rejected_total": 0,
+      "startup_peak_mib_p50": 9608,
+      "steady_mib_p50": 9608,
+      "throughput_requests_per_s": 0.6266918064450948,
+      "trials": 5,
+      "wall_ms_p50": 1595.6164374947548,
+      "wall_ms_p95": 1601.6185119748116
+    }
+  },
+  "trials": 20
+}

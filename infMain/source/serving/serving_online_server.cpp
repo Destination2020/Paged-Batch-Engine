@@ -207,6 +207,7 @@ OnlineGenerateRequest parse_online_generate_request(const nlohmann::json& payloa
       payload.value("priority", 0));
   auto& sampling = request.generation_config.sampling;
   sampling.temperature = read_double_with_default(payload, "temperature", sampling.temperature);
+  sampling.seed = payload.value("seed", sampling.seed);
   sampling.top_p = read_double_with_default(payload, "top_p", sampling.top_p);
   sampling.top_k = read_int_with_fallback(payload, "top_k", "top_k", sampling.top_k);
   sampling.repetition_penalty = read_double_with_default(

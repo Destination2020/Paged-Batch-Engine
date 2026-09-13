@@ -1,0 +1,23 @@
+{
+  "rounds": [
+    [
+      {
+        "request_id": "deployment-ab",
+        "generation": 1,
+        "parts": [
+          {
+            "type": "image",
+            "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/image.png",
+            "size": 224
+          },
+          {
+            "type": "text",
+            "text": "Describe the image briefly and name its main subject."
+          }
+        ],
+        "max_new_tokens": 16,
+        "timeout_ms": 120000
+      }
+    ]
+  ]
+}

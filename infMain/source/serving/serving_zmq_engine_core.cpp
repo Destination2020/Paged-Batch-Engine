@@ -52,6 +52,7 @@ SchedulerConfig make_scheduler_config(const ServingBenchmarkApp* app,
   sched_config.max_num_batched_tokens = config.max_num_batched_tokens;
   sched_config.prefill_chunk_cap = config.prefill_chunk_cap;
   sched_config.policy = config.scheduling_policy;
+  sched_config.preemption_policy = config.preemption_policy;
   sched_config.long_prefill_token_threshold =
       config.long_prefill_token_threshold;
   sched_config.max_partial_prefills = config.max_partial_prefills;
@@ -753,7 +754,7 @@ base::Status run_zmq_engine_core_server(ServingBenchmarkApp* app,
         response["request_id"] = request_id;
       }
     } else if (type == ZmqRpcMessageType::kToken) {
-      const int64_t request_id = request.value("request_id", -1);
+      const int64_t request_id = request.value("request_id", int64_t{-1});
       std::shared_ptr<ActiveRequest> active;
       {
         std::unique_lock<std::mutex> lock(mu);
@@ -787,7 +788,7 @@ base::Status run_zmq_engine_core_server(ServingBenchmarkApp* app,
         active_requests.erase(request_id);
       }
     } else if (type == ZmqRpcMessageType::kCancel) {
-      const int64_t request_id = request.value("request_id", -1);
+      const int64_t request_id = request.value("request_id", int64_t{-1});
       const std::string reason = request.value("reason", "cancelled");
       std::shared_ptr<ActiveRequest> active;
       {

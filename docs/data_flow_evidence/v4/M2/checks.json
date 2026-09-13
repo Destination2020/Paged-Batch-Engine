@@ -1,0 +1,43 @@
+{
+  "schema": "pbe.v4.stage-checks.v1",
+  "stage": "M2",
+  "status": "accepted",
+  "contracts": {
+    "identity": ["ContentId", "RepresentationId", "AllocationHandle", "OperationId", "OwnerIncarnation"],
+    "data_kinds": ["kv_page", "tensor_bundle", "checkpoint"],
+    "lease_kinds": ["read", "compute", "io"],
+    "wire": "fixed-width little-endian DataRef v1",
+    "bundle": "named dtype/shape/offset/bytes/checksum schema v1"
+  },
+  "runtime": {
+    "operations": ["reserve", "begin_write", "seal", "acquire", "ensure_local", "withdraw", "release_producer", "reclaim_quarantine"],
+    "canonical_competition": true,
+    "bounded_capacity": true,
+    "typed_fence_leases": true,
+    "stale_owner_and_generation_rejected": true
+  },
+  "integration": {
+    "serving_path": "RequestCheckpointStore",
+    "lifecycle": "prepare reserve/write; commit seal; restore acquire; erase withdraw/release",
+    "kv_compute_path": "PagedKVRuntime consumes non-owning KVPoolView",
+    "allocator_owner": "BlockAllocator retains the only local free queue"
+  },
+  "tests": {
+    "cpu": {"passed": 76, "failed": 0},
+    "sanitizer": {"passed": 76, "failed": 0, "asan": true, "ubsan": true, "lsan": true},
+    "cuda_plain": {"passed": 187, "failed": 0, "skipped": 9},
+    "real_qwen2_text": {"passed": 3, "failed": 0},
+    "real_qwen25_vl": {"passed": 2, "failed": 0},
+    "pool_view_attention": {"passed": 5, "failed": 0}
+  },
+  "logs": [
+    "logs/cpu_data_core.log",
+    "logs/cpu_full.log",
+    "logs/sanitizer_full.log",
+    "logs/serving_runtime_integration.log",
+    "logs/kv_pool_view_cuda.log",
+    "logs/cuda_plain_regression.log",
+    "logs/qwen2_real_text.log",
+    "logs/qwen25_real_regression.log"
+  ]
+}

@@ -1,0 +1,495 @@
+{
+  "ok": true,
+  "only_ablation": "TransferScheduler.direction_lanes_enabled",
+  "records": [
+    {
+      "background_pages_submitted": 2,
+      "client_ms": 392.405204474926,
+      "itl_ms": 46.95138685714286,
+      "mode": "lanes_on",
+      "order": 0,
+      "repetition": 0,
+      "semantic_matched_tokens": 80,
+      "token_itl_ms": [
+        46.834088,
+        49.324554,
+        46.903651,
+        46.332244,
+        46.485011,
+        46.415114,
+        46.365046
+      ],
+      "tokens": [
+        1986,
+        2168,
+        374,
+        264,
+        6396,
+        15941,
+        429,
+        45380
+      ],
+      "ttft_ms": 60.903262
+    },
+    {
+      "background_pages_submitted": 2,
+      "client_ms": 388.88826966285706,
+      "itl_ms": 46.51969228571429,
+      "mode": "lanes_off",
+      "order": 1,
+      "repetition": 0,
+      "semantic_matched_tokens": 80,
+      "token_itl_ms": [
+        46.583728,
+        46.885013,
+        46.4453,
+        46.162623,
+        46.428345,
+        46.569424,
+        46.563413
+      ],
+      "tokens": [
+        1986,
+        2168,
+        374,
+        264,
+        6396,
+        15941,
+        429,
+        45380
+      ],
+      "ttft_ms": 60.604207
+    },
+    {
+      "background_pages_submitted": 2,
+      "client_ms": 383.3623602986336,
+      "itl_ms": 46.79570328571429,
+      "mode": "lanes_on",
+      "order": 2,
+      "repetition": 1,
+      "semantic_matched_tokens": 80,
+      "token_itl_ms": [
+        46.857408,
+        46.784855,
+        46.21853,
+        46.015889,
+        46.345657,
+        47.458386,
+        47.889198
+      ],
+      "tokens": [
+        1986,
+        2168,
+        374,
+        264,
+        6396,
+        15941,
+        429,
+        45380
+      ],
+      "ttft_ms": 52.909302
+    },
+    {
+      "background_pages_submitted": 2,
+      "client_ms": 393.12920719385147,
+      "itl_ms": 48.34080242857143,
+      "mode": "lanes_off",
+      "order": 3,
+      "repetition": 1,
+      "semantic_matched_tokens": 80,
+      "token_itl_ms": [
+        46.83988,
+        47.527315,
+        48.205975,
+        46.473255,
+        49.675345,
+        52.75821,
+        46.905637
+      ],
+      "tokens": [
+        1986,
+        2168,
+        374,
+        264,
+        6396,
+        15941,
+        429,
+        45380
+      ],
+      "ttft_ms": 51.709896
+    },
+    {
+      "background_pages_submitted": 2,
+      "client_ms": 399.0415409207344,
+      "itl_ms": 48.86463428571428,
+      "mode": "lanes_on",
+      "order": 4,
+      "repetition": 2,
+      "semantic_matched_tokens": 80,
+      "token_itl_ms": [
+        51.275782,
+        47.39485,
+        48.287541,
+        49.936769,
+        49.293447,
+        48.297163,
+        47.566888
+      ],
+      "tokens": [
+        1986,
+        2168,
+        374,
+        264,
+        6396,
+        15941,
+        429,
+        45380
+      ],
+      "ttft_ms": 52.268412
+    },
+    {
+      "background_pages_submitted": 2,
+      "client_ms": 380.5510774254799,
+      "itl_ms": 46.58613314285714,
+      "mode": "lanes_off",
+      "order": 5,
+      "repetition": 2,
+      "semantic_matched_tokens": 80,
+      "token_itl_ms": [
+        46.682912,
+        46.589938,
+        46.749744,
+        46.157164,
+        46.730457,
+        46.569165,
+        46.623552
+      ],
+      "tokens": [
+        1986,
+        2168,
+        374,
+        264,
+        6396,
+        15941,
+        429,
+        45380
+      ],
+      "ttft_ms": 51.618604
+    },
+    {
+      "background_pages_submitted": 2,
+      "client_ms": 379.1719749569893,
+      "itl_ms": 46.415268714285716,
+      "mode": "lanes_off",
+      "order": 6,
+      "repetition": 3,
+      "semantic_matched_tokens": 80,
+      "token_itl_ms": [
+        46.492743,
+        46.548444,
+        46.379711,
+        46.170655,
+        46.468424,
+        46.515454,
+        46.33145
+      ],
+      "tokens": [
+        1986,
+        2168,
+        374,
+        264,
+        6396,
+        15941,
+        429,
+        45380
+      ],
+      "ttft_ms": 51.493795
+    },
+    {
+      "background_pages_submitted": 2,
+      "client_ms": 379.4305622577667,
+      "itl_ms": 46.44155185714286,
+      "mode": "lanes_off",
+      "order": 7,
+      "repetition": 4,
+      "semantic_matched_tokens": 80,
+      "token_itl_ms": [
+        46.80488,
+        46.602534,
+        46.51437,
+        45.868336,
+        46.507342,
+        46.498844,
+        46.294557
+      ],
+      "tokens": [
+        1986,
+        2168,
+        374,
+        264,
+        6396,
+        15941,
+        429,
+        45380
+      ],
+      "ttft_ms": 51.664464
+    },
+    {
+      "background_pages_submitted": 2,
+      "client_ms": 389.32450860738754,
+      "itl_ms": 47.69330514285714,
+      "mode": "lanes_on",
+      "order": 8,
+      "repetition": 3,
+      "semantic_matched_tokens": 80,
+      "token_itl_ms": [
+        47.888842,
+        47.575925,
+        48.102747,
+        46.913714,
+        47.720683,
+        48.02029,
+        47.630935
+      ],
+      "tokens": [
+        1986,
+        2168,
+        374,
+        264,
+        6396,
+        15941,
+        429,
+        45380
+      ],
+      "ttft_ms": 52.663388
+    },
+    {
+      "background_pages_submitted": 2,
+      "client_ms": 385.11645048856735,
+      "itl_ms": 46.59918157142857,
+      "mode": "lanes_on",
+      "order": 9,
+      "repetition": 4,
+      "semantic_matched_tokens": 80,
+      "token_itl_ms": [
+        46.938948,
+        46.612884,
+        46.607198,
+        46.202943,
+        46.641425,
+        46.831965,
+        46.358908
+      ],
+      "tokens": [
+        1986,
+        2168,
+        374,
+        264,
+        6396,
+        15941,
+        429,
+        45380
+      ],
+      "ttft_ms": 54.229479
+    }
+  ],
+  "repeats_each": 5,
+  "same_stream_active_bytes": true,
+  "schema": "pbe.v4.model-transfer-scheduler-lane-ab.v1",
+  "summaries": {
+    "lanes_off": {
+      "median_client_ms": 380.5510774254799,
+      "median_itl_ms": 46.51969228571429,
+      "median_ttft_ms": 51.664464,
+      "repeats": 5
+    },
+    "lanes_on": {
+      "median_client_ms": 389.32450860738754,
+      "median_itl_ms": 46.95138685714286,
+      "median_ttft_ms": 52.909302,
+      "repeats": 5
+    }
+  },
+  "worker_status": {
+    "lanes_off": {
+      "batches": 15,
+      "budget": {
+        "bundles": {
+          "capacity": 67108864,
+          "peak": 264136,
+          "used": 0
+        },
+        "kv": {
+          "capacity": 37748736,
+          "peak": 4128768,
+          "used": 0
+        },
+        "staging": {
+          "capacity": 33554432,
+          "peak": 262144,
+          "used": 0
+        },
+        "weights": {
+          "capacity": 6997803008,
+          "peak": 6997803008,
+          "used": 6997803008
+        },
+        "workspaces": {
+          "capacity": 329646080,
+          "peak": 329646080,
+          "used": 329646080
+        }
+      },
+      "budget_invariant": true,
+      "device_memory": {
+        "admission_limit_bytes": 149753298944,
+        "external_kv_owner_bytes": 75497472,
+        "model_file_bytes": 6173974564,
+        "model_process_allocation_bytes": 7327449088,
+        "peak_observed_used_bytes": 17691312128,
+        "preexisting_used_bytes": 2699231232,
+        "total_bytes": 150021734400,
+        "within_admission_limit": true,
+        "workspace_bytes_per_token": 643840,
+        "workspace_reserved_bytes": 329646080
+      },
+      "feature_copy_bytes": 2621440,
+      "host_cache_budget": {
+        "capacity": 268435456,
+        "peak": 0,
+        "used": 0
+      },
+      "ok": true,
+      "op_id": 31,
+      "pool": {
+        "active_grants": 2,
+        "free_slots": 0,
+        "total_slots": 128,
+        "worker_allocatable_kv_bytes": 37748736,
+        "worker_granted_slots": 64
+      },
+      "radix_cache": {
+        "cache_hits": 5,
+        "cache_misses": 10,
+        "evicted_blocks": 0,
+        "host_demoted_blocks": 35,
+        "host_restore_failures": 0,
+        "host_restore_requests": 5,
+        "host_restored_blocks": 25,
+        "lookup_requests": 15,
+        "published_blocks": 50,
+        "tokens_reused": 400
+      },
+      "radix_cache_enabled": true,
+      "recovery_dependency": {
+        "actual_eviction_path": true,
+        "committed_demotions": 35,
+        "demote_decisions": 35,
+        "keep_decisions": 0,
+        "objects": 8,
+        "publish_rejections": 0,
+        "restores": 25
+      },
+      "requests": 15,
+      "transfer_scheduler": {
+        "background_completed": 35,
+        "demand_completed": 25,
+        "max_d2h_active": 2,
+        "max_h2d_active": 1,
+        "oldest_queue_ticks": 0,
+        "physical_submissions": 60
+      },
+      "worker_pid": 2785876
+    },
+    "lanes_on": {
+      "batches": 15,
+      "budget": {
+        "bundles": {
+          "capacity": 67108864,
+          "peak": 264136,
+          "used": 0
+        },
+        "kv": {
+          "capacity": 37748736,
+          "peak": 4128768,
+          "used": 0
+        },
+        "staging": {
+          "capacity": 33554432,
+          "peak": 262144,
+          "used": 0
+        },
+        "weights": {
+          "capacity": 6997803008,
+          "peak": 6997803008,
+          "used": 6997803008
+        },
+        "workspaces": {
+          "capacity": 329646080,
+          "peak": 329646080,
+          "used": 329646080
+        }
+      },
+      "budget_invariant": true,
+      "device_memory": {
+        "admission_limit_bytes": 149753298944,
+        "external_kv_owner_bytes": 75497472,
+        "model_file_bytes": 6173974564,
+        "model_process_allocation_bytes": 7327449088,
+        "peak_observed_used_bytes": 17691312128,
+        "preexisting_used_bytes": 10363863040,
+        "total_bytes": 150021734400,
+        "within_admission_limit": true,
+        "workspace_bytes_per_token": 643840,
+        "workspace_reserved_bytes": 329646080
+      },
+      "feature_copy_bytes": 2621440,
+      "host_cache_budget": {
+        "capacity": 268435456,
+        "peak": 0,
+        "used": 0
+      },
+      "ok": true,
+      "op_id": 31,
+      "pool": {
+        "active_grants": 2,
+        "free_slots": 0,
+        "total_slots": 128,
+        "worker_allocatable_kv_bytes": 37748736,
+        "worker_granted_slots": 64
+      },
+      "radix_cache": {
+        "cache_hits": 5,
+        "cache_misses": 10,
+        "evicted_blocks": 0,
+        "host_demoted_blocks": 35,
+        "host_restore_failures": 0,
+        "host_restore_requests": 5,
+        "host_restored_blocks": 25,
+        "lookup_requests": 15,
+        "published_blocks": 50,
+        "tokens_reused": 400
+      },
+      "radix_cache_enabled": true,
+      "recovery_dependency": {
+        "actual_eviction_path": true,
+        "committed_demotions": 35,
+        "demote_decisions": 35,
+        "keep_decisions": 0,
+        "objects": 8,
+        "publish_rejections": 0,
+        "restores": 25
+      },
+      "requests": 15,
+      "transfer_scheduler": {
+        "background_completed": 35,
+        "demand_completed": 25,
+        "max_d2h_active": 1,
+        "max_h2d_active": 1,
+        "oldest_queue_ticks": 1,
+        "physical_submissions": 60
+      },
+      "worker_pid": 2785922
+    }
+  }
+}

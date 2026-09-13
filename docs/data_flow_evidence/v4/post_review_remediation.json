@@ -1,0 +1,42 @@
+{
+  "schema": "pbe.v4.post_review_remediation.v1",
+  "date": "2026-09-12",
+  "accepted_milestones": ["M0", "M1"],
+  "p0": {
+    "r1_lease_generation_and_replay": "passed",
+    "r2_absolute_deadline_and_shutdown": "passed",
+    "r6_vision_identity_and_crash_takeover": "passed"
+  },
+  "tests": {
+    "cpp_data_core": {"passed": 24, "failed": 0},
+    "cpp_test_llm_incremental_build": "passed",
+    "absolute_deadline_ms": {
+      "eight_partial_headers_shutdown": 105,
+      "partial_body": 104,
+      "header_drip_20ms_per_byte": 106
+    },
+    "python_vision_identity": {"passed": 2, "failed": 0},
+    "python_cpp_wire_v2": "passed",
+    "dynamic_sequence_plan_oracle": {
+      "passed": true,
+      "tokens": 95,
+      "position_shape": [3, 95],
+      "rope_delta": -56
+    },
+    "dynamic_epd_without_fixture": {
+      "passed": true,
+      "evidence": "post_review_dynamic_epd_no_fixture",
+      "vision_feature_shape": [64, 2048],
+      "decode_consumers": 2,
+      "generated_tokens_equal": true,
+      "active_leases_at_end": 0
+    },
+    "vision_mixed_batch_pre_admission": {
+      "passed": true,
+      "sizes": [252, 308],
+      "feature_rows": [81, 121],
+      "bundle_bytes": [332056, 495896]
+    }
+  },
+  "still_open": ["R3", "R4-online-serving", "R5", "R7"]
+}

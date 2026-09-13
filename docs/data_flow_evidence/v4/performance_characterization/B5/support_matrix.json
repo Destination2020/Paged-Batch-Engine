@@ -1,0 +1,105 @@
+{
+  "accepted": false,
+  "blocking_contracts": [
+    "Coordinator constructs exactly one language process and has no Prefill/Decode role registry",
+    "No production request router selects among multiple Prefill providers or Decode consumers",
+    "Decode page authorization is a static initial-slot vector fixed at process construction",
+    "A Decode worker cannot dynamically add a later Prefill provider generation/slot grant",
+    "No validator proves all P-to-D paths, four-process participation, cancellation and recovery"
+  ],
+  "code_evidence": {
+    "coordinator": {
+      "matches": [
+        {
+          "line": 101,
+          "text": "def run_round(language: LanguageProcess, vision_endpoint: str,"
+        },
+        {
+          "line": 225,
+          "text": "language = LanguageProcess(language_command)"
+        },
+        {
+          "line": 230,
+          "text": "results.append(run_round(language, args.vision_endpoint, round_items, trace))"
+        }
+      ],
+      "path": "python/pbe_roles/coordinator.py",
+      "sha256": "54f7f847a1eaaa7b0f1206d7d993e8a795bc17ad62ef20e9453d40cb07b5d2c8"
+    },
+    "language_role": {
+      "matches": [
+        {
+          "line": 355,
+          "text": "device_(device), initial_slots_(std::move(initial_slots)) {"
+        },
+        {
+          "line": 403,
+          "text": "for (int32_t slot : initial_slots_) {"
+        },
+        {
+          "line": 409,
+          "text": "Binding(descriptor_, importer_, grant_.slots, initial_slots_));"
+        },
+        {
+          "line": 796,
+          "text": "if (!std::binary_search(initial_slots_.begin(), initial_slots_.end(), page))"
+        },
+        {
+          "line": 1415,
+          "text": "{\"initial_prefill_slots\", initial_slots_.size()}}},"
+        },
+        {
+          "line": 1444,
+          "text": "{\"worker_initial_slots\", initial_slots_.size()},"
+        },
+        {
+          "line": 1636,
+          "text": "std::vector<int32_t> initial_slots_;"
+        }
+      ],
+      "path": "demo/pbe_vlm_language_role.cpp",
+      "sha256": "37c372db25025e4cb77400cff4e89b10980d7428a74c1385d8c026f7b8034db1"
+    },
+    "persistent_runner": {
+      "matches": [
+        {
+          "line": 72,
+          "text": "prefill = worker(args, 32)"
+        },
+        {
+          "line": 87,
+          "text": "decode = worker(args, 32, prefill_warm[\"pool_slots\"])"
+        }
+      ],
+      "path": "tools/bench/data_flow/run_persistent_pd_deployment_ab.py",
+      "sha256": "cc696ab5797cadec456412107f7d07774035ec29bca7aa43314b42bb3540fdac"
+    }
+  },
+  "matrix": {
+    "1P1D": "validated real persistent handoff",
+    "1P2D": "unsupported in production Coordinator",
+    "2P1D": "unsupported in production Coordinator",
+    "2P2D": "unsupported in production Coordinator",
+    "unified": "validated historical baseline"
+  },
+  "next_implementation_entry": [
+    "typed role registration with incarnation and capability",
+    "dynamic provider-generation page authorization independent of process startup",
+    "request routing across P/D pairs with idempotent lifecycle rollback",
+    "then run private/shared 1P2D, 2P1D and 2P2D five-trial cells"
+  ],
+  "schema": "pbe-v4-b5-topology-support-audit-v1",
+  "status": "blocked_by_missing_production_coordination",
+  "validated_existing": {
+    "split_1p1d": {
+      "gate_ok": true,
+      "source": "docs/data_flow_evidence/v4/M9/persistent_pd_deployment_final_gpu0_v4/validation.json",
+      "status": "validated"
+    },
+    "unified_1p1d_process": {
+      "source": "docs/data_flow_evidence/v4/M9/persistent_pd_deployment_final_gpu0_v4/validation.json",
+      "status": "validated_baseline"
+    }
+  },
+  "why_manual_probe_is_insufficient": "Starting extra LanguageProcess instances in a benchmark could exercise IPC, but would not prove the production launcher, registry, routing, authorization, or lifecycle contract required by B5."
+}

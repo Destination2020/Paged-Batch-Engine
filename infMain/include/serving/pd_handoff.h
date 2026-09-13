@@ -3,6 +3,8 @@
 
 #include <condition_variable>
 #include <cstdint>
+#include <functional>
+#include <memory>
 #include <mutex>
 #include <string>
 #include <utility>
@@ -11,6 +13,7 @@
 #include "base/base.h"
 #include "base/kv_cache_manager.h"
 #include "base/kv_cache_format.h"
+#include "cache/transfer_plan.h"
 
 namespace serving {
 
@@ -85,6 +88,8 @@ class KVTransferConnector {
                               HandoffId* handle) = 0;
   virtual KVTransferStatus poll(HandoffId handle) = 0;
   virtual void cancel(HandoffId handle, const std::string& reason) = 0;
+  virtual KVTransferStatus drain(HandoffId handle) { return poll(handle); }
+  virtual void release(HandoffId /*handle*/) {}
 };
 
 enum class LayerKVConnectorRole {
@@ -123,6 +128,8 @@ class InProcNoCopyKVTransferConnector final : public KVTransferConnector {
                       HandoffId* handle) override;
   KVTransferStatus poll(HandoffId handle) override;
   void cancel(HandoffId handle, const std::string& reason) override;
+  KVTransferStatus drain(HandoffId handle) override;
+  void release(HandoffId handle) override;
 
  private:
   uint64_t next_handoff_id_ = 1;
@@ -141,6 +148,8 @@ class InProcKVBlockCopyConnector final : public KVTransferConnector {
                       HandoffId* handle) override;
   KVTransferStatus poll(HandoffId handle) override;
   void cancel(HandoffId handle, const std::string& reason) override;
+  KVTransferStatus drain(HandoffId handle) override;
+  void release(HandoffId handle) override;
 
  private:
   base::Status copy_blocks(const KVBlockManifest& manifest);
@@ -150,11 +159,14 @@ class InProcKVBlockCopyConnector final : public KVTransferConnector {
   base::KVCacheManager* dst_kv_manager_ = nullptr;
   void* transfer_queue_ = nullptr;
   bool need_sync_ = true;
+  cache::TransferPlanner planner_;
   uint64_t next_handoff_id_ = 1;
   struct TransferRecord {
     HandoffId handle;
     KVTransferStatus status;
     void* completion_event = nullptr;
+    bool cancel_requested = false;
+    std::string cancel_reason;
   };
   std::vector<TransferRecord> transfers_;
 };
@@ -173,6 +185,8 @@ class CudaP2PKVTransferConnector final : public KVTransferConnector {
                       HandoffId* handle) override;
   KVTransferStatus poll(HandoffId handle) override;
   void cancel(HandoffId handle, const std::string& reason) override;
+  KVTransferStatus drain(HandoffId handle) override;
+  void release(HandoffId handle) override;
 
   bool peer_copy_enabled() const { return peer_copy_enabled_; }
 
@@ -187,11 +201,14 @@ class CudaP2PKVTransferConnector final : public KVTransferConnector {
   void* transfer_queue_ = nullptr;
   bool need_sync_ = true;
   bool peer_copy_enabled_ = false;
+  cache::TransferPlanner planner_;
   uint64_t next_handoff_id_ = 1;
   struct TransferRecord {
     HandoffId handle;
     KVTransferStatus status;
     void* completion_event = nullptr;
+    bool cancel_requested = false;
+    std::string cancel_reason;
   };
   std::vector<TransferRecord> transfers_;
 };
@@ -237,6 +254,11 @@ class NcclKVBlockTransferConnector final : public KVTransferConnector {
   };
   std::vector<TransferRecord> transfers_;
 };
+
+using KVManifestResolver =
+    std::function<base::Status(uint64_t logical_page, KVBlockManifest* manifest)>;
+std::unique_ptr<cache::FlightExecutor> MakeKVConnectorFlightExecutor(
+    KVTransferConnector* connector, KVManifestResolver resolver);
 
 enum class RemoteNcclKVTransferRole {
   kProducer,

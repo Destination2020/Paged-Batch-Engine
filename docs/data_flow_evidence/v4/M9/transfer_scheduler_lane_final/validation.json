@@ -1,0 +1,27 @@
+{
+  "benchmark": "pbe_transfer_scheduler_cuda_payload",
+  "full_payload_validated_all": true,
+  "median_demand_completion_ms": {
+    "lanes_off": 31.734153,
+    "lanes_on": 26.689289
+  },
+  "median_demand_queue_ms": {
+    "lanes_off": 4.926629,
+    "lanes_on": 0.000489
+  },
+  "ok": true,
+  "only_ablation": "TransferScheduler.direction_lanes_enabled",
+  "physical_submissions_all": [
+    3,
+    3,
+    3,
+    3,
+    3,
+    3,
+    3,
+    3,
+    3,
+    3
+  ],
+  "repeats_each": 5
+}

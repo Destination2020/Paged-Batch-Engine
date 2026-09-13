@@ -1,0 +1,1509 @@
+{
+  "after_data_service_mib": 6790,
+  "after_vision_mib": 8645,
+  "decode_status": {
+    "batches": 0,
+    "budget": {
+      "bundles": {
+        "capacity": 67108864,
+        "peak": 0,
+        "used": 0
+      },
+      "kv": {
+        "capacity": 301989888,
+        "peak": 0,
+        "used": 0
+      },
+      "staging": {
+        "capacity": 33554432,
+        "peak": 0,
+        "used": 0
+      },
+      "weights": {
+        "capacity": 0,
+        "peak": 0,
+        "used": 0
+      },
+      "workspaces": {
+        "capacity": 329646080,
+        "peak": 329646080,
+        "used": 329646080
+      }
+    },
+    "budget_invariant": true,
+    "device_memory": {
+      "admission_limit_bytes": 149753298944,
+      "external_kv_owner_bytes": 603979776,
+      "model_file_bytes": 6173974564,
+      "model_process_allocation_bytes": 419430400,
+      "peak_observed_used_bytes": 10602938368,
+      "preexisting_used_bytes": 10183507968,
+      "private_model_nonworkspace_bytes": 89784320,
+      "total_bytes": 150021734400,
+      "within_admission_limit": true,
+      "workspace_bytes_per_token": 643840,
+      "workspace_reserved_bytes": 329646080
+    },
+    "feature_copy_bytes": 0,
+    "host_cache_budget": {
+      "capacity": 268435456,
+      "peak": 0,
+      "used": 0
+    },
+    "ok": true,
+    "op_id": 3,
+    "pd": {
+      "active_handoffs": 0,
+      "decode_requests": 2,
+      "initial_prefill_slots": 512,
+      "kv_active_requests": 1,
+      "kv_request_baseline": 1,
+      "prefill_requests": 0,
+      "serving_active_requests": 0
+    },
+    "pool": {
+      "active_grants": 2,
+      "free_slots": 0,
+      "total_slots": 1024,
+      "worker_allocatable_kv_bytes": 301989888,
+      "worker_granted_slots": 512,
+      "worker_initial_slots": 512
+    },
+    "radix_cache": {
+      "cache_hits": 0,
+      "cache_misses": 0,
+      "evicted_blocks": 0,
+      "host_demoted_blocks": 0,
+      "host_restore_failures": 0,
+      "host_restore_requests": 0,
+      "host_restored_blocks": 0,
+      "lookup_requests": 0,
+      "published_blocks": 0,
+      "tokens_reused": 0
+    },
+    "radix_cache_enabled": false,
+    "recovery_dependency": {
+      "actual_eviction_path": true,
+      "committed_demotions": 0,
+      "demote_decisions": 0,
+      "keep_decisions": 0,
+      "objects": 1,
+      "publish_rejections": 0,
+      "restores": 0
+    },
+    "requests": 0,
+    "transfer_scheduler": {
+      "background_completed": 0,
+      "demand_completed": 0,
+      "max_d2h_active": 0,
+      "max_h2d_active": 0,
+      "oldest_queue_ticks": 0,
+      "physical_submissions": 0
+    },
+    "weights": {
+      "allocation_id": 1,
+      "attention_views_bound": true,
+      "bound_tensor_logical_bytes": 6794207232,
+      "bound_tensor_views": 435,
+      "consumer_incarnation": 40945213538891882,
+      "embedding_view_bound": true,
+      "generation": 1,
+      "hardware_read_only_enforced": false,
+      "import_lease_id": 2,
+      "imported_logical_bytes": 6173974564,
+      "layout": "pbe-qwen2-bf16-v1",
+      "mode": "shared",
+      "output_view_bound": true,
+      "owner_active_leases": 2,
+      "owner_allocation_count": 1,
+      "owner_incarnation": 41252466248128897,
+      "owner_upload_count": 1,
+      "physical_bytes": 6173974564,
+      "shared": true,
+      "trusted_read_only_contract": true,
+      "unique_tensor_bytes": 6171877376,
+      "unique_tensor_ranges": 434
+    },
+    "worker_pid": 3802717
+  },
+  "experiment": "fixed_budget",
+  "gpu_baseline_mib": 1,
+  "gpu_recovered_mib": 1,
+  "ipc_after_workers": {
+    "active_grants": 0,
+    "exit_code": 0,
+    "free_slots": 1024,
+    "raw": "total_slots=1024 free_slots=1024 active_grants=0",
+    "total_slots": 1024
+  },
+  "kv_blocks": 1024,
+  "lifecycle": {
+    "decode_pid": 3802717,
+    "decode_survived_prefill_exit": true,
+    "new_importer_joined": true,
+    "new_importer_pid": 3802969,
+    "weight_stats_after_join": {
+      "active_leases": 2,
+      "allocation_count": 1,
+      "allocation_id": 1,
+      "exit_code": 0,
+      "generation": 1,
+      "owner_incarnation": 41252466248128897,
+      "physical_bytes": 6173974564,
+      "raw": "state=2 owner_incarnation=41252466248128897 allocation_id=1 generation=1 physical_bytes=6173974564 upload_bytes=6173974564 upload_count=1 active_leases=2 allocation_count=1 staging_peak_bytes=67108864 upload_ms=5901.06",
+      "staging_peak_bytes": 67108864,
+      "state": 2,
+      "upload_bytes": 6173974564,
+      "upload_count": 1,
+      "upload_ms": 5901.06
+    }
+  },
+  "measurement": {
+    "accessed_slots_beyond_private_32": true,
+    "admitted": 2,
+    "all_decode_ok": true,
+    "offered": 2,
+    "prompt_blocks_accessed": 48,
+    "rejected": 0,
+    "second_response": {
+      "exported_valid_tokens": 376,
+      "first_token": 785,
+      "generation": 1,
+      "handoff_valid": true,
+      "kv_content": "02f5afe8bb2ba6be3ce6b6204ca5d682585b9e51bb0133933e3d546fa30c5f63",
+      "kv_representation": "4e66ad10e41fdd43081cc105e95d2054f09932360974c730442acc0c624d9f67",
+      "ok": true,
+      "op_id": 2,
+      "oracle_tokens": [],
+      "pool_grant": 1,
+      "pool_slots": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48,
+        49,
+        50,
+        51,
+        52,
+        53,
+        54,
+        55,
+        56,
+        57,
+        58,
+        59,
+        60,
+        61,
+        62,
+        63,
+        64,
+        65,
+        66,
+        67,
+        68,
+        69,
+        70,
+        71,
+        72,
+        73,
+        74,
+        75,
+        76,
+        77,
+        78,
+        79,
+        80,
+        81,
+        82,
+        83,
+        84,
+        85,
+        86,
+        87,
+        88,
+        89,
+        90,
+        91,
+        92,
+        93,
+        94,
+        95,
+        96,
+        97,
+        98,
+        99,
+        100,
+        101,
+        102,
+        103,
+        104,
+        105,
+        106,
+        107,
+        108,
+        109,
+        110,
+        111,
+        112,
+        113,
+        114,
+        115,
+        116,
+        117,
+        118,
+        119,
+        120,
+        121,
+        122,
+        123,
+        124,
+        125,
+        126,
+        127,
+        128,
+        129,
+        130,
+        131,
+        132,
+        133,
+        134,
+        135,
+        136,
+        137,
+        138,
+        139,
+        140,
+        141,
+        142,
+        143,
+        144,
+        145,
+        146,
+        147,
+        148,
+        149,
+        150,
+        151,
+        152,
+        153,
+        154,
+        155,
+        156,
+        157,
+        158,
+        159,
+        160,
+        161,
+        162,
+        163,
+        164,
+        165,
+        166,
+        167,
+        168,
+        169,
+        170,
+        171,
+        172,
+        173,
+        174,
+        175,
+        176,
+        177,
+        178,
+        179,
+        180,
+        181,
+        182,
+        183,
+        184,
+        185,
+        186,
+        187,
+        188,
+        189,
+        190,
+        191,
+        192,
+        193,
+        194,
+        195,
+        196,
+        197,
+        198,
+        199,
+        200,
+        201,
+        202,
+        203,
+        204,
+        205,
+        206,
+        207,
+        208,
+        209,
+        210,
+        211,
+        212,
+        213,
+        214,
+        215,
+        216,
+        217,
+        218,
+        219,
+        220,
+        221,
+        222,
+        223,
+        224,
+        225,
+        226,
+        227,
+        228,
+        229,
+        230,
+        231,
+        232,
+        233,
+        234,
+        235,
+        236,
+        237,
+        238,
+        239,
+        240,
+        241,
+        242,
+        243,
+        244,
+        245,
+        246,
+        247,
+        248,
+        249,
+        250,
+        251,
+        252,
+        253,
+        254,
+        255,
+        256,
+        257,
+        258,
+        259,
+        260,
+        261,
+        262,
+        263,
+        264,
+        265,
+        266,
+        267,
+        268,
+        269,
+        270,
+        271,
+        272,
+        273,
+        274,
+        275,
+        276,
+        277,
+        278,
+        279,
+        280,
+        281,
+        282,
+        283,
+        284,
+        285,
+        286,
+        287,
+        288,
+        289,
+        290,
+        291,
+        292,
+        293,
+        294,
+        295,
+        296,
+        297,
+        298,
+        299,
+        300,
+        301,
+        302,
+        303,
+        304,
+        305,
+        306,
+        307,
+        308,
+        309,
+        310,
+        311,
+        312,
+        313,
+        314,
+        315,
+        316,
+        317,
+        318,
+        319,
+        320,
+        321,
+        322,
+        323,
+        324,
+        325,
+        326,
+        327,
+        328,
+        329,
+        330,
+        331,
+        332,
+        333,
+        334,
+        335,
+        336,
+        337,
+        338,
+        339,
+        340,
+        341,
+        342,
+        343,
+        344,
+        345,
+        346,
+        347,
+        348,
+        349,
+        350,
+        351,
+        352,
+        353,
+        354,
+        355,
+        356,
+        357,
+        358,
+        359,
+        360,
+        361,
+        362,
+        363,
+        364,
+        365,
+        366,
+        367,
+        368,
+        369,
+        370,
+        371,
+        372,
+        373,
+        374,
+        375,
+        376,
+        377,
+        378,
+        379,
+        380,
+        381,
+        382,
+        383,
+        384,
+        385,
+        386,
+        387,
+        388,
+        389,
+        390,
+        391,
+        392,
+        393,
+        394,
+        395,
+        396,
+        397,
+        398,
+        399,
+        400,
+        401,
+        402,
+        403,
+        404,
+        405,
+        406,
+        407,
+        408,
+        409,
+        410,
+        411,
+        412,
+        413,
+        414,
+        415,
+        416,
+        417,
+        418,
+        419,
+        420,
+        421,
+        422,
+        423,
+        424,
+        425,
+        426,
+        427,
+        428,
+        429,
+        430,
+        431,
+        432,
+        433,
+        434,
+        435,
+        436,
+        437,
+        438,
+        439,
+        440,
+        441,
+        442,
+        443,
+        444,
+        445,
+        446,
+        447,
+        448,
+        449,
+        450,
+        451,
+        452,
+        453,
+        454,
+        455,
+        456,
+        457,
+        458,
+        459,
+        460,
+        461,
+        462,
+        463,
+        464,
+        465,
+        466,
+        467,
+        468,
+        469,
+        470,
+        471,
+        472,
+        473,
+        474,
+        475,
+        476,
+        477,
+        478,
+        479,
+        480,
+        481,
+        482,
+        483,
+        484,
+        485,
+        486,
+        487,
+        488,
+        489,
+        490,
+        491,
+        492,
+        493,
+        494,
+        495,
+        496,
+        497,
+        498,
+        499,
+        500,
+        501,
+        502,
+        503,
+        504,
+        505,
+        506,
+        507,
+        508,
+        509,
+        510,
+        511
+      ],
+      "prefill_ms": 154.836476,
+      "prompt_tokens": 376,
+      "request_id": "fixed_budget-21-shared-3-capacity-1",
+      "scheduler_client_id": 0,
+      "worker_pid": 3802386
+    },
+    "throughput_requests_per_s": 0.6415964773797227,
+    "tokens": [
+      [
+        785,
+        3897,
+        2168,
+        7952,
+        311,
+        387,
+        264,
+        6396
+      ],
+      [
+        785,
+        3897,
+        2168,
+        7952,
+        311,
+        387,
+        264,
+        6396
+      ]
+    ],
+    "wall_ms": 3117.224097251892
+  },
+  "memory_timeline": [
+    {
+      "device": 0,
+      "monotonic_ns": 48256612399021153,
+      "used_mib": 1
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48256612707991039,
+      "used_mib": 1
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48256613029170347,
+      "used_mib": 1
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48256613624116312,
+      "used_mib": 21
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48256613999424096,
+      "used_mib": 6790
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48256614377926552,
+      "used_mib": 6790
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48256614701878835,
+      "used_mib": 6790
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48256615019101224,
+      "used_mib": 6790
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48256615337170555,
+      "used_mib": 6790
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48256615651668101,
+      "used_mib": 6790
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48256615966958588,
+      "used_mib": 6790
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48256616285543804,
+      "used_mib": 6790
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48256616599953791,
+      "used_mib": 6790
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48256616981342734,
+      "used_mib": 6790
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48256617319875140,
+      "used_mib": 6790
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48256617636140246,
+      "used_mib": 6790
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48256617999125975,
+      "used_mib": 6790
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48256618400250297,
+      "used_mib": 6790
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48256618740060802,
+      "used_mib": 6790
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48256619052617339,
+      "used_mib": 6790
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48256619364469730,
+      "used_mib": 6790
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48256619678612935,
+      "used_mib": 6790
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48256619993065797,
+      "used_mib": 6790
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48256620306812035,
+      "used_mib": 6790
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48256620657182246,
+      "used_mib": 6790
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48256620967473097,
+      "used_mib": 6790
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48256621281167134,
+      "used_mib": 6790
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48256621593251678,
+      "used_mib": 6790
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48256621905745045,
+      "used_mib": 6790
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48256622217426272,
+      "used_mib": 6790
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48256622531976574,
+      "used_mib": 6790
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48256622841606512,
+      "used_mib": 6790
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48256623183981905,
+      "used_mib": 6790
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48256623495472609,
+      "used_mib": 6790
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48256623811544640,
+      "used_mib": 6790
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48256624174623506,
+      "used_mib": 6790
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48256624489567803,
+      "used_mib": 6790
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48256624805512386,
+      "used_mib": 6790
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48256625191610541,
+      "used_mib": 6790
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48256625507962843,
+      "used_mib": 6790
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48256625825445088,
+      "used_mib": 6790
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48256626175816504,
+      "used_mib": 6790
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48256626490997709,
+      "used_mib": 6790
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48256626805062680,
+      "used_mib": 6790
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48256627188020830,
+      "used_mib": 6790
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48256627503641641,
+      "used_mib": 6790
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48256627815582526,
+      "used_mib": 6790
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48256628252080480,
+      "used_mib": 6790
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48256628609081926,
+      "used_mib": 6790
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48256628923614078,
+      "used_mib": 6790
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48256629242862241,
+      "used_mib": 6790
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48256629555738018,
+      "used_mib": 6790
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48256629872144138,
+      "used_mib": 6790
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48256630197110110,
+      "used_mib": 6790
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48256630511696938,
+      "used_mib": 6790
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48256630822513778,
+      "used_mib": 6790
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48256631198103958,
+      "used_mib": 6790
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48256631509778941,
+      "used_mib": 6790
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48256631820915231,
+      "used_mib": 6790
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48256632203638240,
+      "used_mib": 6790
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48256632549110357,
+      "used_mib": 6790
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48256632895366999,
+      "used_mib": 6790
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48256633241561947,
+      "used_mib": 6807
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48256633565846491,
+      "used_mib": 8483
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48256633876957612,
+      "used_mib": 8483
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48256634194049014,
+      "used_mib": 8483
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48256634507649386,
+      "used_mib": 8639
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48256634824108749,
+      "used_mib": 8645
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48256635193849350,
+      "used_mib": 8645
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48256635509281977,
+      "used_mib": 8645
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48256635824922058,
+      "used_mib": 8645
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48256636196776565,
+      "used_mib": 8645
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48256636510907493,
+      "used_mib": 8645
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48256636823930812,
+      "used_mib": 8645
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48256637230809630,
+      "used_mib": 8662
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48256637574956265,
+      "used_mib": 9053
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48256637887547840,
+      "used_mib": 9067
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48256638332253447,
+      "used_mib": 9379
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48256638673334782,
+      "used_mib": 9379
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48256638990046886,
+      "used_mib": 9379
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48256639305266131,
+      "used_mib": 9379
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48256639619943701,
+      "used_mib": 9379
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48256639932594173,
+      "used_mib": 9379
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48256640250250112,
+      "used_mib": 9379
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48256640944912137,
+      "used_mib": 9379
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48256641281320980,
+      "used_mib": 9379
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48256641594511835,
+      "used_mib": 9379
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48256641906568450,
+      "used_mib": 9379
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48256642220117066,
+      "used_mib": 9379
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48256642533774902,
+      "used_mib": 9379
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48256642848482717,
+      "used_mib": 9379
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48256643177019522,
+      "used_mib": 9379
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48256643495624343,
+      "used_mib": 9379
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48256643810779034,
+      "used_mib": 9395
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48256644228694952,
+      "used_mib": 9786
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48256644548725865,
+      "used_mib": 9786
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48256644871774473,
+      "used_mib": 10112
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48256645186416699,
+      "used_mib": 10112
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48256645503644043,
+      "used_mib": 10112
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48256645815787199,
+      "used_mib": 10112
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48256646194448575,
+      "used_mib": 10112
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48256646569872311,
+      "used_mib": 9381
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48256646982650278,
+      "used_mib": 9381
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48256647344976880,
+      "used_mib": 9381
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48256647719661707,
+      "used_mib": 9381
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48256648151264699,
+      "used_mib": 9381
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48256648552696487,
+      "used_mib": 9381
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48256648944694008,
+      "used_mib": 9381
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48256649269094334,
+      "used_mib": 9381
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48256649602229959,
+      "used_mib": 9712
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48256649918651359,
+      "used_mib": 9786
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48256650238296951,
+      "used_mib": 10112
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48256650550789803,
+      "used_mib": 10112
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48256650873022068,
+      "used_mib": 10112
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48256651185183797,
+      "used_mib": 8985
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48256651572172789,
+      "used_mib": 8645
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48256651880889215,
+      "used_mib": 8645
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48256652205984320,
+      "used_mib": 8645
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48256652525920308,
+      "used_mib": 8645
+    }
+  ],
+  "mode": "shared",
+  "order": 21,
+  "prefill_ready": {
+    "absolute_deadline": true,
+    "async_queue_capacity": 16,
+    "event": "ready",
+    "external_cancel": true,
+    "protocol": "pbe-vlm-language-jsonl-v2",
+    "worker_pid": 3802386
+  },
+  "prefill_status": {
+    "batches": 0,
+    "budget": {
+      "bundles": {
+        "capacity": 67108864,
+        "peak": 537488,
+        "used": 0
+      },
+      "kv": {
+        "capacity": 301989888,
+        "peak": 28311552,
+        "used": 0
+      },
+      "staging": {
+        "capacity": 33554432,
+        "peak": 524288,
+        "used": 0
+      },
+      "weights": {
+        "capacity": 0,
+        "peak": 0,
+        "used": 0
+      },
+      "workspaces": {
+        "capacity": 329646080,
+        "peak": 329646080,
+        "used": 329646080
+      }
+    },
+    "budget_invariant": true,
+    "device_memory": {
+      "admission_limit_bytes": 149753298944,
+      "external_kv_owner_bytes": 603979776,
+      "model_file_bytes": 6173974564,
+      "model_process_allocation_bytes": 419430400,
+      "peak_observed_used_bytes": 10602938368,
+      "preexisting_used_bytes": 9414311936,
+      "private_model_nonworkspace_bytes": 89784320,
+      "total_bytes": 150021734400,
+      "within_admission_limit": true,
+      "workspace_bytes_per_token": 643840,
+      "workspace_reserved_bytes": 329646080
+    },
+    "feature_copy_bytes": 0,
+    "host_cache_budget": {
+      "capacity": 268435456,
+      "peak": 0,
+      "used": 0
+    },
+    "ok": true,
+    "op_id": 5,
+    "pd": {
+      "active_handoffs": 0,
+      "decode_requests": 0,
+      "initial_prefill_slots": 0,
+      "kv_active_requests": 1,
+      "kv_request_baseline": 1,
+      "prefill_requests": 2,
+      "serving_active_requests": 0
+    },
+    "pool": {
+      "active_grants": 2,
+      "free_slots": 0,
+      "total_slots": 1024,
+      "worker_allocatable_kv_bytes": 301989888,
+      "worker_granted_slots": 512,
+      "worker_initial_slots": 0
+    },
+    "radix_cache": {
+      "cache_hits": 0,
+      "cache_misses": 0,
+      "evicted_blocks": 0,
+      "host_demoted_blocks": 0,
+      "host_restore_failures": 0,
+      "host_restore_requests": 0,
+      "host_restored_blocks": 0,
+      "lookup_requests": 0,
+      "published_blocks": 0,
+      "tokens_reused": 0
+    },
+    "radix_cache_enabled": false,
+    "recovery_dependency": {
+      "actual_eviction_path": true,
+      "committed_demotions": 0,
+      "demote_decisions": 0,
+      "keep_decisions": 0,
+      "objects": 1,
+      "publish_rejections": 0,
+      "restores": 0
+    },
+    "requests": 0,
+    "transfer_scheduler": {
+      "background_completed": 0,
+      "demand_completed": 0,
+      "max_d2h_active": 0,
+      "max_h2d_active": 0,
+      "oldest_queue_ticks": 0,
+      "physical_submissions": 0
+    },
+    "weights": {
+      "allocation_id": 1,
+      "attention_views_bound": true,
+      "bound_tensor_logical_bytes": 6794207232,
+      "bound_tensor_views": 435,
+      "consumer_incarnation": 40941646242995790,
+      "embedding_view_bound": true,
+      "generation": 1,
+      "hardware_read_only_enforced": false,
+      "import_lease_id": 1,
+      "imported_logical_bytes": 6173974564,
+      "layout": "pbe-qwen2-bf16-v1",
+      "mode": "shared",
+      "output_view_bound": true,
+      "owner_active_leases": 2,
+      "owner_allocation_count": 1,
+      "owner_incarnation": 41252466248128897,
+      "owner_upload_count": 1,
+      "physical_bytes": 6173974564,
+      "shared": true,
+      "trusted_read_only_contract": true,
+      "unique_tensor_bytes": 6171877376,
+      "unique_tensor_ranges": 434
+    },
+    "worker_pid": 3802386
+  },
+  "repetition": 3,
+  "service_command": [
+    "build-v3/demo/pbe_data_service",
+    "serve-gpu-weights",
+    "/tmp/pbe-e4-data-3761856-21.sock",
+    "2147483648",
+    "0",
+    "36",
+    "1024",
+    "16",
+    "2",
+    "128",
+    "4",
+    "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct.pbe-bf16-v1.bin",
+    "526ed2ed568a8d639211d9eb3cd91aaba56f67bbe89017ec2d2bf2bed6a0bf52",
+    "pbe-qwen2-bf16-v1",
+    "67108864",
+    "4096"
+  ],
+  "service_weight_stats": {
+    "active_leases": 2,
+    "allocation_count": 1,
+    "allocation_id": 1,
+    "exit_code": 0,
+    "generation": 1,
+    "owner_incarnation": 41252466248128897,
+    "physical_bytes": 6173974564,
+    "raw": "state=2 owner_incarnation=41252466248128897 allocation_id=1 generation=1 physical_bytes=6173974564 upload_bytes=6173974564 upload_count=1 active_leases=2 allocation_count=1 staging_peak_bytes=67108864 upload_ms=5901.06",
+    "staging_peak_bytes": 67108864,
+    "state": 2,
+    "upload_bytes": 6173974564,
+    "upload_count": 1,
+    "upload_ms": 5901.06
+  },
+  "startup_peak_mib": 10112,
+  "steady_mib": 10112,
+  "trial": "fixed_budget-21-shared-3",
+  "weight_after_workers": {
+    "active_leases": 0,
+    "allocation_count": 1,
+    "allocation_id": 1,
+    "exit_code": 0,
+    "generation": 1,
+    "owner_incarnation": 41252466248128897,
+    "physical_bytes": 6173974564,
+    "raw": "state=2 owner_incarnation=41252466248128897 allocation_id=1 generation=1 physical_bytes=6173974564 upload_bytes=6173974564 upload_count=1 active_leases=0 allocation_count=1 staging_peak_bytes=67108864 upload_ms=5901.06",
+    "staging_peak_bytes": 67108864,
+    "state": 2,
+    "upload_bytes": 6173974564,
+    "upload_count": 1,
+    "upload_ms": 5901.06
+  },
+  "worker_slots_each": 512
+}

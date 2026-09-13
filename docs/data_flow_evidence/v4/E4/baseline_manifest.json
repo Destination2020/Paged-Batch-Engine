@@ -1,0 +1,31 @@
+{
+  "schema": "pbe-e4-baseline-v1",
+  "date": "2026-09-13",
+  "source_head": "f3597a763b6cd5cf60b826baa2dc94395c3d02fd",
+  "dirty_workspace_preserved": true,
+  "source_manifest": "baseline_source_manifest.json",
+  "source_files": 383,
+  "acceptance_files": 9,
+  "model": {
+    "path": "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct.pbe-bf16-v1.bin",
+    "sha256": "526ed2ed568a8d639211d9eb3cd91aaba56f67bbe89017ec2d2bf2bed6a0bf52",
+    "bytes": 6173974564
+  },
+  "config_sha256": "7ed3eed5be6924cc800e8a5e53fc405c1aab1aaf36bad65c33403b36c56827f5",
+  "tokenizer_sha256": "c0382117ea329cdf097041132f6d735924b697924d6f6fc3945713e96ce87539",
+  "gpu_and_cuda": ["gpu_baseline.log", "cuda_baseline.log"],
+  "build_options": "build_options.log",
+  "pre_e4_pd_gate": "pd_baseline_validation.json",
+  "local_references": [
+    {
+      "path": "../omni_flow_sglang/omni_flow/compute_flow/utils/shared_weight_v2.py",
+      "sha256": "c2e0a3b82cad34b280fea618eae362a2f2a23323ad0ecad0c523730969991a21",
+      "code_copied": false
+    },
+    {
+      "path": "../omni_flow_sglang/omni_flow/data_flow/memory_manager.py",
+      "sha256": "149f2c2b7f51818716e94260b45784e12fd1ad2ad98d32e8a7a714f0ce28b038",
+      "code_copied": false
+    }
+  ]
+}

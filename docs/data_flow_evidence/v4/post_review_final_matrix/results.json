@@ -1,0 +1,311 @@
+{
+  "schema": "pbe.v4.post_review_final.v1",
+  "date": "2026-09-13",
+  "hardware": "2 x NVIDIA H20-3e",
+  "seed": 20260913,
+  "model": "Qwen/Qwen2.5-VL-3B-Instruct@66285546d2b821cf421d4f5eb2576359d3770cd3",
+  "persistent_multimodal_cache_ab": {
+    "schema": "pbe.persistent_vlm_ab.v1",
+    "seed": 20260913,
+    "repetitions": 5,
+    "same_output_tokens": true,
+    "same_language_pid": true,
+    "summary": {
+      "off": {
+        "n": 5,
+        "multimodal_ttft_ms": {
+          "median": 2491.69752420253,
+          "min": 2490.1036985319633,
+          "max": 2533.634617676239,
+          "p95": 2533.634617676239,
+          "p99": 2533.634617676239
+        },
+        "itl_ms": {
+          "median": 46.170409,
+          "min": 46.11318513333333,
+          "max": 46.65423373333333,
+          "p95": 46.65423373333333,
+          "p99": 46.65423373333333
+        },
+        "request_latency_ms": {
+          "median": 3193.2197734713554,
+          "min": 3184.589885175228,
+          "max": 3227.8164476156235,
+          "p95": 3227.8164476156235,
+          "p99": 3227.8164476156235
+        },
+        "encode_join_ms": {
+          "median": 2432.452492415905,
+          "min": 2430.29323220253,
+          "max": 2464.826762676239,
+          "p95": 2464.826762676239,
+          "p99": 2464.826762676239
+        },
+        "vision_forward_ms": {
+          "median": 37.271514534950256,
+          "min": 36.64110600948334,
+          "max": 38.720108568668365,
+          "p95": 38.720108568668365,
+          "p99": 38.720108568668365
+        }
+      },
+      "on": {
+        "n": 5,
+        "multimodal_ttft_ms": {
+          "median": 2483.7016727212945,
+          "min": 2470.338833574051,
+          "max": 2489.222807821419,
+          "p95": 2489.222807821419,
+          "p99": 2489.222807821419
+        },
+        "itl_ms": {
+          "median": 46.22806513333333,
+          "min": 46.12469433333333,
+          "max": 46.30449873333334,
+          "p95": 46.30449873333334,
+          "p99": 46.30449873333334
+        },
+        "request_latency_ms": {
+          "median": 3178.799346089363,
+          "min": 3164.83436524868,
+          "max": 3185.2133572101593,
+          "p95": 3185.2133572101593,
+          "p99": 3185.2133572101593
+        },
+        "encode_join_ms": {
+          "median": 2421.3554188609123,
+          "min": 2411.852389574051,
+          "max": 2431.0826808214188,
+          "p95": 2431.0826808214188,
+          "p99": 2431.0826808214188
+        },
+        "vision_forward_ms": {
+          "median": 0.0,
+          "min": 0.0,
+          "max": 0.0,
+          "p95": 0.0,
+          "p99": 0.0
+        }
+      }
+    },
+    "records": [
+      {
+        "mode": "on",
+        "repetition": 2,
+        "multimodal_ttft_ms": 2485.6807347851486,
+        "itl_ms": 46.30449873333334,
+        "request_latency_ms": 3181.9412112236023,
+        "language_latency_ms": 761.739403,
+        "encode_join_ms": 2418.5088127851486,
+        "bundle_bytes": 334088,
+        "kv_admitted_bytes": 4718592,
+        "staging_admitted_bytes": 331776,
+        "worker_pid": 2166210,
+        "vision_forward_ms": 0.0,
+        "feature_cache_hit": true
+      },
+      {
+        "mode": "off",
+        "repetition": 0,
+        "multimodal_ttft_ms": 2490.1036985319633,
+        "itl_ms": 46.19256946666667,
+        "request_latency_ms": 3184.589885175228,
+        "language_latency_ms": 751.405744,
+        "encode_join_ms": 2431.5864965319633,
+        "bundle_bytes": 334088,
+        "kv_admitted_bytes": 4718592,
+        "staging_admitted_bytes": 331776,
+        "worker_pid": 2166210,
+        "vision_forward_ms": 36.82082146406174,
+        "feature_cache_hit": false
+      },
+      {
+        "mode": "on",
+        "repetition": 4,
+        "multimodal_ttft_ms": 2489.222807821419,
+        "itl_ms": 46.28670126666667,
+        "request_latency_ms": 3185.2133572101593,
+        "language_latency_ms": 752.440646,
+        "encode_join_ms": 2431.0826808214188,
+        "bundle_bytes": 334088,
+        "kv_admitted_bytes": 4718592,
+        "staging_admitted_bytes": 331776,
+        "worker_pid": 2166210,
+        "vision_forward_ms": 0.0,
+        "feature_cache_hit": true
+      },
+      {
+        "mode": "off",
+        "repetition": 2,
+        "multimodal_ttft_ms": 2507.0606517845918,
+        "itl_ms": 46.148596733333335,
+        "request_latency_ms": 3201.400227844715,
+        "language_latency_ms": 759.888006,
+        "encode_join_ms": 2439.4015967845917,
+        "bundle_bytes": 334088,
+        "kv_admitted_bytes": 4718592,
+        "staging_admitted_bytes": 331776,
+        "worker_pid": 2166210,
+        "vision_forward_ms": 38.720108568668365,
+        "feature_cache_hit": false
+      },
+      {
+        "mode": "on",
+        "repetition": 3,
+        "multimodal_ttft_ms": 2479.6661428609123,
+        "itl_ms": 46.12469433333333,
+        "request_latency_ms": 3173.1339395046234,
+        "language_latency_ms": 750.181139,
+        "encode_join_ms": 2421.3554188609123,
+        "bundle_bytes": 334088,
+        "kv_admitted_bytes": 4718592,
+        "staging_admitted_bytes": 331776,
+        "worker_pid": 2166210,
+        "vision_forward_ms": 0.0,
+        "feature_cache_hit": true
+      },
+      {
+        "mode": "off",
+        "repetition": 1,
+        "multimodal_ttft_ms": 2491.69752420253,
+        "itl_ms": 46.11318513333333,
+        "request_latency_ms": 3185.0285083055496,
+        "language_latency_ms": 753.102069,
+        "encode_join_ms": 2430.29323220253,
+        "bundle_bytes": 334088,
+        "kv_admitted_bytes": 4718592,
+        "staging_admitted_bytes": 331776,
+        "worker_pid": 2166210,
+        "vision_forward_ms": 37.271514534950256,
+        "feature_cache_hit": false
+      },
+      {
+        "mode": "off",
+        "repetition": 3,
+        "multimodal_ttft_ms": 2491.556912415905,
+        "itl_ms": 46.65423373333333,
+        "request_latency_ms": 3193.2197734713554,
+        "language_latency_ms": 758.917926,
+        "encode_join_ms": 2432.452492415905,
+        "bundle_bytes": 334088,
+        "kv_admitted_bytes": 4718592,
+        "staging_admitted_bytes": 331776,
+        "worker_pid": 2166210,
+        "vision_forward_ms": 36.64110600948334,
+        "feature_cache_hit": false
+      },
+      {
+        "mode": "off",
+        "repetition": 4,
+        "multimodal_ttft_ms": 2533.634617676239,
+        "itl_ms": 46.170409,
+        "request_latency_ms": 3227.8164476156235,
+        "language_latency_ms": 761.36399,
+        "encode_join_ms": 2464.826762676239,
+        "bundle_bytes": 334088,
+        "kv_admitted_bytes": 4718592,
+        "staging_admitted_bytes": 331776,
+        "worker_pid": 2166210,
+        "vision_forward_ms": 37.6591756939888,
+        "feature_cache_hit": false
+      },
+      {
+        "mode": "on",
+        "repetition": 1,
+        "multimodal_ttft_ms": 2470.338833574051,
+        "itl_ms": 46.19695633333333,
+        "request_latency_ms": 3164.83436524868,
+        "language_latency_ms": 751.440789,
+        "encode_join_ms": 2411.852389574051,
+        "bundle_bytes": 334088,
+        "kv_admitted_bytes": 4718592,
+        "staging_admitted_bytes": 331776,
+        "worker_pid": 2166210,
+        "vision_forward_ms": 0.0,
+        "feature_cache_hit": true
+      },
+      {
+        "mode": "on",
+        "repetition": 0,
+        "multimodal_ttft_ms": 2483.7016727212945,
+        "itl_ms": 46.22806513333333,
+        "request_latency_ms": 3178.799346089363,
+        "language_latency_ms": 751.860206,
+        "encode_join_ms": 2425.2624437212944,
+        "bundle_bytes": 334088,
+        "kv_admitted_bytes": 4718592,
+        "staging_admitted_bytes": 331776,
+        "worker_pid": 2166210,
+        "vision_forward_ms": 0.0,
+        "feature_cache_hit": true
+      }
+    ]
+  },
+  "external_pool_serving_ab": {
+    "repeats_per_mode": 5,
+    "median": {
+      "local": {
+        "throughput_tps": 180.248,
+        "ttft_ms": 84.14,
+        "itl_ms": 6.212,
+        "itl_p95_ms": 6.212,
+        "latency_ms": 177.491,
+        "wall_ms": 177.533,
+        "process_ms": 3179.509848356247
+      },
+      "external": {
+        "throughput_tps": 174.367,
+        "ttft_ms": 90.812,
+        "itl_ms": 6.188,
+        "itl_p95_ms": 6.188,
+        "latency_ms": 183.453,
+        "wall_ms": 183.521,
+        "process_ms": 2793.468229472637
+      }
+    },
+    "controls": {
+      "blocks_per_layer": 64,
+      "max_new_tokens": 16,
+      "max_batched_tokens": 128,
+      "prefill_chunk_cap": 64,
+      "requests": 2,
+      "device": 0,
+      "model": "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct.pbe-bf16-v1.bin"
+    }
+  },
+  "mixed_correctness": {
+    "cases": 20,
+    "exact_sequences": 18,
+    "equal_tokens": 153,
+    "total_tokens": 160,
+    "agreement": 0.95625,
+    "interpretation": "two first-divergence boundaries; later tokens are autoregressive cascade; BF16 tie policy follows M1"
+  },
+  "online_pressure": {
+    "first_batch": {
+      "admitted": 2,
+      "rejected": 4
+    },
+    "recovery_batch": {
+      "admitted": 1,
+      "rejected": 0
+    },
+    "peak_staging_bytes": 991232,
+    "staging_capacity_bytes": 1000000,
+    "used_after_bytes": 0
+  },
+  "evidence_reused": {
+    "kv_share_cow": "post_review_four_branch_cow_retry2",
+    "same_gpu_ipc": "post_review_agent_owned_kv",
+    "cross_gpu_copy": "post_review_cross_gpu_kv",
+    "fault_matrix": "post_review_online_fault_matrix_retry + post_review_fault_matrix_regression.log",
+    "lane_and_checkpoint_contracts": "M7 and M9 raw contract logs"
+  },
+  "claims": {
+    "beats_sglang": false,
+    "cache_always_improves_latency": false,
+    "network_exactly_once": false,
+    "merged_vs_separated_speedup": null,
+    "reason_unmeasured": "no equal-budget merged full-VLM implementation in V4 scope"
+  }
+}

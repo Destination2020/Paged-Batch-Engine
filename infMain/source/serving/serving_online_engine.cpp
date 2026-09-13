@@ -5,6 +5,7 @@
 #include <chrono>
 #include <deque>
 #include <future>
+#include <thread>
 #include <utility>
 #include <unordered_map>
 #include <cuda_runtime_api.h>
@@ -43,6 +44,7 @@ SchedulerConfig make_online_scheduler_config(const ServingBenchmarkApp* app,
   sched_config.max_num_batched_tokens = config.max_num_batched_tokens;
   sched_config.prefill_chunk_cap = config.prefill_chunk_cap;
   sched_config.policy = config.scheduling_policy;
+  sched_config.preemption_policy = config.preemption_policy;
   sched_config.long_prefill_token_threshold =
       config.long_prefill_token_threshold;
   sched_config.max_partial_prefills = config.max_partial_prefills;
@@ -167,6 +169,7 @@ void OnlineServingEngine::start() {
   sched_config.max_num_batched_tokens = config_.max_num_batched_tokens;
   sched_config.prefill_chunk_cap = config_.prefill_chunk_cap;
   sched_config.policy = config_.scheduling_policy;
+  sched_config.preemption_policy = config_.preemption_policy;
   sched_config.long_prefill_token_threshold = config_.long_prefill_token_threshold;
   sched_config.max_partial_prefills = config_.max_partial_prefills;
   sched_config.max_long_partial_prefills = config_.max_long_partial_prefills;
@@ -253,6 +256,10 @@ nlohmann::json OnlineServingEngine::metrics_json() const {
   body["scheduler"]["preemptions"] = metrics.preemptions;
   body["scheduler"]["priority_preemptions"] = metrics.priority_preemptions;
   body["scheduler"]["decode_kv_preemptions"] = metrics.decode_kv_preemptions;
+  body["scheduler"]["checkpoint_preemptions"] = metrics.checkpoint_preemptions;
+  body["scheduler"]["recompute_preemptions"] = metrics.recompute_preemptions;
+  body["scheduler"]["checkpoint_fallbacks"] = metrics.checkpoint_fallbacks;
+  body["scheduler"]["checkpoint_restores"] = metrics.checkpoint_restores;
   body["scheduler"]["waiting_rejections"] = metrics.waiting_rejections;
   body["scheduler"]["stalled_prefill_failures"] = metrics.stalled_prefill_failures;
   body["scheduler"]["max_waiting_queue"] = metrics.max_waiting_queue;
@@ -927,6 +934,9 @@ void OnlineServingEngine::run_step(void* stream) {
   SchedulerOutput sched_out = scheduler_->schedule_step();
   if (sched_out.total_tokens == 0) {
     publish_finished();
+    if (app_->kv_cache_manager()->cache_transfers_pending()) {
+      std::this_thread::sleep_for(std::chrono::microseconds(50));
+    }
     return;
   }
 
@@ -954,7 +964,7 @@ void OnlineServingEngine::publish_sampled_tokens(
     const int32_t request_idx = batch.sample_row_to_request[sample_idx];
     CHECK_GE(request_idx, 0);
     CHECK_LT(request_idx, static_cast<int32_t>(output.scheduled_seqs.size()));
-    const auto* seq = output.scheduled_seqs[request_idx];
+    auto* seq = output.scheduled_seqs[request_idx];
     CHECK_NE(seq, nullptr);
     auto it = handles_.find(seq->client_request_id);
     if (it == handles_.end()) {
@@ -983,10 +993,22 @@ void OnlineServingEngine::publish_sampled_tokens(
     if (stop_pos != std::string::npos) {
       const std::string trimmed_text = candidate_text.substr(0, stop_pos);
       if (trimmed_text.size() > streamed_text.size()) {
-        it->second->push_token(trimmed_text.substr(streamed_text.size()));
+        const std::string item_text = trimmed_text.substr(streamed_text.size());
+        it->second->push_token(item_text);
+        seq->outbox.push_back({seq->output_enqueued_cursor,
+                               seq->output_tokens.size(),
+                               seq->output_tokens.size() + 1, item_text});
+        ++seq->output_enqueued_cursor;
+        seq->emitted_cursor = seq->output_enqueued_cursor;
       }
       it->second->finish(app_->postprocess_decoded_text(trimmed_text), false, "");
-      scheduler_->cancel_request(seq->client_request_id, "stop_sequence");
+      // process_outputs still owns pointers from this SchedulerOutput. Defer
+      // cancellation until the next owner-loop boundary so those pointers
+      // remain valid for the current step's KV/sample commit.
+      {
+        std::lock_guard<std::mutex> lock(mu_);
+        cancellations_.push_back({seq->client_request_id, "stop_sequence"});
+      }
       stop_by_request_.erase(seq->client_request_id);
       streamed_text_by_request_.erase(seq->client_request_id);
       handles_.erase(it);
@@ -994,6 +1016,11 @@ void OnlineServingEngine::publish_sampled_tokens(
     }
     streamed_text = candidate_text;
     it->second->push_token(token_text);
+    seq->outbox.push_back({seq->output_enqueued_cursor,
+                           seq->output_tokens.size(),
+                           seq->output_tokens.size() + 1, token_text});
+    ++seq->output_enqueued_cursor;
+    seq->emitted_cursor = seq->output_enqueued_cursor;
   }
 }
 

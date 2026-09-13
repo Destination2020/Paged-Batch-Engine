@@ -9,7 +9,18 @@
 
 namespace serving {
 
+// Counter-based SplitMix64 mapping. Uses only seed and committed generation step;
+// batch order, physical request handles and retries do not consume random state.
+inline float request_sample_uniform(uint64_t seed, uint64_t counter) {
+  uint64_t z = seed + UINT64_C(0x9e3779b97f4a7c15) * (counter + 1);
+  z = (z ^ (z >> 30)) * UINT64_C(0xbf58476d1ce4e5b9);
+  z = (z ^ (z >> 27)) * UINT64_C(0x94d049bb133111eb);
+  z ^= z >> 31;
+  return static_cast<float>(z >> 40) * (1.0f / 16777216.0f);
+}
+
 struct SamplingConfig {
+  uint64_t seed = 0xC0FFEEu;
   double temperature = 0.0;
   double top_p = 1.0;
   int32_t top_k = 0;

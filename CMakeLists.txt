@@ -83,12 +83,12 @@ if(USE_CPM)
         GITHUB_REPOSITORY google/re2
         GIT_TAG 2024-07-02
     )
-    CPMAddPackage(
-        NAME nlohmann_json
-        GITHUB_REPOSITORY nlohmann/json
-        VERSION 3.11.3
-    )
   endif()
+  CPMAddPackage(
+      NAME nlohmann_json
+      GITHUB_REPOSITORY nlohmann/json
+      VERSION 3.11.3
+  )
 endif()
 
 # ---------------------------------
@@ -163,26 +163,27 @@ endfunction()
 if(KUIPER_BUILD_TESTS)
   kuiper_maybe_align_package_dir(GTest "lib/cmake/GTest")
 endif()
-if(LLAMA3_SUPPORT OR QWEN2_SUPPORT OR QWEN3_SUPPORT OR QWEN_MOE_SUPPORT)
-  kuiper_maybe_align_package_dir(nlohmann_json "share/cmake/nlohmann_json")
-endif()
+kuiper_maybe_align_package_dir(nlohmann_json "share/cmake/nlohmann_json")
 
 if(KUIPER_BUILD_TESTS)
   find_package(GTest CONFIG REQUIRED)
 endif()
 find_package(glog REQUIRED)
 find_package(Armadillo REQUIRED)
+find_package(OpenSSL REQUIRED COMPONENTS Crypto)
+if(NOT TARGET nlohmann_json::nlohmann_json)
+  find_package(nlohmann_json CONFIG REQUIRED)
+endif()
 if (LLAMA3_SUPPORT OR QWEN2_SUPPORT OR QWEN3_SUPPORT OR QWEN_MOE_SUPPORT)
   find_package(absl REQUIRED)
   find_package(re2 REQUIRED)
-  find_package(nlohmann_json CONFIG REQUIRED)
 endif()
 
 if(KUIPER_BUILD_TESTS)
   kuiper_report_package_origin(GTest)
 endif()
+kuiper_report_package_origin(nlohmann_json)
 if (LLAMA3_SUPPORT OR QWEN2_SUPPORT OR QWEN3_SUPPORT OR QWEN_MOE_SUPPORT)
-  kuiper_report_package_origin(nlohmann_json)
   if(KUIPER_AUTO_ALIGN_CONDA_PACKAGES AND NOT USE_CPM AND
      NOT "${KUIPER_CONDA_PREFIX}" STREQUAL "")
     kuiper_path_is_under_prefix(_json_is_conda "${nlohmann_json_DIR}" "${KUIPER_CONDA_PREFIX}")
@@ -269,12 +270,15 @@ endif()
 
 aux_source_directory(infMain/source/tensor/ DIR_TENSOR)
 aux_source_directory(infMain/source/base/ DIR_BASE)
+file(GLOB DIR_CACHE CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/infMain/source/cache/*.cpp")
+file(GLOB DIR_DATA CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/infMain/source/data/*.cpp")
 aux_source_directory(infMain/source/op/ DIR_OP)
 aux_source_directory(infMain/source/op/kernels/cpu DIR_KERNEL_CPU)
 aux_source_directory(infMain/source/op/kernels/cuda DIR_KERNEL_CUDA)
 aux_source_directory(infMain/source/op/kernels/ DIR_KERNEL)
 aux_source_directory(infMain/source/sampler DIR_SAMPLE)
-aux_source_directory(infMain/source/serving DIR_SERVING)
+file(GLOB DIR_SERVING CONFIGURE_DEPENDS
+     "${CMAKE_CURRENT_SOURCE_DIR}/infMain/source/serving/*.cpp")
 list(APPEND DIR_SERVING infMain/source/serving/serving_online_server.cpp)
 list(APPEND DIR_SERVING infMain/source/serving/serving_http_server.cpp)
 list(APPEND DIR_SERVING infMain/source/serving/serving_online_engine.cpp)
@@ -313,12 +317,14 @@ endif()
 
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 
-add_library(llama SHARED ${DIR_TENSOR} ${DIR_BASE} ${DIR_OP} ${DIR_KERNEL} ${DIR_MODEL} ${DIR_KERNEL_CPU} ${DIR_KERNEL_CUDA} ${DIR_KERNEL} ${DIR_SAMPLE} ${DIR_SERVING})
+add_library(llama SHARED ${DIR_TENSOR} ${DIR_BASE} ${DIR_CACHE} ${DIR_DATA} ${DIR_OP} ${DIR_KERNEL} ${DIR_MODEL} ${DIR_KERNEL_CPU} ${DIR_KERNEL_CUDA} ${DIR_KERNEL} ${DIR_SAMPLE} ${DIR_SERVING})
 target_link_libraries(llama
   PUBLIC
     sentencepiece
     glog::glog
     pthread
+    OpenSSL::Crypto
+    cuda
     cudart
     cublas
     cublasLt
@@ -349,13 +355,13 @@ if(USE_CPM)
 endif()
 
 if (LLAMA3_SUPPORT OR QWEN2_SUPPORT OR QWEN3_SUPPORT OR QWEN_MOE_SUPPORT)
-  target_link_libraries(llama PUBLIC absl::strings absl::str_format re2::re2
-                                     nlohmann_json::nlohmann_json)
+  target_link_libraries(llama PUBLIC absl::strings absl::str_format re2::re2)
   if(USE_CPM)
     target_include_directories(llama BEFORE PUBLIC ${absl_SOURCE_DIR})
     target_include_directories(llama BEFORE PUBLIC ${nlohmann_json_SOURCE_DIR}/include)
   endif()
 endif()
+target_link_libraries(llama PUBLIC nlohmann_json::nlohmann_json)
 
 set_target_properties(llama PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
 if(KUIPER_BUILD_TESTS)

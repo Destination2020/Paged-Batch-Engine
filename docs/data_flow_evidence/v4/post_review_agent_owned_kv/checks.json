@@ -1,0 +1,41 @@
+{
+  "date": "2026-09-13",
+  "checkout": "f3597a763b6cd5cf60b826baa2dc94395c3d02fd",
+  "hardware": "NVIDIA H20-3e",
+  "model": "Qwen/Qwen2.5-VL-3B-Instruct@66285546d2b821cf421d4f5eb2576359d3770cd3",
+  "pool": {
+    "owner": "pbe_data_service",
+    "device": 0,
+    "bytes": 37748736,
+    "layers": 36,
+    "blocks": 64,
+    "block_size": 16,
+    "kv_heads": 2,
+    "head_size": 128,
+    "dtype": "BF16"
+  },
+  "observations": {
+    "independent_processes": 5,
+    "prefill_tokens": 95,
+    "published_metadata_bytes": 1456,
+    "host_kv_snapshot_bytes": 0,
+    "concurrent_decode_active_grants": 3,
+    "concurrent_decode_free_slots": 40,
+    "decode_private_slots_each": 4,
+    "decode_cow_bytes_each": 589824,
+    "decode_a_matches_oracle": true,
+    "decode_b_matches_oracle": true,
+    "free_slots_after_prefix_release": 64,
+    "active_grants_after_prefix_release": 0,
+    "host_data_leases_after_run": 0
+  },
+  "scope": {
+    "same_gpu_agent_owned_attention": "passed",
+    "producer_exit_then_consume": "passed",
+    "two_concurrent_consumers": "passed",
+    "partial_tail_cross_process_cow": "passed",
+    "cross_gpu_copy": "not_run",
+    "persistent_online_roles": "not_accepted",
+    "unified_all_pool_admission": "not_accepted"
+  }
+}

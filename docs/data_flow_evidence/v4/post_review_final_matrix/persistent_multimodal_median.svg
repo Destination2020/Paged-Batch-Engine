@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="330">
+<style>text{font:14px sans-serif}.title{font:bold 18px sans-serif}</style>
+<text x="20" y="28" class="title">Persistent multimodal serving, median of 5 (H20, Qwen2.5-VL-3B)</text>
+<text x="20" y="81">Cache off TTFT</text>
+<rect x="170" y="60" width="437.0" height="28" fill="#3977c5"/>
+<text x="617.0" y="80">2491.7 ms</text>
+<text x="20" y="139">Cache on TTFT</text>
+<rect x="170" y="118" width="435.6" height="28" fill="#3977c5"/>
+<text x="615.6" y="138">2483.7 ms</text>
+<text x="20" y="197">Cache off E2E</text>
+<rect x="170" y="176" width="560.0" height="28" fill="#3977c5"/>
+<text x="740.0" y="196">3193.2 ms</text>
+<text x="20" y="255">Cache on E2E</text>
+<rect x="170" y="234" width="557.5" height="28" fill="#3977c5"/>
+<text x="737.5" y="254">3178.8 ms</text>
+<text x="20" y="305">Cache skips vision forward (median 37.3 ms), while processor/RPC still dominate encode.</text>
+</svg>

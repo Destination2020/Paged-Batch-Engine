@@ -1,0 +1,232 @@
+{
+  "rounds": [
+    [
+      {
+        "generation": 1,
+        "max_new_tokens": 8,
+        "parts": [
+          {
+            "path": "docs/data_flow_evidence/v4/performance_characterization/B2_pilot_deterministic_arm01/inputs/variant-10.png",
+            "size": 224,
+            "type": "image"
+          },
+          {
+            "text": "Warm the model without entering the measured identities.",
+            "type": "text"
+          }
+        ],
+        "request_id": "warmup-pilot-arm01"
+      }
+    ],
+    [
+      {
+        "diagnostic_dump_logits_step": 0,
+        "diagnostic_key": "b2-pilot-arm01-content-0-question-0",
+        "diagnostic_mode": "request-0",
+        "generation": 1,
+        "max_new_tokens": 8,
+        "parts": [
+          {
+            "path": "docs/data_flow_evidence/v4/performance_characterization/B2_pilot_deterministic_arm01/inputs/variant-00.png",
+            "size": 224,
+            "type": "image"
+          },
+          {
+            "text": "Describe the main subject and layout of this image.",
+            "type": "text"
+          }
+        ],
+        "request_id": "b2-pilot-arm01-00"
+      }
+    ],
+    [
+      {
+        "diagnostic_dump_logits_step": 0,
+        "diagnostic_key": "b2-pilot-arm01-content-0-question-0",
+        "diagnostic_mode": "request-1",
+        "generation": 1,
+        "max_new_tokens": 8,
+        "parts": [
+          {
+            "path": "docs/data_flow_evidence/v4/performance_characterization/B2_pilot_deterministic_arm01/inputs/variant-00.png",
+            "size": 224,
+            "type": "image"
+          },
+          {
+            "text": "Describe the main subject and layout of this image.",
+            "type": "text"
+          }
+        ],
+        "request_id": "b2-pilot-arm01-01"
+      }
+    ],
+    [
+      {
+        "diagnostic_dump_logits_step": 0,
+        "diagnostic_key": "b2-pilot-arm01-content-1-question-0",
+        "diagnostic_mode": "request-2",
+        "generation": 1,
+        "max_new_tokens": 8,
+        "parts": [
+          {
+            "path": "docs/data_flow_evidence/v4/performance_characterization/B2_pilot_deterministic_arm01/inputs/variant-01.png",
+            "size": 224,
+            "type": "image"
+          },
+          {
+            "text": "Describe the main subject and layout of this image.",
+            "type": "text"
+          }
+        ],
+        "request_id": "b2-pilot-arm01-02"
+      }
+    ],
+    [
+      {
+        "diagnostic_dump_logits_step": 0,
+        "diagnostic_key": "b2-pilot-arm01-content-1-question-0",
+        "diagnostic_mode": "request-3",
+        "generation": 1,
+        "max_new_tokens": 8,
+        "parts": [
+          {
+            "path": "docs/data_flow_evidence/v4/performance_characterization/B2_pilot_deterministic_arm01/inputs/variant-01.png",
+            "size": 224,
+            "type": "image"
+          },
+          {
+            "text": "Describe the main subject and layout of this image.",
+            "type": "text"
+          }
+        ],
+        "request_id": "b2-pilot-arm01-03"
+      }
+    ],
+    [
+      {
+        "diagnostic_dump_logits_step": 0,
+        "diagnostic_key": "b2-pilot-arm01-content-2-question-0",
+        "diagnostic_mode": "request-4",
+        "generation": 1,
+        "max_new_tokens": 8,
+        "parts": [
+          {
+            "path": "docs/data_flow_evidence/v4/performance_characterization/B2_pilot_deterministic_arm01/inputs/variant-02.png",
+            "size": 224,
+            "type": "image"
+          },
+          {
+            "text": "Describe the main subject and layout of this image.",
+            "type": "text"
+          }
+        ],
+        "request_id": "b2-pilot-arm01-04"
+      }
+    ],
+    [
+      {
+        "diagnostic_dump_logits_step": 0,
+        "diagnostic_key": "b2-pilot-arm01-content-2-question-0",
+        "diagnostic_mode": "request-5",
+        "generation": 1,
+        "max_new_tokens": 8,
+        "parts": [
+          {
+            "path": "docs/data_flow_evidence/v4/performance_characterization/B2_pilot_deterministic_arm01/inputs/variant-02.png",
+            "size": 224,
+            "type": "image"
+          },
+          {
+            "text": "Describe the main subject and layout of this image.",
+            "type": "text"
+          }
+        ],
+        "request_id": "b2-pilot-arm01-05"
+      }
+    ],
+    [
+      {
+        "diagnostic_dump_logits_step": 0,
+        "diagnostic_key": "b2-pilot-arm01-content-3-question-0",
+        "diagnostic_mode": "request-6",
+        "generation": 1,
+        "max_new_tokens": 8,
+        "parts": [
+          {
+            "path": "docs/data_flow_evidence/v4/performance_characterization/B2_pilot_deterministic_arm01/inputs/variant-03.png",
+            "size": 224,
+            "type": "image"
+          },
+          {
+            "text": "Describe the main subject and layout of this image.",
+            "type": "text"
+          }
+        ],
+        "request_id": "b2-pilot-arm01-06"
+      }
+    ],
+    [
+      {
+        "diagnostic_dump_logits_step": 0,
+        "diagnostic_key": "b2-pilot-arm01-content-3-question-0",
+        "diagnostic_mode": "request-7",
+        "generation": 1,
+        "max_new_tokens": 8,
+        "parts": [
+          {
+            "path": "docs/data_flow_evidence/v4/performance_characterization/B2_pilot_deterministic_arm01/inputs/variant-03.png",
+            "size": 224,
+            "type": "image"
+          },
+          {
+            "text": "Describe the main subject and layout of this image.",
+            "type": "text"
+          }
+        ],
+        "request_id": "b2-pilot-arm01-07"
+      }
+    ],
+    [
+      {
+        "diagnostic_dump_logits_step": 0,
+        "diagnostic_key": "b2-pilot-arm01-content-4-question-0",
+        "diagnostic_mode": "request-8",
+        "generation": 1,
+        "max_new_tokens": 8,
+        "parts": [
+          {
+            "path": "docs/data_flow_evidence/v4/performance_characterization/B2_pilot_deterministic_arm01/inputs/variant-04.png",
+            "size": 224,
+            "type": "image"
+          },
+          {
+            "text": "Describe the main subject and layout of this image.",
+            "type": "text"
+          }
+        ],
+        "request_id": "b2-pilot-arm01-08"
+      }
+    ],
+    [
+      {
+        "diagnostic_dump_logits_step": 0,
+        "diagnostic_key": "b2-pilot-arm01-content-4-question-0",
+        "diagnostic_mode": "request-9",
+        "generation": 1,
+        "max_new_tokens": 8,
+        "parts": [
+          {
+            "path": "docs/data_flow_evidence/v4/performance_characterization/B2_pilot_deterministic_arm01/inputs/variant-04.png",
+            "size": 224,
+            "type": "image"
+          },
+          {
+            "text": "Describe the main subject and layout of this image.",
+            "type": "text"
+          }
+        ],
+        "request_id": "b2-pilot-arm01-09"
+      }
+    ]
+  ]
+}

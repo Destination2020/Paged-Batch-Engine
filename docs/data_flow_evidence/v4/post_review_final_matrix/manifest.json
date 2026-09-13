@@ -1,0 +1,24 @@
+{
+  "date": "2026-09-13",
+  "head": "f3597a763b6cd5cf60b826baa2dc94395c3d02fd",
+  "dirty_worktree_preserved": true,
+  "files": {
+    "demo/pbe_vlm_language_role.cpp": "453bbeb83cf3304ac05035b1d1f687d46b80fa9f533d13f8fa722066c010e1cc",
+    "python/pbe_roles/coordinator.py": "a6dcf17c779822a1ceaae026515a94803e6ccd607c1c730e4e8186089065e389",
+    "python/pbe_roles/vision/persistent_worker.py": "fe1527a295332860c4cb36ca84b5a889d088130877ab47b2565a8355d9c1ecd3",
+    "tools/launch/persistent_vlm_online.sh": "581238d95a0549e8136a17e5e5f92d1ab506e09e43cbf605d92b1458515120f5",
+    "docs/data_flow_evidence/v4/post_review_persistent_vlm_20_retry/result.json": "4b3bdb1741d553c0bae2bb76d23cfc797314503c877011c0586ba36d86874102",
+    "docs/data_flow_evidence/v4/post_review_online_pressure_retry/result.json": "9a97c8d6e2b60996650fb5ec1d0c3e6724fc7c86bd08d87da451da9b93772cc0",
+    "docs/data_flow_evidence/v4/post_review_online_fault_matrix_final/results.json": "ae007044029956b525fc7c64bf712971d909489079fa2819f16944f2a4c9950a",
+    "docs/data_flow_evidence/v4/post_review_persistent_vlm_ab_retry2/results.json": "8d54e08e07930e98bcfe48fc16decad24262f405fb183d2f4a12217598553da6",
+    "docs/data_flow_evidence/v4/post_review_final_matrix/results.json": "e7f8d34b105934bfc8574923e6dd456ad91bdd5d3dbd82f60737328edef781cb"
+  },
+  "validation": {
+    "applicable_cpp": "209 passed, 11 gated skips",
+    "unfiltered_cpp": "209 passed, 11 gated skips, 3 known missing ./tmp/test.bin failures",
+    "fault_targeted": "57 passed",
+    "python_compile": true,
+    "bash_syntax": true,
+    "diff_check": true
+  }
+}

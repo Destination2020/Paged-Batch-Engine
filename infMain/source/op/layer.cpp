@@ -5,9 +5,38 @@
 #include <glog/logging.h>
 #include <cstdarg>
 #include <numeric>
+#include <limits>
 #include <utility>
 
 namespace op {
+namespace {
+
+base::Status RebindExternalTensor(tensor::Tensor* tensor, const void* host_base,
+                                  void* device_base, uint64_t allocation_bytes,
+                                  base::DataType dtype, uint64_t* views,
+                                  uint64_t* logical_bytes) {
+  if (!tensor || tensor->is_empty() || !host_base || !device_base ||
+      allocation_bytes == 0 || tensor->data_type() != dtype) {
+    return base::error::InvalidArgument("invalid shared weight tensor binding");
+  }
+  const uintptr_t host = reinterpret_cast<uintptr_t>(host_base);
+  const uintptr_t pointer = reinterpret_cast<uintptr_t>(tensor->get_buffer()->ptr());
+  if (pointer < host) return base::error::InvalidArgument("shared weight offset underflow");
+  const uint64_t offset = pointer - host;
+  const uint64_t bytes = tensor->byte_size();
+  if (offset > allocation_bytes || bytes > allocation_bytes - offset) {
+    return base::error::InvalidArgument("shared weight tensor exceeds allocation");
+  }
+  auto* mapped = static_cast<uint8_t*>(device_base) + offset;
+  tensor::Tensor replacement(dtype, tensor->dims(), false, nullptr, mapped);
+  replacement.set_device_type(base::DeviceType::kDeviceCUDA);
+  *tensor = std::move(replacement);
+  if (views) ++*views;
+  if (logical_bytes) *logical_bytes += bytes;
+  return base::error::Success();
+}
+
+}  // namespace
 BaseLayer::BaseLayer(base::DeviceType device_type, LayerType layer_type, base::DataType data_type,
                      std::string layer_name)
     : device_type_(device_type),
@@ -290,6 +319,24 @@ void LayerParam::set_group_size(int32_t group_size) { this->group_size_ = group_
 int32_t LayerParam::get_scale_num() const {
   CHECK(!scales_.is_empty());
   return static_cast<int32_t>(scales_.size());
+}
+
+base::Status LayerParam::bind_external_weights(const void* host_base,
+                                                void* device_base,
+                                                uint64_t allocation_bytes,
+                                                base::DataType dtype,
+                                                uint64_t* views,
+                                                uint64_t* logical_bytes) {
+  if (is_quant_layer_) {
+    return base::error::InvalidArgument("quantized shared weights are outside E4 scope");
+  }
+  for (auto& weight : weights_) {
+    auto status = RebindExternalTensor(&weight, host_base, device_base,
+                                       allocation_bytes, dtype, views,
+                                       logical_bytes);
+    if (!status) return status;
+  }
+  return base::error::Success();
 }
 
 void LayerParam::reset_weight_size(size_t size) { weights_.resize(size); }

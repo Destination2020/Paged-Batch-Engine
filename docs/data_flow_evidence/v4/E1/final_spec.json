@@ -1,0 +1,98 @@
+{
+  "rounds": [
+    [
+      {
+        "request_id": "producer",
+        "generation": 1,
+        "parts": [
+          {
+            "type": "image",
+            "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/image.png",
+            "size": 224
+          },
+          {
+            "type": "text",
+            "text": "Describe this image in one sentence."
+          }
+        ],
+        "max_new_tokens": 8,
+        "diagnostic_key": "e1-exact-replay",
+        "diagnostic_mode": "producer"
+      }
+    ],
+    [
+      {
+        "request_id": "exact-replay",
+        "generation": 1,
+        "parts": [
+          {
+            "type": "image",
+            "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/image.png",
+            "size": 224
+          },
+          {
+            "type": "text",
+            "text": "Describe this image in one sentence."
+          }
+        ],
+        "max_new_tokens": 8,
+        "diagnostic_key": "e1-exact-replay",
+        "diagnostic_mode": "exact-replay"
+      }
+    ],
+    [
+      {
+        "request_id": "same-image-different-question",
+        "generation": 1,
+        "parts": [
+          {
+            "type": "image",
+            "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/image.png",
+            "size": 224
+          },
+          {
+            "type": "text",
+            "text": "What colors are most prominent in this image?"
+          }
+        ],
+        "max_new_tokens": 8
+      }
+    ],
+    [
+      {
+        "request_id": "different-processor",
+        "generation": 1,
+        "parts": [
+          {
+            "type": "image",
+            "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/image.png",
+            "size": 252
+          },
+          {
+            "type": "text",
+            "text": "Describe this image in one sentence."
+          }
+        ],
+        "max_new_tokens": 8
+      }
+    ],
+    [
+      {
+        "request_id": "different-image",
+        "generation": 1,
+        "parts": [
+          {
+            "type": "image",
+            "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/test/data_core/fixtures/e1_different.ppm",
+            "size": 224
+          },
+          {
+            "type": "text",
+            "text": "Describe this image in one sentence."
+          }
+        ],
+        "max_new_tokens": 8
+      }
+    ]
+  ]
+}

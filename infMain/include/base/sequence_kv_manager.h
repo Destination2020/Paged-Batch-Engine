@@ -16,6 +16,8 @@ struct KVAppendStats {
   int64_t blocks_allocated = 0;
   int64_t allocation_failures = 0;
   int64_t rollback_count = 0;
+  int64_t cow_pages = 0;
+  int64_t cow_bytes = 0;
 };
 
 // Manages KV cache for a single sequence using paged memory
@@ -67,6 +69,20 @@ class SequenceKVManager {
                            const std::vector<std::vector<int32_t>>& shared_block_ids,
                            int32_t shared_tokens);
 
+  void adopt_branch_snapshot(
+      const std::vector<std::unique_ptr<BlockAllocator>>& layer_allocators,
+      const std::vector<std::vector<int32_t>>& shared_block_ids,
+      int32_t valid_tokens);
+
+  // Install pages whose one local reference was established when an external
+  // slot grant was bound. No allocator incref is performed here.
+  void adopt_owned_pages(
+      const std::vector<std::unique_ptr<BlockAllocator>>& layer_allocators,
+      const std::vector<std::vector<int32_t>>& block_ids,
+      int32_t valid_tokens);
+
+  bool requires_tail_cow() const { return tail_shared_ && num_tokens_ % block_size_ != 0; }
+
   int32_t shared_prefix_tokens() const { return shared_prefix_tokens_; }
   int32_t private_tokens() const { return num_tokens_ - shared_prefix_tokens_; }
 
@@ -83,10 +99,9 @@ class SequenceKVManager {
   int32_t shared_prefix_tokens_ = 0;
   std::vector<PageTable> page_tables_;
   KVAppendStats stats_;
+  bool tail_shared_ = false;
 };
 
 }  // namespace base
 
 #endif  // KUIPER_INCLUDE_BASE_SEQUENCE_KV_MANAGER_H_
-
-

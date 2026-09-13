@@ -1,0 +1,8 @@
+{
+  "stage": "M8", "status": "accepted", "date": "2026-09-13",
+  "external_cancel_ack": true, "absolute_cross_stage_deadline": true, "stale_generation_rejected": true,
+  "multimodal_checkpoint_restore": true, "host_restore_physical": true,
+  "outbox_monotonic": true, "network_exactly_once_claimed": false,
+  "contract_and_cuda_tests": 30, "compute_sanitizer_errors": 0,
+  "evidence": ["../M5_online_lifecycle_final/validation.json", "../E3/faults/contract_and_cuda_tests.log", "../final_regression/compute_sanitizer_targeted.log"]
+}

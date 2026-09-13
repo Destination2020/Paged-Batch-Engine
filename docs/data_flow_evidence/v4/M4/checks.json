@@ -1,0 +1,22 @@
+{
+  "stage": "M4",
+  "status": "accepted",
+  "date": "2026-09-12",
+  "model_revision": "66285546d2b821cf421d4f5eb2576359d3770cd3",
+  "vision_weights_loaded": 390,
+  "language_weights_loaded": 0,
+  "reference": {
+    "case": "one_image_224",
+    "feature_shape": [64, 2048],
+    "grid_thw": [[1, 16, 16]],
+    "max_abs": 0.59375,
+    "mean_abs": 0.01729482412338257
+  },
+  "publication": {"bundle_bytes": 262424, "components": 2, "checksums": "passed"},
+  "reuse": {"repeat_forward_count": 0, "concurrent_total_forward_count": 1},
+  "mixed_batch": {"batch": 2, "split_tokens": [81, 121], "bundle_bytes": [332056, 495896]},
+  "consumers": {"independent_pids": 2, "cancel_does_not_break_peer": true, "active_leases_after": 0},
+  "cross_language_golden": {"passed": 1, "sha256": "c235943861d2eed9adc979a7c6fefddcf41d017110569b83f3ad3df906312824"},
+  "transport": "bounded_binary_host_copy",
+  "image_sha256": "79fcd8c4b6579e425a1423bd0b8ac9a0a0f00570db0998012db487954b7e68c3"
+}

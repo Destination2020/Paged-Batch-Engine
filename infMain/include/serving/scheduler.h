@@ -6,11 +6,14 @@
 #include <cstdint>
 #include <deque>
 #include <functional>
+#include <map>
 #include <memory>
+#include <string>
 #include <vector>
 #include "base/kv_cache_manager.h"
 #include "serving/generation_config.h"
 #include "serving/mixed_batch.h"
+#include "serving/request_checkpoint.h"
 #include "serving/sequence_state.h"
 
 namespace serving {
@@ -22,14 +25,20 @@ enum class SchedulingPolicy {
   kPriority,
 };
 
+enum class PreemptionPolicy { kRecompute, kCheckpoint, kAuto };
+
 struct SchedulerConfig {
   int32_t max_num_seqs = 4;              // max concurrent sequences
   int32_t max_num_batched_tokens = 128;  // token budget per step
   int32_t prefill_chunk_cap = 64;        // max prefill tokens per request per step
   SchedulingPolicy policy = SchedulingPolicy::kFCFS;
+  PreemptionPolicy preemption_policy = PreemptionPolicy::kRecompute;
   int32_t long_prefill_token_threshold = 0;  // 0 disables long-prefill throttling
   int32_t max_partial_prefills = 0;          // 0 means no explicit limit
   int32_t max_long_partial_prefills = 0;     // 0 means no explicit limit
+  size_t max_checkpoint_records = 64;
+  size_t max_checkpoint_bytes = size_t{1} << 30;
+  std::string checkpoint_model_namespace = "default";
 };
 
 // Scheduler output: what each request should do this step
@@ -42,8 +51,14 @@ struct SchedulerMetrics {
   int64_t preemptions = 0;
   int64_t priority_preemptions = 0;
   int64_t decode_kv_preemptions = 0;
+  int64_t checkpoint_preemptions = 0;
+  int64_t recompute_preemptions = 0;
+  int64_t checkpoint_fallbacks = 0;
+  int64_t checkpoint_restores = 0;
   int64_t waiting_rejections = 0;
   int64_t stalled_prefill_failures = 0;
+  int64_t cache_transfer_completions = 0;
+  int64_t cache_restore_wait_steps = 0;
   int64_t waiting_queue_samples = 0;
   int64_t running_queue_samples = 0;
   int32_t max_waiting_queue = 0;
@@ -81,7 +96,20 @@ class Scheduler {
                                    int32_t computed_tokens,
                                    int32_t first_token);
 
+  bool set_multimodal_checkpoint_state(
+      int64_t client_request_id, std::vector<int32_t> positions,
+      int64_t rope_delta, int32_t image_begin, int32_t feature_rows,
+      int32_t hidden_size, std::string feature_content,
+      std::string feature_representation, bool exact_dependency);
+  int32_t request_computed_tokens(int64_t client_request_id) const;
+
   bool cancel_request(int64_t client_request_id, const std::string& reason);
+  // Whole-step boundary API: no sequence returned by the previous
+  // schedule_step may still be executing when suspend_request is called.
+  bool suspend_request(int64_t client_request_id, uint64_t* revision);
+  bool restore_request(int64_t client_request_id, uint64_t revision);
+  bool checkpoint_manifest(int64_t client_request_id, uint64_t revision,
+                           RequestCheckpointManifest* manifest) const;
 
   // One scheduling step:
   //   1. Allocate token budget to running (decode) sequences
@@ -119,6 +147,7 @@ class Scheduler {
   void reap_finished_running();
   void reap_preempted_running();
   void preempt_sequence(SequenceState* seq, const std::string& reason);
+  void maybe_restore_checkpointed_request();
   void reserve_metadata_capacity_for_request(int32_t prompt_tokens,
                                              const GenerationConfig& generation_config);
   void append_decode_to_output(SequenceState* seq, SchedulerOutput* output);
@@ -190,6 +219,9 @@ class Scheduler {
   std::deque<SequenceState> waiting_;
   std::deque<SequenceState> running_;
   std::vector<SequenceState> finished_;
+  RequestCheckpointStore checkpoint_store_;
+  std::map<int64_t, CheckpointTicket> suspended_;
+  std::map<int64_t, CheckpointTicket> restored_checkpoints_;
   SchedulerMetrics metrics_;
 };
 

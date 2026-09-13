@@ -1,0 +1,50 @@
+{
+  "schema": "pbe.v4.stage-checks.v1",
+  "stage": "M1",
+  "status": "accepted",
+  "model": {
+    "repository": "Qwen/Qwen2.5-VL-3B-Instruct",
+    "revision": "66285546d2b821cf421d4f5eb2576359d3770cd3",
+    "manifest": "model_manifest.json",
+    "export_schema": "pbe.qwen25_vl.language_core.bf16.v1",
+    "export_bytes": 6173974564,
+    "export_sha256": "526ed2ed568a8d639211d9eb3cd91aaba56f67bbe89017ec2d2bf2bed6a0bf52"
+  },
+  "reference": {
+    "cases": ["text", "one_image_224", "one_image_wide", "two_images", "mixed_batch"],
+    "greedy_repeat_exact": true,
+    "steps": 32,
+    "manifest_sha256": "33a0aa60f107aea5ea94fbf46c8e0cb7e633a845a41822c0c00454ebdbe70df2"
+  },
+  "pbe_numerics": {
+    "runs": 3,
+    "tests_per_run": 2,
+    "final_run": {
+      "decode_step_max_abs": 0.375,
+      "decode_step_max_mean_abs": 0.0916816,
+      "decode_step_max_relative_mean": 0.0335418,
+      "initial_logits_max_abs": 0.3125,
+      "final_hidden_max_abs": 0.5,
+      "selected_kv_max_abs": 0.49707,
+      "mixed_prefill_max_abs": 0.25
+    },
+    "greedy_divergences": [
+      {"step_zero_based": 24, "reference_token": 990, "pbe_token": 11589, "reference_top2_margin": 0.0}
+    ]
+  },
+  "regression": {
+    "passed": 185,
+    "skipped": 11,
+    "excluded_missing_fixture": ["test_load.load_model_config", "test_load.load_model_weight", "test_load.create_matmul"]
+  },
+  "logs": [
+    "logs/model_manifest.log",
+    "logs/reference_probe.log",
+    "logs/export.log",
+    "logs/pbe_real_model.log",
+    "logs/pbe_real_model_run1.log",
+    "logs/pbe_real_model_run2.log",
+    "logs/pbe_real_model_run3.log",
+    "logs/qwen2_cuda_regression.log"
+  ]
+}

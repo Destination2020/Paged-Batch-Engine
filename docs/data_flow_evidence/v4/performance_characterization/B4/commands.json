@@ -1,0 +1,8 @@
+{
+  "gpu_rerun": false,
+  "inputs": [
+    "docs/data_flow_evidence/v4/E2_final/{fixed,round_robin,data_aware}/seed-{11,23,37,41,53}/result.json",
+    "docs/data_flow_evidence/v4/M9/pressure_policy_ab/results.json"
+  ],
+  "replay": "PYTHONPATH=python .venv/bin/python tools/bench/data_flow/consolidate_b4_performance.py"
+}

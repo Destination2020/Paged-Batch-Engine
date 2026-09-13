@@ -1,0 +1,211 @@
+{
+  "rounds": [
+    [
+      {
+        "request_id": "warm-prefix",
+        "generation": 1,
+        "parts": [
+          {
+            "type": "image",
+            "path": "image.png",
+            "size": 224
+          },
+          {
+            "type": "text",
+            "text": "Describe this image in one sentence."
+          }
+        ],
+        "max_new_tokens": 8,
+        "timeout_ms": 120000,
+        "force_worker": 0
+      }
+    ],
+    [
+      {
+        "request_id": "long-queue",
+        "generation": 1,
+        "parts": [
+          {
+            "type": "image",
+            "path": "image.png",
+            "size": 224
+          },
+          {
+            "type": "text",
+            "text": "Explain every visible component in detail."
+          }
+        ],
+        "max_new_tokens": 64,
+        "timeout_ms": 120000,
+        "force_worker": 0
+      },
+      {
+        "request_id": "cache-versus-queue",
+        "generation": 1,
+        "parts": [
+          {
+            "type": "image",
+            "path": "image.png",
+            "size": 224
+          },
+          {
+            "type": "text",
+            "text": "Describe this image in one sentence."
+          }
+        ],
+        "max_new_tokens": 8,
+        "timeout_ms": 120000
+      }
+    ],
+    [
+      {
+        "request_id": "fresh-cache-choice",
+        "generation": 1,
+        "parts": [
+          {
+            "type": "image",
+            "path": "image.png",
+            "size": 224
+          },
+          {
+            "type": "text",
+            "text": "Describe this image in one sentence."
+          }
+        ],
+        "max_new_tokens": 8,
+        "timeout_ms": 120000
+      }
+    ],
+    [
+      {
+        "request_id": "stale-stat-choice",
+        "generation": 1,
+        "parts": [
+          {
+            "type": "image",
+            "path": "image.png",
+            "size": 224
+          },
+          {
+            "type": "text",
+            "text": "Describe this image in one sentence."
+          }
+        ],
+        "max_new_tokens": 8,
+        "timeout_ms": 120000,
+        "stale_worker": 0
+      }
+    ],
+    [
+      {
+        "request_id": "budget-fallback",
+        "generation": 1,
+        "parts": [
+          {
+            "type": "image",
+            "path": "image.png",
+            "size": 224
+          },
+          {
+            "type": "text",
+            "text": "Describe this image in one sentence."
+          }
+        ],
+        "max_new_tokens": 8,
+        "timeout_ms": 120000,
+        "unavailable_worker": 0
+      }
+    ],
+    [
+      {
+        "request_id": "worker-restart",
+        "generation": 1,
+        "parts": [
+          {
+            "type": "image",
+            "path": "image.png",
+            "size": 224
+          },
+          {
+            "type": "text",
+            "text": "Describe this image in one sentence."
+          }
+        ],
+        "max_new_tokens": 8,
+        "timeout_ms": 120000,
+        "restart_worker_before": 1
+      }
+    ],
+    [
+      {
+        "request_id": "random-a",
+        "generation": 1,
+        "parts": [
+          {
+            "type": "image",
+            "path": "image.png",
+            "size": 224
+          },
+          {
+            "type": "text",
+            "text": "Name the main diagram components."
+          }
+        ],
+        "max_new_tokens": 8,
+        "timeout_ms": 120000,
+        "shuffle_dispatch": true
+      },
+      {
+        "request_id": "random-b",
+        "generation": 1,
+        "parts": [
+          {
+            "type": "image",
+            "path": "image.png",
+            "size": 224
+          },
+          {
+            "type": "text",
+            "text": "Summarize the arrows in the diagram."
+          }
+        ],
+        "max_new_tokens": 8,
+        "timeout_ms": 120000
+      },
+      {
+        "request_id": "random-c",
+        "generation": 1,
+        "parts": [
+          {
+            "type": "image",
+            "path": "image.png",
+            "size": 224
+          },
+          {
+            "type": "text",
+            "text": "What is the apparent topic of the image?"
+          }
+        ],
+        "max_new_tokens": 8,
+        "timeout_ms": 120000
+      },
+      {
+        "request_id": "random-d",
+        "generation": 1,
+        "parts": [
+          {
+            "type": "image",
+            "path": "image.png",
+            "size": 224
+          },
+          {
+            "type": "text",
+            "text": "Give a short caption for the image."
+          }
+        ],
+        "max_new_tokens": 8,
+        "timeout_ms": 120000
+      }
+    ]
+  ]
+}

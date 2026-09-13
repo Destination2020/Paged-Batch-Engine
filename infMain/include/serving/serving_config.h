@@ -43,21 +43,30 @@ struct PromptTokenStats {
 };
 
 struct BenchConfig {
+  SamplingConfig sampling;
+  bool ignore_eos = false;
   int32_t max_new_tokens = 256;
   int32_t max_num_batched_tokens = kAutoMaxBatchedTokensSafetyCap;
   int32_t prefill_chunk_cap = kAutoPrefillChunkCapSafetyCap;
   SchedulingPolicy scheduling_policy = SchedulingPolicy::kFCFS;
+  PreemptionPolicy preemption_policy = PreemptionPolicy::kRecompute;
   int32_t long_prefill_token_threshold = 0;
   int32_t max_partial_prefills = 0;
   int32_t max_long_partial_prefills = 0;
   int32_t warmup_rounds = 0;
   double kv_cache_memory_utilization = kDefaultKVCacheMemoryUtilization;
+  int32_t kv_cache_blocks_per_layer = 0;
   std::string max_num_batched_tokens_request = "auto";
   std::string prefill_chunk_cap_request = "auto";
   bool auto_max_num_batched_tokens = true;
   bool auto_prefill_chunk_cap = true;
   bool radix_cache_config_explicit = false;
   bool radix_cache_enabled = true;
+  bool host_cache_enabled = false;
+  size_t host_cache_bytes = 0;
+  size_t host_cache_pages = 0;
+  size_t host_cache_inflight_pages = 2;
+  bool host_demote_after_warmup = false;
   PromptTokenStats prompt_token_stats;
   AutoScheduleEstimate auto_estimate;
   ServingCapacityInfo capacity_info;
@@ -81,6 +90,10 @@ struct BenchConfig {
   std::string engine_zmq_endpoint = "tcp://127.0.0.1:19090";
   std::string prefill_zmq_endpoint = "tcp://127.0.0.1:19091";
   int32_t engine_zmq_timeout_ms = 30000;
+  // Optional node data service that owns the physical CUDA KV allocation.
+  // When set, a single-role Qwen serving process imports this pool before
+  // model initialization instead of allocating a process-owned KV pool.
+  std::string data_service_endpoint;
 };
 
 inline bool is_dual_gpu_pd_mode(const std::string& pd_mode) {

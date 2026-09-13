@@ -1,0 +1,6 @@
+{
+  "stage": "M7", "status": "accepted", "date": "2026-09-13",
+  "device_memory": {"model_file_bytes": 6173974564, "model_process_allocation_bytes": 7327449088, "workspace_reserved_bytes": 329646080, "workspace_bytes_per_token": 643840, "preexisting_vision_service_bytes": 2491613184, "external_kv_owner_bytes": 37748736, "peak_observed_used_bytes": 10028777472, "admission_limit_bytes": 149753298944, "within_admission_limit": true},
+  "multimodal_checkpoint": {"position_values": 276, "sampling_counter_restored": true, "exact_multimodal_dependency": true, "private_tail_tokens": 14, "private_tail_restored": true, "host_demoted_blocks": 5, "host_restored_blocks": 5, "restore_failures": 0, "same_history_numeric_gate": true, "evidence": "../E3/real_recovery/final_run/validation.json"},
+  "lifecycle_iterations": 10000, "budget_invariant": true
+}

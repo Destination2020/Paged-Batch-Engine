@@ -2,8 +2,10 @@
 
 #include <cuda_runtime_api.h>
 
+#include <atomic>
 #include <memory>
 #include <string>
+#include <thread>
 #include <vector>
 
 #include "base/block_allocator.h"
@@ -14,6 +16,13 @@
 
 namespace serving {
 namespace {
+
+struct TransferGate { std::atomic<bool> entered{false}, release{false}; };
+void CUDART_CB wait_for_transfer_gate(void* data) {
+  auto* gate = static_cast<TransferGate*>(data);
+  gate->entered.store(true);
+  while (!gate->release.load()) std::this_thread::yield();
+}
 
 KVPoolDescriptor make_pool(int32_t device_id) {
   KVPoolDescriptor pool;
@@ -607,7 +616,86 @@ TEST(PDHandoffTest, CudaP2PConnectorCopiesPlainBlocksAcrossDevices) {
   src_kv_manager->free_request(src_request_id);
 }
 
+TEST(PDHandoffTest, SharedSchedulerMergesAndIndependentlyCancelsCudaP2PWaiters) {
+  if (!cuda_device_count_at_least(2)) {
+    GTEST_SKIP() << "At least two CUDA devices are required";
+  }
+
+  auto src_kv_manager = make_cuda_plain_kv_manager_on_device(0);
+  auto dst_kv_manager = make_cuda_plain_kv_manager_on_device(1);
+  const base::RequestId src_request_id = src_kv_manager->register_request();
+  ASSERT_TRUE(src_kv_manager->append_slots(src_request_id, 32));
+  fill_cuda_plain_request_blocks(src_kv_manager.get(), src_request_id, 55);
+
+  DecodeKVReservationManager reservation_manager(dst_kv_manager.get(), make_pool(1));
+  DecodeKVReservationRequest request;
+  request.client_request_id.value = "req-shared-cuda-p2p";
+  request.handoff_id.value = 124;
+  request.prompt_tokens = 32;
+  request.computed_tokens = 32;
+  request.first_token = 101;
+  request.src_pool = make_pool(0);
+  request.src_block_ids_per_layer = {
+      src_kv_manager->get_block_ids(src_request_id, 0),
+      src_kv_manager->get_block_ids(src_request_id, 1),
+  };
+  DecodeKVReservation reservation;
+  KVBlockManifest manifest;
+  ASSERT_TRUE(reservation_manager.reserve(request, &reservation, &manifest));
+
+  ASSERT_EQ(cudaSetDevice(1), cudaSuccess);
+  cudaStream_t stream = nullptr;
+  ASSERT_EQ(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking), cudaSuccess);
+  TransferGate gate;
+  ASSERT_EQ(cudaLaunchHostFunc(stream, wait_for_transfer_gate, &gate), cudaSuccess);
+  CudaP2PKVTransferConnector connector(src_kv_manager.get(), dst_kv_manager.get(),
+                                       0, 1, stream, false);
+  {
+    auto resolver = [manifest](uint64_t page, KVBlockManifest* output) {
+      if (page != 900 || output == nullptr)
+        return base::error::InvalidArgument("unknown logical P2P page");
+      *output = manifest;
+      return base::error::Success();
+    };
+    cache::TransferScheduler scheduler(
+        4, 40, 1, 2, MakeKVConnectorFlightExecutor(&connector, resolver));
+    std::vector<cache::WaiterTicket> tickets(32);
+    bool submitted = true;
+    for (auto& ticket : tickets) {
+      submitted &= scheduler.submit({900, cache::TransferTarget::kPeerGpu, 1},
+          cache::TransferPriority::kDecode, {}, &ticket);
+    }
+    EXPECT_TRUE(submitted);
+    EXPECT_EQ(scheduler.stats().physical_submissions, 1u);
+    EXPECT_EQ(scheduler.stats().merged_waiters, 31u);
+    bool cancelled = true;
+    for (size_t i = 0; i + 1 < tickets.size(); ++i)
+      cancelled &= scheduler.cancel(tickets[i].waiter);
+    EXPECT_TRUE(cancelled);
+
+    gate.release.store(true);
+    EXPECT_EQ(cudaStreamSynchronize(stream), cudaSuccess);
+    scheduler.poll();
+    for (size_t i = 0; i < tickets.size(); ++i) {
+      cache::WaiterState state;
+      ASSERT_TRUE(scheduler.state(tickets[i].waiter, &state));
+      EXPECT_EQ(state, i + 1 == tickets.size() ? cache::WaiterState::kSucceeded
+                                               : cache::WaiterState::kCancelled);
+      EXPECT_TRUE(scheduler.consume(tickets[i].waiter));
+    }
+    EXPECT_EQ(scheduler.flight_count(), 0u);
+  }
+  ASSERT_EQ(cudaStreamDestroy(stream), cudaSuccess);
+  expect_cuda_plain_request_blocks_equal(src_kv_manager.get(), src_request_id,
+                                         dst_kv_manager.get(), reservation.decode_request_id);
+  reservation_manager.release(&reservation);
+  src_kv_manager->free_request(src_request_id);
+}
+
 TEST(PDHandoffTest, NcclConnectorCopiesPlainBlocksAcrossDevices) {
+#if !defined(KUIPER_ENABLE_NCCL)
+  GTEST_SKIP() << "NCCL support is disabled in this build";
+#endif
   if (!cuda_device_count_at_least(2)) {
     GTEST_SKIP() << "At least two CUDA devices are required";
   }
@@ -663,6 +751,9 @@ TEST(PDHandoffTest, NcclConnectorCopiesPlainBlocksAcrossDevices) {
 }
 
 TEST(PDHandoffTest, NcclLayerConnectorCopiesPlainBlocksAcrossDevices) {
+#if !defined(KUIPER_ENABLE_NCCL)
+  GTEST_SKIP() << "NCCL support is disabled in this build";
+#endif
   if (!cuda_device_count_at_least(2)) {
     GTEST_SKIP() << "At least two CUDA devices are required";
   }

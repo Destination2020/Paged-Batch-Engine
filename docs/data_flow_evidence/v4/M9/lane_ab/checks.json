@@ -1,0 +1,22 @@
+{
+  "bytes_per_transfer": 268435456,
+  "median_d2h_completion_ms": {
+    "lanes_off": 10.50598430633545,
+    "lanes_on": 5.666848182678223
+  },
+  "ok": true,
+  "randomized_order": [
+    "lanes_off",
+    "lanes_on",
+    "lanes_off",
+    "lanes_on",
+    "lanes_off",
+    "lanes_on",
+    "lanes_off",
+    "lanes_off",
+    "lanes_on",
+    "lanes_on"
+  ],
+  "same_max_total_active": 2,
+  "same_streams": 2
+}

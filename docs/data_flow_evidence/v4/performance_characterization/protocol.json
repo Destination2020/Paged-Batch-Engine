@@ -1,0 +1,161 @@
+{
+  "b2": {
+    "arm_bits": "feature_cache,semantic_kv_cache",
+    "boundaries": [
+      {
+        "arms": [
+          "00",
+          "11"
+        ],
+        "context": "short",
+        "image_reuse_percent": 0,
+        "resolution": 224
+      },
+      {
+        "arms": [
+          "00",
+          "11"
+        ],
+        "context": "long",
+        "image_reuse_percent": 90,
+        "resolution": 280
+      }
+    ],
+    "deterministic_vision": {
+      "CUBLAS_WORKSPACE_CONFIG": ":4096:8",
+      "PBE_DETERMINISTIC_VISION": "1",
+      "reason": "keep cache-hit versus BF16 Vision recompute comparisons inside the frozen M5/E4 numerical contract"
+    },
+    "identity_contract": "feature-cache lookup policy may not alter canonical media content or semantic KV identity",
+    "independent_trials_per_cell": 5,
+    "load_generation": "closed-loop, fixed concurrency 1; no open-loop queueing claim",
+    "measured_requests_per_trial": 10,
+    "order": "fixed seed randomized across all 40 trials",
+    "representative": {
+      "arms": [
+        "00",
+        "10",
+        "01",
+        "11"
+      ],
+      "context": "short",
+      "image_reuse_percent": 50,
+      "resolution": 224
+    },
+    "sample_limit_reason": "3B Vision+language topology cold start cost; no reliable p99 claim",
+    "sampling": {
+      "max_new_tokens": 8,
+      "repetition_penalty": 1.05
+    },
+    "warmup_requests_per_trial": 1
+  },
+  "b3": {
+    "capacity_ladder": "same block ladder and hard physical budget for private/shared",
+    "capacity_limit_claim": "only bracketed by last success and first failure",
+    "fixed_kv_source": "E4 final 2x5 cells",
+    "hard_budget_mib": 18000,
+    "probe_blocks": [
+      64,
+      1024,
+      2048,
+      4096,
+      8192,
+      12288,
+      16384
+    ],
+    "repetitions": 5,
+    "safety_margin_mib": 256
+  },
+  "b4": {
+    "placement_repeats": 5,
+    "placement_requests_per_policy": 55,
+    "recovery_repeats": 5,
+    "reuse_existing": true
+  },
+  "b5": {
+    "audit_before_measurement": true,
+    "manual_process_orchestration_is_not_production_support": true
+  },
+  "binaries": {
+    "build-v3/demo/pbe_data_service": {
+      "bytes": 680544,
+      "sha256": "49aa1a61c7e62a523a86f1ec7491f3c6e7a222ab483c0aa2c975a7a035afb9c9"
+    },
+    "build-v3/demo/pbe_multi_role_text": {
+      "bytes": 1812776,
+      "sha256": "2a22fd3d15e1fc24f5f303870de15e448c4be9f4bcc0a50f5b396eb255fcdcaa"
+    },
+    "build-v3/demo/pbe_vlm_language_role": {
+      "bytes": 11715312,
+      "sha256": "29d59219cc75b792f587ea17fb6aed3fd76e0594b99424577d9e0cd8478efdf2"
+    },
+    "build-v3/test/test_llm": {
+      "bytes": 65104992,
+      "sha256": "1c9afb0a693663fb690873e8b0c066d4af653b2b136fd4e99e46e9003b23fa27"
+    }
+  },
+  "date": "2026-09-13",
+  "dirty_workspace_preserved": true,
+  "frozen_before_supplemental_runs": true,
+  "global": {
+    "cold_start_reported_separately": true,
+    "external_gpu_load_policy": "invalidate and rerun the complete paired trial",
+    "no_parallel_gpu_experiments": true,
+    "warmup_required": true
+  },
+  "hardware": {
+    "exclusive_gpu_measurement": true,
+    "gpus": [
+      "0, GPU-ee082303-bb7e-8d86-c9bf-8f660e6e3a2a, NVIDIA H20-3e, 143771 MiB, 550.127.08, Disabled",
+      "1, GPU-4728829f-56d6-426d-85ee-e753c1683bea, NVIDIA H20-3e, 143771 MiB, 550.127.08, Disabled"
+    ],
+    "mig": "disabled",
+    "mps": "disabled"
+  },
+  "inputs": {
+    "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct.pbe-bf16-v1.bin": {
+      "bytes": 6173974564,
+      "sha256": "526ed2ed568a8d639211d9eb3cd91aaba56f67bbe89017ec2d2bf2bed6a0bf52"
+    },
+    "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct/config.json": {
+      "bytes": 1373,
+      "sha256": "7ed3eed5be6924cc800e8a5e53fc405c1aab1aaf36bad65c33403b36c56827f5"
+    },
+    "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct/preprocessor_config.json": {
+      "bytes": 350,
+      "sha256": "f2058c716eef96ccaed1cc1e2d0c08306b62586d535b28d9d08e691b2fab7ca0"
+    },
+    "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct/tokenizer.json": {
+      "bytes": 7031645,
+      "sha256": "c0382117ea329cdf097041132f6d735924b697924d6f6fc3945713e96ce87539"
+    },
+    "/tmp/pbe-e1-different.png": {
+      "bytes": 967651,
+      "sha256": "97d9edbff16ded82092344133865d6277374a88e8cd4b25089e918b8536fcc13"
+    }
+  },
+  "metrics": {
+    "client_ttft": "N/A: coordinator is non-streaming",
+    "confidence_intervals": "not reported: five trials are retained individually",
+    "failure_denominator": "offered requests",
+    "latency_delta_percent": "(baseline-candidate)/baseline*100",
+    "memory_units": "MiB=2^20 bytes; raw physical bytes retained",
+    "server_ttft": "model-side first-token timing, never labelled client TTFT",
+    "slo_goodput": "N/A without true client streaming and a justified predeclared SLO",
+    "throughput": "successful requests / (last terminal - first send), including drain",
+    "throughput_delta_percent": "(candidate-baseline)/baseline*100",
+    "trial_summary": "median and full min/max across independent trials"
+  },
+  "random_seed": 20260913,
+  "schema": "pbe-v4-performance-protocol-v1",
+  "software": {
+    "build_type": "RelWithDebInfo",
+    "cpu_threads": 42,
+    "cuda": "Build cuda_12.8.r12.8/compiler.35404655_0",
+    "cuda_graph": "not used",
+    "kernel": "5.10.0-136.71.0.mt20240613.547.mt2203sp1.x86_64",
+    "nccl": "off",
+    "python": "3.12.3"
+  },
+  "source_head": "f3597a763b6cd5cf60b826baa2dc94395c3d02fd"
+}

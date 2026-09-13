@@ -1,0 +1,25 @@
+{
+  "date": "2026-09-12",
+  "head": "f3597a763b6cd5cf60b826baa2dc94395c3d02fd",
+  "targeted_tests": {"passed": 54, "skipped": 2, "failed": 0},
+  "full_test_llm": {
+    "passed": false,
+    "known_failures": [
+      "SplitKVAttentionTest.SingleSequenceMatchesBaseline",
+      "SplitKVAttentionTest.ShortContextSinglePartition",
+      "CUDA error 222 after death-test fork"
+    ]
+  },
+  "sanitizers": {"status": "blocked", "reason": "libasan/libubsan unavailable"},
+  "real_model": {"status": "blocked", "reason": "model/tokenizer fixture absent"},
+  "nccl": {"status": "skipped", "reason": "KUIPER_ENABLE_NCCL=OFF"},
+  "phases": {
+    "DF0": "core_complete_environment_acceptance_blocked",
+    "DF1": "core_complete_performance_matrix_pending",
+    "DF2": "partial",
+    "DF3": "partial",
+    "DF4": "partial",
+    "DF5": "not_started",
+    "DF6": "not_started"
+  }
+}

@@ -165,6 +165,30 @@ void rope_batch_cpu_not_supported(int32_t dim,
   LOG(FATAL) << "batched rope kernel is only implemented for CUDA.";
 }
 
+void mrope_batch_cpu_not_supported(int32_t dim, int32_t kv_dim, int32_t head_size,
+                                   const tensor::Tensor& input_q,
+                                   const tensor::Tensor& input_k,
+                                   const tensor::Tensor& positions,
+                                   const tensor::Tensor& sin_cache,
+                                   const tensor::Tensor& cos_cache,
+                                   int32_t temporal_section,
+                                   int32_t height_section,
+                                   int32_t batch_tokens, void* stream) {
+  UNUSED(dim);
+  UNUSED(kv_dim);
+  UNUSED(head_size);
+  UNUSED(input_q);
+  UNUSED(input_k);
+  UNUSED(positions);
+  UNUSED(sin_cache);
+  UNUSED(cos_cache);
+  UNUSED(temporal_section);
+  UNUSED(height_section);
+  UNUSED(batch_tokens);
+  UNUSED(stream);
+  LOG(FATAL) << "batched mrope kernel is only implemented for CUDA.";
+}
+
 size_t argmax_logits_cpu(const void* logits,
                          size_t size,
                          base::DataType data_type,
@@ -288,6 +312,17 @@ RoPEBatchKernel get_rope_batch_kernel(base::DeviceType device_type) {
     return rope_batch_cpu_not_supported;
   } else {
     LOG(FATAL) << "Unknown device type for get a batched rope kernel.";
+    return nullptr;
+  }
+}
+
+MRoPEBatchKernel get_mrope_batch_kernel(base::DeviceType device_type) {
+  if (device_type == base::DeviceType::kDeviceCUDA) {
+    return mrope_kernel_batched_cu;
+  } else if (device_type == base::DeviceType::kDeviceCPU) {
+    return mrope_batch_cpu_not_supported;
+  } else {
+    LOG(FATAL) << "Unknown device type for get a batched mrope kernel.";
     return nullptr;
   }
 }

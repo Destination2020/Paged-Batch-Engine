@@ -93,6 +93,7 @@ void SequenceKVManager::release_all(
   }
   num_tokens_ = 0;
   shared_prefix_tokens_ = 0;
+  tail_shared_ = false;
 }
 
 void SequenceKVManager::truncate_to(
@@ -125,6 +126,7 @@ void SequenceKVManager::clear() {
   }
   num_tokens_ = 0;
   shared_prefix_tokens_ = 0;
+  tail_shared_ = false;
   stats_ = KVAppendStats{};
 }
 
@@ -153,6 +155,50 @@ void SequenceKVManager::adopt_shared_prefix(
   }
   num_tokens_ = shared_tokens;
   shared_prefix_tokens_ = shared_tokens;
+  tail_shared_ = false;
+}
+
+void SequenceKVManager::adopt_branch_snapshot(
+    const std::vector<std::unique_ptr<BlockAllocator>>& layer_allocators,
+    const std::vector<std::vector<int32_t>>& shared_block_ids,
+    int32_t valid_tokens) {
+  CHECK_EQ(static_cast<int32_t>(layer_allocators.size()), num_layers_);
+  CHECK_EQ(static_cast<int32_t>(shared_block_ids.size()), num_layers_);
+  CHECK_EQ(num_tokens_, 0);
+  CHECK_GE(valid_tokens, 0);
+  const int32_t expected_blocks = blocks_for_tokens(valid_tokens, block_size_);
+  for (int32_t layer = 0; layer < num_layers_; ++layer) {
+    CHECK_EQ(static_cast<int32_t>(shared_block_ids[layer].size()), expected_blocks);
+    for (int32_t block_id : shared_block_ids[layer]) {
+      layer_allocators[layer]->incref(block_id);
+      page_tables_[layer].append_block(block_id);
+    }
+    page_tables_[layer].add_token_count(valid_tokens);
+  }
+  num_tokens_ = valid_tokens;
+  shared_prefix_tokens_ = valid_tokens;
+  tail_shared_ = valid_tokens % block_size_ != 0;
+}
+
+void SequenceKVManager::adopt_owned_pages(
+    const std::vector<std::unique_ptr<BlockAllocator>>& layer_allocators,
+    const std::vector<std::vector<int32_t>>& block_ids,
+    int32_t valid_tokens) {
+  CHECK_EQ(static_cast<int32_t>(layer_allocators.size()),num_layers_);
+  CHECK_EQ(static_cast<int32_t>(block_ids.size()),num_layers_);
+  CHECK_EQ(num_tokens_,0);CHECK_GE(valid_tokens,0);
+  const int32_t expected=blocks_for_tokens(valid_tokens,block_size_);
+  for(int32_t layer=0;layer<num_layers_;++layer){
+    CHECK_EQ(static_cast<int32_t>(block_ids[layer].size()),expected);
+    for(int32_t id:block_ids[layer]){
+      CHECK_GT(layer_allocators[layer]->ref_count(id),0);
+      page_tables_[layer].append_block(id);
+    }
+    page_tables_[layer].add_token_count(valid_tokens);
+  }
+  num_tokens_=valid_tokens;
+  shared_prefix_tokens_=valid_tokens;
+  tail_shared_=valid_tokens%block_size_!=0;
 }
 
 bool SequenceKVManager::append_tokens_internal(
@@ -171,6 +217,41 @@ bool SequenceKVManager::append_tokens_internal(
   const int32_t blocks_before = blocks_for_tokens(num_tokens_, block_size_);
   const int32_t blocks_after = blocks_for_tokens(num_tokens_ + num_tokens, block_size_);
   const int32_t new_blocks_needed = blocks_after - blocks_before;
+
+  if (requires_tail_cow()) {
+    // SequenceKVManager is single-owner. Preflight the complete COW+growth
+    // transaction so a failed direct call cannot replace only the tail.
+    for (int32_t layer = 0; layer < num_layers_; ++layer) {
+      if (layer_allocators[layer]->num_free_blocks() < new_blocks_needed + 1) {
+        stats_.allocation_failures++;
+        stats_.rollback_count++;
+        return false;
+      }
+    }
+    std::vector<int32_t> replacements(num_layers_, -1);
+    for (int32_t layer = 0; layer < num_layers_; ++layer) {
+      replacements[layer] = layer_allocators[layer]->allocate();
+      if (replacements[layer] == -1) {
+        for (int32_t rollback = 0; rollback < layer; ++rollback) {
+          layer_allocators[rollback]->free(replacements[rollback]);
+        }
+        stats_.allocation_failures++;
+        stats_.rollback_count++;
+        return false;
+      }
+    }
+    for (int32_t layer = 0; layer < num_layers_; ++layer) {
+      const int32_t old_id = page_tables_[layer].block_ids().back();
+      layer_allocators[layer]->copy_block_payload(old_id, replacements[layer]);
+      page_tables_[layer].replace_last_block(replacements[layer]);
+      layer_allocators[layer]->free(old_id);
+      stats_.cow_pages++;
+      stats_.cow_bytes +=
+          2 * static_cast<int64_t>(layer_allocators[layer]->key_value_bytes_per_block()) +
+          2 * static_cast<int64_t>(layer_allocators[layer]->scale_bytes_per_block());
+    }
+    tail_shared_ = false;
+  }
 
   if (new_blocks_needed <= 0) {
     num_tokens_ += num_tokens;

@@ -1,0 +1,201 @@
+{
+  "schema_version": 1,
+  "completed_utc": "2026-09-12T12:25:59.281926+00:00",
+  "checks": [
+    {
+      "name": "cpu_configure",
+      "command": [
+        "cmake",
+        "-S",
+        "test/cache_core",
+        "-B",
+        "/tmp/Paged-Batch-Engine-v4-m0-cpu",
+        "-DKUIPER_TEST_CPU_OWNERSHIP=ON",
+        "-Dglog_DIR=/tmp/Paged-Batch-Engine-build-p1/_deps/glog-build",
+        "-DGTest_DIR=/tmp/Paged-Batch-Engine-build-p1/_deps/googletest-build",
+        "-DARMADILLO_INCLUDE_DIR=/tmp/Paged-Batch-Engine-build-p1/_deps/armadillo-src/include",
+        "-DARMADILLO_LIBRARY=/tmp/Paged-Batch-Engine-build-p1/_deps/armadillo-build/libarmadillo.so",
+        "-DCMAKE_BUILD_TYPE=RelWithDebInfo"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.29126106947660446,
+      "log": "docs/data_flow_evidence/v4/M0/logs/cpu_configure.log"
+    },
+    {
+      "name": "cpu_build",
+      "command": [
+        "cmake",
+        "--build",
+        "/tmp/Paged-Batch-Engine-v4-m0-cpu",
+        "-j16"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.17886268347501755,
+      "log": "docs/data_flow_evidence/v4/M0/logs/cpu_build.log"
+    },
+    {
+      "name": "cpu_tests",
+      "command": [
+        "ctest",
+        "--test-dir",
+        "/tmp/Paged-Batch-Engine-v4-m0-cpu",
+        "--output-on-failure"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.5506123006343842,
+      "log": "docs/data_flow_evidence/v4/M0/logs/cpu_tests.log"
+    },
+    {
+      "name": "sanitizer_configure",
+      "command": [
+        "cmake",
+        "-S",
+        "test/cache_core",
+        "-B",
+        "/tmp/Paged-Batch-Engine-v4-m0-asan",
+        "-DKUIPER_TEST_CPU_OWNERSHIP=ON",
+        "-Dglog_DIR=/tmp/Paged-Batch-Engine-build-p1/_deps/glog-build",
+        "-DGTest_DIR=/tmp/Paged-Batch-Engine-build-p1/_deps/googletest-build",
+        "-DARMADILLO_INCLUDE_DIR=/tmp/Paged-Batch-Engine-build-p1/_deps/armadillo-src/include",
+        "-DARMADILLO_LIBRARY=/tmp/Paged-Batch-Engine-build-p1/_deps/armadillo-build/libarmadillo.so",
+        "-DCMAKE_BUILD_TYPE=Debug",
+        "-DCMAKE_CXX_FLAGS=-fsanitize=address,undefined -fno-omit-frame-pointer -L/tmp/Paged-Batch-Engine-v4-m0-sanitizer-runtime/root/usr/lib64",
+        "-DCMAKE_EXE_LINKER_FLAGS=-fsanitize=address,undefined -fno-omit-frame-pointer -L/tmp/Paged-Batch-Engine-v4-m0-sanitizer-runtime/root/usr/lib64"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.4557291865348816,
+      "log": "docs/data_flow_evidence/v4/M0/logs/sanitizer_configure.log"
+    },
+    {
+      "name": "sanitizer_build",
+      "command": [
+        "cmake",
+        "--build",
+        "/tmp/Paged-Batch-Engine-v4-m0-asan",
+        "-j16"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.34537317603826523,
+      "log": "docs/data_flow_evidence/v4/M0/logs/sanitizer_build.log"
+    },
+    {
+      "name": "sanitizer_tests",
+      "command": [
+        "ctest",
+        "--test-dir",
+        "/tmp/Paged-Batch-Engine-v4-m0-asan",
+        "--output-on-failure"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 2.942209340631962,
+      "log": "docs/data_flow_evidence/v4/M0/logs/sanitizer_tests.log"
+    },
+    {
+      "name": "cuda_configure",
+      "command": [
+        "cmake",
+        "-S",
+        ".",
+        "-B",
+        "build-v3",
+        "-DUSE_CPM=ON",
+        "-DKUIPER_BUILD_DEMOS=OFF",
+        "-DKUIPER_BUILD_TESTS=ON",
+        "-DQWEN2_SUPPORT=OFF",
+        "-DKUIPER_ENABLE_NCCL=OFF",
+        "-DCMAKE_BUILD_TYPE=RelWithDebInfo",
+        "-DCMAKE_CUDA_ARCHITECTURES=90"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 18.066303238272667,
+      "log": "docs/data_flow_evidence/v4/M0/logs/cuda_configure.log"
+    },
+    {
+      "name": "cuda_build",
+      "command": [
+        "cmake",
+        "--build",
+        "build-v3",
+        "--target",
+        "test_llm",
+        "-j16"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 109.37078753858805,
+      "log": "docs/data_flow_evidence/v4/M0/logs/cuda_build.log"
+    },
+    {
+      "name": "cuda_data_flow_tests",
+      "command": [
+        "./build-v3/test/test_llm",
+        "--gtest_filter=TransferSchedulerTest.*:SchedulerCheckpointTest.*:KVCacheManagerTest.*:RequestCheckpointTest.*:PDHandoffTest.*:PageSchemaTest.*:CacheTransferPlanTest.*:CacheLayoutTest.*:PageDirectoryTest.*:PageMigrationTest.*:PageMigrationCudaTest.*:HostStoreTest.*:HostStoreCudaTest.*"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 2.7084873616695404,
+      "log": "docs/data_flow_evidence/v4/M0/logs/cuda_data_flow_tests.log"
+    },
+    {
+      "name": "cuda_full_tests",
+      "command": [
+        "./build-v3/test/test_llm",
+        "--gtest_filter=-test_load.*"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 2.979831323027611,
+      "log": "docs/data_flow_evidence/v4/M0/logs/cuda_full_tests.log"
+    },
+    {
+      "name": "qwen_build",
+      "command": [
+        "cmake",
+        "--build",
+        "/tmp/Paged-Batch-Engine-build-qwen05",
+        "--target",
+        "serving_qwen",
+        "qwen_instruct_infer",
+        "test_llm",
+        "-j16"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 3.2280351370573044,
+      "log": "docs/data_flow_evidence/v4/M0/logs/qwen_build.log"
+    },
+    {
+      "name": "qwen_greedy_smoke",
+      "command": [
+        "/tmp/Paged-Batch-Engine-build-qwen05/demo/serving_qwen",
+        "/tmp/Paged-Batch-Engine-models/Qwen2-0.5B-Instruct.bf16.bin",
+        "/tmp/Paged-Batch-Engine-models/Qwen2-0.5B-Instruct/tokenizer.json",
+        "Explain KV cache in one sentence.",
+        "What is continuous batching?",
+        "--max-new-tokens=24",
+        "--max-batched-tokens=128",
+        "--kv-cache-memory-utilization=0.02",
+        "--warmup-rounds=1",
+        "--quiet=1",
+        "--final-summary=1"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 3.4218904599547386,
+      "log": "docs/data_flow_evidence/v4/M0/logs/qwen_greedy_smoke.log"
+    },
+    {
+      "name": "qwen_model_regressions",
+      "command": [
+        "/tmp/Paged-Batch-Engine-build-qwen05/test/test_llm",
+        "--gtest_filter=Qwen2DeviceInitTest.DualGpuP2PMatchesSingleModelGreedyTokens:Qwen2DeviceInitTest.CheckpointResumeMatchesUninterruptedSampledTokens"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 4.8452492877841,
+      "log": "docs/data_flow_evidence/v4/M0/logs/qwen_model_regressions.log"
+    }
+  ],
+  "passed": 13,
+  "failed": 0,
+  "m0_complete": true,
+  "notes": [
+    "NCCL-only tests remain inapplicable because the baseline build has KUIPER_ENABLE_NCCL=OFF.",
+    "test_load.* is excluded because this checkout has no external llama fixture at ../stories15M.bin.",
+    "The legacy hex-JSON/ZMQ handoff remains a compatibility/oracle path, not the V4 transport."
+  ]
+}

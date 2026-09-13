@@ -2,10 +2,14 @@
 #include <glog/logging.h>
 #include <algorithm>
 #include <cstdlib>
+#include <iostream>
 #include <memory>
 #include <string>
 #include <vector>
+#include <cuda_runtime_api.h>
 #include "base/base.h"
+#include "data/data_client.h"
+#include "data/ipc_pool.h"
 #include "model/qwen2.h"
 #include "serving/serving_benchmark_app.h"
 #include "serving/serving_zmq_rpc.h"
@@ -40,6 +44,9 @@ std::string trim_response(std::string response) {
 }
 
 class QwenServingBenchmarkApp final : public serving::ServingBenchmarkApp {
+ public:
+  ~QwenServingBenchmarkApp() override { release_external_kv_pool(); }
+
  protected:
   const char* usage_name() const override { return "./serving_qwen"; }
 
@@ -62,9 +69,28 @@ class QwenServingBenchmarkApp final : public serving::ServingBenchmarkApp {
             ? std::min(bench_config.kv_cache_memory_utilization, 0.45)
             : bench_config.kv_cache_memory_utilization;
     model_->set_kv_cache_memory_utilization(per_model_kv_utilization);
+    model_->set_kv_cache_blocks_per_layer(
+        bench_config.kv_cache_blocks_per_layer);
     model_->set_serving_workspace_token_capacity(bench_config.max_num_batched_tokens);
+    if (!bench_config.data_service_endpoint.empty()) {
+      CHECK(!dual_gpu_local_pd && bench_config.pd_mode == "off")
+          << "--data-service-endpoint currently supports the single-role "
+             "serving path; use the multi-role launcher for PD";
+      if (!bind_external_kv_pool(model_.get(), bench_config.data_service_endpoint,
+                                 remote_decode_core
+                                     ? bench_config.decode_device_id
+                                     : remote_prefill_core
+                                           ? bench_config.prefill_device_id
+                                           : bench_config.device_id)) {
+        return false;
+      }
+    }
     if (bench_config.radix_cache_config_explicit) {
       model_->set_radix_cache_enabled(bench_config.radix_cache_enabled);
+    }
+    if (bench_config.host_cache_enabled) {
+      model_->set_host_cache_config({true, bench_config.host_cache_bytes,
+          bench_config.host_cache_pages, bench_config.host_cache_inflight_pages});
     }
     if (fp8_kv_cache_enabled()) {
       model_->set_use_fp8_kv_cache(true);
@@ -88,9 +114,15 @@ class QwenServingBenchmarkApp final : public serving::ServingBenchmarkApp {
       decode_model_ = std::make_unique<model::Qwen2Model>(
           base::TokenizerType::kEncodeBpe, tokenizer_path, model_path, false);
       decode_model_->set_kv_cache_memory_utilization(per_model_kv_utilization);
+      decode_model_->set_kv_cache_blocks_per_layer(
+          bench_config.kv_cache_blocks_per_layer);
       decode_model_->set_serving_workspace_token_capacity(bench_config.max_num_batched_tokens);
       if (bench_config.radix_cache_config_explicit) {
         decode_model_->set_radix_cache_enabled(bench_config.radix_cache_enabled);
+      }
+      if (bench_config.host_cache_enabled) {
+        decode_model_->set_host_cache_config({true, bench_config.host_cache_bytes,
+            bench_config.host_cache_pages, bench_config.host_cache_inflight_pages});
       }
       if (fp8_kv_cache_enabled()) {
         decode_model_->set_use_fp8_kv_cache(true);
@@ -245,6 +277,108 @@ class QwenServingBenchmarkApp final : public serving::ServingBenchmarkApp {
   }
 
  private:
+  bool bind_external_kv_pool(model::Qwen2Model* model,
+                             const std::string& endpoint, int32_t device) {
+    CHECK_NE(model, nullptr);
+    external_data_client_ = std::make_unique<data::DataClient>(endpoint);
+    data::IpcPoolDescriptor descriptor;
+    data::DataError status = external_data_client_->get_ipc_pool(&descriptor);
+    if (status != data::DataError::kOk) {
+      LOG(ERROR) << "Failed to get external KV pool descriptor: "
+                 << static_cast<int>(status);
+      return false;
+    }
+    if (descriptor.device != device) {
+      LOG(ERROR) << "Serving external KV main path requires the pool and model "
+                    "on the same GPU: pool_device="
+                 << descriptor.device << " model_device=" << device;
+      return false;
+    }
+
+    status = external_data_client_->reserve_ipc_slots(
+        static_cast<uint32_t>(descriptor.num_blocks), &external_slot_grant_);
+    if (status != data::DataError::kOk) {
+      LOG(ERROR) << "Failed to reserve external KV slots: "
+                 << static_cast<int>(status);
+      return false;
+    }
+
+    external_ipc_pool_ = std::make_shared<data::CudaIpcPoolImport>();
+    std::string error;
+    uint64_t transferred_bytes = 0;
+    double transfer_ms = 0.0;
+    std::string transport;
+    if (!external_ipc_pool_->open(descriptor, device, &error) ||
+        !external_ipc_pool_->prepare_compute_view(
+            nullptr, &transferred_bytes, &transfer_ms, &transport, &error)) {
+      LOG(ERROR) << "Failed to import external KV pool: " << error;
+      external_data_client_->release_ipc_slots(external_slot_grant_.token);
+      external_slot_grant_ = {};
+      external_ipc_pool_.reset();
+      return false;
+    }
+
+    base::ExternalKVPoolBinding binding;
+    binding.base = external_ipc_pool_->mapped();
+    binding.bytes = descriptor.bytes;
+    binding.device = device;
+    binding.num_layers = descriptor.num_layers;
+    binding.num_blocks = descriptor.num_blocks;
+    binding.block_size = descriptor.block_size;
+    binding.num_kv_heads = descriptor.num_kv_heads;
+    binding.head_size = descriptor.head_size;
+    binding.storage_dtype =
+        static_cast<base::DataType>(descriptor.storage_dtype);
+    binding.allocatable_blocks = external_slot_grant_.slots;
+    binding.capsule = external_ipc_pool_;
+    model->set_external_kv_pool(std::move(binding));
+    external_kv_device_ = device;
+    std::cout << "PBE_SERVING_EXTERNAL_KV_BOUND"
+              << " pool_owner=" << descriptor.owner_incarnation
+              << " grant_service="
+              << external_slot_grant_.token.service_incarnation
+              << " grant_consumer="
+              << external_slot_grant_.token.consumer_incarnation
+              << " grant=" << external_slot_grant_.token.lease_id
+              << " slots=" << external_slot_grant_.slots.size()
+              << " bytes=" << descriptor.bytes
+              << " transport=" << transport
+              << " transferred_bytes=" << transferred_bytes
+              << " transfer_ms=" << transfer_ms << std::endl;
+    return true;
+  }
+
+  void release_external_kv_pool() {
+    // The model owns all request page tables and kernel-visible tensor views.
+    // Destroy it and the IPC mapping before returning the authoritative grant.
+    if (external_kv_device_ >= 0) {
+      cudaSetDevice(external_kv_device_);
+      const cudaError_t sync = cudaDeviceSynchronize();
+      if (sync != cudaSuccess) {
+        LOG(ERROR) << "External KV teardown synchronize failed: "
+                   << cudaGetErrorString(sync);
+      }
+    }
+    decode_model_.reset();
+    model_.reset();
+    external_ipc_pool_.reset();
+    if (external_data_client_ && external_slot_grant_.token.lease_id != 0) {
+      const data::DataError status = external_data_client_->release_ipc_slots(
+          external_slot_grant_.token);
+      if (status != data::DataError::kOk) {
+        LOG(ERROR) << "Failed to release external KV grant: "
+                   << static_cast<int>(status);
+      } else {
+        std::cout << "PBE_SERVING_EXTERNAL_KV_RELEASED"
+                  << " grant=" << external_slot_grant_.token.lease_id
+                  << std::endl;
+      }
+    }
+    external_slot_grant_ = {};
+    external_data_client_.reset();
+    external_kv_device_ = -1;
+  }
+
   serving::KVPoolDescriptor make_pool_descriptor(const model::Qwen2Model* model) const {
     auto info = model->serving_capacity_info();
     serving::KVPoolDescriptor pool;
@@ -261,6 +395,10 @@ class QwenServingBenchmarkApp final : public serving::ServingBenchmarkApp {
 
   std::unique_ptr<model::Qwen2Model> model_;
   std::unique_ptr<model::Qwen2Model> decode_model_;
+  std::unique_ptr<data::DataClient> external_data_client_;
+  std::shared_ptr<data::CudaIpcPoolImport> external_ipc_pool_;
+  data::IpcSlotGrant external_slot_grant_;
+  int32_t external_kv_device_ = -1;
 };
 
 }  // namespace

@@ -1,6 +1,7 @@
 // Updated on March 31, 2026
 #ifndef KUIPER_INCLUDE_MODEL_LLAMA_H_
 #define KUIPER_INCLUDE_MODEL_LLAMA_H_
+#include <algorithm>
 #include "base/backend_runtime.h"
 #include "base/device_context.h"
 #include "base/kv_cache_manager.h"
@@ -9,6 +10,7 @@
 #include "serving/scheduler.h"
 #include "serving/serving_capacity.h"
 #include "model.h"
+#include "model/shared_weight_binding.h"
 #include "op/add.h"
 #include "op/embedding.h"
 #include "op/rope.h"
@@ -42,6 +44,8 @@ struct Qwen2Layers {
 
   void materialize(std::shared_ptr<base::DeviceContext> context,
                    base::DataType runtime_data_type);
+  base::Status bind_shared_weights(const SharedWeightBinding& binding,
+                                   SharedWeightBindingReport* report);
 };
 
 struct Qwen2HostDeviceTensorPair {
@@ -134,9 +138,29 @@ class Qwen2Model : public Model {
                                      : base::BlockStorageMode::kPlain);
   }
   void set_radix_cache_enabled(bool enable);
+  void set_host_cache_config(const base::HostCacheConfig& config) {
+    host_cache_config_ = config;
+  }
   void set_kv_cache_memory_utilization(double utilization);
+  // A positive value is a reproducible hard cap for each layer's GPU KV pool.
+  void set_kv_cache_blocks_per_layer(int32_t blocks) {
+    kv_cache_blocks_per_layer_ = std::max(0, blocks);
+  }
   void set_kv_cache_gpu_memory_utilization(double utilization);
   void set_serving_workspace_token_capacity(int32_t token_capacity);
+  // Must be called before init(). The backing allocation remains owned by the
+  // data-service process; this model only receives the slots granted in the
+  // binding and keeps its IPC capsule alive while kernels may access them.
+  void set_external_kv_pool(base::ExternalKVPoolBinding binding) {
+    external_kv_pool_ = std::move(binding);
+    kv_cache_blocks_per_layer_ = external_kv_pool_.num_blocks;
+  }
+  void set_shared_weight_binding(SharedWeightBinding binding) {
+    shared_weight_binding_ = std::move(binding);
+  }
+  const SharedWeightBindingReport& shared_weight_report() const {
+    return shared_weight_report_;
+  }
 
   // Unified batch entry. Current implementation still executes decode rows only.
   base::Status forward_mixed_batch(const serving::MixedBatchMetadata& batch) const;
@@ -149,6 +173,13 @@ class Qwen2Model : public Model {
   serving::SampledTokenView batch_sample(const serving::MixedBatchMetadata& batch) const;
   serving::SampledTokenView batch_sample(const serving::MixedBatchMetadata& batch,
                                          const serving::SchedulerOutput& sched_out) const;
+
+  // Copies one completed logits row for numerical compatibility probes.
+  base::Status copy_logits_row_to_host(int32_t row, std::vector<float>* logits) const;
+  // Controlled numerical-probe hook. Valid after a batch forward and before
+  // the next forward reuses the serving workspace.
+  base::Status copy_final_hidden_row_to_host(int32_t row,
+                                             std::vector<float>* hidden) const;
 
   // Prefill a chunk of prompt tokens for a request.
   // Returns next_token prediction from the last token in the chunk.
@@ -202,11 +233,16 @@ class Qwen2Model : public Model {
   std::unique_ptr<Qwen2Layers> qwen_layers_;
   std::shared_ptr<PagedKVRuntime> paged_kv_runtime_;
   mutable std::unique_ptr<base::KVCacheManager> kv_cache_manager_;
+  base::ExternalKVPoolBinding external_kv_pool_;
+  SharedWeightBinding shared_weight_binding_;
+  SharedWeightBindingReport shared_weight_report_;
   double kv_cache_memory_utilization_ = 0.80;
+  int32_t kv_cache_blocks_per_layer_ = 0;
   int32_t serving_workspace_token_capacity_ = model_max_batch_size;
   size_t serving_workspace_reserved_bytes_ = 0;
   bool radix_cache_enabled_override_set_ = false;
   bool radix_cache_enabled_override_ = true;
+  base::HostCacheConfig host_cache_config_;
 
   // Single-sequence request ID for the simple forward() path
   mutable base::RequestId single_seq_request_id_ = -1;

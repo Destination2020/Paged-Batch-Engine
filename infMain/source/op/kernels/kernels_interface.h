@@ -58,6 +58,17 @@ typedef void (*RoPEBatchKernel)(int32_t dim, int32_t kv_dim, int32_t head_size,
                                 int32_t batch_tokens,
                                 void* stream);
 
+typedef void (*MRoPEBatchKernel)(int32_t dim, int32_t kv_dim, int32_t head_size,
+                                 const tensor::Tensor& input_q,
+                                 const tensor::Tensor& input_k,
+                                 const tensor::Tensor& positions,
+                                 const tensor::Tensor& sin_cache,
+                                 const tensor::Tensor& cos_cache,
+                                 int32_t temporal_section,
+                                 int32_t height_section,
+                                 int32_t batch_tokens,
+                                 void* stream);
+
 typedef void (*SinCosCacheKernel)(int32_t head_size,
                                   int32_t max_seq_len,
                                   const tensor::Tensor& sin_cache,
@@ -115,6 +126,8 @@ RMSNormKernel get_rmsnorm_kernel(base::DeviceType device_type);
 RoPEKernel get_rope_kernel(base::DeviceType device_type);
 
 RoPEBatchKernel get_rope_batch_kernel(base::DeviceType device_type);
+
+MRoPEBatchKernel get_mrope_batch_kernel(base::DeviceType device_type);
 
 SinCosCacheKernel get_sin_cos_cache_kernel(base::DeviceType device_type);
 

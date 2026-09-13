@@ -3,6 +3,7 @@
 #define KUIPER_INCLUDE_BASE_BASE_H_
 #include <glog/logging.h>
 #include <cstdint>
+#include <ostream>
 #include <string>
 #define UNUSED(expr) \
   do {               \

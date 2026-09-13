@@ -49,7 +49,7 @@ TEST(SplitKVAttentionTest, SingleSequenceMatchesBaseline) {
   auto alloc_cu = CUDADeviceAllocatorFactory::get_instance();
 
   CudaConfig cuda_config;
-  cudaStreamCreate(&cuda_config.stream);
+  ASSERT_EQ(cudaStreamCreate(&cuda_config.stream), cudaSuccess);
 
   // Create block allocator and fill KV cache
   BlockAllocator allocator(num_blocks, block_size, num_kv_heads, head_size,
@@ -76,6 +76,7 @@ TEST(SplitKVAttentionTest, SingleSequenceMatchesBaseline) {
                           blk_id, offset, block_size,
                           num_kv_heads, head_size,
                           DeviceType::kDeviceCUDA, &cuda_config);
+    ASSERT_EQ(cudaStreamSynchronize(cuda_config.stream), cudaSuccess);
   }
 
   // Query
@@ -108,6 +109,7 @@ TEST(SplitKVAttentionTest, SingleSequenceMatchesBaseline) {
       block_table_gpu, seq_lens_gpu,
       num_kv_blocks, block_size, num_kv_heads,
       DeviceType::kDeviceCUDA, &cuda_config);
+  ASSERT_EQ(cudaPeekAtLastError(), cudaSuccess);
 
   // Workspace for split-KV
   constexpr int32_t MAX_PARTS = 32;
@@ -130,8 +132,9 @@ TEST(SplitKVAttentionTest, SingleSequenceMatchesBaseline) {
       num_kv_blocks, block_size, num_kv_heads,
       partial_out, partial_max, partial_sum,
       DeviceType::kDeviceCUDA, &cuda_config);
+  ASSERT_EQ(cudaPeekAtLastError(), cudaSuccess);
 
-  cudaStreamSynchronize(cuda_config.stream);
+  ASSERT_EQ(cudaStreamSynchronize(cuda_config.stream), cudaSuccess);
 
   // Compare
   std::vector<float> out_base(dim), out_split(dim);
@@ -141,16 +144,20 @@ TEST(SplitKVAttentionTest, SingleSequenceMatchesBaseline) {
                    dim * sizeof(float), MemcpyKind::kMemcpyCUDA2CPU, nullptr, true);
 
   float max_diff = 0.f;
+  float max_base = 0.f;
+  float max_split = 0.f;
   for (int32_t i = 0; i < dim; ++i) {
     float diff = std::abs(out_base[i] - out_split[i]);
     max_diff = std::max(max_diff, diff);
+    max_base = std::max(max_base, std::abs(out_base[i]));
+    max_split = std::max(max_split, std::abs(out_split[i]));
   }
 
   std::cout << "[SplitKV vs Baseline] context_len=" << context_len
-            << " max_diff=" << max_diff << std::endl;
+            << " max_diff=" << max_diff << " max_base=" << max_base
+            << " max_split=" << max_split << std::endl;
   EXPECT_LT(max_diff, 1e-4f) << "Split-KV and baseline outputs differ too much";
 
-  cudaStreamDestroy(cuda_config.stream);
 }
 
 // Test: Split-KV with short context (num_kv_blocks=1, single partition)
@@ -175,7 +182,7 @@ TEST(SplitKVAttentionTest, ShortContextSinglePartition) {
 
   auto alloc_cu = CUDADeviceAllocatorFactory::get_instance();
   CudaConfig cuda_config;
-  cudaStreamCreate(&cuda_config.stream);
+  ASSERT_EQ(cudaStreamCreate(&cuda_config.stream), cudaSuccess);
 
   std::vector<std::unique_ptr<BlockAllocator>> allocs;
   allocs.push_back(std::make_unique<BlockAllocator>(
@@ -195,6 +202,7 @@ TEST(SplitKVAttentionTest, ShortContextSinglePartition) {
                           const_cast<Tensor&>(allocs[0]->value_pool()),
                           blk_id, offset, block_size, num_kv_heads, head_size,
                           DeviceType::kDeviceCUDA, &cuda_config);
+    ASSERT_EQ(cudaStreamSynchronize(cuda_config.stream), cudaSuccess);
   }
 
   Tensor query(dtype, dim, true, alloc_cu);
@@ -220,6 +228,7 @@ TEST(SplitKVAttentionTest, ShortContextSinglePartition) {
                               block_table_gpu, seq_lens_gpu,
                               num_kv_blocks, block_size, num_kv_heads,
                               DeviceType::kDeviceCUDA, &cuda_config);
+  ASSERT_EQ(cudaPeekAtLastError(), cudaSuccess);
 
   constexpr int32_t MAX_PARTS = 32;
   Tensor po(DataType::kDataTypeFp32, num_heads * MAX_PARTS * head_size, true, alloc_cu);
@@ -236,8 +245,9 @@ TEST(SplitKVAttentionTest, ShortContextSinglePartition) {
                                        num_kv_blocks, block_size, num_kv_heads,
                                        po, pm, ps,
                                        DeviceType::kDeviceCUDA, &cuda_config);
+  ASSERT_EQ(cudaPeekAtLastError(), cudaSuccess);
 
-  cudaStreamSynchronize(cuda_config.stream);
+  ASSERT_EQ(cudaStreamSynchronize(cuda_config.stream), cudaSuccess);
 
   std::vector<float> out_base(dim), out_split(dim);
   alloc_cu->memcpy(output_baseline.ptr<float>(), out_base.data(),
@@ -246,13 +256,17 @@ TEST(SplitKVAttentionTest, ShortContextSinglePartition) {
                    dim * sizeof(float), MemcpyKind::kMemcpyCUDA2CPU, nullptr, true);
 
   float max_diff = 0.f;
+  float max_base = 0.f;
+  float max_split = 0.f;
   for (int32_t i = 0; i < dim; ++i) {
     max_diff = std::max(max_diff, std::abs(out_base[i] - out_split[i]));
+    max_base = std::max(max_base, std::abs(out_base[i]));
+    max_split = std::max(max_split, std::abs(out_split[i]));
   }
 
   std::cout << "[SplitKV short] context_len=" << context_len
-            << " max_diff=" << max_diff << std::endl;
+            << " max_diff=" << max_diff << " max_base=" << max_base
+            << " max_split=" << max_split << std::endl;
   EXPECT_LT(max_diff, 1e-4f);
 
-  cudaStreamDestroy(cuda_config.stream);
 }

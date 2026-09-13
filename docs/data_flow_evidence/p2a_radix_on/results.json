@@ -1,0 +1,296 @@
+[
+  {
+    "run": 0,
+    "command": [
+      "/tmp/Paged-Batch-Engine-build-qwen05/demo/serving_qwen",
+      "/tmp/Paged-Batch-Engine-models/Qwen2-0.5B-Instruct.bf16.bin",
+      "/tmp/Paged-Batch-Engine-models/Qwen2-0.5B-Instruct/tokenizer.json",
+      "--online-server=1",
+      "--listen-host=127.0.0.1",
+      "--listen-port=18972",
+      "--max-batched-tokens=128",
+      "--kv-cache-memory-utilization=0.02",
+      "--warmup-rounds=0",
+      "--quiet=1",
+      "--radix-cache=on"
+    ],
+    "cpu_sampling": false,
+    "single": [
+      {
+        "payload": {
+          "prompt": "Explain KV cache in one sentence.",
+          "max_new_tokens": 24,
+          "ignore_eos": true,
+          "temperature": 0.8,
+          "top_k": 16,
+          "top_p": 0.9,
+          "seed": 123456789012345
+        },
+        "response": {
+          "text": "KV cache is a key-value store, also known as a hash table, where data is stored based on the key,"
+        },
+        "wall_ms": 178.40895056724548
+      },
+      {
+        "payload": {
+          "prompt": "Explain KV cache in one sentence.",
+          "max_new_tokens": 24,
+          "ignore_eos": true,
+          "temperature": 0.8,
+          "top_k": 16,
+          "top_p": 0.9,
+          "seed": 123456789012345
+        },
+        "response": {
+          "text": "KV cache is a key-value store, also known as a hash table, where data is stored based on the key,"
+        },
+        "wall_ms": 82.51827210187912
+      }
+    ],
+    "concurrent": [
+      {
+        "payload": {
+          "prompt": "Explain KV cache in one sentence.",
+          "max_new_tokens": 24,
+          "ignore_eos": true,
+          "temperature": 0.8,
+          "top_k": 16,
+          "top_p": 0.9,
+          "seed": 123456789012345
+        },
+        "response": {
+          "text": "KV cache is a key-value store, also known as a hash table, where data is stored using a hash function to"
+        },
+        "wall_ms": 95.71300446987152
+      },
+      {
+        "payload": {
+          "prompt": "Explain KV cache in one sentence.",
+          "max_new_tokens": 24,
+          "ignore_eos": true,
+          "temperature": 0.8,
+          "top_k": 16,
+          "top_p": 0.9,
+          "seed": 987654321
+        },
+        "response": {
+          "text": "KV cache (Key-Value Store) is a type of caching system that stores key-value pairs in a database, providing"
+        },
+        "wall_ms": 91.14374220371246
+      },
+      {
+        "payload": {
+          "prompt": "Explain KV cache in one sentence.",
+          "max_new_tokens": 24,
+          "ignore_eos": true,
+          "temperature": 0.8,
+          "top_k": 16,
+          "top_p": 0.9,
+          "seed": 123456789012345
+        },
+        "response": {
+          "text": "KV cache is a key-value store, also known as a hash table, where data is stored using a hash function to"
+        },
+        "wall_ms": 94.84850615262985
+      }
+    ],
+    "repeat_equal": true,
+    "concurrent_equal": false
+  },
+  {
+    "run": 1,
+    "command": [
+      "/tmp/Paged-Batch-Engine-build-qwen05/demo/serving_qwen",
+      "/tmp/Paged-Batch-Engine-models/Qwen2-0.5B-Instruct.bf16.bin",
+      "/tmp/Paged-Batch-Engine-models/Qwen2-0.5B-Instruct/tokenizer.json",
+      "--online-server=1",
+      "--listen-host=127.0.0.1",
+      "--listen-port=18972",
+      "--max-batched-tokens=128",
+      "--kv-cache-memory-utilization=0.02",
+      "--warmup-rounds=0",
+      "--quiet=1",
+      "--radix-cache=on"
+    ],
+    "cpu_sampling": false,
+    "single": [
+      {
+        "payload": {
+          "prompt": "Explain KV cache in one sentence.",
+          "max_new_tokens": 24,
+          "ignore_eos": true,
+          "temperature": 0.8,
+          "top_k": 16,
+          "top_p": 0.9,
+          "seed": 123456789012345
+        },
+        "response": {
+          "text": "KV cache is a key-value store, also known as a hash table, where data is stored based on the key,"
+        },
+        "wall_ms": 175.91803520917892
+      },
+      {
+        "payload": {
+          "prompt": "Explain KV cache in one sentence.",
+          "max_new_tokens": 24,
+          "ignore_eos": true,
+          "temperature": 0.8,
+          "top_k": 16,
+          "top_p": 0.9,
+          "seed": 123456789012345
+        },
+        "response": {
+          "text": "KV cache is a key-value store, also known as a hash table, where data is stored based on the key,"
+        },
+        "wall_ms": 82.93899148702621
+      }
+    ],
+    "concurrent": [
+      {
+        "payload": {
+          "prompt": "Explain KV cache in one sentence.",
+          "max_new_tokens": 24,
+          "ignore_eos": true,
+          "temperature": 0.8,
+          "top_k": 16,
+          "top_p": 0.9,
+          "seed": 123456789012345
+        },
+        "response": {
+          "text": "KV cache is a key-value store, also known as a hash table, where data is stored using a hash function to"
+        },
+        "wall_ms": 91.03921055793762
+      },
+      {
+        "payload": {
+          "prompt": "Explain KV cache in one sentence.",
+          "max_new_tokens": 24,
+          "ignore_eos": true,
+          "temperature": 0.8,
+          "top_k": 16,
+          "top_p": 0.9,
+          "seed": 987654321
+        },
+        "response": {
+          "text": "KV cache, also known as key-value store, is a type of caching system used for storing and retrieving data. It"
+        },
+        "wall_ms": 95.06689012050629
+      },
+      {
+        "payload": {
+          "prompt": "Explain KV cache in one sentence.",
+          "max_new_tokens": 24,
+          "ignore_eos": true,
+          "temperature": 0.8,
+          "top_k": 16,
+          "top_p": 0.9,
+          "seed": 123456789012345
+        },
+        "response": {
+          "text": "KV cache is a key-value store, also known as a hash table, where data is stored using a hash function to"
+        },
+        "wall_ms": 94.57184374332428
+      }
+    ],
+    "repeat_equal": true,
+    "concurrent_equal": false
+  },
+  {
+    "run": 2,
+    "command": [
+      "/tmp/Paged-Batch-Engine-build-qwen05/demo/serving_qwen",
+      "/tmp/Paged-Batch-Engine-models/Qwen2-0.5B-Instruct.bf16.bin",
+      "/tmp/Paged-Batch-Engine-models/Qwen2-0.5B-Instruct/tokenizer.json",
+      "--online-server=1",
+      "--listen-host=127.0.0.1",
+      "--listen-port=18972",
+      "--max-batched-tokens=128",
+      "--kv-cache-memory-utilization=0.02",
+      "--warmup-rounds=0",
+      "--quiet=1",
+      "--radix-cache=on"
+    ],
+    "cpu_sampling": false,
+    "single": [
+      {
+        "payload": {
+          "prompt": "Explain KV cache in one sentence.",
+          "max_new_tokens": 24,
+          "ignore_eos": true,
+          "temperature": 0.8,
+          "top_k": 16,
+          "top_p": 0.9,
+          "seed": 123456789012345
+        },
+        "response": {
+          "text": "KV cache is a key-value store, also known as a hash table, where data is stored based on the key,"
+        },
+        "wall_ms": 172.7360486984253
+      },
+      {
+        "payload": {
+          "prompt": "Explain KV cache in one sentence.",
+          "max_new_tokens": 24,
+          "ignore_eos": true,
+          "temperature": 0.8,
+          "top_k": 16,
+          "top_p": 0.9,
+          "seed": 123456789012345
+        },
+        "response": {
+          "text": "KV cache is a key-value store, also known as a hash table, where data is stored based on the key,"
+        },
+        "wall_ms": 80.84359765052795
+      }
+    ],
+    "concurrent": [
+      {
+        "payload": {
+          "prompt": "Explain KV cache in one sentence.",
+          "max_new_tokens": 24,
+          "ignore_eos": true,
+          "temperature": 0.8,
+          "top_k": 16,
+          "top_p": 0.9,
+          "seed": 123456789012345
+        },
+        "response": {
+          "text": "KV cache is a key-value store, also known as a hash table, where data is stored using a hash function to"
+        },
+        "wall_ms": 89.27261084318161
+      },
+      {
+        "payload": {
+          "prompt": "Explain KV cache in one sentence.",
+          "max_new_tokens": 24,
+          "ignore_eos": true,
+          "temperature": 0.8,
+          "top_k": 16,
+          "top_p": 0.9,
+          "seed": 987654321
+        },
+        "response": {
+          "text": "KV cache, also known as key-value store, is a type of caching system used for storing and retrieving data. It"
+        },
+        "wall_ms": 93.20472180843353
+      },
+      {
+        "payload": {
+          "prompt": "Explain KV cache in one sentence.",
+          "max_new_tokens": 24,
+          "ignore_eos": true,
+          "temperature": 0.8,
+          "top_k": 16,
+          "top_p": 0.9,
+          "seed": 123456789012345
+        },
+        "response": {
+          "text": "KV cache is a key-value store, also known as a hash table, where data is stored using a hash function to"
+        },
+        "wall_ms": 92.82286465167999
+      }
+    ],
+    "repeat_equal": true,
+    "concurrent_equal": false
+  }
+]

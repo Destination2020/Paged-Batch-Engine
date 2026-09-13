@@ -1,0 +1,842 @@
+[
+  {
+    "argv": [
+      "tools/launch/persistent_vlm_online.sh",
+      "build-v3",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct.pbe-bf16-v1.bin",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct/tokenizer.json",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct",
+      "/tmp/pbe-e1-different.png"
+    ],
+    "environment": {
+      "CUBLAS_WORKSPACE_CONFIG": ":4096:8",
+      "PBE_DETERMINISTIC_VISION": "1",
+      "PBE_DEVICE": "0",
+      "PBE_RUN_DIR": "docs/data_flow_evidence/v4/performance_characterization/B2/trials/00-reuse50_short_r224-arm11-r3",
+      "PBE_SPEC": "docs/data_flow_evidence/v4/performance_characterization/B2/trials/00-reuse50_short_r224-arm11-r3/spec.json",
+      "PBE_WEIGHT_MODE": "shared"
+    },
+    "feature_cache": true,
+    "semantic_kv_cache": true
+  },
+  {
+    "argv": [
+      "tools/launch/persistent_vlm_online.sh",
+      "build-v3",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct.pbe-bf16-v1.bin",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct/tokenizer.json",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct",
+      "/tmp/pbe-e1-different.png"
+    ],
+    "environment": {
+      "CUBLAS_WORKSPACE_CONFIG": ":4096:8",
+      "PBE_DETERMINISTIC_VISION": "1",
+      "PBE_DEVICE": "0",
+      "PBE_RUN_DIR": "docs/data_flow_evidence/v4/performance_characterization/B2/trials/01-reuse00_short_r224-arm11-r3",
+      "PBE_SPEC": "docs/data_flow_evidence/v4/performance_characterization/B2/trials/01-reuse00_short_r224-arm11-r3/spec.json",
+      "PBE_WEIGHT_MODE": "shared"
+    },
+    "feature_cache": true,
+    "semantic_kv_cache": true
+  },
+  {
+    "argv": [
+      "tools/launch/persistent_vlm_online.sh",
+      "build-v3",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct.pbe-bf16-v1.bin",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct/tokenizer.json",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct",
+      "/tmp/pbe-e1-different.png"
+    ],
+    "environment": {
+      "CUBLAS_WORKSPACE_CONFIG": ":4096:8",
+      "PBE_DETERMINISTIC_VISION": "1",
+      "PBE_DEVICE": "0",
+      "PBE_DISABLE_FEATURE_CACHE": "1",
+      "PBE_DISABLE_RADIX_CACHE": "1",
+      "PBE_RUN_DIR": "docs/data_flow_evidence/v4/performance_characterization/B2/trials/02-reuse00_short_r224-arm00-r2",
+      "PBE_SPEC": "docs/data_flow_evidence/v4/performance_characterization/B2/trials/02-reuse00_short_r224-arm00-r2/spec.json",
+      "PBE_WEIGHT_MODE": "shared"
+    },
+    "feature_cache": false,
+    "semantic_kv_cache": false
+  },
+  {
+    "argv": [
+      "tools/launch/persistent_vlm_online.sh",
+      "build-v3",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct.pbe-bf16-v1.bin",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct/tokenizer.json",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct",
+      "/tmp/pbe-e1-different.png"
+    ],
+    "environment": {
+      "CUBLAS_WORKSPACE_CONFIG": ":4096:8",
+      "PBE_DETERMINISTIC_VISION": "1",
+      "PBE_DEVICE": "0",
+      "PBE_DISABLE_FEATURE_CACHE": "1",
+      "PBE_DISABLE_RADIX_CACHE": "1",
+      "PBE_RUN_DIR": "docs/data_flow_evidence/v4/performance_characterization/B2/trials/03-reuse00_short_r224-arm00-r0",
+      "PBE_SPEC": "docs/data_flow_evidence/v4/performance_characterization/B2/trials/03-reuse00_short_r224-arm00-r0/spec.json",
+      "PBE_WEIGHT_MODE": "shared"
+    },
+    "feature_cache": false,
+    "semantic_kv_cache": false
+  },
+  {
+    "argv": [
+      "tools/launch/persistent_vlm_online.sh",
+      "build-v3",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct.pbe-bf16-v1.bin",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct/tokenizer.json",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct",
+      "/tmp/pbe-e1-different.png"
+    ],
+    "environment": {
+      "CUBLAS_WORKSPACE_CONFIG": ":4096:8",
+      "PBE_DETERMINISTIC_VISION": "1",
+      "PBE_DEVICE": "0",
+      "PBE_RUN_DIR": "docs/data_flow_evidence/v4/performance_characterization/B2/trials/04-reuse00_short_r224-arm11-r4",
+      "PBE_SPEC": "docs/data_flow_evidence/v4/performance_characterization/B2/trials/04-reuse00_short_r224-arm11-r4/spec.json",
+      "PBE_WEIGHT_MODE": "shared"
+    },
+    "feature_cache": true,
+    "semantic_kv_cache": true
+  },
+  {
+    "argv": [
+      "tools/launch/persistent_vlm_online.sh",
+      "build-v3",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct.pbe-bf16-v1.bin",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct/tokenizer.json",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct",
+      "/tmp/pbe-e1-different.png"
+    ],
+    "environment": {
+      "CUBLAS_WORKSPACE_CONFIG": ":4096:8",
+      "PBE_DETERMINISTIC_VISION": "1",
+      "PBE_DEVICE": "0",
+      "PBE_DISABLE_FEATURE_CACHE": "1",
+      "PBE_DISABLE_RADIX_CACHE": "1",
+      "PBE_RUN_DIR": "docs/data_flow_evidence/v4/performance_characterization/B2/trials/05-reuse50_short_r224-arm00-r0",
+      "PBE_SPEC": "docs/data_flow_evidence/v4/performance_characterization/B2/trials/05-reuse50_short_r224-arm00-r0/spec.json",
+      "PBE_WEIGHT_MODE": "shared"
+    },
+    "feature_cache": false,
+    "semantic_kv_cache": false
+  },
+  {
+    "argv": [
+      "tools/launch/persistent_vlm_online.sh",
+      "build-v3",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct.pbe-bf16-v1.bin",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct/tokenizer.json",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct",
+      "/tmp/pbe-e1-different.png"
+    ],
+    "environment": {
+      "CUBLAS_WORKSPACE_CONFIG": ":4096:8",
+      "PBE_DETERMINISTIC_VISION": "1",
+      "PBE_DEVICE": "0",
+      "PBE_RUN_DIR": "docs/data_flow_evidence/v4/performance_characterization/B2/trials/06-reuse00_short_r224-arm11-r2",
+      "PBE_SPEC": "docs/data_flow_evidence/v4/performance_characterization/B2/trials/06-reuse00_short_r224-arm11-r2/spec.json",
+      "PBE_WEIGHT_MODE": "shared"
+    },
+    "feature_cache": true,
+    "semantic_kv_cache": true
+  },
+  {
+    "argv": [
+      "tools/launch/persistent_vlm_online.sh",
+      "build-v3",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct.pbe-bf16-v1.bin",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct/tokenizer.json",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct",
+      "/tmp/pbe-e1-different.png"
+    ],
+    "environment": {
+      "CUBLAS_WORKSPACE_CONFIG": ":4096:8",
+      "PBE_DETERMINISTIC_VISION": "1",
+      "PBE_DEVICE": "0",
+      "PBE_DISABLE_FEATURE_CACHE": "1",
+      "PBE_DISABLE_RADIX_CACHE": "1",
+      "PBE_RUN_DIR": "docs/data_flow_evidence/v4/performance_characterization/B2/trials/07-reuse90_long_r280-arm00-r2",
+      "PBE_SPEC": "docs/data_flow_evidence/v4/performance_characterization/B2/trials/07-reuse90_long_r280-arm00-r2/spec.json",
+      "PBE_WEIGHT_MODE": "shared"
+    },
+    "feature_cache": false,
+    "semantic_kv_cache": false
+  },
+  {
+    "argv": [
+      "tools/launch/persistent_vlm_online.sh",
+      "build-v3",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct.pbe-bf16-v1.bin",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct/tokenizer.json",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct",
+      "/tmp/pbe-e1-different.png"
+    ],
+    "environment": {
+      "CUBLAS_WORKSPACE_CONFIG": ":4096:8",
+      "PBE_DETERMINISTIC_VISION": "1",
+      "PBE_DEVICE": "0",
+      "PBE_DISABLE_FEATURE_CACHE": "1",
+      "PBE_DISABLE_RADIX_CACHE": "1",
+      "PBE_RUN_DIR": "docs/data_flow_evidence/v4/performance_characterization/B2/trials/08-reuse90_long_r280-arm00-r1",
+      "PBE_SPEC": "docs/data_flow_evidence/v4/performance_characterization/B2/trials/08-reuse90_long_r280-arm00-r1/spec.json",
+      "PBE_WEIGHT_MODE": "shared"
+    },
+    "feature_cache": false,
+    "semantic_kv_cache": false
+  },
+  {
+    "argv": [
+      "tools/launch/persistent_vlm_online.sh",
+      "build-v3",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct.pbe-bf16-v1.bin",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct/tokenizer.json",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct",
+      "/tmp/pbe-e1-different.png"
+    ],
+    "environment": {
+      "CUBLAS_WORKSPACE_CONFIG": ":4096:8",
+      "PBE_DETERMINISTIC_VISION": "1",
+      "PBE_DEVICE": "0",
+      "PBE_RUN_DIR": "docs/data_flow_evidence/v4/performance_characterization/B2/trials/09-reuse50_short_r224-arm11-r4",
+      "PBE_SPEC": "docs/data_flow_evidence/v4/performance_characterization/B2/trials/09-reuse50_short_r224-arm11-r4/spec.json",
+      "PBE_WEIGHT_MODE": "shared"
+    },
+    "feature_cache": true,
+    "semantic_kv_cache": true
+  },
+  {
+    "argv": [
+      "tools/launch/persistent_vlm_online.sh",
+      "build-v3",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct.pbe-bf16-v1.bin",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct/tokenizer.json",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct",
+      "/tmp/pbe-e1-different.png"
+    ],
+    "environment": {
+      "CUBLAS_WORKSPACE_CONFIG": ":4096:8",
+      "PBE_DETERMINISTIC_VISION": "1",
+      "PBE_DEVICE": "0",
+      "PBE_RUN_DIR": "docs/data_flow_evidence/v4/performance_characterization/B2/trials/10-reuse90_long_r280-arm11-r2",
+      "PBE_SPEC": "docs/data_flow_evidence/v4/performance_characterization/B2/trials/10-reuse90_long_r280-arm11-r2/spec.json",
+      "PBE_WEIGHT_MODE": "shared"
+    },
+    "feature_cache": true,
+    "semantic_kv_cache": true
+  },
+  {
+    "argv": [
+      "tools/launch/persistent_vlm_online.sh",
+      "build-v3",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct.pbe-bf16-v1.bin",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct/tokenizer.json",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct",
+      "/tmp/pbe-e1-different.png"
+    ],
+    "environment": {
+      "CUBLAS_WORKSPACE_CONFIG": ":4096:8",
+      "PBE_DETERMINISTIC_VISION": "1",
+      "PBE_DEVICE": "0",
+      "PBE_DISABLE_RADIX_CACHE": "1",
+      "PBE_RUN_DIR": "docs/data_flow_evidence/v4/performance_characterization/B2/trials/11-reuse50_short_r224-arm10-r1",
+      "PBE_SPEC": "docs/data_flow_evidence/v4/performance_characterization/B2/trials/11-reuse50_short_r224-arm10-r1/spec.json",
+      "PBE_WEIGHT_MODE": "shared"
+    },
+    "feature_cache": true,
+    "semantic_kv_cache": false
+  },
+  {
+    "argv": [
+      "tools/launch/persistent_vlm_online.sh",
+      "build-v3",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct.pbe-bf16-v1.bin",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct/tokenizer.json",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct",
+      "/tmp/pbe-e1-different.png"
+    ],
+    "environment": {
+      "CUBLAS_WORKSPACE_CONFIG": ":4096:8",
+      "PBE_DETERMINISTIC_VISION": "1",
+      "PBE_DEVICE": "0",
+      "PBE_DISABLE_RADIX_CACHE": "1",
+      "PBE_RUN_DIR": "docs/data_flow_evidence/v4/performance_characterization/B2/trials/12-reuse50_short_r224-arm10-r3",
+      "PBE_SPEC": "docs/data_flow_evidence/v4/performance_characterization/B2/trials/12-reuse50_short_r224-arm10-r3/spec.json",
+      "PBE_WEIGHT_MODE": "shared"
+    },
+    "feature_cache": true,
+    "semantic_kv_cache": false
+  },
+  {
+    "argv": [
+      "tools/launch/persistent_vlm_online.sh",
+      "build-v3",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct.pbe-bf16-v1.bin",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct/tokenizer.json",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct",
+      "/tmp/pbe-e1-different.png"
+    ],
+    "environment": {
+      "CUBLAS_WORKSPACE_CONFIG": ":4096:8",
+      "PBE_DETERMINISTIC_VISION": "1",
+      "PBE_DEVICE": "0",
+      "PBE_DISABLE_FEATURE_CACHE": "1",
+      "PBE_DISABLE_RADIX_CACHE": "1",
+      "PBE_RUN_DIR": "docs/data_flow_evidence/v4/performance_characterization/B2/trials/13-reuse50_short_r224-arm00-r1",
+      "PBE_SPEC": "docs/data_flow_evidence/v4/performance_characterization/B2/trials/13-reuse50_short_r224-arm00-r1/spec.json",
+      "PBE_WEIGHT_MODE": "shared"
+    },
+    "feature_cache": false,
+    "semantic_kv_cache": false
+  },
+  {
+    "argv": [
+      "tools/launch/persistent_vlm_online.sh",
+      "build-v3",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct.pbe-bf16-v1.bin",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct/tokenizer.json",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct",
+      "/tmp/pbe-e1-different.png"
+    ],
+    "environment": {
+      "CUBLAS_WORKSPACE_CONFIG": ":4096:8",
+      "PBE_DETERMINISTIC_VISION": "1",
+      "PBE_DEVICE": "0",
+      "PBE_DISABLE_FEATURE_CACHE": "1",
+      "PBE_DISABLE_RADIX_CACHE": "1",
+      "PBE_RUN_DIR": "docs/data_flow_evidence/v4/performance_characterization/B2/trials/14-reuse90_long_r280-arm00-r3",
+      "PBE_SPEC": "docs/data_flow_evidence/v4/performance_characterization/B2/trials/14-reuse90_long_r280-arm00-r3/spec.json",
+      "PBE_WEIGHT_MODE": "shared"
+    },
+    "feature_cache": false,
+    "semantic_kv_cache": false
+  },
+  {
+    "argv": [
+      "tools/launch/persistent_vlm_online.sh",
+      "build-v3",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct.pbe-bf16-v1.bin",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct/tokenizer.json",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct",
+      "/tmp/pbe-e1-different.png"
+    ],
+    "environment": {
+      "CUBLAS_WORKSPACE_CONFIG": ":4096:8",
+      "PBE_DETERMINISTIC_VISION": "1",
+      "PBE_DEVICE": "0",
+      "PBE_DISABLE_FEATURE_CACHE": "1",
+      "PBE_DISABLE_RADIX_CACHE": "1",
+      "PBE_RUN_DIR": "docs/data_flow_evidence/v4/performance_characterization/B2/trials/15-reuse50_short_r224-arm00-r3",
+      "PBE_SPEC": "docs/data_flow_evidence/v4/performance_characterization/B2/trials/15-reuse50_short_r224-arm00-r3/spec.json",
+      "PBE_WEIGHT_MODE": "shared"
+    },
+    "feature_cache": false,
+    "semantic_kv_cache": false
+  },
+  {
+    "argv": [
+      "tools/launch/persistent_vlm_online.sh",
+      "build-v3",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct.pbe-bf16-v1.bin",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct/tokenizer.json",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct",
+      "/tmp/pbe-e1-different.png"
+    ],
+    "environment": {
+      "CUBLAS_WORKSPACE_CONFIG": ":4096:8",
+      "PBE_DETERMINISTIC_VISION": "1",
+      "PBE_DEVICE": "0",
+      "PBE_DISABLE_RADIX_CACHE": "1",
+      "PBE_RUN_DIR": "docs/data_flow_evidence/v4/performance_characterization/B2/trials/16-reuse50_short_r224-arm10-r4",
+      "PBE_SPEC": "docs/data_flow_evidence/v4/performance_characterization/B2/trials/16-reuse50_short_r224-arm10-r4/spec.json",
+      "PBE_WEIGHT_MODE": "shared"
+    },
+    "feature_cache": true,
+    "semantic_kv_cache": false
+  },
+  {
+    "argv": [
+      "tools/launch/persistent_vlm_online.sh",
+      "build-v3",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct.pbe-bf16-v1.bin",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct/tokenizer.json",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct",
+      "/tmp/pbe-e1-different.png"
+    ],
+    "environment": {
+      "CUBLAS_WORKSPACE_CONFIG": ":4096:8",
+      "PBE_DETERMINISTIC_VISION": "1",
+      "PBE_DEVICE": "0",
+      "PBE_DISABLE_FEATURE_CACHE": "1",
+      "PBE_DISABLE_RADIX_CACHE": "1",
+      "PBE_RUN_DIR": "docs/data_flow_evidence/v4/performance_characterization/B2/trials/17-reuse90_long_r280-arm00-r0",
+      "PBE_SPEC": "docs/data_flow_evidence/v4/performance_characterization/B2/trials/17-reuse90_long_r280-arm00-r0/spec.json",
+      "PBE_WEIGHT_MODE": "shared"
+    },
+    "feature_cache": false,
+    "semantic_kv_cache": false
+  },
+  {
+    "argv": [
+      "tools/launch/persistent_vlm_online.sh",
+      "build-v3",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct.pbe-bf16-v1.bin",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct/tokenizer.json",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct",
+      "/tmp/pbe-e1-different.png"
+    ],
+    "environment": {
+      "CUBLAS_WORKSPACE_CONFIG": ":4096:8",
+      "PBE_DETERMINISTIC_VISION": "1",
+      "PBE_DEVICE": "0",
+      "PBE_RUN_DIR": "docs/data_flow_evidence/v4/performance_characterization/B2/trials/18-reuse50_short_r224-arm11-r0",
+      "PBE_SPEC": "docs/data_flow_evidence/v4/performance_characterization/B2/trials/18-reuse50_short_r224-arm11-r0/spec.json",
+      "PBE_WEIGHT_MODE": "shared"
+    },
+    "feature_cache": true,
+    "semantic_kv_cache": true
+  },
+  {
+    "argv": [
+      "tools/launch/persistent_vlm_online.sh",
+      "build-v3",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct.pbe-bf16-v1.bin",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct/tokenizer.json",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct",
+      "/tmp/pbe-e1-different.png"
+    ],
+    "environment": {
+      "CUBLAS_WORKSPACE_CONFIG": ":4096:8",
+      "PBE_DETERMINISTIC_VISION": "1",
+      "PBE_DEVICE": "0",
+      "PBE_DISABLE_FEATURE_CACHE": "1",
+      "PBE_RUN_DIR": "docs/data_flow_evidence/v4/performance_characterization/B2/trials/19-reuse50_short_r224-arm01-r0",
+      "PBE_SPEC": "docs/data_flow_evidence/v4/performance_characterization/B2/trials/19-reuse50_short_r224-arm01-r0/spec.json",
+      "PBE_WEIGHT_MODE": "shared"
+    },
+    "feature_cache": false,
+    "semantic_kv_cache": true
+  },
+  {
+    "argv": [
+      "tools/launch/persistent_vlm_online.sh",
+      "build-v3",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct.pbe-bf16-v1.bin",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct/tokenizer.json",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct",
+      "/tmp/pbe-e1-different.png"
+    ],
+    "environment": {
+      "CUBLAS_WORKSPACE_CONFIG": ":4096:8",
+      "PBE_DETERMINISTIC_VISION": "1",
+      "PBE_DEVICE": "0",
+      "PBE_DISABLE_RADIX_CACHE": "1",
+      "PBE_RUN_DIR": "docs/data_flow_evidence/v4/performance_characterization/B2/trials/20-reuse50_short_r224-arm10-r0",
+      "PBE_SPEC": "docs/data_flow_evidence/v4/performance_characterization/B2/trials/20-reuse50_short_r224-arm10-r0/spec.json",
+      "PBE_WEIGHT_MODE": "shared"
+    },
+    "feature_cache": true,
+    "semantic_kv_cache": false
+  },
+  {
+    "argv": [
+      "tools/launch/persistent_vlm_online.sh",
+      "build-v3",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct.pbe-bf16-v1.bin",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct/tokenizer.json",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct",
+      "/tmp/pbe-e1-different.png"
+    ],
+    "environment": {
+      "CUBLAS_WORKSPACE_CONFIG": ":4096:8",
+      "PBE_DETERMINISTIC_VISION": "1",
+      "PBE_DEVICE": "0",
+      "PBE_DISABLE_FEATURE_CACHE": "1",
+      "PBE_DISABLE_RADIX_CACHE": "1",
+      "PBE_RUN_DIR": "docs/data_flow_evidence/v4/performance_characterization/B2/trials/21-reuse00_short_r224-arm00-r1",
+      "PBE_SPEC": "docs/data_flow_evidence/v4/performance_characterization/B2/trials/21-reuse00_short_r224-arm00-r1/spec.json",
+      "PBE_WEIGHT_MODE": "shared"
+    },
+    "feature_cache": false,
+    "semantic_kv_cache": false
+  },
+  {
+    "argv": [
+      "tools/launch/persistent_vlm_online.sh",
+      "build-v3",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct.pbe-bf16-v1.bin",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct/tokenizer.json",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct",
+      "/tmp/pbe-e1-different.png"
+    ],
+    "environment": {
+      "CUBLAS_WORKSPACE_CONFIG": ":4096:8",
+      "PBE_DETERMINISTIC_VISION": "1",
+      "PBE_DEVICE": "0",
+      "PBE_RUN_DIR": "docs/data_flow_evidence/v4/performance_characterization/B2/trials/22-reuse90_long_r280-arm11-r0",
+      "PBE_SPEC": "docs/data_flow_evidence/v4/performance_characterization/B2/trials/22-reuse90_long_r280-arm11-r0/spec.json",
+      "PBE_WEIGHT_MODE": "shared"
+    },
+    "feature_cache": true,
+    "semantic_kv_cache": true
+  },
+  {
+    "argv": [
+      "tools/launch/persistent_vlm_online.sh",
+      "build-v3",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct.pbe-bf16-v1.bin",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct/tokenizer.json",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct",
+      "/tmp/pbe-e1-different.png"
+    ],
+    "environment": {
+      "CUBLAS_WORKSPACE_CONFIG": ":4096:8",
+      "PBE_DETERMINISTIC_VISION": "1",
+      "PBE_DEVICE": "0",
+      "PBE_RUN_DIR": "docs/data_flow_evidence/v4/performance_characterization/B2/trials/23-reuse00_short_r224-arm11-r0",
+      "PBE_SPEC": "docs/data_flow_evidence/v4/performance_characterization/B2/trials/23-reuse00_short_r224-arm11-r0/spec.json",
+      "PBE_WEIGHT_MODE": "shared"
+    },
+    "feature_cache": true,
+    "semantic_kv_cache": true
+  },
+  {
+    "argv": [
+      "tools/launch/persistent_vlm_online.sh",
+      "build-v3",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct.pbe-bf16-v1.bin",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct/tokenizer.json",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct",
+      "/tmp/pbe-e1-different.png"
+    ],
+    "environment": {
+      "CUBLAS_WORKSPACE_CONFIG": ":4096:8",
+      "PBE_DETERMINISTIC_VISION": "1",
+      "PBE_DEVICE": "0",
+      "PBE_DISABLE_FEATURE_CACHE": "1",
+      "PBE_DISABLE_RADIX_CACHE": "1",
+      "PBE_RUN_DIR": "docs/data_flow_evidence/v4/performance_characterization/B2/trials/24-reuse90_long_r280-arm00-r4",
+      "PBE_SPEC": "docs/data_flow_evidence/v4/performance_characterization/B2/trials/24-reuse90_long_r280-arm00-r4/spec.json",
+      "PBE_WEIGHT_MODE": "shared"
+    },
+    "feature_cache": false,
+    "semantic_kv_cache": false
+  },
+  {
+    "argv": [
+      "tools/launch/persistent_vlm_online.sh",
+      "build-v3",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct.pbe-bf16-v1.bin",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct/tokenizer.json",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct",
+      "/tmp/pbe-e1-different.png"
+    ],
+    "environment": {
+      "CUBLAS_WORKSPACE_CONFIG": ":4096:8",
+      "PBE_DETERMINISTIC_VISION": "1",
+      "PBE_DEVICE": "0",
+      "PBE_DISABLE_FEATURE_CACHE": "1",
+      "PBE_DISABLE_RADIX_CACHE": "1",
+      "PBE_RUN_DIR": "docs/data_flow_evidence/v4/performance_characterization/B2/trials/25-reuse00_short_r224-arm00-r4",
+      "PBE_SPEC": "docs/data_flow_evidence/v4/performance_characterization/B2/trials/25-reuse00_short_r224-arm00-r4/spec.json",
+      "PBE_WEIGHT_MODE": "shared"
+    },
+    "feature_cache": false,
+    "semantic_kv_cache": false
+  },
+  {
+    "argv": [
+      "tools/launch/persistent_vlm_online.sh",
+      "build-v3",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct.pbe-bf16-v1.bin",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct/tokenizer.json",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct",
+      "/tmp/pbe-e1-different.png"
+    ],
+    "environment": {
+      "CUBLAS_WORKSPACE_CONFIG": ":4096:8",
+      "PBE_DETERMINISTIC_VISION": "1",
+      "PBE_DEVICE": "0",
+      "PBE_DISABLE_FEATURE_CACHE": "1",
+      "PBE_RUN_DIR": "docs/data_flow_evidence/v4/performance_characterization/B2/trials/26-reuse50_short_r224-arm01-r2",
+      "PBE_SPEC": "docs/data_flow_evidence/v4/performance_characterization/B2/trials/26-reuse50_short_r224-arm01-r2/spec.json",
+      "PBE_WEIGHT_MODE": "shared"
+    },
+    "feature_cache": false,
+    "semantic_kv_cache": true
+  },
+  {
+    "argv": [
+      "tools/launch/persistent_vlm_online.sh",
+      "build-v3",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct.pbe-bf16-v1.bin",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct/tokenizer.json",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct",
+      "/tmp/pbe-e1-different.png"
+    ],
+    "environment": {
+      "CUBLAS_WORKSPACE_CONFIG": ":4096:8",
+      "PBE_DETERMINISTIC_VISION": "1",
+      "PBE_DEVICE": "0",
+      "PBE_DISABLE_RADIX_CACHE": "1",
+      "PBE_RUN_DIR": "docs/data_flow_evidence/v4/performance_characterization/B2/trials/27-reuse50_short_r224-arm10-r2",
+      "PBE_SPEC": "docs/data_flow_evidence/v4/performance_characterization/B2/trials/27-reuse50_short_r224-arm10-r2/spec.json",
+      "PBE_WEIGHT_MODE": "shared"
+    },
+    "feature_cache": true,
+    "semantic_kv_cache": false
+  },
+  {
+    "argv": [
+      "tools/launch/persistent_vlm_online.sh",
+      "build-v3",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct.pbe-bf16-v1.bin",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct/tokenizer.json",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct",
+      "/tmp/pbe-e1-different.png"
+    ],
+    "environment": {
+      "CUBLAS_WORKSPACE_CONFIG": ":4096:8",
+      "PBE_DETERMINISTIC_VISION": "1",
+      "PBE_DEVICE": "0",
+      "PBE_RUN_DIR": "docs/data_flow_evidence/v4/performance_characterization/B2/trials/28-reuse90_long_r280-arm11-r4",
+      "PBE_SPEC": "docs/data_flow_evidence/v4/performance_characterization/B2/trials/28-reuse90_long_r280-arm11-r4/spec.json",
+      "PBE_WEIGHT_MODE": "shared"
+    },
+    "feature_cache": true,
+    "semantic_kv_cache": true
+  },
+  {
+    "argv": [
+      "tools/launch/persistent_vlm_online.sh",
+      "build-v3",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct.pbe-bf16-v1.bin",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct/tokenizer.json",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct",
+      "/tmp/pbe-e1-different.png"
+    ],
+    "environment": {
+      "CUBLAS_WORKSPACE_CONFIG": ":4096:8",
+      "PBE_DETERMINISTIC_VISION": "1",
+      "PBE_DEVICE": "0",
+      "PBE_RUN_DIR": "docs/data_flow_evidence/v4/performance_characterization/B2/trials/29-reuse50_short_r224-arm11-r2",
+      "PBE_SPEC": "docs/data_flow_evidence/v4/performance_characterization/B2/trials/29-reuse50_short_r224-arm11-r2/spec.json",
+      "PBE_WEIGHT_MODE": "shared"
+    },
+    "feature_cache": true,
+    "semantic_kv_cache": true
+  },
+  {
+    "argv": [
+      "tools/launch/persistent_vlm_online.sh",
+      "build-v3",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct.pbe-bf16-v1.bin",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct/tokenizer.json",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct",
+      "/tmp/pbe-e1-different.png"
+    ],
+    "environment": {
+      "CUBLAS_WORKSPACE_CONFIG": ":4096:8",
+      "PBE_DETERMINISTIC_VISION": "1",
+      "PBE_DEVICE": "0",
+      "PBE_RUN_DIR": "docs/data_flow_evidence/v4/performance_characterization/B2/trials/30-reuse90_long_r280-arm11-r3",
+      "PBE_SPEC": "docs/data_flow_evidence/v4/performance_characterization/B2/trials/30-reuse90_long_r280-arm11-r3/spec.json",
+      "PBE_WEIGHT_MODE": "shared"
+    },
+    "feature_cache": true,
+    "semantic_kv_cache": true
+  },
+  {
+    "argv": [
+      "tools/launch/persistent_vlm_online.sh",
+      "build-v3",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct.pbe-bf16-v1.bin",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct/tokenizer.json",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct",
+      "/tmp/pbe-e1-different.png"
+    ],
+    "environment": {
+      "CUBLAS_WORKSPACE_CONFIG": ":4096:8",
+      "PBE_DETERMINISTIC_VISION": "1",
+      "PBE_DEVICE": "0",
+      "PBE_RUN_DIR": "docs/data_flow_evidence/v4/performance_characterization/B2/trials/31-reuse90_long_r280-arm11-r1",
+      "PBE_SPEC": "docs/data_flow_evidence/v4/performance_characterization/B2/trials/31-reuse90_long_r280-arm11-r1/spec.json",
+      "PBE_WEIGHT_MODE": "shared"
+    },
+    "feature_cache": true,
+    "semantic_kv_cache": true
+  },
+  {
+    "argv": [
+      "tools/launch/persistent_vlm_online.sh",
+      "build-v3",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct.pbe-bf16-v1.bin",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct/tokenizer.json",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct",
+      "/tmp/pbe-e1-different.png"
+    ],
+    "environment": {
+      "CUBLAS_WORKSPACE_CONFIG": ":4096:8",
+      "PBE_DETERMINISTIC_VISION": "1",
+      "PBE_DEVICE": "0",
+      "PBE_DISABLE_FEATURE_CACHE": "1",
+      "PBE_DISABLE_RADIX_CACHE": "1",
+      "PBE_RUN_DIR": "docs/data_flow_evidence/v4/performance_characterization/B2/trials/32-reuse00_short_r224-arm00-r3",
+      "PBE_SPEC": "docs/data_flow_evidence/v4/performance_characterization/B2/trials/32-reuse00_short_r224-arm00-r3/spec.json",
+      "PBE_WEIGHT_MODE": "shared"
+    },
+    "feature_cache": false,
+    "semantic_kv_cache": false
+  },
+  {
+    "argv": [
+      "tools/launch/persistent_vlm_online.sh",
+      "build-v3",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct.pbe-bf16-v1.bin",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct/tokenizer.json",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct",
+      "/tmp/pbe-e1-different.png"
+    ],
+    "environment": {
+      "CUBLAS_WORKSPACE_CONFIG": ":4096:8",
+      "PBE_DETERMINISTIC_VISION": "1",
+      "PBE_DEVICE": "0",
+      "PBE_DISABLE_FEATURE_CACHE": "1",
+      "PBE_RUN_DIR": "docs/data_flow_evidence/v4/performance_characterization/B2/trials/33-reuse50_short_r224-arm01-r1",
+      "PBE_SPEC": "docs/data_flow_evidence/v4/performance_characterization/B2/trials/33-reuse50_short_r224-arm01-r1/spec.json",
+      "PBE_WEIGHT_MODE": "shared"
+    },
+    "feature_cache": false,
+    "semantic_kv_cache": true
+  },
+  {
+    "argv": [
+      "tools/launch/persistent_vlm_online.sh",
+      "build-v3",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct.pbe-bf16-v1.bin",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct/tokenizer.json",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct",
+      "/tmp/pbe-e1-different.png"
+    ],
+    "environment": {
+      "CUBLAS_WORKSPACE_CONFIG": ":4096:8",
+      "PBE_DETERMINISTIC_VISION": "1",
+      "PBE_DEVICE": "0",
+      "PBE_RUN_DIR": "docs/data_flow_evidence/v4/performance_characterization/B2/trials/34-reuse50_short_r224-arm11-r1",
+      "PBE_SPEC": "docs/data_flow_evidence/v4/performance_characterization/B2/trials/34-reuse50_short_r224-arm11-r1/spec.json",
+      "PBE_WEIGHT_MODE": "shared"
+    },
+    "feature_cache": true,
+    "semantic_kv_cache": true
+  },
+  {
+    "argv": [
+      "tools/launch/persistent_vlm_online.sh",
+      "build-v3",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct.pbe-bf16-v1.bin",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct/tokenizer.json",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct",
+      "/tmp/pbe-e1-different.png"
+    ],
+    "environment": {
+      "CUBLAS_WORKSPACE_CONFIG": ":4096:8",
+      "PBE_DETERMINISTIC_VISION": "1",
+      "PBE_DEVICE": "0",
+      "PBE_DISABLE_FEATURE_CACHE": "1",
+      "PBE_RUN_DIR": "docs/data_flow_evidence/v4/performance_characterization/B2/trials/35-reuse50_short_r224-arm01-r4",
+      "PBE_SPEC": "docs/data_flow_evidence/v4/performance_characterization/B2/trials/35-reuse50_short_r224-arm01-r4/spec.json",
+      "PBE_WEIGHT_MODE": "shared"
+    },
+    "feature_cache": false,
+    "semantic_kv_cache": true
+  },
+  {
+    "argv": [
+      "tools/launch/persistent_vlm_online.sh",
+      "build-v3",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct.pbe-bf16-v1.bin",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct/tokenizer.json",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct",
+      "/tmp/pbe-e1-different.png"
+    ],
+    "environment": {
+      "CUBLAS_WORKSPACE_CONFIG": ":4096:8",
+      "PBE_DETERMINISTIC_VISION": "1",
+      "PBE_DEVICE": "0",
+      "PBE_DISABLE_FEATURE_CACHE": "1",
+      "PBE_RUN_DIR": "docs/data_flow_evidence/v4/performance_characterization/B2/trials/36-reuse50_short_r224-arm01-r3",
+      "PBE_SPEC": "docs/data_flow_evidence/v4/performance_characterization/B2/trials/36-reuse50_short_r224-arm01-r3/spec.json",
+      "PBE_WEIGHT_MODE": "shared"
+    },
+    "feature_cache": false,
+    "semantic_kv_cache": true
+  },
+  {
+    "argv": [
+      "tools/launch/persistent_vlm_online.sh",
+      "build-v3",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct.pbe-bf16-v1.bin",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct/tokenizer.json",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct",
+      "/tmp/pbe-e1-different.png"
+    ],
+    "environment": {
+      "CUBLAS_WORKSPACE_CONFIG": ":4096:8",
+      "PBE_DETERMINISTIC_VISION": "1",
+      "PBE_DEVICE": "0",
+      "PBE_DISABLE_FEATURE_CACHE": "1",
+      "PBE_DISABLE_RADIX_CACHE": "1",
+      "PBE_RUN_DIR": "docs/data_flow_evidence/v4/performance_characterization/B2/trials/37-reuse50_short_r224-arm00-r4",
+      "PBE_SPEC": "docs/data_flow_evidence/v4/performance_characterization/B2/trials/37-reuse50_short_r224-arm00-r4/spec.json",
+      "PBE_WEIGHT_MODE": "shared"
+    },
+    "feature_cache": false,
+    "semantic_kv_cache": false
+  },
+  {
+    "argv": [
+      "tools/launch/persistent_vlm_online.sh",
+      "build-v3",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct.pbe-bf16-v1.bin",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct/tokenizer.json",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct",
+      "/tmp/pbe-e1-different.png"
+    ],
+    "environment": {
+      "CUBLAS_WORKSPACE_CONFIG": ":4096:8",
+      "PBE_DETERMINISTIC_VISION": "1",
+      "PBE_DEVICE": "0",
+      "PBE_DISABLE_FEATURE_CACHE": "1",
+      "PBE_DISABLE_RADIX_CACHE": "1",
+      "PBE_RUN_DIR": "docs/data_flow_evidence/v4/performance_characterization/B2/trials/38-reuse50_short_r224-arm00-r2",
+      "PBE_SPEC": "docs/data_flow_evidence/v4/performance_characterization/B2/trials/38-reuse50_short_r224-arm00-r2/spec.json",
+      "PBE_WEIGHT_MODE": "shared"
+    },
+    "feature_cache": false,
+    "semantic_kv_cache": false
+  },
+  {
+    "argv": [
+      "tools/launch/persistent_vlm_online.sh",
+      "build-v3",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct.pbe-bf16-v1.bin",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct/tokenizer.json",
+      "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct",
+      "/tmp/pbe-e1-different.png"
+    ],
+    "environment": {
+      "CUBLAS_WORKSPACE_CONFIG": ":4096:8",
+      "PBE_DETERMINISTIC_VISION": "1",
+      "PBE_DEVICE": "0",
+      "PBE_RUN_DIR": "docs/data_flow_evidence/v4/performance_characterization/B2/trials/39-reuse00_short_r224-arm11-r1",
+      "PBE_SPEC": "docs/data_flow_evidence/v4/performance_characterization/B2/trials/39-reuse00_short_r224-arm11-r1/spec.json",
+      "PBE_WEIGHT_MODE": "shared"
+    },
+    "feature_cache": true,
+    "semantic_kv_cache": true
+  }
+]

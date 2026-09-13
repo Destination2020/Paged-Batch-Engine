@@ -188,6 +188,33 @@ void copy_int32_host_to_device(const tensor::Tensor& host_tensor,
   CHECK(status) << status.get_err_msg();
 }
 
+void copy_embedding_override(const tensor::Tensor& source,
+                             tensor::Tensor& destination,
+                             int32_t token_count,
+                             int32_t hidden_size,
+                             const std::shared_ptr<base::DeviceContext>& context,
+                             void* queue) {
+  CHECK(!source.is_empty());
+  CHECK_EQ(source.device_type(), destination.device_type());
+  CHECK_EQ(source.data_type(), destination.data_type());
+  CHECK_EQ(source.size(), static_cast<size_t>(token_count) * hidden_size);
+  if (source.ptr<uint8_t>() == destination.ptr<uint8_t>()) {
+    return;
+  }
+  base::CopyParams params;
+  params.src = source.ptr<uint8_t>();
+  params.dst = destination.ptr<uint8_t>();
+  params.byte_size = source.byte_size();
+  params.direction = source.device_type() == base::DeviceType::kDeviceCUDA
+                         ? base::CopyDirection::kDeviceToDevice
+                         : base::CopyDirection::kHostToHost;
+  params.queue = queue;
+  params.need_sync = false;
+  CHECK(context != nullptr && context->runtime != nullptr);
+  auto status = context->runtime->copy(params);
+  CHECK(status) << status.get_err_msg();
+}
+
 tensor::Tensor reshape_view(const tensor::Tensor& tensor, const std::vector<int32_t>& dims) {
   tensor::Tensor view = tensor;
   view.reshape_no_realloc(dims);
@@ -470,9 +497,10 @@ base::Status Qwen2Model::forward_mixed_batch(const serving::MixedBatchMetadata& 
   if (batch.num_prefill_tokens > 0) {
     base::nvtx::ScopedRange reserve_range("prefill_append_slots", base::nvtx::kColorMetadata);
     for (int32_t request_idx = batch.num_decode_tokens; request_idx < batch.num_requests; ++request_idx) {
-      const bool ok =
-          kv_cache_manager_->append_slots(batch.request_ids[request_idx],
-                                          batch.tokens_per_request[request_idx]);
+      base::KVAllocationIntent intent;
+      const bool ok = kv_cache_manager_->plan_allocation(batch.request_ids[request_idx],
+                         batch.tokens_per_request[request_idx], &intent) &&
+                      kv_cache_manager_->admit_allocation(intent);
       CHECK(ok) << "Failed to reserve KV slots for prefill request "
                 << batch.request_ids[request_idx];
     }
@@ -499,6 +527,11 @@ base::Status Qwen2Model::forward_mixed_batch(const serving::MixedBatchMetadata& 
                                    device_context_, queue);
 
   // Get batch-sized buffers (pre-allocated in init_mem with max_batch_size)
+  std::vector<std::vector<base::BlockLease>> compute_leases(batch.request_ids.size());
+  for (size_t i = 0; i < batch.request_ids.size(); ++i) {
+    STATUS_CHECK(kv_cache_manager_->acquire_compute_leases(batch.request_ids[i], &compute_leases[i]));
+  }
+
   tensor::Tensor& input_emb =
       const_cast<tensor::Tensor&>(get_buffer(ModelBufferType::kInputEmbeddings));
   tensor::Tensor& rms_out =
@@ -548,9 +581,14 @@ base::Status Qwen2Model::forward_mixed_batch(const serving::MixedBatchMetadata& 
   splitkv_partial_sum.reshape_no_realloc({bs * head_num * kMaxSplitKVPartitions});
 
   // 1. Embedding: [bs] token_ids -> [bs, dim]
-  kernel::get_emb_kernel(device_type_)(batch.token_ids,
-                                       get_layer_weight0(qwen_layers_->embedding_layer_),
-                                       input_emb, std::abs(config_->vocab_size_), queue);
+  if (batch.input_embeddings_override.is_empty()) {
+    kernel::get_emb_kernel(device_type_)(batch.token_ids,
+                                         get_layer_weight0(qwen_layers_->embedding_layer_),
+                                         input_emb, std::abs(config_->vocab_size_), queue);
+  } else {
+    copy_embedding_override(batch.input_embeddings_override, input_emb, bs, dim,
+                            device_context_, queue);
+  }
 
   // 2. Transformer layers
   for (int32_t layer = 0; layer < config_->layer_num_; ++layer) {
@@ -596,11 +634,20 @@ base::Status Qwen2Model::forward_mixed_batch(const serving::MixedBatchMetadata& 
     }
 
     // 2f. Batched RoPE
-    kernel::get_rope_batch_kernel(device_type_)(dim, kv_dim, head_size,
-                                                 query_buf, key_buf, batch.positions,
-                                                 get_buffer(ModelBufferType::kSinCache),
-                                                 get_buffer(ModelBufferType::kCosCache),
-                                                 bs, queue);
+    if (batch.mrope_positions.is_empty()) {
+      kernel::get_rope_batch_kernel(device_type_)(dim, kv_dim, head_size,
+                                                   query_buf, key_buf, batch.positions,
+                                                   get_buffer(ModelBufferType::kSinCache),
+                                                   get_buffer(ModelBufferType::kCosCache),
+                                                   bs, queue);
+    } else {
+      kernel::get_mrope_batch_kernel(device_type_)(dim, kv_dim, head_size,
+                                                    query_buf, key_buf,
+                                                    batch.mrope_positions,
+                                                    get_buffer(ModelBufferType::kSinCache),
+                                                    get_buffer(ModelBufferType::kCosCache),
+                                                    16, 24, bs, queue);
+    }
 
     // 2g. Batched scatter KV to pages
     CHECK(paged_kv_runtime_ != nullptr);
@@ -614,7 +661,7 @@ base::Status Qwen2Model::forward_mixed_batch(const serving::MixedBatchMetadata& 
       }
     }
     paged_kv_runtime_->scatter(
-        key_buf, val_buf, layer_allocator, row_meta.slot_mapping,
+        key_buf, val_buf, layer_allocator.pool_view(), row_meta.slot_mapping,
         model_block_size, kv_head_num, head_size, bs);
     if (layer_kv_connector_ != nullptr &&
         layer_kv_connector_role_ == serving::LayerKVConnectorRole::kProducer &&
@@ -655,7 +702,7 @@ base::Status Qwen2Model::forward_mixed_batch(const serving::MixedBatchMetadata& 
       decode_args.partial_max = &splitkv_partial_max;
       decode_args.partial_sum = &splitkv_partial_sum;
       CHECK(paged_kv_runtime_ != nullptr);
-      paged_kv_runtime_->decode(layer_allocator, decode_args);
+      paged_kv_runtime_->decode(layer_allocator.pool_view(), decode_args);
     }
 
     if (batch.num_prefill_tokens > 0) {
@@ -694,7 +741,7 @@ base::Status Qwen2Model::forward_mixed_batch(const serving::MixedBatchMetadata& 
       prefill_args.partial_max = &splitkv_partial_max;
       prefill_args.partial_sum = &splitkv_partial_sum;
       CHECK(paged_kv_runtime_ != nullptr);
-      paged_kv_runtime_->prefill(layer_allocator, prefill_args);
+      paged_kv_runtime_->prefill(layer_allocator.pool_view(), prefill_args);
     }
 
     // 2i. Wo: [bs, dim] -> [bs, dim]
@@ -750,6 +797,10 @@ base::Status Qwen2Model::forward_mixed_batch(const serving::MixedBatchMetadata& 
                             device_context_);
   }
 
+  sync_queue_or_die(device_context_, queue, "kv_commit", config_->layer_num_, "forward");
+  for (auto id : batch.request_ids) {
+    CHECK(kv_cache_manager_->commit_kv(id, kv_cache_manager_->get_context_len(id)));
+  }
   return base::error::Success();
 }
 
@@ -779,6 +830,11 @@ base::Status Qwen2Model::forward_decode_batch(const serving::MixedBatchMetadata&
   const int32_t kv_mul = config_->kv_mul_;
   const int32_t kv_head_num = config_->kv_head_num_;
   void* queue = compute_queue_or_die(device_context_);
+
+  std::vector<std::vector<base::BlockLease>> compute_leases(batch.request_ids.size());
+  for (size_t i = 0; i < batch.request_ids.size(); ++i) {
+    STATUS_CHECK(kv_cache_manager_->acquire_compute_leases(batch.request_ids[i], &compute_leases[i]));
+  }
 
   tensor::Tensor& input_emb =
       const_cast<tensor::Tensor&>(get_buffer(ModelBufferType::kInputEmbeddings));
@@ -833,9 +889,14 @@ base::Status Qwen2Model::forward_decode_batch(const serving::MixedBatchMetadata&
   {
     auto embed_range =
         make_detailed_range(detailed_nvtx, "decode_embed", base::nvtx::kColorMetadata);
-    kernel::get_emb_kernel(device_type_)(batch.token_ids,
-                                         get_layer_weight0(qwen_layers_->embedding_layer_),
-                                         input_emb, std::abs(config_->vocab_size_), queue);
+    if (batch.input_embeddings_override.is_empty()) {
+      kernel::get_emb_kernel(device_type_)(batch.token_ids,
+                                           get_layer_weight0(qwen_layers_->embedding_layer_),
+                                           input_emb, std::abs(config_->vocab_size_), queue);
+    } else {
+      copy_embedding_override(batch.input_embeddings_override, input_emb, bs, dim,
+                              device_context_, queue);
+    }
   }
 
   for (int32_t layer = 0; layer < config_->layer_num_; ++layer) {
@@ -885,11 +946,20 @@ base::Status Qwen2Model::forward_decode_batch(const serving::MixedBatchMetadata&
                                                   queue);
       }
 
-      kernel::get_rope_batch_kernel(device_type_)(dim, kv_dim, head_size,
-                                                   query_buf, key_buf, batch.positions,
-                                                   get_buffer(ModelBufferType::kSinCache),
-                                                   get_buffer(ModelBufferType::kCosCache),
-                                                   bs, queue);
+      if (batch.mrope_positions.is_empty()) {
+        kernel::get_rope_batch_kernel(device_type_)(dim, kv_dim, head_size,
+                                                     query_buf, key_buf, batch.positions,
+                                                     get_buffer(ModelBufferType::kSinCache),
+                                                     get_buffer(ModelBufferType::kCosCache),
+                                                     bs, queue);
+      } else {
+        kernel::get_mrope_batch_kernel(device_type_)(dim, kv_dim, head_size,
+                                                      query_buf, key_buf,
+                                                      batch.mrope_positions,
+                                                      get_buffer(ModelBufferType::kSinCache),
+                                                      get_buffer(ModelBufferType::kCosCache),
+                                                      16, 24, bs, queue);
+      }
     }
 
     {
@@ -905,7 +975,7 @@ base::Status Qwen2Model::forward_decode_batch(const serving::MixedBatchMetadata&
         }
       }
       paged_kv_runtime_->scatter(
-          key_buf, val_buf, layer_allocator, batch.slot_mapping,
+          key_buf, val_buf, layer_allocator.pool_view(), batch.slot_mapping,
           model_block_size, kv_head_num, head_size, bs);
     }
 
@@ -928,7 +998,7 @@ base::Status Qwen2Model::forward_decode_batch(const serving::MixedBatchMetadata&
       decode_args.partial_max = &splitkv_partial_max;
       decode_args.partial_sum = &splitkv_partial_sum;
       CHECK(paged_kv_runtime_ != nullptr);
-      paged_kv_runtime_->decode(layer_allocator, decode_args);
+      paged_kv_runtime_->decode(layer_allocator.pool_view(), decode_args);
     }
 
     {
@@ -993,6 +1063,10 @@ base::Status Qwen2Model::forward_decode_batch(const serving::MixedBatchMetadata&
                             device_context_);
   }
 
+  sync_queue_or_die(device_context_, queue, "kv_commit", config_->layer_num_, "forward");
+  for (auto id : batch.request_ids) {
+    CHECK(kv_cache_manager_->commit_kv(id, kv_cache_manager_->get_context_len(id)));
+  }
   return base::error::Success();
 }
 

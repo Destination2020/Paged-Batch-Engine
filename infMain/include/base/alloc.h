@@ -16,6 +16,8 @@ class DeviceAllocator {
  public:
   explicit DeviceAllocator(DeviceType device_type) : device_type_(device_type) {}
 
+  virtual ~DeviceAllocator() = default;
+
   virtual DeviceType device_type() const { return device_type_; }
 
   virtual void release(void* ptr) const = 0;
@@ -65,9 +67,16 @@ class CUDADeviceAllocator : public DeviceAllocator {
  public:
   explicit CUDADeviceAllocator();
 
+  ~CUDADeviceAllocator() override;
+
   void* allocate(size_t byte_size) const override;
 
   void release(void* ptr) const override;
+
+  // The allocator intentionally caches released CUDA allocations for reuse.
+  // Long-lived serving processes keep that cache, but an explicitly stopped
+  // worker must return it before CUDA leak checking and process teardown.
+  void release_all_cached() const;
 
  private:
   mutable std::map<int, size_t> no_busy_cnt_;

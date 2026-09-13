@@ -148,4 +148,34 @@ void MatmulLayer::to_cuda() {
   materialize();
 }
 
+base::Status MatmulLayer::bind_external_weights(const void* host_base,
+                                                void* device_base,
+                                                uint64_t allocation_bytes,
+                                                base::DataType dtype,
+                                                uint64_t* views,
+                                                uint64_t* logical_bytes) {
+  auto status = LayerParam::bind_external_weights(host_base, device_base,
+                                                  allocation_bytes, dtype,
+                                                  views, logical_bytes);
+  if (!status) return status;
+  const uintptr_t host = reinterpret_cast<uintptr_t>(host_base);
+  for (auto& bias : bias_) {
+    if (bias.is_empty() || bias.data_type() != dtype)
+      return base::error::InvalidArgument("invalid shared weight bias binding");
+    const uintptr_t pointer = reinterpret_cast<uintptr_t>(bias.get_buffer()->ptr());
+    if (pointer < host) return base::error::InvalidArgument("shared bias offset underflow");
+    const uint64_t offset = pointer - host;
+    const uint64_t bytes = bias.byte_size();
+    if (offset > allocation_bytes || bytes > allocation_bytes - offset)
+      return base::error::InvalidArgument("shared bias exceeds allocation");
+    tensor::Tensor replacement(dtype, bias.dims(), false, nullptr,
+                               static_cast<uint8_t*>(device_base) + offset);
+    replacement.set_device_type(base::DeviceType::kDeviceCUDA);
+    bias = std::move(replacement);
+    if (views) ++*views;
+    if (logical_bytes) *logical_bytes += bytes;
+  }
+  return base::error::Success();
+}
+
 }  // namespace op

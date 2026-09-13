@@ -96,6 +96,7 @@ nlohmann::json generation_config_to_json(const GenerationConfig& config) {
   json["ignore_eos"] = config.ignore_eos;
   json["priority"] = config.priority;
   json["sampling"] = {
+      {"seed", config.sampling.seed},
       {"temperature", config.sampling.temperature},
       {"top_p", config.sampling.top_p},
       {"top_k", config.sampling.top_k},
@@ -115,6 +116,7 @@ GenerationConfig generation_config_from_json(const nlohmann::json& json) {
     const auto& sampling = json.at("sampling");
     config.sampling.temperature =
         sampling.value("temperature", config.sampling.temperature);
+    config.sampling.seed = sampling.value("seed", config.sampling.seed);
     config.sampling.top_p = sampling.value("top_p", config.sampling.top_p);
     config.sampling.top_k = sampling.value("top_k", config.sampling.top_k);
     config.sampling.repetition_penalty =

@@ -20,7 +20,7 @@ class UnsupportedPagedKVRuntime : public PagedKVRuntime {
 
   void scatter(const tensor::Tensor& /*key_tensor*/,
                const tensor::Tensor& /*value_tensor*/,
-               base::BlockAllocator& /*allocator*/,
+               const base::KVPoolView& /*pool*/,
                const tensor::Tensor& /*slot_mapping*/,
                int32_t /*block_size*/,
                int32_t /*num_kv_heads*/,
@@ -31,7 +31,7 @@ class UnsupportedPagedKVRuntime : public PagedKVRuntime {
 
   void scatter_single_token(const tensor::Tensor& /*key_tensor*/,
                             const tensor::Tensor& /*value_tensor*/,
-                            base::BlockAllocator& /*allocator*/,
+                            const base::KVPoolView& /*pool*/,
                             int32_t /*physical_block_id*/,
                             int32_t /*offset_in_block*/,
                             int32_t /*block_size*/,
@@ -40,13 +40,13 @@ class UnsupportedPagedKVRuntime : public PagedKVRuntime {
     fail("scatter_single_token");
   }
 
-  bool decode(const base::BlockAllocator& /*allocator*/,
+  bool decode(const base::KVPoolView& /*pool*/,
               const PagedKVDecodeRuntimeArgs& /*args*/) const override {
     fail("decode");
     return false;
   }
 
-  void prefill(const base::BlockAllocator& /*allocator*/,
+  void prefill(const base::KVPoolView& /*pool*/,
                const PagedKVPrefillRuntimeArgs& /*args*/) const override {
     fail("prefill");
   }
@@ -103,7 +103,7 @@ class CudaPagedKVRuntime final : public PagedKVRuntime {
   void scatter(
       const tensor::Tensor& key_tensor,
       const tensor::Tensor& value_tensor,
-      base::BlockAllocator& allocator,
+      const base::KVPoolView& pool,
       const tensor::Tensor& slot_mapping,
       int32_t block_size,
       int32_t num_kv_heads,
@@ -113,17 +113,17 @@ class CudaPagedKVRuntime final : public PagedKVRuntime {
   void scatter_single_token(
       const tensor::Tensor& key_tensor,
       const tensor::Tensor& value_tensor,
-      base::BlockAllocator& allocator,
+      const base::KVPoolView& pool,
       int32_t physical_block_id,
       int32_t offset_in_block,
       int32_t block_size,
       int32_t num_kv_heads,
       int32_t head_size) const override;
 
-  bool decode(const base::BlockAllocator& allocator,
+  bool decode(const base::KVPoolView& pool,
               const PagedKVDecodeRuntimeArgs& args) const override;
 
-  void prefill(const base::BlockAllocator& allocator,
+  void prefill(const base::KVPoolView& pool,
                const PagedKVPrefillRuntimeArgs& args) const override;
 
  private:
@@ -205,21 +205,22 @@ void CudaPagedKVRuntime::runtime_copy_or_die(const void* src,
 void CudaPagedKVRuntime::scatter(
     const tensor::Tensor& key_tensor,
     const tensor::Tensor& value_tensor,
-    base::BlockAllocator& allocator,
+    const base::KVPoolView& pool,
     const tensor::Tensor& slot_mapping,
     int32_t block_size,
     int32_t num_kv_heads,
     int32_t head_size,
     int32_t batch_tokens) const {
   kernel::CudaConfig* config = cuda_config_or_die();
-  if (allocator.uses_fp8_storage()) {
+  CHECK(pool.valid());
+  if (pool.uses_fp8_storage()) {
     kernel::scatter_kv_batch_to_pages_fp8_e4m3_cu(
         key_tensor,
         value_tensor,
-        allocator.key_pool(),
-        allocator.value_pool(),
-        allocator.key_scale_pool(),
-        allocator.value_scale_pool(),
+        pool.key_pool(),
+        pool.value_pool(),
+        pool.key_scale_pool(),
+        pool.value_scale_pool(),
         slot_mapping,
         block_size,
         num_kv_heads,
@@ -233,8 +234,8 @@ void CudaPagedKVRuntime::scatter(
   kernel::scatter_kv_batch_to_pages_cu(
       key_tensor,
       value_tensor,
-      allocator.key_pool(),
-      allocator.value_pool(),
+      pool.key_pool(),
+      pool.value_pool(),
       slot_mapping,
       block_size,
       num_kv_heads,
@@ -247,19 +248,20 @@ void CudaPagedKVRuntime::scatter(
 void CudaPagedKVRuntime::scatter_single_token(
     const tensor::Tensor& key_tensor,
     const tensor::Tensor& value_tensor,
-    base::BlockAllocator& allocator,
+    const base::KVPoolView& pool,
     int32_t physical_block_id,
     int32_t offset_in_block,
     int32_t block_size,
     int32_t num_kv_heads,
     int32_t head_size) const {
   kernel::CudaConfig* config = cuda_config_or_die();
-  if (!allocator.uses_fp8_storage()) {
+  CHECK(pool.valid());
+  if (!pool.uses_fp8_storage()) {
     kernel::scatter_kv_to_page_cu(
         key_tensor,
         value_tensor,
-        allocator.key_pool(),
-        allocator.value_pool(),
+        pool.key_pool(),
+        pool.value_pool(),
         physical_block_id,
         offset_in_block,
         block_size,
@@ -285,11 +287,11 @@ void CudaPagedKVRuntime::scatter_single_token(
                       transfer_or_compute_queue(),
                       false);
 
-  scatter(key_tensor, value_tensor, allocator, slot_mapping_device,
+  scatter(key_tensor, value_tensor, pool, slot_mapping_device,
           block_size, num_kv_heads, head_size, 1);
 }
 
-bool CudaPagedKVRuntime::decode(const base::BlockAllocator& allocator,
+bool CudaPagedKVRuntime::decode(const base::KVPoolView& pool,
                                 const PagedKVDecodeRuntimeArgs& args) const {
   CHECK_NE(args.queries, nullptr);
   CHECK_NE(args.outputs, nullptr);
@@ -300,12 +302,13 @@ bool CudaPagedKVRuntime::decode(const base::BlockAllocator& allocator,
   CHECK_NE(args.partial_sum, nullptr);
   kernel::CudaConfig* cuda_config = cuda_config_or_die();
 
-  if (allocator.uses_fp8_storage()) {
+  CHECK(pool.valid());
+  if (pool.uses_fp8_storage()) {
     if (!kernel::splitkv_batched_paged_mha_fast_decode_cu(
             args.batch_size, args.head_num, args.head_size, args.kv_mul,
             *args.queries, *args.outputs,
-            allocator.key_pool(),
-            allocator.value_pool(),
+            pool.key_pool(),
+            pool.value_pool(),
             *args.block_tables, *args.seq_lens,
             args.max_blocks_per_seq, args.block_size, args.num_kv_heads,
             *args.partial_out,
@@ -315,10 +318,10 @@ bool CudaPagedKVRuntime::decode(const base::BlockAllocator& allocator,
       const bool launched = kernel::splitkv_batched_paged_mha_fp8_decode_cu(
           args.batch_size, args.head_num, args.head_size, args.kv_mul,
           *args.queries, *args.outputs,
-          allocator.key_pool(),
-          allocator.value_pool(),
-          allocator.key_scale_pool(),
-          allocator.value_scale_pool(),
+          pool.key_pool(),
+          pool.value_pool(),
+          pool.key_scale_pool(),
+          pool.value_scale_pool(),
           *args.block_tables, *args.seq_lens,
           args.max_blocks_per_seq, args.block_size, args.num_kv_heads,
           *args.partial_out,
@@ -333,8 +336,8 @@ bool CudaPagedKVRuntime::decode(const base::BlockAllocator& allocator,
   if (!kernel::splitkv_batched_paged_mha_fast_decode_cu(
           args.batch_size, args.head_num, args.head_size, args.kv_mul,
           *args.queries, *args.outputs,
-          allocator.key_pool(),
-          allocator.value_pool(),
+          pool.key_pool(),
+          pool.value_pool(),
           *args.block_tables, *args.seq_lens,
           args.max_blocks_per_seq, args.block_size, args.num_kv_heads,
           *args.partial_out,
@@ -344,8 +347,8 @@ bool CudaPagedKVRuntime::decode(const base::BlockAllocator& allocator,
     kernel::splitkv_batched_paged_mha_decode_cu(
         args.batch_size, args.head_num, args.head_size, args.kv_mul,
         *args.queries, *args.outputs,
-        allocator.key_pool(),
-        allocator.value_pool(),
+        pool.key_pool(),
+        pool.value_pool(),
         *args.block_tables, *args.seq_lens,
         args.max_blocks_per_seq, args.block_size, args.num_kv_heads,
         *args.partial_out,
@@ -356,7 +359,7 @@ bool CudaPagedKVRuntime::decode(const base::BlockAllocator& allocator,
   return true;
 }
 
-void CudaPagedKVRuntime::prefill(const base::BlockAllocator& allocator,
+void CudaPagedKVRuntime::prefill(const base::KVPoolView& pool,
                                  const PagedKVPrefillRuntimeArgs& args) const {
   CHECK_NE(args.queries, nullptr);
   CHECK_NE(args.chunk_keys, nullptr);
@@ -372,14 +375,15 @@ void CudaPagedKVRuntime::prefill(const base::BlockAllocator& allocator,
   CHECK_NE(args.partial_sum, nullptr);
   kernel::CudaConfig* cuda_config = cuda_config_or_die();
 
-  if (allocator.uses_fp8_storage()) {
+  CHECK(pool.valid());
+  if (pool.uses_fp8_storage()) {
     kernel::batched_paged_mha_prefill_fp8_cu(
         args.batch_size, args.head_num, args.head_size, args.kv_mul,
         *args.queries, *args.chunk_keys, *args.chunk_values, *args.outputs,
-        allocator.key_pool(),
-        allocator.value_pool(),
-        allocator.key_scale_pool(),
-        allocator.value_scale_pool(),
+        pool.key_pool(),
+        pool.value_pool(),
+        pool.key_scale_pool(),
+        pool.value_scale_pool(),
         *args.block_tables,
         *args.request_indices,
         *args.base_context_lens,
@@ -397,8 +401,8 @@ void CudaPagedKVRuntime::prefill(const base::BlockAllocator& allocator,
   kernel::batched_paged_mha_prefill_cu(
       args.batch_size, args.head_num, args.head_size, args.kv_mul,
       *args.queries, *args.chunk_keys, *args.chunk_values, *args.outputs,
-      allocator.key_pool(),
-      allocator.value_pool(),
+      pool.key_pool(),
+      pool.value_pool(),
       *args.block_tables,
       *args.request_indices,
       *args.base_context_lens,

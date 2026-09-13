@@ -1,0 +1,115 @@
+{
+  "date": "2026-09-12",
+  "scope": "Static source architecture audit; only encoder CPU/helper tests executed, no PBE runtime changes or new GPU performance validation",
+  "heads": {
+    "Paged-Batch-Engine": "f3597a763b6cd5cf60b826baa2dc94395c3d02fd",
+    "omni_flow_sglang": "e0827035fd4ceeb1df5a68a87a69fc575b627976",
+    "omni_flow_sglang/sglang_0516": "fdebc938f7f4d16fe6b9f55dcd9a767cf0899ea1"
+  },
+  "files": [
+    {
+      "path": "Paged-Batch-Engine/infMain/include/base/block_allocator.h",
+      "sha256": "7adf5b58c6f643f6baaa590ac292f46211be5ea42e7d6d88cb97bd3d4707452a"
+    },
+    {
+      "path": "Paged-Batch-Engine/infMain/source/base/kv_cache_manager.cpp",
+      "sha256": "f358cb082402c2816aa835cd3cbc884dc3cc18659a2513c56b60da97cacb3d91"
+    },
+    {
+      "path": "Paged-Batch-Engine/infMain/include/serving/pd_engine.h",
+      "sha256": "3a068fd289b8e1bc01cb120b19804fc764c51dbd4228a04b90d07c602351aaf1"
+    },
+    {
+      "path": "Paged-Batch-Engine/infMain/include/serving/pd_handoff.h",
+      "sha256": "4d4e6212a89fd20d70a0739af7489523500ea4b9c7a73ca50c61cfd85f33f5da"
+    },
+    {
+      "path": "Paged-Batch-Engine/infMain/source/serving/pd_handoff.cpp",
+      "sha256": "efc939453b1b1eef6ffa94dec92a2ee2d898d89194be3b47afdab6214c56c793"
+    },
+    {
+      "path": "Paged-Batch-Engine/infMain/include/serving/serving_zmq_rpc.h",
+      "sha256": "dd9ddcbb65c200d190ede4826eb5275c88084e9797e2b09bb12fcef8e44b3506"
+    },
+    {
+      "path": "Paged-Batch-Engine/infMain/source/serving/serving_benchmark_app.cpp",
+      "sha256": "53ec8d5087bc589a2a886c5c5361d38e5adb6a99c5c39cb02f00cfddb80a09ba"
+    },
+    {
+      "path": "Paged-Batch-Engine/infMain/include/serving/mixed_batch.h",
+      "sha256": "51a32854ad66b43893fd15777a89afb82394455bf92523019ecf57d5eade8d48"
+    },
+    {
+      "path": "Paged-Batch-Engine/infMain/include/serving/serving_online_engine.h",
+      "sha256": "63ecdbf3802f70d320ac145003b19e8dcacc5fa5180e317ff28600e51601a797"
+    },
+    {
+      "path": "Paged-Batch-Engine/infMain/include/model/paged_kv_runtime.h",
+      "sha256": "9e2cb95d44192e14dae8cbd9ee9ed44566234a8e5e6bc7f02a470d2ba7fa681a"
+    },
+    {
+      "path": "Paged-Batch-Engine/infMain/source/model/qwen2_batch.cpp",
+      "sha256": "d325bdad558a44d9480c5c9088566525e505bbaed7339f527ed9d6b5f249c7e6"
+    },
+    {
+      "path": "Paged-Batch-Engine/infMain/source/serving/request_checkpoint.cpp",
+      "sha256": "3e722a5521157a11335a1c6e51f75fdef6bcc68783a556525b1be6502e93cac8"
+    },
+    {
+      "path": "omni_flow_sglang/omni_flow/compute_flow/encoder/role.py",
+      "sha256": "c0b37aae8b634ccad1d581764997853433a5a2bc04120a98a1937098fc832896"
+    },
+    {
+      "path": "omni_flow_sglang/omni_flow/compute_flow/encoder/cache.py",
+      "sha256": "0e4005f3ab1956d269033b1ff0fbd6ef5587d12a2bea4b2bc2e35b4e2655fa64"
+    },
+    {
+      "path": "omni_flow_sglang/omni_flow/data_flow/tmp_buffer_memory_pool/memory_pool.py",
+      "sha256": "a38d9040547bc7f7c6c7072f8ec65517a9898ecb118ad7085d2e67346a0241ad"
+    },
+    {
+      "path": "omni_flow_sglang/omni_flow/examples/qwen3_vl/graph.py",
+      "sha256": "c737a8aa8ec606116dd96de68015ce54eb64b888200f8b9a7dc87ccb3b115b0f"
+    },
+    {
+      "path": "omni_flow_sglang/omni_flow/examples/qwen3_vl/role_impl/vision_encoder.py",
+      "sha256": "dea172ffc6904d188b2652eb396f3d29f40fc107c63f3602334fca560b7401a4"
+    },
+    {
+      "path": "omni_flow_sglang/omni_flow/examples/qwen3_vl/role_impl/sglang_backend.py",
+      "sha256": "49bb26784e0cb2898256cd9ef5934c1689864cbcde8e36af19a31d59cc151c95"
+    },
+    {
+      "path": "omni_flow_sglang/sglang_0516/python/sglang/srt/models/qwen2_5_vl.py",
+      "sha256": "2319fcd114f459cd46de29ed08fc524b185615695cb2c9cb95aad96e2df93bf1"
+    }
+  ],
+  "test": {
+    "cwd": "omni_flow_sglang",
+    "command": "PYTHONDONTWRITEBYTECODE=1 python3 -m pytest -q -p no:cacheprovider omni_flow/compute_flow/encoder/test_cache.py omni_flow/compute_flow/encoder/test_aligned_sequence.py",
+    "exit_code": 0,
+    "result": "34 passed in 7.29s",
+    "limits": "CPU tensor/helper tests and fake MemoryManagerClient; not multi-process or GPU acceptance"
+  },
+  "hardware": [
+    "NVIDIA H20-3e, 143771 MiB",
+    "NVIDIA H20-3e, 143771 MiB"
+  ],
+  "current_code_note": "checkpoint byte capacity, stale commit rejection and cancel cleanup are present; old V3 status is stale; M0 must revalidate",
+  "external_sources": [
+    "https://docs.sglang.io/docs/advanced_features/epd_disaggregation",
+    "https://huggingface.co/Qwen/Qwen2.5-VL-3B-Instruct/raw/main/config.json",
+    "https://raw.githubusercontent.com/huggingface/transformers/v4.52.3/src/transformers/models/qwen2_5_vl/modeling_qwen2_5_vl.py"
+  ],
+  "external_limits": "SGLang official live docs differ from local snapshot. Model revision and numerical compatibility are not yet frozen/validated. User macOS PDF not re-read.",
+  "final_recheck": {
+    "unchanged_recorded_files": 18,
+    "changed_files": [
+      {
+        "path": "Paged-Batch-Engine/infMain/source/serving/pd_handoff.cpp",
+        "later_sha256": "6ba946d1b4fe656c7d8e4f2f378bd8be4badcae71341828b30189d141fdf345d"
+      }
+    ],
+    "note": "Worktree changed during documentation-only audit; recorded hashes are observations, not an atomic repository snapshot. No runtime mutations by this task. M0 must freeze and revalidate."
+  }
+}

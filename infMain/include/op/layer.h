@@ -204,6 +204,13 @@ class LayerParam : public Layer {
 
   void set_group_size(int32_t group_size);
 
+  virtual base::Status bind_external_weights(const void* host_base,
+                                             void* device_base,
+                                             uint64_t allocation_bytes,
+                                             base::DataType dtype,
+                                             uint64_t* views,
+                                             uint64_t* logical_bytes);
+
   int32_t get_scale_num() const;
 
  protected:

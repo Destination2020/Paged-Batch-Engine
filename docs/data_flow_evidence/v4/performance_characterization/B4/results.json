@@ -1,0 +1,500 @@
+{
+  "boundaries": [
+    "E2 throughput is completed requests divided by the per-trial dispatch-to-last-completion wall window.",
+    "E2 client_language_ms is coordinator-observed full-call latency, not true streaming client TTFT.",
+    "E3 timings are server-side and do not include a true streaming client timestamp.",
+    "Existing negative results are retained: placement and recovery policies may trade latency for reuse or throughput."
+  ],
+  "method": "existing raw evidence recomputation; no GPU rerun",
+  "ok": true,
+  "placement": {
+    "ok": true,
+    "policies": {
+      "data_aware": {
+        "mean_throughput_requests_per_s": 0.39550353175475583,
+        "median_throughput_requests_per_s": 0.3979930814534702,
+        "rejected": 0,
+        "requests": 55,
+        "throughput_definition": "completed_requests / dispatch-to-last-completion wall window",
+        "trials": 5
+      },
+      "fixed": {
+        "mean_throughput_requests_per_s": 0.37101778215963993,
+        "median_throughput_requests_per_s": 0.3706850256349259,
+        "rejected": 0,
+        "requests": 55,
+        "throughput_definition": "completed_requests / dispatch-to-last-completion wall window",
+        "trials": 5
+      },
+      "round_robin": {
+        "mean_throughput_requests_per_s": 0.38180216612390083,
+        "median_throughput_requests_per_s": 0.3795967741949376,
+        "rejected": 0,
+        "requests": 55,
+        "throughput_definition": "completed_requests / dispatch-to-last-completion wall window",
+        "trials": 5
+      }
+    },
+    "trials": [
+      {
+        "observation_window_ms": 29927.41745710373,
+        "ok": true,
+        "policy": "fixed",
+        "rejected": 0,
+        "requests": 11,
+        "seed": 11,
+        "source": "docs/data_flow_evidence/v4/E2_final/fixed/seed-11/result.json",
+        "throughput_definition": "completed_requests / dispatch-to-last-completion wall window",
+        "throughput_requests_per_s": 0.3675559381549303
+      },
+      {
+        "observation_window_ms": 30111.06826364994,
+        "ok": true,
+        "policy": "fixed",
+        "rejected": 0,
+        "requests": 11,
+        "seed": 23,
+        "source": "docs/data_flow_evidence/v4/E2_final/fixed/seed-23/result.json",
+        "throughput_definition": "completed_requests / dispatch-to-last-completion wall window",
+        "throughput_requests_per_s": 0.3653141729707143
+      },
+      {
+        "observation_window_ms": 29674.7892126441,
+        "ok": true,
+        "policy": "fixed",
+        "rejected": 0,
+        "requests": 11,
+        "seed": 37,
+        "source": "docs/data_flow_evidence/v4/E2_final/fixed/seed-37/result.json",
+        "throughput_definition": "completed_requests / dispatch-to-last-completion wall window",
+        "throughput_requests_per_s": 0.3706850256349259
+      },
+      {
+        "observation_window_ms": 29073.522813618183,
+        "ok": true,
+        "policy": "fixed",
+        "rejected": 0,
+        "requests": 11,
+        "seed": 41,
+        "source": "docs/data_flow_evidence/v4/E2_final/fixed/seed-41/result.json",
+        "throughput_definition": "completed_requests / dispatch-to-last-completion wall window",
+        "throughput_requests_per_s": 0.37835112279023664
+      },
+      {
+        "observation_window_ms": 29476.18267685175,
+        "ok": true,
+        "policy": "fixed",
+        "rejected": 0,
+        "requests": 11,
+        "seed": 53,
+        "source": "docs/data_flow_evidence/v4/E2_final/fixed/seed-53/result.json",
+        "throughput_definition": "completed_requests / dispatch-to-last-completion wall window",
+        "throughput_requests_per_s": 0.3731826512473925
+      },
+      {
+        "observation_window_ms": 28978.1176969409,
+        "ok": true,
+        "policy": "round_robin",
+        "rejected": 0,
+        "requests": 11,
+        "seed": 11,
+        "source": "docs/data_flow_evidence/v4/E2_final/round_robin/seed-11/result.json",
+        "throughput_definition": "completed_requests / dispatch-to-last-completion wall window",
+        "throughput_requests_per_s": 0.3795967741949376
+      },
+      {
+        "observation_window_ms": 28186.528615653515,
+        "ok": true,
+        "policy": "round_robin",
+        "rejected": 0,
+        "requests": 11,
+        "seed": 23,
+        "source": "docs/data_flow_evidence/v4/E2_final/round_robin/seed-23/result.json",
+        "throughput_definition": "completed_requests / dispatch-to-last-completion wall window",
+        "throughput_requests_per_s": 0.39025735130402334
+      },
+      {
+        "observation_window_ms": 29289.946667850018,
+        "ok": true,
+        "policy": "round_robin",
+        "rejected": 0,
+        "requests": 11,
+        "seed": 37,
+        "source": "docs/data_flow_evidence/v4/E2_final/round_robin/seed-37/result.json",
+        "throughput_definition": "completed_requests / dispatch-to-last-completion wall window",
+        "throughput_requests_per_s": 0.3755554806821858
+      },
+      {
+        "observation_window_ms": 28251.644648611546,
+        "ok": true,
+        "policy": "round_robin",
+        "rejected": 0,
+        "requests": 11,
+        "seed": 41,
+        "source": "docs/data_flow_evidence/v4/E2_final/round_robin/seed-41/result.json",
+        "throughput_definition": "completed_requests / dispatch-to-last-completion wall window",
+        "throughput_requests_per_s": 0.38935786347364404
+      },
+      {
+        "observation_window_ms": 29392.638981342316,
+        "ok": true,
+        "policy": "round_robin",
+        "rejected": 0,
+        "requests": 11,
+        "seed": 53,
+        "source": "docs/data_flow_evidence/v4/E2_final/round_robin/seed-53/result.json",
+        "throughput_definition": "completed_requests / dispatch-to-last-completion wall window",
+        "throughput_requests_per_s": 0.37424336096471345
+      },
+      {
+        "observation_window_ms": 27638.671405613422,
+        "ok": true,
+        "policy": "data_aware",
+        "rejected": 0,
+        "requests": 11,
+        "seed": 11,
+        "source": "docs/data_flow_evidence/v4/E2_final/data_aware/seed-11/result.json",
+        "throughput_definition": "completed_requests / dispatch-to-last-completion wall window",
+        "throughput_requests_per_s": 0.3979930814534702
+      },
+      {
+        "observation_window_ms": 28691.993184387684,
+        "ok": true,
+        "policy": "data_aware",
+        "rejected": 0,
+        "requests": 11,
+        "seed": 23,
+        "source": "docs/data_flow_evidence/v4/E2_final/data_aware/seed-23/result.json",
+        "throughput_definition": "completed_requests / dispatch-to-last-completion wall window",
+        "throughput_requests_per_s": 0.38338221849242193
+      },
+      {
+        "observation_window_ms": 27502.83395498991,
+        "ok": true,
+        "policy": "data_aware",
+        "rejected": 0,
+        "requests": 11,
+        "seed": 37,
+        "source": "docs/data_flow_evidence/v4/E2_final/data_aware/seed-37/result.json",
+        "throughput_definition": "completed_requests / dispatch-to-last-completion wall window",
+        "throughput_requests_per_s": 0.3999587830840335
+      },
+      {
+        "observation_window_ms": 27678.36854606867,
+        "ok": true,
+        "policy": "data_aware",
+        "rejected": 0,
+        "requests": 11,
+        "seed": 41,
+        "source": "docs/data_flow_evidence/v4/E2_final/data_aware/seed-41/result.json",
+        "throughput_definition": "completed_requests / dispatch-to-last-completion wall window",
+        "throughput_requests_per_s": 0.3974222679234611
+      },
+      {
+        "observation_window_ms": 27585.42462438345,
+        "ok": true,
+        "policy": "data_aware",
+        "rejected": 0,
+        "requests": 11,
+        "seed": 53,
+        "source": "docs/data_flow_evidence/v4/E2_final/data_aware/seed-53/result.json",
+        "throughput_definition": "completed_requests / dispatch-to-last-completion wall window",
+        "throughput_requests_per_s": 0.3987613078203924
+      }
+    ]
+  },
+  "recovery": {
+    "ok": true,
+    "policies": {
+      "dependency_host_checkpoint": {
+        "host_demoted_blocks": 25,
+        "host_restored_blocks": 25,
+        "median_latency_ms": 786.231896,
+        "median_recomputed_tokens": 12.0,
+        "median_server_ttft_ms": 64.718583,
+        "restore_failures": 0,
+        "trials": 5
+      },
+      "drop_recompute": {
+        "host_demoted_blocks": 0,
+        "host_restored_blocks": 0,
+        "median_latency_ms": 751.753205,
+        "median_recomputed_tokens": 92.0,
+        "median_server_ttft_ms": 55.78667,
+        "restore_failures": 0,
+        "trials": 5
+      },
+      "fixed_gpu_retain": {
+        "host_demoted_blocks": 0,
+        "host_restored_blocks": 0,
+        "median_latency_ms": 756.623447,
+        "median_recomputed_tokens": 12.0,
+        "median_server_ttft_ms": 57.449707,
+        "restore_failures": 0,
+        "trials": 5
+      }
+    },
+    "trials": [
+      {
+        "checkpoint_events": [],
+        "host_demoted_blocks": 0,
+        "host_restored_blocks": 0,
+        "latency_ms": 747.557638,
+        "matched_tokens": 0,
+        "policy": "drop_recompute",
+        "recomputed_tokens": 92,
+        "repeat": 0,
+        "restore_failures": 0,
+        "server_ttft_ms": 55.721741,
+        "source": "docs/data_flow_evidence/v4/M9/pressure_policy_ab/results.json"
+      },
+      {
+        "checkpoint_events": [],
+        "host_demoted_blocks": 0,
+        "host_restored_blocks": 0,
+        "latency_ms": 751.753205,
+        "matched_tokens": 0,
+        "policy": "drop_recompute",
+        "recomputed_tokens": 92,
+        "repeat": 1,
+        "restore_failures": 0,
+        "server_ttft_ms": 55.78667,
+        "source": "docs/data_flow_evidence/v4/M9/pressure_policy_ab/results.json"
+      },
+      {
+        "checkpoint_events": [],
+        "host_demoted_blocks": 0,
+        "host_restored_blocks": 0,
+        "latency_ms": 770.681031,
+        "matched_tokens": 0,
+        "policy": "drop_recompute",
+        "recomputed_tokens": 92,
+        "repeat": 2,
+        "restore_failures": 0,
+        "server_ttft_ms": 65.105394,
+        "source": "docs/data_flow_evidence/v4/M9/pressure_policy_ab/results.json"
+      },
+      {
+        "checkpoint_events": [],
+        "host_demoted_blocks": 0,
+        "host_restored_blocks": 0,
+        "latency_ms": 745.924629,
+        "matched_tokens": 0,
+        "policy": "drop_recompute",
+        "recomputed_tokens": 92,
+        "repeat": 3,
+        "restore_failures": 0,
+        "server_ttft_ms": 55.569753,
+        "source": "docs/data_flow_evidence/v4/M9/pressure_policy_ab/results.json"
+      },
+      {
+        "checkpoint_events": [],
+        "host_demoted_blocks": 0,
+        "host_restored_blocks": 0,
+        "latency_ms": 756.609391,
+        "matched_tokens": 0,
+        "policy": "drop_recompute",
+        "recomputed_tokens": 92,
+        "repeat": 4,
+        "restore_failures": 0,
+        "server_ttft_ms": 56.419513,
+        "source": "docs/data_flow_evidence/v4/M9/pressure_policy_ab/results.json"
+      },
+      {
+        "checkpoint_events": [],
+        "host_demoted_blocks": 0,
+        "host_restored_blocks": 0,
+        "latency_ms": 756.623447,
+        "matched_tokens": 80,
+        "policy": "fixed_gpu_retain",
+        "recomputed_tokens": 12,
+        "repeat": 0,
+        "restore_failures": 0,
+        "server_ttft_ms": 57.032693,
+        "source": "docs/data_flow_evidence/v4/M9/pressure_policy_ab/results.json"
+      },
+      {
+        "checkpoint_events": [],
+        "host_demoted_blocks": 0,
+        "host_restored_blocks": 0,
+        "latency_ms": 788.993746,
+        "matched_tokens": 80,
+        "policy": "fixed_gpu_retain",
+        "recomputed_tokens": 12,
+        "repeat": 1,
+        "restore_failures": 0,
+        "server_ttft_ms": 57.449707,
+        "source": "docs/data_flow_evidence/v4/M9/pressure_policy_ab/results.json"
+      },
+      {
+        "checkpoint_events": [],
+        "host_demoted_blocks": 0,
+        "host_restored_blocks": 0,
+        "latency_ms": 750.771512,
+        "matched_tokens": 80,
+        "policy": "fixed_gpu_retain",
+        "recomputed_tokens": 12,
+        "repeat": 2,
+        "restore_failures": 0,
+        "server_ttft_ms": 57.068154,
+        "source": "docs/data_flow_evidence/v4/M9/pressure_policy_ab/results.json"
+      },
+      {
+        "checkpoint_events": [],
+        "host_demoted_blocks": 0,
+        "host_restored_blocks": 0,
+        "latency_ms": 785.53052,
+        "matched_tokens": 80,
+        "policy": "fixed_gpu_retain",
+        "recomputed_tokens": 12,
+        "repeat": 3,
+        "restore_failures": 0,
+        "server_ttft_ms": 60.236599,
+        "source": "docs/data_flow_evidence/v4/M9/pressure_policy_ab/results.json"
+      },
+      {
+        "checkpoint_events": [],
+        "host_demoted_blocks": 0,
+        "host_restored_blocks": 0,
+        "latency_ms": 750.020372,
+        "matched_tokens": 80,
+        "policy": "fixed_gpu_retain",
+        "recomputed_tokens": 12,
+        "repeat": 4,
+        "restore_failures": 0,
+        "server_ttft_ms": 57.51951,
+        "source": "docs/data_flow_evidence/v4/M9/pressure_policy_ab/results.json"
+      },
+      {
+        "checkpoint_events": [
+          {
+            "emitted_cursor": 0,
+            "exact_multimodal_dependency": true,
+            "generation": 1,
+            "kv_committed_tokens": 94,
+            "ok": true,
+            "position_values": 276,
+            "request_id": "host-prefix-checkpoint-recovery",
+            "restored": true,
+            "revision": 1,
+            "sampling_counter": 3
+          }
+        ],
+        "host_demoted_blocks": 5,
+        "host_restored_blocks": 5,
+        "latency_ms": 768.884003,
+        "matched_tokens": 80,
+        "policy": "dependency_host_checkpoint",
+        "recomputed_tokens": 12,
+        "repeat": 0,
+        "restore_failures": 0,
+        "server_ttft_ms": 60.787034,
+        "source": "docs/data_flow_evidence/v4/M9/pressure_policy_ab/results.json"
+      },
+      {
+        "checkpoint_events": [
+          {
+            "emitted_cursor": 0,
+            "exact_multimodal_dependency": true,
+            "generation": 1,
+            "kv_committed_tokens": 94,
+            "ok": true,
+            "position_values": 276,
+            "request_id": "host-prefix-checkpoint-recovery",
+            "restored": true,
+            "revision": 1,
+            "sampling_counter": 3
+          }
+        ],
+        "host_demoted_blocks": 5,
+        "host_restored_blocks": 5,
+        "latency_ms": 824.379278,
+        "matched_tokens": 80,
+        "policy": "dependency_host_checkpoint",
+        "recomputed_tokens": 12,
+        "repeat": 1,
+        "restore_failures": 0,
+        "server_ttft_ms": 61.289266,
+        "source": "docs/data_flow_evidence/v4/M9/pressure_policy_ab/results.json"
+      },
+      {
+        "checkpoint_events": [
+          {
+            "emitted_cursor": 0,
+            "exact_multimodal_dependency": true,
+            "generation": 1,
+            "kv_committed_tokens": 93,
+            "ok": true,
+            "position_values": 276,
+            "request_id": "host-prefix-checkpoint-recovery",
+            "restored": true,
+            "revision": 1,
+            "sampling_counter": 2
+          }
+        ],
+        "host_demoted_blocks": 5,
+        "host_restored_blocks": 5,
+        "latency_ms": 786.231896,
+        "matched_tokens": 80,
+        "policy": "dependency_host_checkpoint",
+        "recomputed_tokens": 12,
+        "repeat": 2,
+        "restore_failures": 0,
+        "server_ttft_ms": 72.38638,
+        "source": "docs/data_flow_evidence/v4/M9/pressure_policy_ab/results.json"
+      },
+      {
+        "checkpoint_events": [
+          {
+            "emitted_cursor": 0,
+            "exact_multimodal_dependency": true,
+            "generation": 1,
+            "kv_committed_tokens": 93,
+            "ok": true,
+            "position_values": 276,
+            "request_id": "host-prefix-checkpoint-recovery",
+            "restored": true,
+            "revision": 1,
+            "sampling_counter": 2
+          }
+        ],
+        "host_demoted_blocks": 5,
+        "host_restored_blocks": 5,
+        "latency_ms": 862.25151,
+        "matched_tokens": 80,
+        "policy": "dependency_host_checkpoint",
+        "recomputed_tokens": 12,
+        "repeat": 3,
+        "restore_failures": 0,
+        "server_ttft_ms": 88.541842,
+        "source": "docs/data_flow_evidence/v4/M9/pressure_policy_ab/results.json"
+      },
+      {
+        "checkpoint_events": [
+          {
+            "emitted_cursor": 0,
+            "exact_multimodal_dependency": true,
+            "generation": 1,
+            "kv_committed_tokens": 94,
+            "ok": true,
+            "position_values": 276,
+            "request_id": "host-prefix-checkpoint-recovery",
+            "restored": true,
+            "revision": 1,
+            "sampling_counter": 3
+          }
+        ],
+        "host_demoted_blocks": 5,
+        "host_restored_blocks": 5,
+        "latency_ms": 778.904941,
+        "matched_tokens": 80,
+        "policy": "dependency_host_checkpoint",
+        "recomputed_tokens": 12,
+        "repeat": 4,
+        "restore_failures": 0,
+        "server_ttft_ms": 64.718583,
+        "source": "docs/data_flow_evidence/v4/M9/pressure_policy_ab/results.json"
+      }
+    ]
+  }
+}

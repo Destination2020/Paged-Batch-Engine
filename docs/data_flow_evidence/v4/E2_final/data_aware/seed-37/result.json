@@ -1,0 +1,1261 @@
+{
+  "mean_language_ms": 754.1890415278348,
+  "observation_window_ms": 27502.83395498991,
+  "ok": true,
+  "p95_language_ms": 932.5764030218124,
+  "policy": "data_aware",
+  "rejected": 0,
+  "requests": 11,
+  "restarts": [
+    {
+      "new_pid": 2770779,
+      "old_pid": 2770119,
+      "worker": 1
+    }
+  ],
+  "seed": 37,
+  "throughput_definition": "completed_requests / dispatch-to-last-completion wall window",
+  "throughput_requests_per_s": 0.3999587830840335,
+  "trace": [
+    {
+      "actual_compute_ms": 518.402028,
+      "actual_queue_wait_ms": 0.4420624021263393,
+      "client_language_ms": 518.8440904021263,
+      "decision": {
+        "decision_us": 3.1962990760803223,
+        "forced": true,
+        "policy": "data_aware",
+        "request_id": "warm-prefix"
+      },
+      "output": {
+        "client_id": 0,
+        "failed": false,
+        "finish_reason": "",
+        "generation": 1,
+        "itl_ms": 52.86419485714286,
+        "latency_ms": 515.190444,
+        "outbox_items": 0,
+        "request_id": "warm-prefix",
+        "semantic_actual_computed_prompt_tokens": 92,
+        "semantic_lookup_us": 21,
+        "semantic_matched_tokens": 0,
+        "semantic_prompt_tokens": 92,
+        "text": "This image illustrates the flow of data through",
+        "token_itl_ms": [
+          55.733576,
+          59.487869,
+          46.379306,
+          48.726799,
+          48.217458,
+          64.58666,
+          46.917696
+        ],
+        "tokens": [
+          1986,
+          2168,
+          45380,
+          279,
+          6396,
+          315,
+          821,
+          1526
+        ],
+        "ttft_ms": 145.14108
+      },
+      "prediction_error_ms": 0.0,
+      "request_id": "warm-prefix",
+      "result_ok": true,
+      "worker": 0,
+      "worker_pid": 2770090
+    },
+    {
+      "actual_compute_ms": 3088.470587,
+      "actual_queue_wait_ms": 0.5197436961061612,
+      "client_language_ms": 3088.990330696106,
+      "decision": {
+        "decision_us": 3.069639205932617,
+        "forced": true,
+        "policy": "data_aware",
+        "request_id": "long-queue"
+      },
+      "output": {
+        "client_id": 0,
+        "failed": false,
+        "finish_reason": "",
+        "generation": 1,
+        "itl_ms": 48.050668174603175,
+        "latency_ms": 3086.375032,
+        "outbox_items": 0,
+        "request_id": "long-queue",
+        "semantic_actual_computed_prompt_tokens": 13,
+        "semantic_lookup_us": 480,
+        "semantic_matched_tokens": 80,
+        "semantic_prompt_tokens": 93,
+        "text": "Certainly! Let's break down the components of the flowchart you provided:\n\n### 1. **Client (C)**:\n   - **Action**: The client initiates an action by sending a request to the server.\n   - **Details**:\n     - **Request Type**: The client sends a request, which can",
+        "token_itl_ms": [
+          46.886638,
+          46.922844,
+          49.322395,
+          52.891875,
+          47.046604,
+          45.679887,
+          47.414616,
+          46.833823,
+          47.617762,
+          52.332255,
+          47.651754,
+          46.949775,
+          47.150221,
+          45.83712,
+          45.635147,
+          47.227414,
+          46.92393,
+          46.980938,
+          46.993154,
+          47.409536,
+          47.162763,
+          46.5986,
+          47.424044,
+          47.175277,
+          46.727943,
+          46.717604,
+          47.754989,
+          47.673417,
+          47.219087,
+          48.403761,
+          55.620914,
+          49.631996,
+          48.601947,
+          47.375637,
+          47.678828,
+          46.542652,
+          47.827119,
+          47.458502,
+          47.838891,
+          47.440311,
+          48.029774,
+          47.944399,
+          47.195561,
+          46.707711,
+          47.398491,
+          47.947611,
+          48.328203,
+          47.852921,
+          49.086567,
+          48.141192,
+          48.359184,
+          50.557082,
+          47.996118,
+          54.867882,
+          47.460703,
+          48.450615,
+          48.539834,
+          48.682057,
+          48.173175,
+          48.981667,
+          48.603997,
+          48.416751,
+          48.88863
+        ],
+        "tokens": [
+          95456,
+          0,
+          6771,
+          594,
+          1438,
+          1495,
+          279,
+          6813,
+          315,
+          279,
+          6396,
+          15941,
+          498,
+          3897,
+          1447,
+          14374,
+          220,
+          16,
+          13,
+          3070,
+          2959,
+          320,
+          34,
+          32295,
+          510,
+          256,
+          481,
+          3070,
+          2512,
+          95518,
+          576,
+          2943,
+          12672,
+          973,
+          458,
+          1917,
+          553,
+          11628,
+          264,
+          1681,
+          311,
+          279,
+          3538,
+          624,
+          256,
+          481,
+          3070,
+          7799,
+          334,
+          510,
+          257,
+          481,
+          3070,
+          1900,
+          3990,
+          95518,
+          576,
+          2943,
+          21308,
+          264,
+          1681,
+          11,
+          892,
+          646
+        ],
+        "ttft_ms": 59.182937
+      },
+      "prediction_error_ms": 0.0,
+      "request_id": "long-queue",
+      "result_ok": true,
+      "worker": 0,
+      "worker_pid": 2770090
+    },
+    {
+      "actual_compute_ms": 482.173226,
+      "actual_queue_wait_ms": 0.42910206205749546,
+      "client_language_ms": 482.6023280620575,
+      "decision": {
+        "candidates": [
+          {
+            "capacity": {
+              "bundle_free_bytes": 67108864,
+              "kv_free_bytes": 18874368,
+              "staging_free_bytes": 33554432
+            },
+            "compute_ms": 504.0,
+            "eligible": true,
+            "incarnation": "2770090",
+            "missing_bytes": 0,
+            "queue_wait_ms": 7200.0,
+            "reason": "eligible",
+            "rpc_layout_ms": 0.1,
+            "stale": false,
+            "stats_age_ms": 0.02302,
+            "total_ms": 7704.1,
+            "transfer_ms": 0.0,
+            "worker": 0
+          },
+          {
+            "capacity": {
+              "bundle_free_bytes": 67108864,
+              "kv_free_bytes": 18874368,
+              "staging_free_bytes": 33554432
+            },
+            "compute_ms": 504.0,
+            "eligible": true,
+            "incarnation": "2770119",
+            "missing_bytes": 2949120,
+            "queue_wait_ms": 0.0,
+            "reason": "eligible",
+            "rpc_layout_ms": 0.1,
+            "stale": false,
+            "stats_age_ms": 0.02302,
+            "total_ms": 1224.1,
+            "transfer_ms": 720.0,
+            "worker": 1
+          }
+        ],
+        "decision_us": 46.02968692779541,
+        "incarnation": "2770119",
+        "ok": true,
+        "policy": "data_aware",
+        "predicted_ms": 1224.1,
+        "request_id": "cache-versus-queue",
+        "worker": 1
+      },
+      "output": {
+        "client_id": 0,
+        "failed": false,
+        "finish_reason": "",
+        "generation": 1,
+        "itl_ms": 48.387963285714285,
+        "latency_ms": 480.556071,
+        "outbox_items": 0,
+        "request_id": "cache-versus-queue",
+        "semantic_actual_computed_prompt_tokens": 92,
+        "semantic_lookup_us": 21,
+        "semantic_matched_tokens": 0,
+        "semantic_prompt_tokens": 92,
+        "text": "The image depicts a flowchart illustrating the",
+        "token_itl_ms": [
+          57.984204,
+          47.288467,
+          46.612148,
+          46.088848,
+          46.760992,
+          46.714301,
+          47.266783
+        ],
+        "tokens": [
+          785,
+          2168,
+          61891,
+          264,
+          6396,
+          15941,
+          92912,
+          279
+        ],
+        "ttft_ms": 141.840328
+      },
+      "prediction_error_ms": -741.4976719379424,
+      "request_id": "cache-versus-queue",
+      "result_ok": true,
+      "worker": 1,
+      "worker_pid": 2770119
+    },
+    {
+      "actual_compute_ms": 392.755254,
+      "actual_queue_wait_ms": 0.4392128292999473,
+      "client_language_ms": 393.1944668292999,
+      "decision": {
+        "candidates": [
+          {
+            "capacity": {
+              "bundle_free_bytes": 67108864,
+              "kv_free_bytes": 18874368,
+              "staging_free_bytes": 33554432
+            },
+            "compute_ms": 504.0,
+            "eligible": true,
+            "incarnation": "2770090",
+            "missing_bytes": 0,
+            "queue_wait_ms": 0.0,
+            "reason": "eligible",
+            "rpc_layout_ms": 0.1,
+            "stale": false,
+            "stats_age_ms": 0.01449,
+            "total_ms": 504.1,
+            "transfer_ms": 0.0,
+            "worker": 0
+          },
+          {
+            "capacity": {
+              "bundle_free_bytes": 67108864,
+              "kv_free_bytes": 18874368,
+              "staging_free_bytes": 33554432
+            },
+            "compute_ms": 504.0,
+            "eligible": true,
+            "incarnation": "2770119",
+            "missing_bytes": 0,
+            "queue_wait_ms": 0.0,
+            "reason": "eligible",
+            "rpc_layout_ms": 0.1,
+            "stale": false,
+            "stats_age_ms": 0.01449,
+            "total_ms": 504.1,
+            "transfer_ms": 0.0,
+            "worker": 1
+          }
+        ],
+        "decision_us": 38.09481859207153,
+        "incarnation": "2770090",
+        "ok": true,
+        "policy": "data_aware",
+        "predicted_ms": 504.1,
+        "request_id": "fresh-cache-choice",
+        "worker": 0
+      },
+      "output": {
+        "client_id": 0,
+        "failed": false,
+        "finish_reason": "",
+        "generation": 1,
+        "itl_ms": 48.32734057142857,
+        "latency_ms": 391.101916,
+        "outbox_items": 0,
+        "request_id": "fresh-cache-choice",
+        "semantic_actual_computed_prompt_tokens": 12,
+        "semantic_lookup_us": 41,
+        "semantic_matched_tokens": 80,
+        "semantic_prompt_tokens": 92,
+        "text": "This image illustrates the flow of data through",
+        "token_itl_ms": [
+          46.882379,
+          47.524916,
+          46.869384,
+          50.226799,
+          47.423318,
+          47.642799,
+          51.721789
+        ],
+        "tokens": [
+          1986,
+          2168,
+          45380,
+          279,
+          6396,
+          315,
+          821,
+          1526
+        ],
+        "ttft_ms": 52.810532
+      },
+      "prediction_error_ms": -110.9055331707001,
+      "request_id": "fresh-cache-choice",
+      "result_ok": true,
+      "worker": 0,
+      "worker_pid": 2770090
+    },
+    {
+      "actual_compute_ms": 397.529646,
+      "actual_queue_wait_ms": 0.42753742065809774,
+      "client_language_ms": 397.9571834206581,
+      "decision": {
+        "candidates": [
+          {
+            "capacity": {
+              "bundle_free_bytes": 67108864,
+              "kv_free_bytes": 18874368,
+              "staging_free_bytes": 33554432
+            },
+            "compute_ms": 504.0,
+            "eligible": true,
+            "incarnation": "2770090",
+            "missing_bytes": 0,
+            "queue_wait_ms": 46080.0,
+            "reason": "eligible",
+            "rpc_layout_ms": 0.1,
+            "stale": true,
+            "stats_age_ms": 5000.014484,
+            "total_ms": 46584.1,
+            "transfer_ms": 0.0,
+            "worker": 0
+          },
+          {
+            "capacity": {
+              "bundle_free_bytes": 67108864,
+              "kv_free_bytes": 18874368,
+              "staging_free_bytes": 33554432
+            },
+            "compute_ms": 504.0,
+            "eligible": true,
+            "incarnation": "2770119",
+            "missing_bytes": 0,
+            "queue_wait_ms": 0.0,
+            "reason": "eligible",
+            "rpc_layout_ms": 0.1,
+            "stale": false,
+            "stats_age_ms": 0.014484,
+            "total_ms": 504.1,
+            "transfer_ms": 0.0,
+            "worker": 1
+          }
+        ],
+        "decision_us": 38.407742977142334,
+        "incarnation": "2770119",
+        "ok": true,
+        "policy": "data_aware",
+        "predicted_ms": 504.1,
+        "request_id": "stale-stat-choice",
+        "worker": 1
+      },
+      "output": {
+        "client_id": 0,
+        "failed": false,
+        "finish_reason": "",
+        "generation": 1,
+        "itl_ms": 48.20391985714286,
+        "latency_ms": 395.468913,
+        "outbox_items": 0,
+        "request_id": "stale-stat-choice",
+        "semantic_actual_computed_prompt_tokens": 12,
+        "semantic_lookup_us": 490,
+        "semantic_matched_tokens": 80,
+        "semantic_prompt_tokens": 92,
+        "text": "This image illustrates the flow of data through",
+        "token_itl_ms": [
+          46.750593,
+          46.733661,
+          48.618771,
+          55.405165,
+          46.464578,
+          46.753916,
+          46.700755
+        ],
+        "tokens": [
+          1986,
+          2168,
+          45380,
+          279,
+          6396,
+          315,
+          821,
+          1526
+        ],
+        "ttft_ms": 58.041474
+      },
+      "prediction_error_ms": -106.14281657934191,
+      "request_id": "stale-stat-choice",
+      "result_ok": true,
+      "worker": 1,
+      "worker_pid": 2770119
+    },
+    {
+      "actual_compute_ms": 381.479101,
+      "actual_queue_wait_ms": 0.4457889817466594,
+      "client_language_ms": 381.9248899817467,
+      "decision": {
+        "candidates": [
+          {
+            "capacity": {
+              "bundle_free_bytes": 67108864,
+              "kv_free_bytes": 18874368,
+              "staging_free_bytes": 33554432
+            },
+            "compute_ms": 504.0,
+            "eligible": false,
+            "incarnation": "2770090",
+            "missing_bytes": 0,
+            "queue_wait_ms": 0.0,
+            "reason": "insufficient_admission_capacity",
+            "rpc_layout_ms": 0.1,
+            "stale": false,
+            "stats_age_ms": 0.012161,
+            "total_ms": 504.1,
+            "transfer_ms": 0.0,
+            "worker": 0
+          },
+          {
+            "capacity": {
+              "bundle_free_bytes": 67108864,
+              "kv_free_bytes": 18874368,
+              "staging_free_bytes": 33554432
+            },
+            "compute_ms": 504.0,
+            "eligible": true,
+            "incarnation": "2770119",
+            "missing_bytes": 0,
+            "queue_wait_ms": 0.0,
+            "reason": "eligible",
+            "rpc_layout_ms": 0.1,
+            "stale": false,
+            "stats_age_ms": 0.012161,
+            "total_ms": 504.1,
+            "transfer_ms": 0.0,
+            "worker": 1
+          }
+        ],
+        "decision_us": 35.05498170852661,
+        "incarnation": "2770119",
+        "ok": true,
+        "policy": "data_aware",
+        "predicted_ms": 504.1,
+        "request_id": "budget-fallback",
+        "worker": 1
+      },
+      "output": {
+        "client_id": 0,
+        "failed": false,
+        "finish_reason": "",
+        "generation": 1,
+        "itl_ms": 46.96899428571429,
+        "latency_ms": 378.95916,
+        "outbox_items": 0,
+        "request_id": "budget-fallback",
+        "semantic_actual_computed_prompt_tokens": 12,
+        "semantic_lookup_us": 36,
+        "semantic_matched_tokens": 80,
+        "semantic_prompt_tokens": 92,
+        "text": "This image illustrates the flow of data through",
+        "token_itl_ms": [
+          46.769866,
+          49.065098,
+          46.830287,
+          46.06426,
+          46.813678,
+          46.740542,
+          46.499229
+        ],
+        "tokens": [
+          1986,
+          2168,
+          45380,
+          279,
+          6396,
+          315,
+          821,
+          1526
+        ],
+        "ttft_ms": 50.1762
+      },
+      "prediction_error_ms": -122.17511001825335,
+      "request_id": "budget-fallback",
+      "result_ok": true,
+      "worker": 1,
+      "worker_pid": 2770119
+    },
+    {
+      "actual_compute_ms": 387.602876,
+      "actual_queue_wait_ms": 0.35937590162660626,
+      "client_language_ms": 387.9622519016266,
+      "decision": {
+        "candidates": [
+          {
+            "capacity": {
+              "bundle_free_bytes": 67108864,
+              "kv_free_bytes": 18874368,
+              "staging_free_bytes": 33554432
+            },
+            "compute_ms": 504.0,
+            "eligible": true,
+            "incarnation": "2770090",
+            "missing_bytes": 0,
+            "queue_wait_ms": 0.0,
+            "reason": "eligible",
+            "rpc_layout_ms": 0.1,
+            "stale": false,
+            "stats_age_ms": 0.014784,
+            "total_ms": 504.1,
+            "transfer_ms": 0.0,
+            "worker": 0
+          },
+          {
+            "capacity": {
+              "bundle_free_bytes": 67108864,
+              "kv_free_bytes": 18874368,
+              "staging_free_bytes": 33554432
+            },
+            "compute_ms": 504.0,
+            "eligible": true,
+            "incarnation": "2770779",
+            "missing_bytes": 2949120,
+            "queue_wait_ms": 0.0,
+            "reason": "eligible",
+            "rpc_layout_ms": 0.1,
+            "stale": false,
+            "stats_age_ms": 0.014784,
+            "total_ms": 1224.1,
+            "transfer_ms": 720.0,
+            "worker": 1
+          }
+        ],
+        "decision_us": 38.06501626968384,
+        "incarnation": "2770090",
+        "ok": true,
+        "policy": "data_aware",
+        "predicted_ms": 504.1,
+        "request_id": "worker-restart",
+        "worker": 0
+      },
+      "output": {
+        "client_id": 0,
+        "failed": false,
+        "finish_reason": "",
+        "generation": 1,
+        "itl_ms": 48.07664,
+        "latency_ms": 386.00669,
+        "outbox_items": 0,
+        "request_id": "worker-restart",
+        "semantic_actual_computed_prompt_tokens": 12,
+        "semantic_lookup_us": 35,
+        "semantic_matched_tokens": 80,
+        "semantic_prompt_tokens": 92,
+        "text": "This image illustrates the flow of data through",
+        "token_itl_ms": [
+          48.692674,
+          52.407537,
+          47.058872,
+          47.129277,
+          46.889546,
+          47.49006,
+          46.868514
+        ],
+        "tokens": [
+          1986,
+          2168,
+          45380,
+          279,
+          6396,
+          315,
+          821,
+          1526
+        ],
+        "ttft_ms": 49.47021
+      },
+      "prediction_error_ms": -116.13774809837344,
+      "request_id": "worker-restart",
+      "result_ok": true,
+      "worker": 0,
+      "worker_pid": 2770090
+    },
+    {
+      "actual_compute_ms": 387.907242,
+      "actual_queue_wait_ms": 0.42177963267135965,
+      "client_language_ms": 388.32902163267136,
+      "decision": {
+        "candidates": [
+          {
+            "capacity": {
+              "bundle_free_bytes": 67108864,
+              "kv_free_bytes": 18874368,
+              "staging_free_bytes": 33554432
+            },
+            "compute_ms": 504.0,
+            "eligible": true,
+            "incarnation": "2770090",
+            "missing_bytes": 0,
+            "queue_wait_ms": 0.0,
+            "reason": "eligible",
+            "rpc_layout_ms": 0.1,
+            "stale": false,
+            "stats_age_ms": 0.013794,
+            "total_ms": 504.1,
+            "transfer_ms": 0.0,
+            "worker": 0
+          },
+          {
+            "capacity": {
+              "bundle_free_bytes": 67108864,
+              "kv_free_bytes": 18874368,
+              "staging_free_bytes": 33554432
+            },
+            "compute_ms": 504.0,
+            "eligible": true,
+            "incarnation": "2770779",
+            "missing_bytes": 2949120,
+            "queue_wait_ms": 0.0,
+            "reason": "eligible",
+            "rpc_layout_ms": 0.1,
+            "stale": false,
+            "stats_age_ms": 0.013794,
+            "total_ms": 1224.1,
+            "transfer_ms": 720.0,
+            "worker": 1
+          }
+        ],
+        "decision_us": 37.46151924133301,
+        "incarnation": "2770090",
+        "ok": true,
+        "policy": "data_aware",
+        "predicted_ms": 504.1,
+        "request_id": "random-b",
+        "worker": 0
+      },
+      "output": {
+        "client_id": 0,
+        "failed": false,
+        "finish_reason": "",
+        "generation": 1,
+        "itl_ms": 47.66398628571428,
+        "latency_ms": 386.422542,
+        "outbox_items": 0,
+        "request_id": "random-b",
+        "semantic_actual_computed_prompt_tokens": 14,
+        "semantic_lookup_us": 36,
+        "semantic_matched_tokens": 80,
+        "semantic_prompt_tokens": 94,
+        "text": "The diagram illustrates the flow of data and",
+        "token_itl_ms": [
+          47.734546,
+          47.52744,
+          47.836151,
+          46.873895,
+          49.297034,
+          47.166066,
+          47.212772
+        ],
+        "tokens": [
+          785,
+          13549,
+          45380,
+          279,
+          6396,
+          315,
+          821,
+          323
+        ],
+        "ttft_ms": 52.774638
+      },
+      "prediction_error_ms": -115.77097836732867,
+      "request_id": "random-b",
+      "result_ok": true,
+      "worker": 0,
+      "worker_pid": 2770090
+    },
+    {
+      "actual_compute_ms": 544.71942,
+      "actual_queue_wait_ms": 0.38242377431868135,
+      "client_language_ms": 545.1018437743187,
+      "decision": {
+        "candidates": [
+          {
+            "capacity": {
+              "bundle_free_bytes": 67108864,
+              "kv_free_bytes": 18874368,
+              "staging_free_bytes": 33554432
+            },
+            "compute_ms": 504.0,
+            "eligible": true,
+            "incarnation": "2770090",
+            "missing_bytes": 0,
+            "queue_wait_ms": 4680.0,
+            "reason": "eligible",
+            "rpc_layout_ms": 0.1,
+            "stale": false,
+            "stats_age_ms": 0.005729,
+            "total_ms": 5184.1,
+            "transfer_ms": 0.0,
+            "worker": 0
+          },
+          {
+            "capacity": {
+              "bundle_free_bytes": 67108864,
+              "kv_free_bytes": 18874368,
+              "staging_free_bytes": 33554432
+            },
+            "compute_ms": 504.0,
+            "eligible": true,
+            "incarnation": "2770779",
+            "missing_bytes": 2949120,
+            "queue_wait_ms": 0.0,
+            "reason": "eligible",
+            "rpc_layout_ms": 0.1,
+            "stale": false,
+            "stats_age_ms": 0.005729,
+            "total_ms": 1224.1,
+            "transfer_ms": 720.0,
+            "worker": 1
+          }
+        ],
+        "decision_us": 18.775463104248047,
+        "incarnation": "2770779",
+        "ok": true,
+        "policy": "data_aware",
+        "predicted_ms": 1224.1,
+        "request_id": "random-d",
+        "worker": 1
+      },
+      "output": {
+        "client_id": 0,
+        "failed": false,
+        "finish_reason": "",
+        "generation": 1,
+        "itl_ms": 54.86256642857143,
+        "latency_ms": 543.111263,
+        "outbox_items": 0,
+        "request_id": "random-d",
+        "semantic_actual_computed_prompt_tokens": 93,
+        "semantic_lookup_us": 23,
+        "semantic_matched_tokens": 0,
+        "semantic_prompt_tokens": 93,
+        "text": "Caption: \"Flowchart of API Process",
+        "token_itl_ms": [
+          62.550875,
+          54.137686,
+          53.03869,
+          55.488475,
+          51.500413,
+          52.526133,
+          54.795693
+        ],
+        "tokens": [
+          32123,
+          25,
+          330,
+          18878,
+          15941,
+          315,
+          5333,
+          8603
+        ],
+        "ttft_ms": 159.073298
+      },
+      "prediction_error_ms": -678.9981562256812,
+      "request_id": "random-d",
+      "result_ok": true,
+      "worker": 1,
+      "worker_pid": 2770779
+    },
+    {
+      "actual_compute_ms": 390.193248,
+      "actual_queue_wait_ms": 388.4033990837593,
+      "client_language_ms": 778.5966470837593,
+      "decision": {
+        "candidates": [
+          {
+            "capacity": {
+              "bundle_free_bytes": 67108864,
+              "kv_free_bytes": 18874368,
+              "staging_free_bytes": 33554432
+            },
+            "compute_ms": 504.0,
+            "eligible": true,
+            "incarnation": "2770090",
+            "missing_bytes": 0,
+            "queue_wait_ms": 4680.0,
+            "reason": "eligible",
+            "rpc_layout_ms": 0.1,
+            "stale": false,
+            "stats_age_ms": 0.004718,
+            "total_ms": 5184.1,
+            "transfer_ms": 0.0,
+            "worker": 0
+          },
+          {
+            "capacity": {
+              "bundle_free_bytes": 67108864,
+              "kv_free_bytes": 18874368,
+              "staging_free_bytes": 33554432
+            },
+            "compute_ms": 504.0,
+            "eligible": true,
+            "incarnation": "2770779",
+            "missing_bytes": 2949120,
+            "queue_wait_ms": 4680.0,
+            "reason": "eligible",
+            "rpc_layout_ms": 0.1,
+            "stale": false,
+            "stats_age_ms": 0.004718,
+            "total_ms": 5904.1,
+            "transfer_ms": 720.0,
+            "worker": 1
+          }
+        ],
+        "decision_us": 13.850629329681396,
+        "incarnation": "2770090",
+        "ok": true,
+        "policy": "data_aware",
+        "predicted_ms": 5184.1,
+        "request_id": "random-c",
+        "worker": 0
+      },
+      "output": {
+        "client_id": 0,
+        "failed": false,
+        "finish_reason": "",
+        "generation": 1,
+        "itl_ms": 48.10698585714285,
+        "latency_ms": 388.620138,
+        "outbox_items": 0,
+        "request_id": "random-c",
+        "semantic_actual_computed_prompt_tokens": 14,
+        "semantic_lookup_us": 24,
+        "semantic_matched_tokens": 80,
+        "semantic_prompt_tokens": 94,
+        "text": "The image appears to be a flowchart",
+        "token_itl_ms": [
+          48.889771,
+          52.72896,
+          46.568912,
+          47.48167,
+          47.130014,
+          46.891159,
+          47.058415
+        ],
+        "tokens": [
+          785,
+          2168,
+          7952,
+          311,
+          387,
+          264,
+          6396,
+          15941
+        ],
+        "ttft_ms": 51.871237
+      },
+      "prediction_error_ms": -4405.503352916241,
+      "request_id": "random-c",
+      "result_ok": true,
+      "worker": 0,
+      "worker_pid": 2770090
+    },
+    {
+      "actual_compute_ms": 387.360332,
+      "actual_queue_wait_ms": 545.2160710218125,
+      "client_language_ms": 932.5764030218124,
+      "decision": {
+        "candidates": [
+          {
+            "capacity": {
+              "bundle_free_bytes": 67108864,
+              "kv_free_bytes": 18874368,
+              "staging_free_bytes": 33554432
+            },
+            "compute_ms": 504.0,
+            "eligible": true,
+            "incarnation": "2770090",
+            "missing_bytes": 0,
+            "queue_wait_ms": 9360.0,
+            "reason": "eligible",
+            "rpc_layout_ms": 0.1,
+            "stale": false,
+            "stats_age_ms": 0.003546,
+            "total_ms": 9864.1,
+            "transfer_ms": 0.0,
+            "worker": 0
+          },
+          {
+            "capacity": {
+              "bundle_free_bytes": 67108864,
+              "kv_free_bytes": 18874368,
+              "staging_free_bytes": 33554432
+            },
+            "compute_ms": 504.0,
+            "eligible": true,
+            "incarnation": "2770779",
+            "missing_bytes": 2949120,
+            "queue_wait_ms": 4680.0,
+            "reason": "eligible",
+            "rpc_layout_ms": 0.1,
+            "stale": false,
+            "stats_age_ms": 0.003546,
+            "total_ms": 5904.1,
+            "transfer_ms": 720.0,
+            "worker": 1
+          }
+        ],
+        "decision_us": 9.313225746154785,
+        "incarnation": "2770779",
+        "ok": true,
+        "policy": "data_aware",
+        "predicted_ms": 5904.1,
+        "request_id": "random-a",
+        "worker": 1
+      },
+      "output": {
+        "client_id": 0,
+        "failed": false,
+        "finish_reason": "",
+        "generation": 1,
+        "itl_ms": 46.665279,
+        "latency_ms": 385.287082,
+        "outbox_items": 0,
+        "request_id": "random-a",
+        "semantic_actual_computed_prompt_tokens": 11,
+        "semantic_lookup_us": 496,
+        "semantic_matched_tokens": 80,
+        "semantic_prompt_tokens": 91,
+        "text": "The main components of the diagram you provided",
+        "token_itl_ms": [
+          48.00142,
+          46.677558,
+          46.33374,
+          45.702746,
+          46.702317,
+          46.326899,
+          46.912273
+        ],
+        "tokens": [
+          785,
+          1887,
+          6813,
+          315,
+          279,
+          13549,
+          498,
+          3897
+        ],
+        "ttft_ms": 58.630129
+      },
+      "prediction_error_ms": -4971.523596978188,
+      "request_id": "random-a",
+      "result_ok": true,
+      "worker": 1,
+      "worker_pid": 2770779
+    }
+  ],
+  "worker_status": [
+    {
+      "batches": 6,
+      "budget": {
+        "bundles": {
+          "capacity": 67108864,
+          "peak": 264200,
+          "used": 0
+        },
+        "kv": {
+          "capacity": 18874368,
+          "peak": 5898240,
+          "used": 0
+        },
+        "staging": {
+          "capacity": 33554432,
+          "peak": 262144,
+          "used": 0
+        },
+        "weights": {
+          "capacity": 6997803008,
+          "peak": 6997803008,
+          "used": 6997803008
+        },
+        "workspaces": {
+          "capacity": 329646080,
+          "peak": 329646080,
+          "used": 329646080
+        }
+      },
+      "budget_invariant": true,
+      "device_memory": {
+        "admission_limit_bytes": 149753298944,
+        "external_kv_owner_bytes": 37748736,
+        "model_file_bytes": 6173974564,
+        "model_process_allocation_bytes": 7327449088,
+        "peak_observed_used_bytes": 17653563392,
+        "preexisting_used_bytes": 2661482496,
+        "total_bytes": 150021734400,
+        "within_admission_limit": true,
+        "workspace_bytes_per_token": 643840,
+        "workspace_reserved_bytes": 329646080
+      },
+      "feature_copy_bytes": 262144,
+      "host_cache_budget": {
+        "capacity": 268435456,
+        "peak": 0,
+        "used": 0
+      },
+      "ok": true,
+      "op_id": 18,
+      "pool": {
+        "active_grants": 2,
+        "free_slots": 0,
+        "total_slots": 64,
+        "worker_allocatable_kv_bytes": 18874368,
+        "worker_granted_slots": 32
+      },
+      "radix_cache": {
+        "cache_hits": 5,
+        "cache_misses": 1,
+        "evicted_blocks": 0,
+        "host_demoted_blocks": 0,
+        "host_restore_failures": 0,
+        "host_restore_requests": 0,
+        "host_restored_blocks": 0,
+        "lookup_requests": 6,
+        "published_blocks": 5,
+        "tokens_reused": 400
+      },
+      "radix_cache_enabled": true,
+      "recovery_dependency": {
+        "actual_eviction_path": true,
+        "committed_demotions": 0,
+        "demote_decisions": 0,
+        "keep_decisions": 0,
+        "publish_rejections": 0,
+        "restores": 0
+      },
+      "requests": 6,
+      "transfer_scheduler": {
+        "background_completed": 0,
+        "demand_completed": 0,
+        "max_d2h_active": 0,
+        "max_h2d_active": 0,
+        "oldest_queue_ticks": 0,
+        "physical_submissions": 0
+      },
+      "worker_pid": 2770090
+    },
+    {
+      "batches": 2,
+      "budget": {
+        "bundles": {
+          "capacity": 67108864,
+          "peak": 264200,
+          "used": 0
+        },
+        "kv": {
+          "capacity": 18874368,
+          "peak": 4128768,
+          "used": 0
+        },
+        "staging": {
+          "capacity": 33554432,
+          "peak": 262144,
+          "used": 0
+        },
+        "weights": {
+          "capacity": 6997803008,
+          "peak": 6997803008,
+          "used": 6997803008
+        },
+        "workspaces": {
+          "capacity": 329646080,
+          "peak": 329646080,
+          "used": 329646080
+        }
+      },
+      "budget_invariant": true,
+      "device_memory": {
+        "admission_limit_bytes": 149753298944,
+        "external_kv_owner_bytes": 37748736,
+        "model_file_bytes": 6173974564,
+        "model_process_allocation_bytes": 7327449088,
+        "peak_observed_used_bytes": 17653563392,
+        "preexisting_used_bytes": 10326114304,
+        "total_bytes": 150021734400,
+        "within_admission_limit": true,
+        "workspace_bytes_per_token": 643840,
+        "workspace_reserved_bytes": 329646080
+      },
+      "feature_copy_bytes": 262144,
+      "host_cache_budget": {
+        "capacity": 268435456,
+        "peak": 0,
+        "used": 0
+      },
+      "ok": true,
+      "op_id": 8,
+      "pool": {
+        "active_grants": 2,
+        "free_slots": 0,
+        "total_slots": 64,
+        "worker_allocatable_kv_bytes": 18874368,
+        "worker_granted_slots": 32
+      },
+      "radix_cache": {
+        "cache_hits": 1,
+        "cache_misses": 1,
+        "evicted_blocks": 0,
+        "host_demoted_blocks": 0,
+        "host_restore_failures": 0,
+        "host_restore_requests": 0,
+        "host_restored_blocks": 0,
+        "lookup_requests": 2,
+        "published_blocks": 5,
+        "tokens_reused": 80
+      },
+      "radix_cache_enabled": true,
+      "recovery_dependency": {
+        "actual_eviction_path": true,
+        "committed_demotions": 0,
+        "demote_decisions": 0,
+        "keep_decisions": 0,
+        "publish_rejections": 0,
+        "restores": 0
+      },
+      "requests": 2,
+      "transfer_scheduler": {
+        "background_completed": 0,
+        "demand_completed": 0,
+        "max_d2h_active": 0,
+        "max_h2d_active": 0,
+        "oldest_queue_ticks": 0,
+        "physical_submissions": 0
+      },
+      "worker_pid": 2770779
+    }
+  ]
+}

@@ -1,0 +1,5 @@
+{
+  "stage": "M5", "status": "accepted", "date": "2026-09-13",
+  "twenty_case_gate": {"cases": 20, "exact_sequences": 15, "equal_tokens": 141, "total_tokens": 160, "accepted_bf16_divergences": 5, "same_history_required": true, "logits_max_abs_lt": 0.75, "logits_mean_abs_lt": 0.20, "top2_margin_le": 0.25, "both_choices_in_shared_top2": true, "evidence": "../M5_numerics_final/validation_final.json"},
+  "online_lifecycle": {"protocol": "pbe-vlm-language-jsonl-v2", "external_cancel_during_decode": true, "cancelled_after_tokens": 2, "absolute_deadline_ms": 10500, "observed_round_ms": 10503.424741327763, "same_worker_pid": true, "evidence": "../M5_online_lifecycle_final/validation.json"}
+}

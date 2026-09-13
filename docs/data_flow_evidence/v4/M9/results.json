@@ -1,0 +1,291 @@
+{
+  "schema": "pbe.v4.experiments.v1",
+  "seed": 20260912,
+  "repetitions": 5,
+  "model_revision": "66285546d2b821cf421d4f5eb2576359d3770cd3",
+  "summaries": {
+    "contract/fault_lifecycle": {
+      "n": 5,
+      "median_ms": 150.12624114751816,
+      "min_ms": 141.04487001895905,
+      "max_ms": 153.22908014059067,
+      "p95_ms": 153.22908014059067,
+      "p99_ms": 153.22908014059067
+    },
+    "contract/joint_budget_lanes": {
+      "n": 5,
+      "median_ms": 142.5018087029457,
+      "min_ms": 140.44513553380966,
+      "max_ms": 150.590680539608,
+      "p95_ms": 150.590680539608,
+      "p99_ms": 150.590680539608
+    },
+    "contract/branch_2_4_cow": {
+      "n": 5,
+      "median_ms": 149.4116485118866,
+      "min_ms": 144.28389817476273,
+      "max_ms": 155.57383745908737,
+      "p95_ms": 155.57383745908737,
+      "p99_ms": 155.57383745908737
+    },
+    "vision_cache/off": {
+      "n": 5,
+      "median_ms": 15613.97459357977,
+      "min_ms": 15232.88805782795,
+      "max_ms": 17257.762856781483,
+      "p95_ms": 17257.762856781483,
+      "p99_ms": 17257.762856781483
+    },
+    "vision_cache/on": {
+      "n": 5,
+      "median_ms": 429.8192411661148,
+      "min_ms": 420.7763597369194,
+      "max_ms": 600.2710983157158,
+      "p95_ms": 600.2710983157158,
+      "p99_ms": 600.2710983157158
+    }
+  },
+  "matrix": {
+    "image_repeat_percent": [
+      0,
+      50,
+      90
+    ],
+    "branches": [
+      1,
+      2,
+      4
+    ],
+    "prefix": [
+      "short",
+      "long"
+    ],
+    "resolution": [
+      224,
+      280
+    ],
+    "pressure": [
+      "low",
+      "medium",
+      "high"
+    ],
+    "method": "representative and single-factor; not Cartesian"
+  },
+  "claims": {
+    "throughput_superiority": false,
+    "logical_hit_is_saved_compute": false,
+    "unmeasured_fields": [
+      "merged_vs_separated_equal_budget",
+      "lane_off_on_gpu_timeline",
+      "pressure_policy_real_model_five_repeat",
+      "multimodal_ttft_itl"
+    ]
+  },
+  "records": [
+    {
+      "kind": "contract",
+      "case": "fault_lifecycle",
+      "order": 0,
+      "wall_ms": 150.12624114751816,
+      "ok": true
+    },
+    {
+      "kind": "contract",
+      "case": "joint_budget_lanes",
+      "order": 1,
+      "wall_ms": 144.42665874958038,
+      "ok": true
+    },
+    {
+      "kind": "contract",
+      "case": "branch_2_4_cow",
+      "order": 2,
+      "wall_ms": 149.4116485118866,
+      "ok": true
+    },
+    {
+      "kind": "contract",
+      "case": "fault_lifecycle",
+      "order": 3,
+      "wall_ms": 151.16742253303528,
+      "ok": true
+    },
+    {
+      "kind": "contract",
+      "case": "branch_2_4_cow",
+      "order": 4,
+      "wall_ms": 155.57383745908737,
+      "ok": true
+    },
+    {
+      "kind": "contract",
+      "case": "fault_lifecycle",
+      "order": 5,
+      "wall_ms": 153.22908014059067,
+      "ok": true
+    },
+    {
+      "kind": "contract",
+      "case": "fault_lifecycle",
+      "order": 6,
+      "wall_ms": 145.19547671079636,
+      "ok": true
+    },
+    {
+      "kind": "contract",
+      "case": "joint_budget_lanes",
+      "order": 7,
+      "wall_ms": 142.5018087029457,
+      "ok": true
+    },
+    {
+      "kind": "contract",
+      "case": "joint_budget_lanes",
+      "order": 8,
+      "wall_ms": 141.02785289287567,
+      "ok": true
+    },
+    {
+      "kind": "contract",
+      "case": "fault_lifecycle",
+      "order": 9,
+      "wall_ms": 141.04487001895905,
+      "ok": true
+    },
+    {
+      "kind": "contract",
+      "case": "joint_budget_lanes",
+      "order": 10,
+      "wall_ms": 140.44513553380966,
+      "ok": true
+    },
+    {
+      "kind": "contract",
+      "case": "branch_2_4_cow",
+      "order": 11,
+      "wall_ms": 144.7269693017006,
+      "ok": true
+    },
+    {
+      "kind": "contract",
+      "case": "branch_2_4_cow",
+      "order": 12,
+      "wall_ms": 151.82562917470932,
+      "ok": true
+    },
+    {
+      "kind": "contract",
+      "case": "joint_budget_lanes",
+      "order": 13,
+      "wall_ms": 150.590680539608,
+      "ok": true
+    },
+    {
+      "kind": "contract",
+      "case": "branch_2_4_cow",
+      "order": 14,
+      "wall_ms": 144.28389817476273,
+      "ok": true
+    },
+    {
+      "kind": "vision_cache",
+      "mode": "off",
+      "repetition": 0,
+      "size": 224,
+      "wall_ms": 16500.10146945715,
+      "forward_ms": 374.853,
+      "bundle_bytes": 262424,
+      "ok": true
+    },
+    {
+      "kind": "vision_cache",
+      "mode": "on",
+      "repetition": 0,
+      "size": 224,
+      "wall_ms": 429.8192411661148,
+      "forward_ms": 0.0,
+      "bundle_bytes": 262424,
+      "ok": true
+    },
+    {
+      "kind": "vision_cache",
+      "mode": "off",
+      "repetition": 1,
+      "size": 280,
+      "wall_ms": 15613.97459357977,
+      "forward_ms": 307.698,
+      "bundle_bytes": 409880,
+      "ok": true
+    },
+    {
+      "kind": "vision_cache",
+      "mode": "on",
+      "repetition": 1,
+      "size": 280,
+      "wall_ms": 600.2710983157158,
+      "forward_ms": 0.0,
+      "bundle_bytes": 409880,
+      "ok": true
+    },
+    {
+      "kind": "vision_cache",
+      "mode": "off",
+      "repetition": 2,
+      "size": 224,
+      "wall_ms": 15232.88805782795,
+      "forward_ms": 244.945,
+      "bundle_bytes": 262424,
+      "ok": true
+    },
+    {
+      "kind": "vision_cache",
+      "mode": "on",
+      "repetition": 2,
+      "size": 224,
+      "wall_ms": 429.5865595340729,
+      "forward_ms": 0.0,
+      "bundle_bytes": 262424,
+      "ok": true
+    },
+    {
+      "kind": "vision_cache",
+      "mode": "off",
+      "repetition": 3,
+      "size": 280,
+      "wall_ms": 17257.762856781483,
+      "forward_ms": 595.301,
+      "bundle_bytes": 409880,
+      "ok": true
+    },
+    {
+      "kind": "vision_cache",
+      "mode": "on",
+      "repetition": 3,
+      "size": 280,
+      "wall_ms": 584.922157227993,
+      "forward_ms": 0.0,
+      "bundle_bytes": 409880,
+      "ok": true
+    },
+    {
+      "kind": "vision_cache",
+      "mode": "off",
+      "repetition": 4,
+      "size": 224,
+      "wall_ms": 15250.390358269215,
+      "forward_ms": 268.73,
+      "bundle_bytes": 262424,
+      "ok": true
+    },
+    {
+      "kind": "vision_cache",
+      "mode": "on",
+      "repetition": 4,
+      "size": 224,
+      "wall_ms": 420.7763597369194,
+      "forward_ms": 0.0,
+      "bundle_bytes": 262424,
+      "ok": true
+    }
+  ]
+}

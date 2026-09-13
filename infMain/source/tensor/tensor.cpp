@@ -1,7 +1,6 @@
 // Updated on March 15, 2026
 #include "tensor/tensor.h"
 #include <base/bf16.h>
-#include <cuda_device_runtime_api.h>
 #include <glog/logging.h>
 #include <numeric>
 #include <vector>
@@ -143,6 +142,9 @@ void Tensor::to_device(base::DeviceType target_device_type,
     return;
   }
 
+#ifdef KUIPER_CPU_ONLY
+  LOG(FATAL) << "CUDA tensor conversion unavailable in CPU-only build";
+#else
   CHECK_EQ(target_device_type, base::DeviceType::kDeviceCUDA)
       << "Tensor::to_device currently only supports CPU/CUDA backends.";
 
@@ -174,6 +176,7 @@ void Tensor::to_device(base::DeviceType target_device_type,
     CHECK_EQ(data_type_, target_data_type)
         << "Tensor::to_device does not support in-place CUDA dtype conversion.";
   }
+#endif
 }
 
 void Tensor::to_host() {

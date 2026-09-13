@@ -59,14 +59,18 @@ int32_t generate_response(const model::Qwen2Model& model, const std::string& pro
   int32_t pos = 0;
   int32_t next = tokens.at(pos);
   bool is_prompt = true;
-  const auto& prompt_embedding = model.embedding(tokens);
   tensor::Tensor pos_tensor = model.get_buffer(model::ModelBufferType::kInputPos);
 
   std::vector<int32_t> generated_tokens;
   while (pos < total_steps) {
     pos_tensor.index<int32_t>(0) = pos;
     if (pos < prompt_len - 1) {
-      tensor::Tensor input = model.fill_input(pos_tensor, prompt_embedding, is_prompt);
+      // Embed prompt tokens one at a time. The model's reusable serving workspace is
+      // sized for the active batch, not for an arbitrarily long contiguous prompt.
+      // Keeping a full-prompt embedding view here would make this simple demo fail
+      // whenever prompt_len exceeds that workspace capacity.
+      const auto token_embedding = model.embedding(std::vector<int32_t>{tokens.at(pos)});
+      tensor::Tensor input = model.fill_input(pos_tensor, token_embedding, false);
       model.predict(input, pos_tensor, is_prompt, next);
       next = tokens.at(pos + 1);
     } else {

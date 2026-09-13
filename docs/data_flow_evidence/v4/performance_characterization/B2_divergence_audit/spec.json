@@ -1,0 +1,145 @@
+{
+  "rounds": [
+    [
+      {
+        "generation": 1,
+        "max_new_tokens": 8,
+        "parts": [
+          {
+            "path": "docs/data_flow_evidence/v4/performance_characterization/B2_divergence_audit/inputs/variant-10.png",
+            "size": 280,
+            "type": "image"
+          },
+          {
+            "text": "Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Finish with the central object.",
+            "type": "text"
+          }
+        ],
+        "request_id": "warmup"
+      }
+    ],
+    [
+      {
+        "generation": 1,
+        "max_new_tokens": 8,
+        "parts": [
+          {
+            "path": "docs/data_flow_evidence/v4/performance_characterization/B2_divergence_audit/inputs/variant-00.png",
+            "size": 280,
+            "type": "image"
+          },
+          {
+            "text": "Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Finish with the central object.",
+            "type": "text"
+          }
+        ],
+        "request_id": "cache-fill"
+      }
+    ],
+    [
+      {
+        "diagnostic_dump_logits_step": 2,
+        "diagnostic_key": "paired-step2-0",
+        "diagnostic_mode": "audit-0",
+        "generation": 1,
+        "max_new_tokens": 8,
+        "parts": [
+          {
+            "path": "docs/data_flow_evidence/v4/performance_characterization/B2_divergence_audit/inputs/variant-00.png",
+            "size": 280,
+            "type": "image"
+          },
+          {
+            "text": "Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Finish with the central object.",
+            "type": "text"
+          }
+        ],
+        "request_id": "audit-0"
+      }
+    ],
+    [
+      {
+        "diagnostic_dump_logits_step": 2,
+        "diagnostic_key": "paired-step2-1",
+        "diagnostic_mode": "audit-1",
+        "generation": 1,
+        "max_new_tokens": 8,
+        "parts": [
+          {
+            "path": "docs/data_flow_evidence/v4/performance_characterization/B2_divergence_audit/inputs/variant-00.png",
+            "size": 280,
+            "type": "image"
+          },
+          {
+            "text": "Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Finish with the central object.",
+            "type": "text"
+          }
+        ],
+        "request_id": "audit-1"
+      }
+    ],
+    [
+      {
+        "diagnostic_dump_logits_step": 2,
+        "diagnostic_key": "paired-step2-2",
+        "diagnostic_mode": "audit-2",
+        "generation": 1,
+        "max_new_tokens": 8,
+        "parts": [
+          {
+            "path": "docs/data_flow_evidence/v4/performance_characterization/B2_divergence_audit/inputs/variant-00.png",
+            "size": 280,
+            "type": "image"
+          },
+          {
+            "text": "Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Finish with the central object.",
+            "type": "text"
+          }
+        ],
+        "request_id": "audit-2"
+      }
+    ],
+    [
+      {
+        "diagnostic_dump_logits_step": 2,
+        "diagnostic_key": "paired-step2-3",
+        "diagnostic_mode": "audit-3",
+        "generation": 1,
+        "max_new_tokens": 8,
+        "parts": [
+          {
+            "path": "docs/data_flow_evidence/v4/performance_characterization/B2_divergence_audit/inputs/variant-00.png",
+            "size": 280,
+            "type": "image"
+          },
+          {
+            "text": "Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Finish with the central object.",
+            "type": "text"
+          }
+        ],
+        "request_id": "audit-3"
+      }
+    ],
+    [
+      {
+        "diagnostic_dump_logits_step": 2,
+        "diagnostic_key": "paired-step2-4",
+        "diagnostic_mode": "audit-4",
+        "generation": 1,
+        "max_new_tokens": 8,
+        "parts": [
+          {
+            "path": "docs/data_flow_evidence/v4/performance_characterization/B2_divergence_audit/inputs/variant-00.png",
+            "size": 280,
+            "type": "image"
+          },
+          {
+            "text": "Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Finish with the central object.",
+            "type": "text"
+          }
+        ],
+        "request_id": "audit-4"
+      }
+    ]
+  ]
+}

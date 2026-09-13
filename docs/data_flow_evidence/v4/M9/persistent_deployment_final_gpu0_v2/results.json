@@ -1,0 +1,785 @@
+{
+  "aggregate_throughput_requests_per_s": 1.2955905415455302,
+  "arrival_order_seed": 20260913,
+  "bf16_numerical_acceptance_evidence": "M5_numerics_final/validation_final.json",
+  "both_topologies_concurrently_resident": true,
+  "cold_start_excluded": true,
+  "completed_requests": 10,
+  "cross_topology_same_tokens": true,
+  "internally_stable_tokens": {
+    "split_language_roles": true,
+    "unified_worker": true
+  },
+  "observation_window_ms": 7718.487963080406,
+  "ok": true,
+  "records": [
+    {
+      "client_ms": 770.4787999391556,
+      "itl_ms": 47.132056,
+      "mode": "split_language_roles",
+      "order": 0,
+      "repetition": 0,
+      "token_itl_ms": [
+        47.201364,
+        47.105675,
+        46.913475,
+        46.413102,
+        46.97564,
+        50.79745,
+        46.732684,
+        46.861483,
+        46.875013,
+        46.943883,
+        46.925189,
+        47.117824,
+        46.155249,
+        47.133328,
+        46.829481
+      ],
+      "tokens": [
+        785,
+        2168,
+        374,
+        264,
+        6396,
+        15941,
+        429,
+        45380,
+        279,
+        1882,
+        315,
+        821,
+        8317,
+        1948,
+        264,
+        2943
+      ],
+      "ttft_ms": 60.698621,
+      "worker_index": 0
+    },
+    {
+      "client_ms": 769.1904455423355,
+      "itl_ms": 47.2337828,
+      "mode": "unified_worker",
+      "order": 1,
+      "repetition": 0,
+      "token_itl_ms": [
+        47.226121,
+        47.577933,
+        47.065981,
+        46.54888,
+        46.607747,
+        46.878591,
+        46.80286,
+        46.720319,
+        46.764811,
+        46.862431,
+        49.295474,
+        48.300077,
+        48.018739,
+        47.215707,
+        46.621071
+      ],
+      "tokens": [
+        785,
+        2168,
+        374,
+        264,
+        6396,
+        15941,
+        429,
+        45380,
+        279,
+        1882,
+        315,
+        821,
+        8317,
+        1948,
+        264,
+        2943
+      ],
+      "ttft_ms": 57.969338,
+      "worker_index": 0
+    },
+    {
+      "client_ms": 761.8655562400818,
+      "itl_ms": 46.76277193333333,
+      "mode": "split_language_roles",
+      "order": 2,
+      "repetition": 1,
+      "token_itl_ms": [
+        47.356718,
+        47.067958,
+        46.93339,
+        46.441725,
+        46.705032,
+        46.842284,
+        46.748871,
+        46.549601,
+        46.702165,
+        46.676746,
+        46.773271,
+        47.16739,
+        46.017374,
+        46.910583,
+        46.548471
+      ],
+      "tokens": [
+        785,
+        2168,
+        374,
+        264,
+        6396,
+        15941,
+        429,
+        45380,
+        279,
+        1882,
+        315,
+        821,
+        8317,
+        1948,
+        264,
+        2943
+      ],
+      "ttft_ms": 57.822637,
+      "worker_index": 1
+    },
+    {
+      "client_ms": 760.5521753430367,
+      "itl_ms": 47.00750686666667,
+      "mode": "unified_worker",
+      "order": 3,
+      "repetition": 1,
+      "token_itl_ms": [
+        47.507327,
+        47.06613,
+        47.602867,
+        46.608346,
+        47.192437,
+        47.223954,
+        46.950122,
+        46.584459,
+        46.864183,
+        47.149587,
+        46.82581,
+        47.184413,
+        46.391617,
+        47.299886,
+        46.661465
+      ],
+      "tokens": [
+        785,
+        2168,
+        374,
+        264,
+        6396,
+        15941,
+        429,
+        45380,
+        279,
+        1882,
+        315,
+        821,
+        8317,
+        1948,
+        264,
+        2943
+      ],
+      "ttft_ms": 51.469197,
+      "worker_index": 0
+    },
+    {
+      "client_ms": 757.9183876514435,
+      "itl_ms": 47.04810706666667,
+      "mode": "split_language_roles",
+      "order": 4,
+      "repetition": 2,
+      "token_itl_ms": [
+        47.513593,
+        47.054673,
+        46.905287,
+        46.400979,
+        48.957909,
+        46.91291,
+        46.775513,
+        47.21824,
+        46.960123,
+        47.070575,
+        46.902223,
+        47.077666,
+        46.057017,
+        47.218381,
+        46.696517
+      ],
+      "tokens": [
+        785,
+        2168,
+        374,
+        264,
+        6396,
+        15941,
+        429,
+        45380,
+        279,
+        1882,
+        315,
+        821,
+        8317,
+        1948,
+        264,
+        2943
+      ],
+      "ttft_ms": 49.932835,
+      "worker_index": 0
+    },
+    {
+      "client_ms": 760.9707117080688,
+      "itl_ms": 47.3021278,
+      "mode": "unified_worker",
+      "order": 5,
+      "repetition": 2,
+      "token_itl_ms": [
+        47.242559,
+        47.166305,
+        47.052331,
+        46.987972,
+        46.812643,
+        47.029545,
+        47.749802,
+        46.725793,
+        46.911835,
+        46.887859,
+        48.919768,
+        49.482949,
+        46.967141,
+        47.022908,
+        46.572507
+      ],
+      "tokens": [
+        785,
+        2168,
+        374,
+        264,
+        6396,
+        15941,
+        429,
+        45380,
+        279,
+        1882,
+        315,
+        821,
+        8317,
+        1948,
+        264,
+        2943
+      ],
+      "ttft_ms": 49.205443,
+      "worker_index": 0
+    },
+    {
+      "client_ms": 767.2755643725395,
+      "itl_ms": 47.69743226666667,
+      "mode": "unified_worker",
+      "order": 6,
+      "repetition": 3,
+      "token_itl_ms": [
+        47.101938,
+        46.993471,
+        46.955032,
+        46.539425,
+        46.636851,
+        46.785704,
+        46.761493,
+        46.598928,
+        46.674337,
+        51.351323,
+        51.267489,
+        47.308568,
+        46.120955,
+        47.174509,
+        51.191461
+      ],
+      "tokens": [
+        785,
+        2168,
+        374,
+        264,
+        6396,
+        15941,
+        429,
+        45380,
+        279,
+        1882,
+        315,
+        821,
+        8317,
+        1948,
+        264,
+        2943
+      ],
+      "ttft_ms": 49.519019,
+      "worker_index": 0
+    },
+    {
+      "client_ms": 766.3257345557213,
+      "itl_ms": 47.43557306666666,
+      "mode": "unified_worker",
+      "order": 7,
+      "repetition": 4,
+      "token_itl_ms": [
+        47.248031,
+        48.393857,
+        51.512156,
+        46.950657,
+        46.964047,
+        46.889633,
+        46.664455,
+        46.678007,
+        46.953722,
+        47.130778,
+        46.87721,
+        47.12637,
+        47.905502,
+        47.172185,
+        47.066986
+      ],
+      "tokens": [
+        785,
+        2168,
+        374,
+        264,
+        6396,
+        15941,
+        429,
+        45380,
+        279,
+        1882,
+        315,
+        821,
+        8317,
+        1948,
+        264,
+        2943
+      ],
+      "ttft_ms": 50.994928,
+      "worker_index": 0
+    },
+    {
+      "client_ms": 827.0217701792717,
+      "itl_ms": 51.11086806666666,
+      "mode": "split_language_roles",
+      "order": 8,
+      "repetition": 3,
+      "token_itl_ms": [
+        55.748694,
+        48.623857,
+        49.534541,
+        47.200963,
+        51.63161,
+        48.464363,
+        62.834007,
+        51.41864,
+        52.379052,
+        52.41591,
+        52.8273,
+        48.090754,
+        50.08041,
+        48.610812,
+        46.802108
+      ],
+      "tokens": [
+        785,
+        2168,
+        374,
+        264,
+        6396,
+        15941,
+        429,
+        45380,
+        279,
+        1882,
+        315,
+        821,
+        8317,
+        1948,
+        264,
+        2943
+      ],
+      "ttft_ms": 57.70183,
+      "worker_index": 1
+    },
+    {
+      "client_ms": 776.7598181962967,
+      "itl_ms": 47.204801466666666,
+      "mode": "split_language_roles",
+      "order": 9,
+      "repetition": 4,
+      "token_itl_ms": [
+        47.175207,
+        46.980678,
+        46.920592,
+        46.349117,
+        46.657338,
+        47.025857,
+        48.19377,
+        48.568342,
+        46.866984,
+        46.806402,
+        48.631867,
+        47.382892,
+        46.376243,
+        47.351427,
+        46.785306
+      ],
+      "tokens": [
+        785,
+        2168,
+        374,
+        264,
+        6396,
+        15941,
+        429,
+        45380,
+        279,
+        1882,
+        315,
+        821,
+        8317,
+        1948,
+        264,
+        2943
+      ],
+      "ttft_ms": 49.318779,
+      "worker_index": 0
+    }
+  ],
+  "same_device": 0,
+  "same_kv_slots_per_topology": 64,
+  "schema": "pbe.v4.persistent-deployment-ab.v3",
+  "summaries": {
+    "split_language_roles": {
+      "client_stdev_ms": 24.986238444918335,
+      "effective_service_throughput_requests_per_s": 1.2840120896022642,
+      "measured_budget": {
+        "all_within_device_admission_limit": true,
+        "model_process_allocation_bytes": 14654898176,
+        "weight_processes": 2,
+        "worker_allocatable_kv_bytes": 37748736,
+        "workspace_reserved_bytes": 659292160
+      },
+      "median_client_ms": 770.4787999391556,
+      "median_itl_ms": 47.132056,
+      "median_ttft_ms": 57.70183,
+      "p95_client_ms": 816.9693797826767,
+      "p95_ttft_ms": 60.1234242,
+      "p99_client_ms": 825.0112920999527,
+      "p99_ttft_ms": 60.583581640000006,
+      "repeats": 5,
+      "shared_window_contribution_requests_per_s": 0.6477952707727651,
+      "token_itl_p50_ms": 46.97564,
+      "token_itl_p95_ms": 52.3901094,
+      "token_itl_p99_ms": 57.590875380000035
+    },
+    "unified_worker": {
+      "client_stdev_ms": 3.4762037195037885,
+      "effective_service_throughput_requests_per_s": 1.307423808383279,
+      "measured_budget": {
+        "all_within_device_admission_limit": true,
+        "model_process_allocation_bytes": 7327449088,
+        "weight_processes": 1,
+        "worker_allocatable_kv_bytes": 37748736,
+        "workspace_reserved_bytes": 329646080
+      },
+      "median_client_ms": 766.3257345557213,
+      "median_itl_ms": 47.3021278,
+      "median_ttft_ms": 50.994928,
+      "p95_client_ms": 768.8074693083763,
+      "p95_ttft_ms": 56.6693098,
+      "p99_client_ms": 769.1138502955437,
+      "p99_ttft_ms": 57.70933236,
+      "repeats": 5,
+      "shared_window_contribution_requests_per_s": 0.6477952707727651,
+      "token_itl_p50_ms": 46.993471,
+      "token_itl_p95_ms": 49.995502599999995,
+      "token_itl_p99_ms": 51.39313958
+    }
+  },
+  "token_equality_is_not_the_acceptance_gate": true,
+  "worker_status": {
+    "split_language_roles": [
+      {
+        "batches": 4,
+        "budget": {
+          "bundles": {
+            "capacity": 67108864,
+            "peak": 264200,
+            "used": 0
+          },
+          "kv": {
+            "capacity": 18874368,
+            "peak": 4128768,
+            "used": 0
+          },
+          "staging": {
+            "capacity": 33554432,
+            "peak": 262144,
+            "used": 0
+          },
+          "weights": {
+            "capacity": 6997803008,
+            "peak": 6997803008,
+            "used": 6997803008
+          },
+          "workspaces": {
+            "capacity": 329646080,
+            "peak": 329646080,
+            "used": 329646080
+          }
+        },
+        "budget_invariant": true,
+        "device_memory": {
+          "admission_limit_bytes": 149753298944,
+          "external_kv_owner_bytes": 75497472,
+          "model_file_bytes": 6173974564,
+          "model_process_allocation_bytes": 7327449088,
+          "peak_observed_used_bytes": 25355943936,
+          "preexisting_used_bytes": 10363863040,
+          "total_bytes": 150021734400,
+          "within_admission_limit": true,
+          "workspace_bytes_per_token": 643840,
+          "workspace_reserved_bytes": 329646080
+        },
+        "feature_copy_bytes": 262144,
+        "host_cache_budget": {
+          "capacity": 268435456,
+          "peak": 0,
+          "used": 0
+        },
+        "ok": true,
+        "op_id": 5,
+        "pool": {
+          "active_grants": 3,
+          "free_slots": 0,
+          "total_slots": 128,
+          "worker_allocatable_kv_bytes": 18874368,
+          "worker_granted_slots": 32
+        },
+        "radix_cache": {
+          "cache_hits": 3,
+          "cache_misses": 1,
+          "evicted_blocks": 0,
+          "host_demoted_blocks": 0,
+          "host_restore_failures": 0,
+          "host_restore_requests": 0,
+          "host_restored_blocks": 0,
+          "lookup_requests": 4,
+          "published_blocks": 5,
+          "tokens_reused": 240
+        },
+        "radix_cache_enabled": true,
+        "recovery_dependency": {
+          "actual_eviction_path": true,
+          "committed_demotions": 0,
+          "demote_decisions": 0,
+          "keep_decisions": 0,
+          "objects": 6,
+          "publish_rejections": 0,
+          "restores": 0
+        },
+        "requests": 4,
+        "transfer_scheduler": {
+          "background_completed": 0,
+          "demand_completed": 0,
+          "max_d2h_active": 0,
+          "max_h2d_active": 0,
+          "oldest_queue_ticks": 0,
+          "physical_submissions": 0
+        },
+        "worker_pid": 2793196
+      },
+      {
+        "batches": 3,
+        "budget": {
+          "bundles": {
+            "capacity": 67108864,
+            "peak": 264200,
+            "used": 0
+          },
+          "kv": {
+            "capacity": 18874368,
+            "peak": 4128768,
+            "used": 0
+          },
+          "staging": {
+            "capacity": 33554432,
+            "peak": 262144,
+            "used": 0
+          },
+          "weights": {
+            "capacity": 6997803008,
+            "peak": 6997803008,
+            "used": 6997803008
+          },
+          "workspaces": {
+            "capacity": 329646080,
+            "peak": 329646080,
+            "used": 329646080
+          }
+        },
+        "budget_invariant": true,
+        "device_memory": {
+          "admission_limit_bytes": 149753298944,
+          "external_kv_owner_bytes": 75497472,
+          "model_file_bytes": 6173974564,
+          "model_process_allocation_bytes": 7327449088,
+          "peak_observed_used_bytes": 25355943936,
+          "preexisting_used_bytes": 18028494848,
+          "total_bytes": 150021734400,
+          "within_admission_limit": true,
+          "workspace_bytes_per_token": 643840,
+          "workspace_reserved_bytes": 329646080
+        },
+        "feature_copy_bytes": 262144,
+        "host_cache_budget": {
+          "capacity": 268435456,
+          "peak": 0,
+          "used": 0
+        },
+        "ok": true,
+        "op_id": 4,
+        "pool": {
+          "active_grants": 3,
+          "free_slots": 0,
+          "total_slots": 128,
+          "worker_allocatable_kv_bytes": 18874368,
+          "worker_granted_slots": 32
+        },
+        "radix_cache": {
+          "cache_hits": 2,
+          "cache_misses": 1,
+          "evicted_blocks": 0,
+          "host_demoted_blocks": 0,
+          "host_restore_failures": 0,
+          "host_restore_requests": 0,
+          "host_restored_blocks": 0,
+          "lookup_requests": 3,
+          "published_blocks": 5,
+          "tokens_reused": 160
+        },
+        "radix_cache_enabled": true,
+        "recovery_dependency": {
+          "actual_eviction_path": true,
+          "committed_demotions": 0,
+          "demote_decisions": 0,
+          "keep_decisions": 0,
+          "objects": 6,
+          "publish_rejections": 0,
+          "restores": 0
+        },
+        "requests": 3,
+        "transfer_scheduler": {
+          "background_completed": 0,
+          "demand_completed": 0,
+          "max_d2h_active": 0,
+          "max_h2d_active": 0,
+          "oldest_queue_ticks": 0,
+          "physical_submissions": 0
+        },
+        "worker_pid": 2793245
+      }
+    ],
+    "unified_worker": [
+      {
+        "batches": 6,
+        "budget": {
+          "bundles": {
+            "capacity": 67108864,
+            "peak": 264200,
+            "used": 0
+          },
+          "kv": {
+            "capacity": 37748736,
+            "peak": 4128768,
+            "used": 0
+          },
+          "staging": {
+            "capacity": 33554432,
+            "peak": 262144,
+            "used": 0
+          },
+          "weights": {
+            "capacity": 6997803008,
+            "peak": 6997803008,
+            "used": 6997803008
+          },
+          "workspaces": {
+            "capacity": 329646080,
+            "peak": 329646080,
+            "used": 329646080
+          }
+        },
+        "budget_invariant": true,
+        "device_memory": {
+          "admission_limit_bytes": 149753298944,
+          "external_kv_owner_bytes": 75497472,
+          "model_file_bytes": 6173974564,
+          "model_process_allocation_bytes": 7327449088,
+          "peak_observed_used_bytes": 25355943936,
+          "preexisting_used_bytes": 2699231232,
+          "total_bytes": 150021734400,
+          "within_admission_limit": true,
+          "workspace_bytes_per_token": 643840,
+          "workspace_reserved_bytes": 329646080
+        },
+        "feature_copy_bytes": 262144,
+        "host_cache_budget": {
+          "capacity": 268435456,
+          "peak": 0,
+          "used": 0
+        },
+        "ok": true,
+        "op_id": 7,
+        "pool": {
+          "active_grants": 3,
+          "free_slots": 0,
+          "total_slots": 128,
+          "worker_allocatable_kv_bytes": 37748736,
+          "worker_granted_slots": 64
+        },
+        "radix_cache": {
+          "cache_hits": 5,
+          "cache_misses": 1,
+          "evicted_blocks": 0,
+          "host_demoted_blocks": 0,
+          "host_restore_failures": 0,
+          "host_restore_requests": 0,
+          "host_restored_blocks": 0,
+          "lookup_requests": 6,
+          "published_blocks": 5,
+          "tokens_reused": 400
+        },
+        "radix_cache_enabled": true,
+        "recovery_dependency": {
+          "actual_eviction_path": true,
+          "committed_demotions": 0,
+          "demote_decisions": 0,
+          "keep_decisions": 0,
+          "objects": 6,
+          "publish_rejections": 0,
+          "restores": 0
+        },
+        "requests": 6,
+        "transfer_scheduler": {
+          "background_completed": 0,
+          "demand_completed": 0,
+          "max_d2h_active": 0,
+          "max_h2d_active": 0,
+          "oldest_queue_ticks": 0,
+          "physical_submissions": 0
+        },
+        "worker_pid": 2793161
+      }
+    ]
+  }
+}

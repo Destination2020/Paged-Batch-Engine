@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="220">
+<style>text{font:14px sans-serif}.title{font:bold 18px sans-serif}</style>
+<text x="20" y="28" class="title">PBE V4 representative median wall time (5 repetitions)</text>
+<text x="20" y="87">Vision cold</text>
+<rect x="160" y="65" width="500.0" height="30" fill="#3977c5"/>
+<text x="670.0" y="86">15614.0 ms</text>
+<text x="20" y="152">Vision cache hit</text>
+<rect x="160" y="130" width="13.8" height="30" fill="#3977c5"/>
+<text x="183.8" y="151">429.8 ms</text>
+</svg>

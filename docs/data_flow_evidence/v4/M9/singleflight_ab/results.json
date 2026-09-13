@@ -1,0 +1,43 @@
+{
+  "modes": {
+    "off": {
+      "median_forward_ms": 629.2121857404709,
+      "median_wall_ms": 23688.11733275652,
+      "physical_forward_batch_sizes": [
+        8,
+        8,
+        8,
+        8,
+        8
+      ],
+      "repeats": 5,
+      "singleflight_saved": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "on": {
+      "median_forward_ms": 417.16446727514267,
+      "median_wall_ms": 23430.6677877903,
+      "physical_forward_batch_sizes": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "repeats": 5,
+      "singleflight_saved": [
+        7,
+        7,
+        7,
+        7,
+        7
+      ]
+    }
+  },
+  "ok": true
+}

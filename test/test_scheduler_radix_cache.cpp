@@ -39,6 +39,7 @@ std::vector<int32_t> WarmPromptIntoRadixCache(base::KVCacheManager* kv_manager,
   const base::RequestId request_id = kv_manager->register_request();
   CHECK(kv_manager->append_slots(request_id, static_cast<int32_t>(prompt_tokens.size())));
   std::vector<int32_t> block_ids = kv_manager->get_block_ids(request_id, 0);
+  EXPECT_TRUE(kv_manager->commit_kv(request_id, kv_manager->get_context_len(request_id)));
   kv_manager->publish_radix_cache(request_id, prompt_tokens);
   kv_manager->free_request(request_id);
   return block_ids;
@@ -130,6 +131,30 @@ TEST(SchedulerRadixCacheTest, PartialHitBuildsCorrectPrefillMetadataAcrossChunks
       TensorToIntVector(batch2.block_tables),
       std::vector<int32_t>({cached_blocks[0], cached_blocks[1], cached_blocks[2],
                             first_private_block}));
+}
+
+TEST(SchedulerRadixCacheTest, ServicesHostRestoreBeforeSchedulingColdPrefixTail) {
+  base::HostCacheConfig host{true, 4096, 8, 1};
+  base::KVCacheManager kv_manager(4, 1, make_allocators(1, 8, 4), host);
+  const auto prompt = Tokens({1,2,3,4,5,6,7,8,9});
+  WarmPromptIntoRadixCache(&kv_manager, prompt);
+  ASSERT_EQ(kv_manager.demote_radix_cache_to_host(), 2);
+  EXPECT_EQ(kv_manager.num_free_blocks(0), 8);
+
+  serving::SchedulerConfig config;
+  config.max_num_seqs = 1;
+  config.max_num_batched_tokens = 4;
+  config.prefill_chunk_cap = 4;
+  serving::Scheduler scheduler(config, &kv_manager);
+  scheduler.add_request(prompt, serving::GenerationConfig(2));
+  const auto output = scheduler.schedule_step();
+  ASSERT_EQ(output.scheduled_seqs.size(), 1u);
+  EXPECT_EQ(output.num_prefill_seqs, 1);
+  EXPECT_EQ(output.num_tokens_per_seq[0], 1);
+  EXPECT_EQ(output.scheduled_seqs[0]->computed_tokens, 8);
+  EXPECT_EQ(kv_manager.get_context_len(output.scheduled_seqs[0]->request_id), 8);
+  EXPECT_EQ(kv_manager.radix_cache_stats().host_restored_blocks, 2);
+  EXPECT_GE(scheduler.metrics().cache_transfer_completions, 2);
 }
 
 TEST(SchedulerPolicyTest, PriorityPolicyAdmitsHigherPriorityWaitingRequestFirst) {
@@ -248,4 +273,128 @@ TEST(SchedulerDecodeReadyTest, AdmissionRespectsEstimatedRemainingBlocks) {
   EXPECT_EQ(output.total_tokens, 1);
   EXPECT_EQ(output.running_queue_size, 1);
   EXPECT_EQ(output.waiting_queue_size, 1);
+}
+
+TEST(SchedulerCheckpointTest, SuspendsOnlyAtStepBoundaryAndResumesPendingTokenOnce) {
+  constexpr int32_t kBlockSize = 4;
+  base::KVCacheManager kv_manager(
+      kBlockSize, 1, make_allocators(1, 16, kBlockSize));
+  serving::SchedulerConfig config;
+  config.max_num_seqs = 1;
+  config.max_num_batched_tokens = 4;
+  config.prefill_chunk_cap = 4;
+  config.checkpoint_model_namespace = "checkpoint-test";
+  serving::Scheduler scheduler(config, &kv_manager);
+  const int64_t client = scheduler.add_request(
+      Tokens({1, 2, 3, 4, 5}), serving::GenerationConfig(4));
+
+  auto first = scheduler.schedule_step();
+  ASSERT_EQ(first.scheduled_seqs.size(), 1u);
+  uint64_t revision = 0;
+  EXPECT_FALSE(scheduler.suspend_request(client, &revision));
+  const auto first_request = first.scheduled_seqs[0]->request_id;
+  ASSERT_TRUE(kv_manager.append_slots(first_request, 4));
+  ASSERT_TRUE(kv_manager.commit_kv(first_request, 4));
+  auto first_batch = scheduler.build_mixed_batch(first, nullptr);
+  serving::SampledTokenView no_sample{nullptr, 0};
+  scheduler.process_outputs(first, first_batch, no_sample,
+                            [](int32_t) { return false; });
+
+  ASSERT_TRUE(scheduler.suspend_request(client, &revision));
+  EXPECT_GT(revision, 0u);
+  EXPECT_EQ(kv_manager.num_active_requests(), 0);
+  serving::RequestCheckpointManifest manifest;
+  ASSERT_TRUE(scheduler.checkpoint_manifest(client, revision, &manifest));
+  EXPECT_EQ(manifest.valid_tokens, 4);
+  ASSERT_TRUE(scheduler.restore_request(client, revision));
+  EXPECT_EQ(kv_manager.num_active_requests(), 1);
+
+  auto boundary = scheduler.schedule_step();
+  ASSERT_EQ(boundary.scheduled_seqs.size(), 1u);
+  const auto second_request = boundary.scheduled_seqs[0]->request_id;
+  EXPECT_NE(second_request, first_request);
+  EXPECT_EQ(boundary.num_tokens_per_seq, std::vector<int32_t>({1}));
+  auto boundary_batch = scheduler.build_mixed_batch(boundary, nullptr);
+  EXPECT_EQ(TensorToIntVector(boundary_batch.token_ids), Tokens({5}));
+  ASSERT_TRUE(kv_manager.append_slots(second_request, 1));
+  ASSERT_TRUE(kv_manager.commit_kv(second_request, 5));
+  int32_t sampled_token = 99;
+  serving::SampledTokenView sample{&sampled_token, 1};
+  scheduler.process_outputs(boundary, boundary_batch, sample,
+                            [](int32_t) { return false; });
+  boundary.scheduled_seqs[0]->emitted_cursor = 1;
+  ASSERT_EQ(boundary.scheduled_seqs[0]->sampling_counter, 1u);
+
+  uint64_t revision2 = 0;
+  ASSERT_TRUE(scheduler.suspend_request(client, &revision2));
+  ASSERT_GT(revision2, revision);
+  ASSERT_TRUE(scheduler.restore_request(client, revision2));
+  auto pending = scheduler.schedule_step();
+  ASSERT_EQ(pending.scheduled_seqs.size(), 1u);
+  EXPECT_EQ(pending.scheduled_seqs[0]->next_token, 99);
+  EXPECT_EQ(pending.scheduled_seqs[0]->sampling_counter, 1u);
+  EXPECT_EQ(pending.scheduled_seqs[0]->emitted_cursor, 1u);
+  EXPECT_EQ(pending.scheduled_seqs[0]->output_tokens, Tokens({99}));
+  auto pending_batch = scheduler.build_mixed_batch(pending, nullptr);
+  EXPECT_EQ(TensorToIntVector(pending_batch.token_ids), Tokens({99}));
+  EXPECT_EQ(TensorToIntVector(pending_batch.positions), Tokens({5}));
+}
+
+TEST(SchedulerCheckpointTest, CancelledSuspendedRequestCannotBecomeRunnable) {
+  base::KVCacheManager kv_manager(4, 1, make_allocators(1, 8, 4));
+  serving::SchedulerConfig config;
+  config.max_num_seqs = 1;
+  config.max_num_batched_tokens = 4;
+  config.prefill_chunk_cap = 4;
+  serving::Scheduler scheduler(config, &kv_manager);
+  const int64_t client = scheduler.add_request(Tokens({1, 2, 3, 4}),
+                                                serving::GenerationConfig(4));
+  auto step = scheduler.schedule_step();
+  ASSERT_EQ(step.scheduled_seqs.size(), 1u);
+  const auto request = step.scheduled_seqs[0]->request_id;
+  ASSERT_TRUE(kv_manager.append_slots(request, 4));
+  ASSERT_TRUE(kv_manager.commit_kv(request, 4));
+  auto batch = scheduler.build_mixed_batch(step, nullptr);
+  int32_t token = 17;
+  serving::SampledTokenView sampled{&token, 1};
+  scheduler.process_outputs(step, batch, sampled,
+                            [](int32_t) { return false; });
+  uint64_t revision = 0;
+  ASSERT_TRUE(scheduler.suspend_request(client, &revision));
+  ASSERT_TRUE(scheduler.cancel_request(client, "cancelled while suspended"));
+  EXPECT_FALSE(scheduler.restore_request(client, revision));
+  EXPECT_FALSE(scheduler.has_active_requests());
+  EXPECT_EQ(kv_manager.num_active_requests(), 0);
+}
+
+TEST(SchedulerCheckpointTest, DecodePressureTriggersCheckpointSaveAndFree) {
+  base::KVCacheManager kv_manager(4, 1, make_allocators(1, 2, 4));
+  const auto request = kv_manager.register_request();
+  ASSERT_TRUE(kv_manager.append_slots(request, 4));
+  ASSERT_TRUE(kv_manager.commit_kv(request, 4));
+
+  serving::SchedulerConfig config;
+  config.max_num_seqs = 1;
+  config.max_num_batched_tokens = 1;
+  config.prefill_chunk_cap = 1;
+  config.preemption_policy = serving::PreemptionPolicy::kCheckpoint;
+  config.checkpoint_model_namespace = "forced-pressure";
+  serving::Scheduler scheduler(config, &kv_manager);
+  const auto client = scheduler.add_decode_ready_request(
+      request, Tokens({1,2,3,4}), serving::GenerationConfig(4), 4, 99);
+  // Consume the last physical block after scheduler admission, reproducing a
+  // real dynamic-growth race without mutating scheduler internals.
+  const auto blocker = kv_manager.register_request();
+  ASSERT_TRUE(kv_manager.append_slots(blocker, 4));
+
+  const auto step = scheduler.schedule_step();
+  EXPECT_EQ(step.total_tokens, 0);
+  EXPECT_EQ(step.preemptions, 1);
+  EXPECT_EQ(scheduler.metrics().checkpoint_preemptions, 1);
+  EXPECT_EQ(scheduler.metrics().recompute_preemptions, 0);
+  EXPECT_EQ(kv_manager.num_active_requests(), 1);
+  EXPECT_TRUE(scheduler.has_active_requests());
+  EXPECT_TRUE(scheduler.cancel_request(client, "test complete"));
+  EXPECT_FALSE(scheduler.has_active_requests());
+  kv_manager.free_request(blocker);
 }

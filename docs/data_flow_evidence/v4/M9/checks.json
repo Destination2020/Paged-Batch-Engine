@@ -1,0 +1,6 @@
+{
+  "stage": "M9", "status": "accepted", "date": "2026-09-13", "randomized_repetitions": 5,
+  "completed_ablations": ["feature_cache_off_on", "kv_share_off_on", "merged_language_vs_separated_pd", "host_ipc_cross_gpu_sparse_copy", "singleflight_off_on", "lane_off_on_equal_streams", "pressure_dependency_vs_fixed_vs_recompute", "placement_fixed_vs_round_robin_vs_data_aware"],
+  "actual_image_repeat_percent": [0, 50, 90], "token_level_itl_percentiles": true,
+  "negative_results_retained": true, "unmeasured_fields": [], "evidence": "final_results.json"
+}

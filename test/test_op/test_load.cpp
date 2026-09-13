@@ -3,14 +3,36 @@
 #include <fcntl.h>
 #include <glog/logging.h>
 #include <gtest/gtest.h>
+#include <fstream>
 #include <model/config.h>
 #include <op/matmul.h>
 #include <sys/mman.h>
 #include "../source/op/kernels/kernels_interface.h"
 #include "base/buffer.h"
 
+namespace {
+
+std::string CreateLoadFixture() {
+  const std::string path = std::string(::testing::TempDir()) + "pbe-test-load.bin";
+  model::ModelConfig config{};
+  config.dim = 16;
+  config.hidden_dim = 128;
+  config.layer_num = 256;
+  std::ofstream output(path, std::ios::binary | std::ios::trunc);
+  output.write(reinterpret_cast<const char*>(&config), sizeof(config));
+  for (int32_t i = 0; i < config.dim * config.hidden_dim; ++i) {
+    const float value = static_cast<float>(i);
+    output.write(reinterpret_cast<const char*>(&value), sizeof(value));
+  }
+  output.close();
+  EXPECT_TRUE(output.good());
+  return path;
+}
+
+}  // namespace
+
 TEST(test_load, load_model_config) {
-  std::string model_path = "./tmp/test.bin";
+  std::string model_path = CreateLoadFixture();
   int32_t fd = open(model_path.data(), O_RDONLY);
   ASSERT_NE(fd, -1);
 
@@ -25,7 +47,7 @@ TEST(test_load, load_model_config) {
 }
 
 TEST(test_load, load_model_weight) {
-  std::string model_path = "./tmp/test.bin";
+  std::string model_path = CreateLoadFixture();
   int32_t fd = open(model_path.data(), O_RDONLY);
   ASSERT_NE(fd, -1);
 
@@ -48,7 +70,7 @@ TEST(test_load, load_model_weight) {
 }
 
 TEST(test_load, create_matmul) {
-  std::string model_path = "./tmp/test.bin";
+  std::string model_path = CreateLoadFixture();
   int32_t fd = open(model_path.data(), O_RDONLY);
   ASSERT_NE(fd, -1);
 

@@ -1,0 +1,142 @@
+{
+  "date": "2026-09-13",
+  "gaps_requiring_measurement": [
+    "B2 feature-cache x semantic-KV factorial with 0/50/90 percent image reuse",
+    "B3 common hard-budget capacity ladder with identical probing algorithm"
+  ],
+  "items": [
+    {
+      "bytes": 124545,
+      "classification": "direct_reference",
+      "conclusion_boundary": "Valid only for the frozen persistent topology; not a scale claim.",
+      "missing_fields": [
+        "true client streaming timestamps",
+        "100-request trial"
+      ],
+      "path": "docs/data_flow_evidence/v4/M9/final_results.json",
+      "sample_scope": "5 paired repetitions per arm, 10 requests total",
+      "sha256": "e00fd4165575f7fd68937cfff506a8a988fade75fc67dd6c6a417dc141268fea",
+      "use": "warm unified versus persistent 1P1D mechanics"
+    },
+    {
+      "bytes": 6973,
+      "classification": "mechanism_only",
+      "conclusion_boundary": "Cannot support B2 factorial or client TTFT by itself.",
+      "missing_fields": [
+        "feature-cache factorial",
+        "request-level scheduled/send timestamps"
+      ],
+      "path": "docs/data_flow_evidence/v4/M9/kv_cache_ab/results.json",
+      "sample_scope": "5 repetitions per on/off arm",
+      "sha256": "91290fa6ecd5762104ad1974316102be0c2b1315fe42bb01e7d8fe87840bc709",
+      "use": "semantic KV saved-token and overhead prior"
+    },
+    {
+      "bytes": 599,
+      "classification": "mechanism_only",
+      "conclusion_boundary": "Correctness and saved-compute evidence only.",
+      "missing_fields": [
+        "formal B2 performance matrix"
+      ],
+      "path": "docs/data_flow_evidence/v4/E1/checks.json",
+      "sample_scope": "real model correctness/fault gate",
+      "sha256": "d0597664401e31e190fd48456e0cf88422f182f1e685635b5eed783023d0ec98",
+      "use": "semantic identity and demand-page correctness"
+    },
+    {
+      "bytes": 1529,
+      "classification": "direct_reference",
+      "conclusion_boundary": "Use request-completion window throughput and server TTFT/ITL labels.",
+      "missing_fields": [
+        "true client streaming timestamps",
+        "open-loop scheduled arrivals"
+      ],
+      "path": "docs/data_flow_evidence/v4/E2_final/results.json",
+      "sample_scope": "5 trials and 55 requests per policy",
+      "sha256": "a02c9e18ba9326dec6e5dce4061179d252fc25535c9645d2d3a6de452603a116",
+      "use": "B4 fixed/round-robin/data-aware comparison"
+    },
+    {
+      "bytes": 13975,
+      "classification": "direct_reference",
+      "conclusion_boundary": "Shows recovery/recompute cost; no universal tail-latency claim.",
+      "missing_fields": [
+        "100-request trial",
+        "client streaming timestamps"
+      ],
+      "path": "docs/data_flow_evidence/v4/M9/pressure_policy_ab/results.json",
+      "sample_scope": "5 repetitions per policy",
+      "sha256": "d2e045944cc5ed29d9ac319784d37acba00621698e46266897edac088c0d969c",
+      "use": "B4 recovery policy boundary"
+    },
+    {
+      "bytes": 1599,
+      "classification": "mechanism_only",
+      "conclusion_boundary": "Lifecycle count is not serving throughput.",
+      "missing_fields": [
+        "request-level performance trace for lifecycle loop"
+      ],
+      "path": "docs/data_flow_evidence/v4/E3/checks.json",
+      "sample_scope": "10,000 metadata lifecycles plus real GPU recovery",
+      "sha256": "95e97a949f2d3fd3403acd0dd27ed9c12af0db23fe2f15b0277a10f04c721a18",
+      "use": "dependency lifecycle and exact recovery correctness"
+    },
+    {
+      "bytes": 825278,
+      "classification": "direct_reference_with_gap",
+      "conclusion_boundary": "Fixed-KV comparison is quotable; old 64/8192-block capacity result is not a maximum.",
+      "missing_fields": [
+        "common hard-budget capacity scan",
+        "last-success/first-failure ladder"
+      ],
+      "path": "docs/data_flow_evidence/v4/E4/results.json",
+      "sample_scope": "5 repetitions per private/shared cell",
+      "sha256": "0d607352e6a634da1dc65921a982ce61ebab3facef0429db3528df8ddcb5cb11",
+      "use": "B3 fixed-KV memory/overhead and capacity mechanism"
+    },
+    {
+      "bytes": 17585,
+      "classification": "direct_reference",
+      "conclusion_boundary": "Numeric acceptance only, not a performance result.",
+      "missing_fields": [],
+      "path": "docs/data_flow_evidence/v4/E4/numerics/checks.json",
+      "sample_scope": "20 cases, 40 mode outputs, 4 same-history logits audits",
+      "sha256": "1388077e68629805234c92d01f521e9a397f71d768b9101fe39e26523063be8b",
+      "use": "B3 BF16 correctness boundary"
+    },
+    {
+      "bytes": 72510,
+      "classification": "direct_reference",
+      "conclusion_boundary": "Historical E4 identity retained; B1 has a new current manifest.",
+      "missing_fields": [],
+      "path": "docs/data_flow_evidence/v4/E4/completion_manifest.json",
+      "sample_scope": "389 source, 4 binary, 3 model and 10 acceptance identities",
+      "sha256": "71bfac285f6a2ef440b6d2c9ddd709643649c3f698e090eaab0b7b5f92438d4b",
+      "use": "E4 source/binary/model provenance"
+    },
+    {
+      "bytes": 22968,
+      "classification": "direct_reference",
+      "conclusion_boundary": "Does not establish general multi-P/D topology support.",
+      "missing_fields": [
+        "1P2D",
+        "2P1D",
+        "2P2D"
+      ],
+      "path": "docs/data_flow_evidence/v4/M9/persistent_pd_deployment_final_gpu0_v4/results.json",
+      "sample_scope": "5 repetitions per arm",
+      "sha256": "924a998462dc351aaa0984f7fb7d450ba0522ffeaff62f729bda732b5ab7997d",
+      "use": "single-GPU unified versus real 1P1D baseline"
+    }
+  ],
+  "rules": {
+    "historical_files_immutable": true,
+    "historical_identity_may_not_enter_current_paired_comparison": true,
+    "mechanism_is_not_end_to_end_speedup": true,
+    "missing_streaming_timestamps_forbid_client_ttft_claim": true
+  },
+  "schema": "pbe-v4-b1-evidence-inventory-v1",
+  "unsupported_requires_explicit_status": [
+    "B5 production multi-P/D registration, routing and cross-provider page authorization"
+  ]
+}

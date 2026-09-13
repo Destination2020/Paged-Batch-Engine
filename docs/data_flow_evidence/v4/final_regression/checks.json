@@ -1,0 +1,11 @@
+{
+  "ok": true,
+  "date": "2026-09-13",
+  "builds": {"default": "passed", "qwen25_vl_bf16": "passed"},
+  "cpp_cuda": {"passed": 233, "skipped": 4, "failed": 0, "excluded_missing_fixture_tests": ["test_load.load_model_config", "test_load.load_model_weight", "test_load.create_matmul"]},
+  "skips": {"reason": "KUIPER_ENABLE_NCCL=OFF", "tests": ["PDHandoffTest.NcclConnectorCopiesPlainBlocksAcrossDevices", "PDHandoffTest.NcclLayerConnectorCopiesPlainBlocksAcrossDevices", "Qwen2DeviceInitTest.DualGpuNcclMatchesSingleModelGreedyTokens", "Qwen2DeviceInitTest.DualGpuNcclLayerMatchesSingleModelGreedyTokens"]},
+  "python": {"passed": 5, "failed": 0},
+  "compute_sanitizer": {"passed": 2, "errors": 0},
+  "persistent_pd_gpu_gate": {"passed": true, "repetitions_each": 5, "path": "../M9/persistent_pd_deployment_final_gpu0_v4/validation.json"},
+  "logs": ["build_default.log", "build_qwen25_final.log", "test_default_final_pd.log", "pytest_final_pd.log", "pytest_final_pd_missing_pythonpath.log", "compute_sanitizer_targeted.log", "test_default_full.log"]
+}

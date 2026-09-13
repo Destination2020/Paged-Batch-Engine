@@ -28,6 +28,11 @@ class MatmulLayer : public LayerParam {
 
   void to_cuda() override;
 
+  base::Status bind_external_weights(const void* host_base, void* device_base,
+                                     uint64_t allocation_bytes,
+                                     base::DataType dtype, uint64_t* views,
+                                     uint64_t* logical_bytes) override;
+
  private:
   int32_t dim0_ = 0;
   int32_t dim1_ = 0;

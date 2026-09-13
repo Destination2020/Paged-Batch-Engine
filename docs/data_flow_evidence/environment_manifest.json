@@ -1,0 +1,1840 @@
+{
+  "python": "3.12.3 (main, Aug  8 2025, 15:49:45) [GCC 10.3.1]",
+  "executable": "/usr/local/bin/python3",
+  "platform": "Linux-5.10.0-136.71.0.mt20240613.547.mt2203sp1.x86_64-x86_64-with-glibc2.34",
+  "packages": {
+    "torch": {
+      "version": "2.9.1",
+      "location": "/usr/local/lib/python3.12/site-packages"
+    },
+    "transformers": {
+      "version": "5.3.0",
+      "location": "/usr/local/lib/python3.12/site-packages"
+    },
+    "accelerate": null,
+    "safetensors": {
+      "version": "0.8.0",
+      "location": "/usr/local/lib/python3.12/site-packages"
+    },
+    "tokenizers": {
+      "version": "0.22.2",
+      "location": "/usr/local/lib/python3.12/site-packages"
+    },
+    "numpy": {
+      "version": "2.5.2",
+      "location": "/usr/local/lib/python3.12/site-packages"
+    }
+  },
+  "cpp_dependencies": {
+    "absl-src": {
+      "command": [
+        "git",
+        "-C",
+        "/tmp/Paged-Batch-Engine-build-qwen05/_deps/absl-src",
+        "rev-parse",
+        "HEAD"
+      ],
+      "exit_code": 0,
+      "stdout": "4447c7562e3bc702ade25105912dce503f0c4010\n",
+      "stderr": ""
+    },
+    "armadillo-src": {
+      "command": [
+        "git",
+        "-C",
+        "/tmp/Paged-Batch-Engine-build-qwen05/_deps/armadillo-src",
+        "rev-parse",
+        "HEAD"
+      ],
+      "exit_code": 0,
+      "stdout": "a99ef05d4171bd1d86a50fea7512ce2d08f6bd19\n",
+      "stderr": ""
+    },
+    "glog-src": {
+      "command": [
+        "git",
+        "-C",
+        "/tmp/Paged-Batch-Engine-build-qwen05/_deps/glog-src",
+        "rev-parse",
+        "HEAD"
+      ],
+      "exit_code": 0,
+      "stdout": "7b134a5c82c0c0b5698bb6bf7a835b230c5638e4\n",
+      "stderr": ""
+    },
+    "gtest-src": {
+      "command": [
+        "git",
+        "-C",
+        "/tmp/Paged-Batch-Engine-build-qwen05/_deps/gtest-src",
+        "rev-parse",
+        "HEAD"
+      ],
+      "exit_code": 0,
+      "stdout": "e39786088138f2749d64e9e90e0f9902daa77c40\n",
+      "stderr": ""
+    },
+    "nlohmann_json-src": {
+      "command": [
+        "git",
+        "-C",
+        "/tmp/Paged-Batch-Engine-build-qwen05/_deps/nlohmann_json-src",
+        "rev-parse",
+        "HEAD"
+      ],
+      "exit_code": 0,
+      "stdout": "9cca280a4d0ccf0c08f47a99aa71d1b0e52f8d03\n",
+      "stderr": ""
+    },
+    "re2-src": {
+      "command": [
+        "git",
+        "-C",
+        "/tmp/Paged-Batch-Engine-build-qwen05/_deps/re2-src",
+        "rev-parse",
+        "HEAD"
+      ],
+      "exit_code": 0,
+      "stdout": "6dcd83d60f7944926bfd308cc13979fc53dd69ca\n",
+      "stderr": ""
+    },
+    "sentencepiece-src": {
+      "command": [
+        "git",
+        "-C",
+        "/tmp/Paged-Batch-Engine-build-qwen05/_deps/sentencepiece-src",
+        "rev-parse",
+        "HEAD"
+      ],
+      "exit_code": 0,
+      "stdout": "17d7580d6407802f85855d2cc9190634e2c95624\n",
+      "stderr": ""
+    }
+  },
+  "source_files": [
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/CMakeLists.txt",
+      "bytes": 13141,
+      "sha256": "15d0716ea69c5c0218b6ca7fc18d0f3e5602bd0694a0d04a8ec7577ae50076eb"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/cmake/CPM.cmake",
+      "bytes": 990,
+      "sha256": "485a2e4973214f47805cedd71574087b6b93b19472e533ac56c1eba573893c8f"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/cmake/cuda.cmake",
+      "bytes": 3457,
+      "sha256": "7afedfcc92698f17f14ae0c96fa25a931587094bc68876ad783fa6354a2c4210"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/demo/CMakeLists.txt",
+      "bytes": 3032,
+      "sha256": "23ed33127afcb0baa5398778679f47a7a3b90a46d7441301bc8a594d7f8cb6a2"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/demo/chat_qwen.cpp",
+      "bytes": 11698,
+      "sha256": "304bb0d8cf498a15760125dbed30b7c5b232cca9f2a45785cf1b56ad9427c0dc"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/demo/main.cpp",
+      "bytes": 2465,
+      "sha256": "172aa41f2c97d69cdf594bc9eb6764216207c9064b422c9adf6b853a6ffef499"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/demo/main_qwen.cpp",
+      "bytes": 2570,
+      "sha256": "44f778cdcf59eb421630f8808efd6792ed0d91374768d8cda7dbeb07368f1d21"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/demo/main_qwen2Instruct.cpp",
+      "bytes": 4511,
+      "sha256": "07cc0208f949387aafd9ef335da71938e1b5d9ceae73e633e37f633ba8c43d65"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/demo/main_qwen3.cpp",
+      "bytes": 2908,
+      "sha256": "df1b7c7b4f641fbb0b1d0b5f59c14d91b3a679e393e49367d6142dcad3e5c574"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/demo/main_qwen_moe.cpp",
+      "bytes": 2556,
+      "sha256": "b62f2de94476df70ddd9715df91e66c81056ab0c37065abe6173678e831ccb2c"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/demo/pbe_data_service.cpp",
+      "bytes": 5320,
+      "sha256": "c2e0a090a6289b162ce1b815f72ccf1e5704b37eaf4b32ba1933b2618db2a3a2"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/demo/pbe_ipc_pool_probe.cpp",
+      "bytes": 3183,
+      "sha256": "523bcbcbd9e79bb745db9e743c0e87f4c61bb11e260c96cf2ea2e663001818d6"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/demo/pbe_multi_role_text.cpp",
+      "bytes": 5999,
+      "sha256": "fb6ed9d976144c51988ad851a7ff5830833b04097badc30eede0eba546da3761"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/demo/pbe_multi_role_vlm.cpp",
+      "bytes": 20822,
+      "sha256": "c8b2c9e793e3b356501481489de437990c3b9f379bc01339396b9e61312aac6a"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/demo/pbe_vlm_language_role.cpp",
+      "bytes": 24822,
+      "sha256": "453bbeb83cf3304ac05035b1d1f687d46b80fa9f533d13f8fa722066c010e1cc"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/demo/serving_qwen.cpp",
+      "bytes": 16112,
+      "sha256": "e14b920969278257c50b8be51f3c076ae5a5900e0b2a6477189fb5732781b779"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/include/base/alloc.h",
+      "bytes": 3018,
+      "sha256": "a1f461dcff4c02f39d835fb945b0c12a77771b1464440e01bb3bc3efbd273cab"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/include/base/backend_runtime.h",
+      "bytes": 2307,
+      "sha256": "b4cf7dc085621484574817e1b6867f26826dfdc7bd0dc73b8aa8ab6db8534e6e"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/include/base/backend_type.h",
+      "bytes": 300,
+      "sha256": "f1f839926b2690713ddfeb7e160d702a4797e30e4bca7e698e0fcc8d8e165d01"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/include/base/base.h",
+      "bytes": 4477,
+      "sha256": "de7757d355cbdfcfb627dfd92641a94c0b2067dd779efc43f609514ccee4b385"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/include/base/bf16.h",
+      "bytes": 934,
+      "sha256": "1c7140918b54aaa06c6483846248bd81646423253f94e1d56d17e2172ebe10cb"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/include/base/block_allocator.h",
+      "bytes": 8801,
+      "sha256": "53c5ae507253a995b45eec5479c77001a36aa89d1ef38fa9f4b2b36e7b129d55"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/include/base/buffer.h",
+      "bytes": 1087,
+      "sha256": "e1b287ca6aa1d4df135d1bc0e188c704db54a498d03cc4d82feaa10119a9f0e2"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/include/base/compressed_radix_cache_tree.h",
+      "bytes": 19301,
+      "sha256": "f5ed31632493c11aa17b13f9fa273ed93bf642cdfc636f08f0f21ec1539247de"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/include/base/cuda_backend_runtime.h",
+      "bytes": 1996,
+      "sha256": "4562d01fb5d2e7ab3857883e3820cf4bcbad070f3092b4a5b84a8ff8836855c8"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/include/base/cuda_config.h",
+      "bytes": 688,
+      "sha256": "5afb44c2360ea7a7f92571115925e911ed09d01e2355cba90ef66273015f88ee"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/include/base/cuda_graph_manager.h",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/include/base/cuda_init_utils.h",
+      "bytes": 551,
+      "sha256": "c163703ae435d8ce18c89f29f36b1ae178ac17fdf1ca006a9ac53408474a0eea"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/include/base/device_context.h",
+      "bytes": 712,
+      "sha256": "3592bb24621488677ec9c94b2696235d72f5415610ded88601736c5e2154d12e"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/include/base/kv_block.h",
+      "bytes": 2818,
+      "sha256": "79d3cf957069a87cfebdaae32891a89eeae12c4c9376f94a838f2573d2caff11"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/include/base/kv_cache_format.h",
+      "bytes": 3618,
+      "sha256": "67888fbd653c41b7fcd589c78d2e42bdb5087f72832503cfccf6953564a7fc06"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/include/base/kv_cache_manager.h",
+      "bytes": 12282,
+      "sha256": "b382079ea5dc22c538c9ec0d8c5f78e5fe96452c0a668c1988ae7124e1d144e4"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/include/base/nvtx_utils.h",
+      "bytes": 2837,
+      "sha256": "dec1cd5c6c081615b2bf259ecf1479221bd86f785ac6e59cdfb832b5a7059f20"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/include/base/sequence_kv_manager.h",
+      "bytes": 3967,
+      "sha256": "b248cac2ea9efe52b552661bc155091ca180df9463b7cb2e154722f1a2d6c2de"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/include/base/tick.h",
+      "bytes": 620,
+      "sha256": "95d28669eb224698a955c41b4977f74cc740ce5f3b61c07317752637bee1d633"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/include/base/tiktoken.h",
+      "bytes": 8028,
+      "sha256": "9c5a22035f4316ac7e60f42475bc6cf92601e8039a8e0d900ed48b1ccd191bd4"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/include/base/unicode-data.h",
+      "bytes": 611,
+      "sha256": "e5d053c699000d3d577ba54a1f35262c571b419243937557f967c035f8ab4d3f"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/include/base/unicode.h",
+      "bytes": 2223,
+      "sha256": "94f966c8e9bbfc3747e6bb347577d3e2077cd2c2659b33eee08d023149685420"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/include/base/unordered_dense.h",
+      "bytes": 76131,
+      "sha256": "981ff2c01f78070e40842f947da112730ec16370ff282c45632ea7fe88add98a"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/include/cache/host_store.h",
+      "bytes": 2909,
+      "sha256": "f3dd2a8e651f953fbfe36f6eee1104a5880878f285ffbc7ec7b65f2166756416"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/include/cache/layout_codec.h",
+      "bytes": 1033,
+      "sha256": "5bc245fcbb0e4511e2f6fa468b122ee95adf9f4bf13e7c8e3bd7a84f57576afb"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/include/cache/page_directory.h",
+      "bytes": 2652,
+      "sha256": "653572e197c655eff375f23cc18047a44ad1cf671617f946fb9405ae6d01b837"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/include/cache/page_migration.h",
+      "bytes": 3332,
+      "sha256": "039f79ddc208dfc981d752638d738c0e31c8cf54279571337550ef92fb3d617b"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/include/cache/page_schema.h",
+      "bytes": 1743,
+      "sha256": "817654d7dda28aea2c159e41142896900c993ed6ae7d0f06baeb409480aa0b2b"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/include/cache/transfer_plan.h",
+      "bytes": 5463,
+      "sha256": "7f67070c31dec51ac30de71e0dfd0d9dcaa581990e312fb193e7d5faeaedcd6e"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/include/cache/transfer_scheduler.h",
+      "bytes": 5557,
+      "sha256": "be5743bb1886e8513f7396115a02faa6d35335d2a3702d12b6b417b16f49c492"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/include/data/content_registry.h",
+      "bytes": 1844,
+      "sha256": "aa2bdb89a1e74dd1ddc0ca3eb7250e2f97280ec7e1e4a6952e85c6c05ce48636"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/include/data/data_client.h",
+      "bytes": 3349,
+      "sha256": "64515799a5b3dc4bcffff78189c5177cd0fd094434238f4a1a3e112e58ff38e0"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/include/data/data_ref.h",
+      "bytes": 2569,
+      "sha256": "bc8edccf111a5366aba18d3bd320e36f643081919078d92bd0e7f6f6ad38b62a"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/include/data/data_runtime.h",
+      "bytes": 4316,
+      "sha256": "2abb5667806b9b62e2ae121e1de3faf4c1188941c692aaf682a6a08adf7b3cb0"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/include/data/ipc_pool.h",
+      "bytes": 2581,
+      "sha256": "ab610a89bc673e8873f00aa308aeacefcfb50290fa288b3219b1cb03c35788ff"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/include/data/kv_snapshot_codec.h",
+      "bytes": 662,
+      "sha256": "ad76bd3a3be3429748412e39f855910d9c301f25c176c8b322dfd2b1deacbb7e"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/include/data/multimodal_prefix_key.h",
+      "bytes": 2159,
+      "sha256": "d0adc8654bfda633d1be3078fea30ce4eaf0d088b6f8daeb3ad2a0e3307d1ebf"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/include/data/node_agent.h",
+      "bytes": 1729,
+      "sha256": "50b0c87fcc80844cccb6187a54665a098c3ec89f7af3d7b06a4fc2fd0898741f"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/include/data/protocol.h",
+      "bytes": 623,
+      "sha256": "bf3141f0414153c6ff59b6a47ecfd6b4219e2cce4d47bd1c6168abd99d5ab281"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/include/data/tensor_bundle.h",
+      "bytes": 1517,
+      "sha256": "6255cf616c23a2d4ecff0de99ed46e101aaa6589883d3722af0e47e19ec076cd"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/include/data/wire_io.h",
+      "bytes": 1709,
+      "sha256": "336801d4464ee2ed0dd23df741b083e7102688f0b3349fecf79bf033f59dc686"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/include/model/config.h",
+      "bytes": 2016,
+      "sha256": "ad9f373204215bd730d0dba87fd249ad55ea574057b4faae9b6d4533ce47830d"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/include/model/llama3.h",
+      "bytes": 2667,
+      "sha256": "eab5fd555eeb6915397b5b710ae1d6d367eed0092d3c0b56d19024073cea9a7c"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/include/model/model.h",
+      "bytes": 4379,
+      "sha256": "90c2b0721f4c7a21339375e5770590ad7601a40c569b3ca54cca43d371087fb1"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/include/model/multimodal_input.h",
+      "bytes": 5233,
+      "sha256": "753574f4c52570f69e025c7d813ed4ab2d9d27befd8991bb3d6237837e3f57b6"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/include/model/paged_kv_runtime.h",
+      "bytes": 2784,
+      "sha256": "933d13ddc3037a465ab326974f487b4d3c0ea95308bae1d6116120807374ccd8"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/include/model/qwen2.h",
+      "bytes": 11223,
+      "sha256": "fb82a7545f582da1dc76f07dedf611401d49e6844458356f7a2692f17a9b072c"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/include/model/qwen3.h",
+      "bytes": 3011,
+      "sha256": "a82d2850ee75fa75e166278149058ad2cc8947fe040bfe98598a2765293d017e"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/include/model/qwen_moe.h",
+      "bytes": 3794,
+      "sha256": "20454d7a826255f167263bef60785e7040db848338317dd996b4486b7c3463f1"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/include/model/raw_model_data.h",
+      "bytes": 880,
+      "sha256": "59e44a8d3b20bbe1d8ad62756b09767b9c23877ba76740c635dac01b6993ce40"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/include/model/serving_memory_planner.h",
+      "bytes": 2686,
+      "sha256": "ec4b68656e7e7a7b5b0f4fa52a2d6fe875ea0b1d61af22195ee7e738d0d68fb8"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/include/op/add.h",
+      "bytes": 380,
+      "sha256": "285a43383d7250812b8e2020eadfc4ffc6864598345ef613a5e4f8c086e82158"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/include/op/embedding.h",
+      "bytes": 1002,
+      "sha256": "46e07258e0318f2ccc38633e4fcbad5c7452fac034dfdf5a2dbe3c6b74244a80"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/include/op/encode.h",
+      "bytes": 2952,
+      "sha256": "36b18c264412e4346c2fcbbbcdc07cfab3b5b4cb8c9d84947836c451ef64aee8"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/include/op/kernels/cuda/add_bias_kernel.cuh",
+      "bytes": 516,
+      "sha256": "c4f851ceeccae2115181a265d7e3335111c5e37b66364f4e7e14855f942eab12"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/include/op/kernels/cuda/fused_mha_kernel.cuh",
+      "bytes": 655,
+      "sha256": "811e305ebde88a5be10d75fbeb28d9c46dcc9c8e59d0788dfc2fbe753c5f4796"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/include/op/kernels/cuda/matmul_kernel_batch.cuh",
+      "bytes": 658,
+      "sha256": "73d967d6ff6c2d268bbd30051d080f8ebf298c91a20ecf9217e76d294c62236c"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/include/op/kernels/cuda/paged_mha_fast_kernel.cuh",
+      "bytes": 2416,
+      "sha256": "f204052810643df915905adeaea4b3fa25cba802085c76d77d539e59a66d439b"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/include/op/kernels/cuda/paged_mha_kernel.cuh",
+      "bytes": 3031,
+      "sha256": "a177e7a983fef107efa86605e71f04c4dafd4947cb2c4222581ca0247dc8987d"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/include/op/kernels/cuda/paged_mha_prefill_kernel.cuh",
+      "bytes": 3392,
+      "sha256": "32daf4f5dd6d84a4cff3bdb9a3a93a443efcc46d879269777fdcfef97619dc9f"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/include/op/kernels/cuda/sampler_kernel.cuh",
+      "bytes": 1735,
+      "sha256": "b1e0a57862b919360a3f849423956cc8ca45c688ab1d6abf5073be091157857d"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/include/op/kernels/cuda/scatter_kv_kernel.cuh",
+      "bytes": 2252,
+      "sha256": "b18d89989dc4efcb63cee78c25dca9bd9a61c542b6001007f59a375507cd9aea"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/include/op/layer.h",
+      "bytes": 7302,
+      "sha256": "8eb3818fba090406a75ea6972000edc2e17081063fb5b899d8cb017b75458104"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/include/op/matmul.h",
+      "bytes": 1002,
+      "sha256": "10883fe7b782e1cc1490c742d3396c06a04a56c82fc164c4010ac5cf95a8519e"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/include/op/mha.h",
+      "bytes": 785,
+      "sha256": "d9816cc50cf77777543d90d4200ad6502532770d01c7455d7acf54fa5aa831fe"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/include/op/rmsnorm.h",
+      "bytes": 424,
+      "sha256": "794a474d2680ab34e30015c208d750dca07c4f8ebfc92a651774971d54920b06"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/include/op/rope.h",
+      "bytes": 488,
+      "sha256": "5a4679bca792a2f9472759acd51b1ce4d6c5e0fe00431f5e9e28b4f0831e2489"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/include/op/swiglu.h",
+      "bytes": 447,
+      "sha256": "2635a3e6789dcdf9aa3f64acba1146eebcf7cf5132a3a5109051d9a3707892b5"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/include/sampler/argmax_sampler.h",
+      "bytes": 506,
+      "sha256": "bb421231058e41604368ae46d450a582fc37f3b32ad70b8536d412740e0ff2e1"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/include/sampler/sampler.h",
+      "bytes": 518,
+      "sha256": "041ccbcc4746eef9a5c64b8925847fd31ef4b294984d39c236ce77ee4e39c236"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/include/serving/decode_batch.h",
+      "bytes": 341,
+      "sha256": "4199c09b1b99772c2d8f9064651636e51f02bab6d36e41292e7c106107e3c74a"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/include/serving/decode_kv_reservation.h",
+      "bytes": 1557,
+      "sha256": "ef228d95452072d29dfdc459394404c256d47f39d67a32aa10ff2af9124e6064"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/include/serving/generation_config.h",
+      "bytes": 2026,
+      "sha256": "7afe6ba0f749057f530d7a7c32046379fbcf6176c8bc6bea0bf44f10c8d980de"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/include/serving/gpu_worker.h",
+      "bytes": 1353,
+      "sha256": "d25aa0e2deabca4ca774bc5efacd8cfdb8e99cd66abdeef0151fbcd7fdfc5ee6"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/include/serving/mixed_batch.h",
+      "bytes": 1705,
+      "sha256": "faf0c9dc97369252c217f37c0fb153311c8c98ec211aee0a2fd9bd3621a230fe"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/include/serving/mixed_batch_builder.h",
+      "bytes": 2685,
+      "sha256": "410beb265a48c70ce072221d16f798a3c905e296fa2de59c1ebed71faed77646"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/include/serving/node_memory_budget.h",
+      "bytes": 1100,
+      "sha256": "0376cd798f9067536b76405df121f4dd19e210c045ab9f89fc54bc7f092a9e6d"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/include/serving/pd_coordinator.h",
+      "bytes": 1021,
+      "sha256": "ae98b5862af62c74d7ca931093737b094ca09113bde0e72a36bc69680e509cd7"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/include/serving/pd_engine.h",
+      "bytes": 3661,
+      "sha256": "3a068fd289b8e1bc01cb120b19804fc764c51dbd4228a04b90d07c602351aaf1"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/include/serving/pd_handoff.h",
+      "bytes": 12539,
+      "sha256": "4d4e6212a89fd20d70a0739af7489523500ea4b9c7a73ca50c61cfd85f33f5da"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/include/serving/pd_handoff_builder.h",
+      "bytes": 976,
+      "sha256": "1857eee223a8a9d7359009f5917a007785d07dfcc46f2dd7a9467677b4194dc5"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/include/serving/pd_worker.h",
+      "bytes": 2636,
+      "sha256": "0973b80b81f4d5fda8ec588d5e564c41153c27d2cf5ad09bbb9a29d3f802ea2b"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/include/serving/prefix_builder.h",
+      "bytes": 1026,
+      "sha256": "aa3296a8b59bf3c131da6db29258faf3a228d0c6a3459834361ed35f86b0ddc8"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/include/serving/request_checkpoint.h",
+      "bytes": 4218,
+      "sha256": "148f3cff222eb2c3ff84b9c10fbd8b5dfd4abdfb1d6b91c4312ece57b369e47d"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/include/serving/request_coordinator.h",
+      "bytes": 1241,
+      "sha256": "6a7d6c83b6b287516c44ed2976d62d014be38bea82a6ed92c09cb2e47edf6bf8"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/include/serving/scheduler.h",
+      "bytes": 9713,
+      "sha256": "223d94ca6af38619f1a5438555430512a4f096f3b114348fce64da8bae0477f1"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/include/serving/sequence_state.h",
+      "bytes": 4954,
+      "sha256": "3c528307cd9adac9704b20882bd3bb32d51bec40a1ec4894b0f7aef6a1180cbc"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/include/serving/serving_benchmark_app.h",
+      "bytes": 9195,
+      "sha256": "dae78aca8156afc0bd76c009498826f78c15d8e81c3ab7a6cba2ca9e3ad906aa"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/include/serving/serving_capacity.h",
+      "bytes": 1080,
+      "sha256": "769bccc82eb7e54c4151c07233f7fc80389ff6fd15be014364b49f867f6ca360"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/include/serving/serving_config.h",
+      "bytes": 4648,
+      "sha256": "e2b7587295e5f4ea409f081ed13400aeba25cb671d07f63bf9accc834e2e6b30"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/include/serving/serving_http_server.h",
+      "bytes": 1455,
+      "sha256": "f140b88360fa34710464393518263d954a7976474ec424590da2b90c49b47b4e"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/include/serving/serving_metrics.h",
+      "bytes": 1939,
+      "sha256": "6cc3ae318908c2c6509236128c0d93e026fda6a37a6aa6f10e9e91ec87d4740d"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/include/serving/serving_online_engine.h",
+      "bytes": 3682,
+      "sha256": "63ecdbf3802f70d320ac145003b19e8dcacc5fa5180e317ff28600e51601a797"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/include/serving/serving_online_engine_pool.h",
+      "bytes": 2243,
+      "sha256": "c83ce92b6ff90b28ca44097e7ad0fef445d73fbbb7c72ec734fa22efcb2e4a65"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/include/serving/serving_online_server.h",
+      "bytes": 455,
+      "sha256": "b0449542350bb2cbddea49b9196c0c22d3a2e2aac5c95cc25998a3b3b559f9fb"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/include/serving/serving_zmq_engine_core.h",
+      "bytes": 447,
+      "sha256": "9b9d29fb0677eeafb55ba9ffdd3bfba8f1e17ed47a6d9fcbf2423e0429db6ed9"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/include/serving/serving_zmq_rpc.h",
+      "bytes": 4644,
+      "sha256": "dd9ddcbb65c200d190ede4826eb5275c88084e9797e2b09bb12fcef8e44b3506"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/include/tensor/tensor.h",
+      "bytes": 4706,
+      "sha256": "55ac69b692bee8385c936985cf2f5229a8ead040408da29271191ee18193c22f"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/source/base/alloc.cpp",
+      "bytes": 2373,
+      "sha256": "cf17ea92372b8fe494be551a7d58ad5de54c099ee2d68cef54e28a84607385e6"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/source/base/alloc_cpu.cpp",
+      "bytes": 2169,
+      "sha256": "d5befcf4925eecd7bafe72fe7d656bd7835b0cb253b3412070a46933438ea9ec"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/source/base/alloc_cu.cpp",
+      "bytes": 3700,
+      "sha256": "9de95e55d33b3d846d6fbd42904832cdbe729ebe6a473babbacd50016fac6930"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/source/base/base.cpp",
+      "bytes": 2718,
+      "sha256": "56469b649e2cbc3e3a33d415b6db6770a23a886752815c2677f10fe111b0db87"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/source/base/block_allocator.cpp",
+      "bytes": 12824,
+      "sha256": "1efaf5139ec46bc5349e19bf5a179beda023ec21c2f7fb2563efec9dc4223128"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/source/base/buffer.cpp",
+      "bytes": 3973,
+      "sha256": "b1c9f95160e618956fc44416bec4f61088ca42f2817d1302e28454339fbf8e6e"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/source/base/cuda_backend_runtime.cpp",
+      "bytes": 9404,
+      "sha256": "2f5d9594d40382a6553841ac40f1530451f6005a832028e43e8e42a7ca6805e0"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/source/base/cuda_graph_manager.cpp",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/source/base/cuda_init_utils.cpp",
+      "bytes": 4273,
+      "sha256": "6b7583b88abd864258b041729f63945c97618ac316d20e54331b5af201101877"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/source/base/kv_cache_manager.cpp",
+      "bytes": 42717,
+      "sha256": "a2d6b752e5e7df5a91f7db4fcabd9440d46f32592039d4ddefb99de6ba1f64c0"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/source/base/sequence_kv_manager.cpp",
+      "bytes": 10973,
+      "sha256": "1b79ac3369cad8537336b307b976e674cbc2ab61d6b32cbad1777afa4e856251"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/source/base/unicode-data.cpp",
+      "bytes": 168236,
+      "sha256": "1b971201debebd81ed7bdc712533aec70ccf9a0a9552fde4b197a3bed4c61c5d"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/source/base/unicode.cpp",
+      "bytes": 30674,
+      "sha256": "9fc8908cdf6e38d35364835e002b99e33248c1ab91be0bcdf568bb7bad235aae"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/source/cache/cuda_transfer_backend.cpp",
+      "bytes": 5383,
+      "sha256": "ce90aac1930b8df356783de097866ac1c3a3ad80b587ad2740b92116a09286b8"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/source/cache/host_store.cpp",
+      "bytes": 5460,
+      "sha256": "9850a40f75d691f034a703b23ced0f4c34c501124ef9644322dcf2214c747c7d"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/source/cache/layout_codec.cpp",
+      "bytes": 4101,
+      "sha256": "501c2d0889ee386ad9d0b6f567b124d4bf313926666e5181464ae1e8311d9a78"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/source/cache/page_directory.cpp",
+      "bytes": 7631,
+      "sha256": "3d5cb295f9af5f8f59917755a61708f36940a54eb18e7cd019d8a28538755e33"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/source/cache/page_migration.cpp",
+      "bytes": 10620,
+      "sha256": "68a72d1f88fe775fb22a038cf818e9cc6d0ca3c86b90d298259124d57156bd3a"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/source/cache/page_migration_flight_adapter.cpp",
+      "bytes": 2626,
+      "sha256": "646e8cef18aa3f562919c016b15e84a94059557bf136c9e5fa2b7d24ca4fbe89"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/source/cache/page_schema.cpp",
+      "bytes": 9458,
+      "sha256": "483c1b3046c2d599c5c9d6257ccb423764209cdf0125be1897e090fad3f23106"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/source/cache/transfer_plan.cpp",
+      "bytes": 19952,
+      "sha256": "1558f9d141327d6070d8e4525190f1bc46ac11be51178fcdf23b5006d4cab9ec"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/source/cache/transfer_scheduler.cpp",
+      "bytes": 14021,
+      "sha256": "b8692286687c4b457d48acffc8b5c162090912e141b1a9abc73b5ef13248bae0"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/source/data/content_registry.cpp",
+      "bytes": 4739,
+      "sha256": "9e5d2d86f2dcb02cf69b2948e569d3cd46c0aae65c3b0134415b03be6386a5f4"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/source/data/data_client.cpp",
+      "bytes": 10785,
+      "sha256": "5d81cfa29172ff79d673ccb5219568cef2ea75c2ab8ef9cbf3b7f76579f39a36"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/source/data/data_runtime.cpp",
+      "bytes": 10550,
+      "sha256": "96ed59ef6ba04229bc8cd00d3dfd7bd7a130e2da00f058475c7abfbe78bf05a4"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/source/data/ipc_pool.cpp",
+      "bytes": 7459,
+      "sha256": "924b5d3f225c6832d9e12a1c64e206d1baf851784097c974282ade1978c339e4"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/source/data/kv_snapshot_codec.cpp",
+      "bytes": 3279,
+      "sha256": "4dadef9ca0fff3bf8ebdbfec94cc8806cbf365737dc6e67ff0a68e62b32d18b4"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/source/data/node_agent.cpp",
+      "bytes": 12389,
+      "sha256": "bba78465299e3cce42749ab5ef5225f00fb8bc7b267e8d73a5bc4c2bf1bd6eaf"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/source/data/protocol.cpp",
+      "bytes": 3566,
+      "sha256": "ddc291e79639775e70dc87cfacbd3e779f0374ec0278332e8fc781fff94d392e"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/source/data/tensor_bundle.cpp",
+      "bytes": 4746,
+      "sha256": "55f7753204ddd64b70928f93f654d676c19faf77a00522fd98082034b8f20436"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/source/model/llama3.cpp",
+      "bytes": 29881,
+      "sha256": "aa4e29d910c1ca3b34b6b63a6f5e9aa84cea582a25ca2f56bd173249b25613e0"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/source/model/model.cpp",
+      "bytes": 13848,
+      "sha256": "279ec115a29add21a5ac2247f6d168024651dd08ef5ebed7a3b2c4de56c7f314"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/source/model/paged_kv_runtime.cpp",
+      "bytes": 15320,
+      "sha256": "03319f35f2a7cc457994cc26a554ba22b459044701e1fec2a6b7a59359c07914"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/source/model/qwen2.cpp",
+      "bytes": 86983,
+      "sha256": "cc40b96650dd7f0407d378364b2441e3131faf6f15e6834100143d483aa3c973"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/source/model/qwen2_batch.cpp",
+      "bytes": 49748,
+      "sha256": "76a3f4a3840fa5ed21eb8aba92a3c2a717899664504d902a0df14d5336046a30"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/source/model/qwen3.cpp",
+      "bytes": 25203,
+      "sha256": "3bebe955db164b05ba15d5375bf908b73282eac618e70bfdd920d3e86bfa5693"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/source/model/qwen_moe.cpp",
+      "bytes": 53607,
+      "sha256": "4fc067f7ddd29b8feaf6dd8019d42383e5af8b292be131d80acbead0791bd6e6"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/source/model/raw_model_data.cpp",
+      "bytes": 678,
+      "sha256": "c1f6bb28076d2390b7c348a7d3ac5979b81f30e6a1f291b526f06ca931af9f4c"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/source/model/serving_memory_planner.cpp",
+      "bytes": 6898,
+      "sha256": "c41fa444e0982879bcbc0ea8b528ca218567f2526677d1f3933a1eb247aa7b2b"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/source/op/add.cpp",
+      "bytes": 1499,
+      "sha256": "7bc9bb7aee1781c8ff5ce1b46b4853c1bdf323a3ca7107ff2ae72b9f8976238f"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/source/op/embedding.cpp",
+      "bytes": 1976,
+      "sha256": "d1c20447de73207b95464e64957c13691befab048b69d5d310d28ffa57212210"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/source/op/encode.cpp",
+      "bytes": 7020,
+      "sha256": "9aacb905f1ac11bb1ea002cbd68a0e4868726cacb21f8eeb73a91f21e1f41eef"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/source/op/kernels/cpu/add_kernel.cpp",
+      "bytes": 828,
+      "sha256": "8118d8756222cdd5fa798dd101474a0416497ee96a3c13f52943585e381db021"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/source/op/kernels/cpu/add_kernel.h",
+      "bytes": 325,
+      "sha256": "716a1b5ede93c8f7d879a82c9aa8bd2f6f6799ac5a07fc96a895e9fcdba3cb1e"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/source/op/kernels/cpu/emb_kernel.cpp",
+      "bytes": 1304,
+      "sha256": "b9a433e7c2718c1d706fee481ad027596af7da8c0ca39c3f9051968fa04b9b6f"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/source/op/kernels/cpu/emb_kernel.h",
+      "bytes": 465,
+      "sha256": "a93df22274cc11ac61eea65fbc2534cc2444a9f5362384e3af779f1c964e9a85"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/source/op/kernels/cpu/matmul_kernel.cpp",
+      "bytes": 1641,
+      "sha256": "8c0dcb579bd78020f4807638cdc81509bda297b708461b3c49410f031664d164"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/source/op/kernels/cpu/matmul_kernel.h",
+      "bytes": 475,
+      "sha256": "42fd00bcde293cb0d3e94a69e4a79ebeec0a88277d35af224d9a1c00d9467867"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/source/op/kernels/cpu/mha_kernel.cpp",
+      "bytes": 3297,
+      "sha256": "0ba655a85b9ad204fadbe0dba836608c604edd0acb7600cba355a194920d3ede"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/source/op/kernels/cpu/mha_kernel.h",
+      "bytes": 717,
+      "sha256": "adc30a785e8a55cd103c09905dc18f4783bc3fe1d2ba42b55688de9fcf544b3a"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/source/op/kernels/cpu/rmsnorm_kernel.cpp",
+      "bytes": 1286,
+      "sha256": "a77ad8ec50fa2860a14a797f88eb957c24a23e0fbc43f0d352a2ff8dd9157d0d"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/source/op/kernels/cpu/rmsnorm_kernel.h",
+      "bytes": 374,
+      "sha256": "f34eac2917ea7215a87215c20af7fcfb93c3b8cb08178fad35f2b3814a26a09f"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/source/op/kernels/cpu/rope_kernel.cpp",
+      "bytes": 5363,
+      "sha256": "a780854408b48644dcfa6ee6fb2927dfcaaacde69d715640953fda98e450d8bb"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/source/op/kernels/cpu/rope_kernel.h",
+      "bytes": 609,
+      "sha256": "6ea7efed461738841ae997b43f57642725777bc2751798a1edac7196b1e772cf"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/source/op/kernels/cpu/scale_kernel.cpp",
+      "bytes": 388,
+      "sha256": "08d7c252134cf9dffdda026ee746368513274b7d89521f9bb08b46643270d093"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/source/op/kernels/cpu/scale_kernel.h",
+      "bytes": 240,
+      "sha256": "3b2cdcff904b032bf8c76a18ae0dac26454ffb0860b297462ee34e1f7efdf57d"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/source/op/kernels/cpu/scale_sum_kernel.cpp",
+      "bytes": 955,
+      "sha256": "201a56d71ab67f1613e26131d5bedacb06cd0936c07375407ccf601a818df00b"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/source/op/kernels/cpu/scale_sum_kernel.h",
+      "bytes": 375,
+      "sha256": "e273b8a18b3ac77e827b562babc40fbe5e27198b2be6671f2d7f0c529b2481b4"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/source/op/kernels/cpu/softmax_kernel.cpp",
+      "bytes": 900,
+      "sha256": "fe148e49fca71e6135f1b46171f4b0fbee4bab976804b06c3839970c41ea9197"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/source/op/kernels/cpu/softmax_kernel.h",
+      "bytes": 291,
+      "sha256": "f7f466378a25240e5cb4b6449dee9e63f21bbee99e8f9199a04447c7525ac200"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/source/op/kernels/cpu/swiglu_kernel.cpp",
+      "bytes": 1024,
+      "sha256": "7186caeaef43911fab00e7a18e1d51fe15dd5ba8e414c9d91ceecdb223d9fda9"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/source/op/kernels/cpu/swiglu_kernel.h",
+      "bytes": 360,
+      "sha256": "63841e17f04445877c5f070d43ef9ce392720d8b1eea37a41e25a8606956c05f"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/source/op/kernels/cuda/add_bias_kernel.cu",
+      "bytes": 1463,
+      "sha256": "fdc63a03fffb7aa19633127384705f5b187afa5dc70b8f60439fa4f26e087dbd"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/source/op/kernels/cuda/add_kernel.cu",
+      "bytes": 2171,
+      "sha256": "72fd60ae3a8d48d84c6ac4914d77e7cdd98c53244a1eba9873bac39ad97d4b09"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/source/op/kernels/cuda/add_kernel.cuh",
+      "bytes": 305,
+      "sha256": "2c9ab9d35cc61af9de3f161b367b32ff9482d7e9c008ea77eb2e8d05a7b3f3d8"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/source/op/kernels/cuda/argmax_kernel.cu",
+      "bytes": 21025,
+      "sha256": "079325a6ad66c9860ed1b461767741d42232e157bea6140caae4f089acd77c50"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/source/op/kernels/cuda/argmax_kernel.cuh",
+      "bytes": 329,
+      "sha256": "4db0ad2f5d328dcd099dad2db2bf82b18a05036fa26dc2d2a2e68ca8bc26160b"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/source/op/kernels/cuda/cuda_type_utils.cuh",
+      "bytes": 1344,
+      "sha256": "34d299d32aec915fecb5981cc95c4eab20fcdad3154028eeb2325cb2c25ec798"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/source/op/kernels/cuda/emb_kernel.cu",
+      "bytes": 2748,
+      "sha256": "7556f71be55d72c7830b8da8a8f205fc9305652c89bde4eb4423caff0f06c9cd"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/source/op/kernels/cuda/emb_kernel.cuh",
+      "bytes": 315,
+      "sha256": "20724d19b875459b987bef0a222c82e6ebe5677d2e769d4586c6b4411ec10d03"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/source/op/kernels/cuda/fused_mha_kernel.cu",
+      "bytes": 4196,
+      "sha256": "53445a4cfbe4e9ea0e1f253af9cc12c83ffb1a721e93fab602f0b5ec2a8a7391"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/source/op/kernels/cuda/matmul_kernel.cu",
+      "bytes": 5614,
+      "sha256": "9862ac6ab0b0ab7766d808c1092814f78027721057a72276a6b7ca5eecf7af5b"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/source/op/kernels/cuda/matmul_kernel.cuh",
+      "bytes": 680,
+      "sha256": "e01a8c877efe39376d97b6d0dc7729ba188fa03427c36bcabbdc7b9962d30e8b"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/source/op/kernels/cuda/matmul_kernel_batch.cu",
+      "bytes": 8469,
+      "sha256": "2cbd878eea02529c94786729ed3fde0c52cb6ba405780d45d5637b06896b85ef"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/source/op/kernels/cuda/mha_kernel.cu",
+      "bytes": 4792,
+      "sha256": "040895271c3f23be1851a7e623d37e672812d96312fd8a829fae35a176c40310"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/source/op/kernels/cuda/mha_kernel.cuh",
+      "bytes": 637,
+      "sha256": "213b71680c76b6492a9749d3953d16fda52a4fe48eddcbcd232bd4a13c1c8add"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/source/op/kernels/cuda/moe_kernel.cu",
+      "bytes": 6802,
+      "sha256": "e45cb20fd27a5349f801c175dda8ae1900673e5e225a721fe483d9e62648c0c1"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/source/op/kernels/cuda/moe_kernel.cuh",
+      "bytes": 571,
+      "sha256": "7d80e16378a02354a71eb65c28728ecc11379b1e24deccfbe82fa26ffc2be707"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/source/op/kernels/cuda/paged_mha_fast_kernel.cu",
+      "bytes": 38385,
+      "sha256": "494e91a23f295366e1b4bb5158b868845ab11f11786e5fd3bccaa04ff437ec04"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/source/op/kernels/cuda/paged_mha_kernel.cu",
+      "bytes": 22641,
+      "sha256": "8a2d09b652fd64edc1ee6a55106fba5c67c45d3a718a6cfc906e76ce03898600"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/source/op/kernels/cuda/paged_mha_prefill_kernel.cu",
+      "bytes": 47471,
+      "sha256": "a08a11067fc1c45940f8c32b5bdabb52a52ec8e1c1a165e90bff377b1ac0cbde"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/source/op/kernels/cuda/rmsnorm_kernel.cu",
+      "bytes": 6314,
+      "sha256": "7e74723deaf132dffbc460bd2d40e4f59123f8c6620ee797a210e768e777cd83"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/source/op/kernels/cuda/rmsnorm_kernel.cuh",
+      "bytes": 533,
+      "sha256": "495dabbb107c146397237cfcdfecc84de624f826c12a802d4b726eabcad32df7"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/source/op/kernels/cuda/rope_kernel.cu",
+      "bytes": 13328,
+      "sha256": "b53384fc9775fbf48d18327b3de0181dc8904689c86c41b29acd2e4d6816c213"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/source/op/kernels/cuda/rope_kernel.cuh",
+      "bytes": 1799,
+      "sha256": "955d87c834419f08014ea57031b94a7772671399a04bc4fa20bfc59b4b675fe2"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/source/op/kernels/cuda/sampler_kernel.cu",
+      "bytes": 87,
+      "sha256": "d82ea05fa8c14dc6c43beddf0f5224edfeed084521a07c66713a01984c772236"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/source/op/kernels/cuda/scatter_kv_kernel.cu",
+      "bytes": 11307,
+      "sha256": "61c15fa00d9b91b48abf1339e30b5aa38a6fd89d1ee66185146024e957a58124"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/source/op/kernels/cuda/swiglu_kernel.cu",
+      "bytes": 2610,
+      "sha256": "6e241415a93e9682d8990264634a79e7e4377412fab3b7e45d12f9fe2d1e37f9"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/source/op/kernels/cuda/swiglu_kernel.cuh",
+      "bytes": 316,
+      "sha256": "0e4869ed8ba814f9e2202d1a292d679553bf50dbab7c5ead2f652fc14a6a99ab"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/source/op/kernels/kernels_interface.h",
+      "bytes": 7393,
+      "sha256": "32a8454370e9af4b09fcf37abe687aef4c3caf4f45bac4c96dda67cc5cb4b005"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/source/op/kernels/kernels_interfaces.cpp",
+      "bytes": 16576,
+      "sha256": "6d5b122cce35de26c567310458a6ed8cb981a7617bcdd9c08264fb8ed26f28db"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/source/op/layer.cpp",
+      "bytes": 11577,
+      "sha256": "6a72b1196b930eb7c54273768e2895bb1892fd302c8b37b0b3d6084d9102e415"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/source/op/matmul.cpp",
+      "bytes": 4659,
+      "sha256": "7f835e64c9b08905e100d13bf0bb6da3426e54d347c1e0cb7082888b70a2a099"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/source/op/mha.cpp",
+      "bytes": 2527,
+      "sha256": "eb0774dbbd3d2d2b4b2e0f85ea7f5e7a148fdeea1ad537f671c87b8ef7f16075"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/source/op/rmsnorm.cpp",
+      "bytes": 2010,
+      "sha256": "d757c4c462db7e980e7b89aa6a148abff441dc800601e5c0a6fc84a3ede7ff63"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/source/op/rope.cpp",
+      "bytes": 1870,
+      "sha256": "8de222a67688f87bc82723ea90a8266bba9f63c052a000bef026b0a72959b9f1"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/source/op/swiglu.cpp",
+      "bytes": 1480,
+      "sha256": "187c0ba542c39495d847a8ce8cec27af61615a8fadddf83e7135a3d6186b7f91"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/source/sampler/argmax_sampler.cpp",
+      "bytes": 379,
+      "sha256": "04e1a0fa60142478a440f22b0218477f8a9b0cd37d47f3a911783952221efef1"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/source/serving/decode_kv_reservation.cpp",
+      "bytes": 5268,
+      "sha256": "9e3abe517024c55b24d5d8409b6097c8cb0758ef15b51b75be0804a600c594f7"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/source/serving/gpu_worker.cpp",
+      "bytes": 1164,
+      "sha256": "2fef22b9a9e6ba24207077372e2b3735417511f6d30262668843aedbab87d6bb"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/source/serving/kv_connector_flight_adapter.cpp",
+      "bytes": 2867,
+      "sha256": "d760bfad11789e5d8c677b0a521d3201277c24b757bb804da672c15897aed7af"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/source/serving/mixed_batch_builder.cpp",
+      "bytes": 16764,
+      "sha256": "d653e6f089adc50e66ddcafa5b86c325ac5c13aaea1595381ab937604cdc4a99"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/source/serving/node_memory_budget.cpp",
+      "bytes": 1853,
+      "sha256": "c44563efe43b5c29a8489fb06540d60248f9cfdd6b58aeedc4ac129d5416e199"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/source/serving/pd_coordinator.cpp",
+      "bytes": 3003,
+      "sha256": "3ca5923a5d055ec86dd0e6295ab3f665c4dfca82f2c40584070533ad3bb91c6f"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/source/serving/pd_engine.cpp",
+      "bytes": 4359,
+      "sha256": "f6a3cb2ab71bfeb9a580036ceb8e38cce57191c4a55f2caa482c88fd8b859d92"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/source/serving/pd_handoff.cpp",
+      "bytes": 94604,
+      "sha256": "6ba946d1b4fe656c7d8e4f2f378bd8be4badcae71341828b30189d141fdf345d"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/source/serving/pd_handoff_builder.cpp",
+      "bytes": 2215,
+      "sha256": "e445bd8956bbe0891ce259e64ae8041e83de58af11a9eebbfb6f5a052e987d0f"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/source/serving/pd_worker.cpp",
+      "bytes": 3773,
+      "sha256": "6de5d0029d2d5ec2a5566885b0e4ff262b297973e0c0b60483cc766f7fa750b7"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/source/serving/prefix_builder.cpp",
+      "bytes": 923,
+      "sha256": "de6e2beb75e1ebfc0b884c2d4b50ce6737a8dfee57441eab17949bbd624f1dcd"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/source/serving/request_checkpoint.cpp",
+      "bytes": 14979,
+      "sha256": "31eae5493041ea4b64eacdf2a42a05c32eeca9485ada71df8c25549056392901"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/source/serving/request_coordinator.cpp",
+      "bytes": 2029,
+      "sha256": "42ba949783e02b8b126bd8cb9b668613fd89e26433c5d69fedce187f36d96716"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/source/serving/scheduler.cpp",
+      "bytes": 42039,
+      "sha256": "1ba3860f2f0afa36a7bc0b5c1abd32b5f51b091c144eb71bef3defae15a60e4b"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/source/serving/serving_benchmark_app.cpp",
+      "bytes": 106218,
+      "sha256": "c145bce927bd9d50518364b80ac7a91cfafd43c96b576f6e170552107d9ab424"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/source/serving/serving_http_server.cpp",
+      "bytes": 5861,
+      "sha256": "af8bcb49ea7b5d04c14a095fcb46b851439b38d07a442e5481edfce1da2dd76c"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/source/serving/serving_online_engine.cpp",
+      "bytes": 38698,
+      "sha256": "36ffec59acccde72cf9d5bda7ee29507d463a93ccd8fcb4c7aac3d8a234ebb43"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/source/serving/serving_online_engine_pool.cpp",
+      "bytes": 7700,
+      "sha256": "24fd8047a3b6ecd804e00bc70aba441e355ba9a54d19d5a3462e12975b1d9854"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/source/serving/serving_online_server.cpp",
+      "bytes": 14808,
+      "sha256": "206011acc09c4507c6b923bd5a70cbbffddac1b11937c62b52b355946d947b67"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/source/serving/serving_zmq_engine_core.cpp",
+      "bytes": 30267,
+      "sha256": "f6940997a048c39c3db1133f82ed77852a95efcf1a2b82c4d9bd5f5a73d5da2a"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/source/serving/serving_zmq_rpc.cpp",
+      "bytes": 21625,
+      "sha256": "d35657f8259c17115ae84c5123b1be6625084a8b12fb5e8d7268e7faec000157"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/infMain/source/tensor/tensor.cpp",
+      "bytes": 11964,
+      "sha256": "b2d96c20227dbeab3e0a7d585c4c9b748640150c06323268a5273536b28f735b"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/test/CMakeLists.txt",
+      "bytes": 3113,
+      "sha256": "a918db482d0cedfdd1c12193252683f3fd3c361c37e75a9b52b58416d5e66ab7"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/test/cache_core/CMakeLists.txt",
+      "bytes": 3461,
+      "sha256": "265f4e92b1505684773bb7bdef24f77aa643395f00824a686d87e52898478150"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/test/cache_core/README.md",
+      "bytes": 1345,
+      "sha256": "b665c8f9909fd4ffddef9d507e6882ec3a5b105a142650fc5729dbb4e55e38ca"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/test/cache_core/stubs/glog/logging.h",
+      "bytes": 373,
+      "sha256": "7b5dbe08193f2972a04c34a508f8f8b565a4517e0c747e61f9675917b71df4c0"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/test/data_core/test_content_registry.cpp",
+      "bytes": 5831,
+      "sha256": "d0460002cb55a020d136ea6fb34b40cce23f63ffdc87e6eba152f164f09fdaef"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/test/data_core/test_data_protocol.cpp",
+      "bytes": 1370,
+      "sha256": "8b0a7d2802152ecda76ba58f82bccbb44e8bf9a065b5bc4c56e062367164c27b"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/test/data_core/test_data_runtime.cpp",
+      "bytes": 6351,
+      "sha256": "5bd7e9208c82de1d4e43b2f62f6a1e5386d579dc67c004f70dc149dfb2fa9650"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/test/data_core/test_kv_snapshot_codec.cpp",
+      "bytes": 837,
+      "sha256": "b1aaf37aa6191825501f671910b49e440b4f35bbe2751132b39f727dfa3911b3"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/test/data_core/test_node_agent.cpp",
+      "bytes": 8970,
+      "sha256": "2fcbcd903a427e4586cd3a8edc9a46746ca11b2fa5f03d1ab02c1789f998259b"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/test/data_core/test_tensor_bundle.cpp",
+      "bytes": 1370,
+      "sha256": "49f24769956d30550d018734665ed781e968e0c4c207a30f497c343589ce406a"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/test/data_core/test_tensor_bundle_cross_language.cpp",
+      "bytes": 649,
+      "sha256": "ac73d2f297b3a4da032a25d16ea90efe02a3289438e1bb51c57ecae9dfc94fe7"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/test/data_core/test_vision_identity.py",
+      "bytes": 2050,
+      "sha256": "f80e1d2478382e9dcbfbe0aaf2b590622a1d046b1fcdb9e93318c2552d1c0e63"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/test/optimized/test_allocator.cpp",
+      "bytes": 484,
+      "sha256": "2e966e58c6a6c23375817ef40875afcdfef7158e9c2b2b9b95b8d75b8069e66a"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/test/test_block_lease.cpp",
+      "bytes": 2210,
+      "sha256": "65eba5649a18ed272eabeded702ad13a0a19d1423bc03170e685e7956ced2138"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/test/test_cache_transfer_plan.cpp",
+      "bytes": 21005,
+      "sha256": "300b583711fa77d723aec2823cce7efd2f10de73e733129fa44771017f9a77cb"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/test/test_compressed_radix_cache_tree.cpp",
+      "bytes": 15013,
+      "sha256": "84804352c953e774013e2f26993c71d0f15a8ebda6757beb5a67327cb86a4dc9"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/test/test_cu/test_cu_wrap.cpp",
+      "bytes": 327,
+      "sha256": "221c1e53734afbdc5d033a9f9b4eb329bebb776d8101d7f86352c8d461490368"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/test/test_cuda_graph.cpp",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/test/test_cuda_graph_benchmark.cpp",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/test/test_cuda_graph_benchmark.cpp.skip",
+      "bytes": 5813,
+      "sha256": "a4b20ec77a769c051b9e3c3b471503a60610b62119e96fc87c627a6599a6bf5a"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/test/test_host_store.cpp",
+      "bytes": 4622,
+      "sha256": "fb322bb3b63e8221b6c6fa724903ef598be9c31ebb62c86518c51fbdace569db"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/test/test_host_store_cuda.cpp",
+      "bytes": 7922,
+      "sha256": "a9500ab3d120fd8086c8ec534d1974fcb49e06289b0211b6478837e33f5e40c0"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/test/test_kv_cache_manager.cpp",
+      "bytes": 30057,
+      "sha256": "97a55cea0ec7241d50b6a8ccf72f20f13a42a9292685b256e4f4087b183c2aa7"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/test/test_kv_pool_view.cpp",
+      "bytes": 1084,
+      "sha256": "9139c6d32af9d5d8a8b27317671ca7a8688238c712131d5c9be91f99a6b9bedc"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/test/test_logical_radix_probe.cpp",
+      "bytes": 825,
+      "sha256": "cae9f4a18d9c227a6ac062300236a04323306aa02c124b0583130deb26edafae"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/test/test_main.cpp",
+      "bytes": 371,
+      "sha256": "9ce5f43e6bca79b96f5540a104f061ad864650d5a1c16d94859194f662bf085c"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/test/test_model/test_llama_cpu.cpp",
+      "bytes": 1402,
+      "sha256": "163c90e519b2bd72831167bfea47813464af8f4e12fb310071f6334e6cf15b07"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/test/test_model/test_qwen25_vl_chunked.cpp",
+      "bytes": 3182,
+      "sha256": "e359bf410e8833fb3eb9af709e392450ebac97bd299642144c0a78e9814a2fd7"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/test/test_model/test_qwen25_vl_input.cpp",
+      "bytes": 2537,
+      "sha256": "379893ed72bf0674d6d3b9bce73c1fd3c4bc263bd2c641ac162cc27f588966de"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/test/test_model/test_qwen25_vl_model.cpp",
+      "bytes": 18387,
+      "sha256": "932a8ee7ab7601115c90f7cdcd5d09fcfc50c024717f817f0c03770de733cc64"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/test/test_model/test_qwen2_device_init.cpp",
+      "bytes": 18515,
+      "sha256": "6027ea46e40657c2bd1d8a10b0d7b906dd28abff9b3cb3ec74c39dc465b2fe93"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/test/test_node_memory_budget.cpp",
+      "bytes": 1500,
+      "sha256": "ffceda0a22cabafdd6aaa465488a793701cb92491bf51e0e254c7add175518c6"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/test/test_op/test_cu_add.cpp",
+      "bytes": 2763,
+      "sha256": "16233395174f1f3d0210882d2eb48a5c0b0a7cc460b2f2917badbbdfb73120b8"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/test/test_op/test_cu_emb.cpp",
+      "bytes": 2908,
+      "sha256": "faf74b8765a20b1b3f61de779d193fa0ea836e13fac9c0e3a568114ba599591b"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/test/test_op/test_cu_matmul.cpp",
+      "bytes": 3967,
+      "sha256": "891536cf81d0248d03b0d3c4e2c481394cd8ecaffa97219561f7e1093f06c931"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/test/test_op/test_cu_rmsnorm.cpp",
+      "bytes": 6388,
+      "sha256": "b49b28625b70bcad071c0de10a996c262ed2fdcd84dc1cc9250cccaaa0a3ad13"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/test/test_op/test_cu_rope.cpp",
+      "bytes": 5179,
+      "sha256": "793f01756045120aed243f44bac8b7582d235a6e31685beeb625e2abae257d3f"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/test/test_op/test_cu_sampler.cpp",
+      "bytes": 11636,
+      "sha256": "420050ce577d05c593020cddee3f335ffbd9dae43c8de45d7b42c75f274ca02f"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/test/test_op/test_cu_scale.cpp",
+      "bytes": 1352,
+      "sha256": "972a4d406b8a537531816929af7a0901890a270ef748519014e0bd91ccbc456d"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/test/test_op/test_cu_softmax.cpp",
+      "bytes": 3775,
+      "sha256": "6e110c808fad5112bec039122dc75e93bf2709935c641b5f4c582e133fea1e6e"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/test/test_op/test_cu_swiglu.cpp",
+      "bytes": 2838,
+      "sha256": "a1dce9f92d8e3fa4c4370b1cb993b680832fea56e0978b5a89b53b6c98453db2"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/test/test_op/test_load.cpp",
+      "bytes": 3384,
+      "sha256": "e436cf1452a96829d57949d2c67c8f5f857d4330597d23b41a8809ec3296c3b3"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/test/test_p5_ablation.cpp",
+      "bytes": 6539,
+      "sha256": "728b696e19da82f17f0550c2d4177c17bed010f5ed12ae87b5fe2308426f4ba8"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/test/test_page_directory.cpp",
+      "bytes": 6803,
+      "sha256": "e7dce134f54a9351bdb6c4cfca022437a247126f2e9b67c1167843609754e3b5"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/test/test_page_migration.cpp",
+      "bytes": 10339,
+      "sha256": "23dac8fbc6a24d0a964acb4651b1ed47a08748e1301eb535ea8f9f2d0b6a8b42"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/test/test_page_migration_cuda.cpp",
+      "bytes": 10542,
+      "sha256": "e36eda8cced1f09820c300c92a7bec9280be14012342fb53ed4022eb253978da"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/test/test_paged_attention.cpp",
+      "bytes": 6879,
+      "sha256": "e28a6997595bef2f19b5ef2f7fea7931f88f50c10e99f1981cb0c3b345847d17"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/test/test_paged_attention_fast.cpp",
+      "bytes": 13848,
+      "sha256": "9dd56c6a080cc7a5d9e36bae4b2c1fc66d844be88e4b5f3c455cf02fc5a9b317"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/test/test_paged_attention_fast_benchmark.cpp",
+      "bytes": 13154,
+      "sha256": "96a3b5b7919f52084f4c5481f499e5cbef3ad9ef3aba4815ebe4e055a6816d58"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/test/test_paged_attention_fp8_benchmark.cpp",
+      "bytes": 21099,
+      "sha256": "aa86b2115094b9968aea971b9da13b014dd186937275e246858f6a9573b93458"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/test/test_qwen25_mrope.cpp",
+      "bytes": 3454,
+      "sha256": "2777826c4d208f58583c32682f926e3facf2473811237e493bb5b7e5f7593e19"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/test/test_request_checkpoint.cpp",
+      "bytes": 14534,
+      "sha256": "5eeca4d3cff699f96189f2602340c18d5b995a9f75e69ee3eee1863899cc1c60"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/test/test_request_progress.cpp",
+      "bytes": 3783,
+      "sha256": "ff5d3ed150882809bb228e95849b3ae072089ddd4948574b1437bc193a51d144"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/test/test_scheduler_radix_cache.cpp",
+      "bytes": 16883,
+      "sha256": "3326d646faa4b6bb2c1581decae2029c54686b73fff0c24d4dd84a9ea6a1f8d4"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/test/test_sequence_kv_manager.cpp",
+      "bytes": 6997,
+      "sha256": "693ad33a70e6cb39b0a4905f62f4d1fa9ac2b67fda2b55c03dd57d41cc711ed0"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/test/test_serving/test_pd_engine.cpp",
+      "bytes": 14008,
+      "sha256": "94d7160d37e49a2a3fb82cbe3c9c9191a07efe3f150afe639d711a0a1e14a0bd"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/test/test_serving/test_pd_handoff.cpp",
+      "bytes": 35482,
+      "sha256": "b8fc969cba12513dd822120c5848f0b833b6413fab2fb3ccc85aeddeabcd2b51"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/test/test_serving/test_pd_worker.cpp",
+      "bytes": 1337,
+      "sha256": "8ddc4f300f45cc25209bc022beec885af720c965cb85ed0a7086f2073fb9b26d"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/test/test_serving/test_request_coordinator.cpp",
+      "bytes": 906,
+      "sha256": "35a3210ca75a1386de5744154c4dccb3b56427660515ae90c3004a49438cc892"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/test/test_splitkv_attention.cpp",
+      "bytes": 11395,
+      "sha256": "ef5ffbb5008767f210228e746cf39397c5aac06577e83cc9f6b0fdbc79b98f83"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/test/test_tensor/test_buffer.cpp",
+      "bytes": 3581,
+      "sha256": "5920f27ea2fe206293e2a97ffb1f9580a4a5b82c8d58ca74e105b86cda2a147f"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/test/test_tensor/test_tensor.cpp",
+      "bytes": 7647,
+      "sha256": "87c0e356106f7a9b021d52bd4c6346fb39a8f1768e59f984bc7afc34df030c7f"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/test/test_transfer_scheduler.cpp",
+      "bytes": 10629,
+      "sha256": "7216c248ebc3439c6a3480a6f0ab46c4c13b28201ac9931df9e3e9d0b90cbb45"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/test/utils.cu",
+      "bytes": 1158,
+      "sha256": "b4e92f6d4249fe533da56e67764dbf8090e84d1af7233b92e235e51f48ae3e89"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/test/utils.cuh",
+      "bytes": 225,
+      "sha256": "bab4bc3b62cc5ef0af49f699db925b8acd05ada68c82925070907cc90133e265"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/tools/bench/data_flow/analyze_sampling_trace.py",
+      "bytes": 1671,
+      "sha256": "9d80132b046edfe51d0ab34e437e0350aae3a8d5d0a035a1675a90a9a72cd03c"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/tools/bench/data_flow/capture_manifest.py",
+      "bytes": 3326,
+      "sha256": "2173758094befacaef669d9847daaec207275039b641a5d560dd2d232d550de0"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/tools/bench/data_flow/consolidate_post_review_results.py",
+      "bytes": 4822,
+      "sha256": "017fa6be73ae6d5ca5d60743234de26dd4862bca7323bb21673f367c2875cc20"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/tools/bench/data_flow/make_persistent_vlm_ab_spec.py",
+      "bytes": 1135,
+      "sha256": "9712adab4b2ceff6d83012f8cd26906f7ea08a7a62a6130521b72ad3a5444889"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/tools/bench/data_flow/make_persistent_vlm_fixture_spec.py",
+      "bytes": 1070,
+      "sha256": "d21a2660254530cb42f1eb0ca465c3cc0cd49c68b2c2c8c8a0a207fa595feeb6"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/tools/bench/data_flow/p5_ablation.py",
+      "bytes": 5564,
+      "sha256": "0a59ad37a5607a193e3b519b607f01f64211c19c1d80f2a42e40c235a4f963ad"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/tools/bench/data_flow/run_external_serving_ab.py",
+      "bytes": 6584,
+      "sha256": "c869a5841664a33e337abbe5d112bfe142145d5081219e9780a82316cc9d4e78"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/tools/bench/data_flow/run_online_fault_matrix.py",
+      "bytes": 5007,
+      "sha256": "f385a789a26e448685f163787d29e7ccf4dde6051a099ad3540d8403e99170e4"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/tools/bench/data_flow/run_v4_experiments.py",
+      "bytes": 5708,
+      "sha256": "012b6ff3291a7474b12fa317608015f3d784236f4c624a1e141bb2f2e11e98ff"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/tools/bench/data_flow/run_v4_m0.py",
+      "bytes": 10933,
+      "sha256": "472d5533d28b1271e1515f2555be33fb9e92518ff7ccdca19c1b703a88cbfc2c"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/tools/bench/data_flow/seeded_http_probe.py",
+      "bytes": 3708,
+      "sha256": "31038569d4f34943efa0cb40de76fa782cdb6b130ef352ed4e16ce3772dfda0d"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/tools/bench/data_flow/serving_baseline.py",
+      "bytes": 2325,
+      "sha256": "1bc73d7d87b4669949f0208585bf2ed0c1ccb306b1541f34f207ceaf557fc191"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/tools/bench/data_flow/summarize_persistent_vlm_ab.py",
+      "bytes": 2897,
+      "sha256": "10695ddef0c2ea62305ea303a3a90242f2096828ca6747ef9021914b6952535f"
+    },
+    {
+      "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/tools/bench/data_flow/validate_persistent_vlm_fixtures.py",
+      "bytes": 1433,
+      "sha256": "dda2f1c27d2e632a2ab9bf0a5ec44bc45e6c465c633517a51f543810ff1eb94e"
+    }
+  ],
+  "build_artifacts": [
+    {
+      "path": "/tmp/Paged-Batch-Engine-build-qwen05/lib/libllama.so",
+      "bytes": 6122832,
+      "sha256": "692d37330d40915bb0f13cd2f66083b27584c799e04b7bb28e4337587ba1290b"
+    },
+    {
+      "path": "/tmp/Paged-Batch-Engine-build-qwen05/demo/serving_qwen",
+      "bytes": 74032,
+      "sha256": "2daf0999603df5279bb82ba19b8b8898ee82a7965e416d872d294cb6757082b4"
+    }
+  ],
+  "model_files": [
+    {
+      "path": "/tmp/Paged-Batch-Engine-models/Qwen2-0.5B-Instruct/config.json",
+      "bytes": 659,
+      "sha256": "168aa1bd401abc3bc262ba15ba4e499627a8b4e006e9d050b47c22de20660185"
+    },
+    {
+      "path": "/tmp/Paged-Batch-Engine-models/Qwen2-0.5B-Instruct/tokenizer.json",
+      "bytes": 7028015,
+      "sha256": "f7c9b2dba4a296b1aa76c16a34b8225c0c118978400d4bb66bff0902d702f5b8"
+    },
+    {
+      "path": "/tmp/Paged-Batch-Engine-models/Qwen2-0.5B-Instruct/tokenizer_config.json",
+      "bytes": 1287,
+      "sha256": "482bd979881423375ca5414e4e0d94cd7c5349dbb17fffd46b4d36d71e62a1bc"
+    },
+    {
+      "path": "/tmp/Paged-Batch-Engine-models/Qwen2-0.5B-Instruct/generation_config.json",
+      "bytes": 242,
+      "sha256": "e558847a8b4402616f1273797b015104dc266fe4b520056fca88823ba8f8ebe6"
+    },
+    {
+      "path": "/tmp/Paged-Batch-Engine-models/Qwen2-0.5B-Instruct/model.safetensors",
+      "bytes": 988097824,
+      "sha256": "130282af0dfa9fe5840737cc49a0d339d06075f83c5a315c3372c9a0740d0b96"
+    },
+    {
+      "path": "/tmp/Paged-Batch-Engine-models/Qwen2-0.5B-Instruct.bf16.bin",
+      "bytes": 992259876,
+      "sha256": "d2913568e42072b45cb1171b96b6c1e341ff5eb1c053ace0f9bf04457d3aebea"
+    }
+  ],
+  "model_revision": "Unknown upstream revision; exact local bytes identified by SHA256",
+  "cmake_cache": [
+    "CMAKE_BUILD_TYPE:STRING=Release",
+    "CMAKE_CUDA_ARCHITECTURES:UNINITIALIZED=90",
+    "CMAKE_CUDA_COMPILER:FILEPATH=/usr/local/cuda/bin/nvcc",
+    "CMAKE_CUDA_FLAGS:STRING=",
+    "CMAKE_CUDA_FLAGS_DEBUG:STRING=-g",
+    "CMAKE_CUDA_FLAGS_MINSIZEREL:STRING=-O1 -DNDEBUG",
+    "CMAKE_CUDA_FLAGS_RELEASE:STRING=-O3 -DNDEBUG",
+    "CMAKE_CUDA_FLAGS_RELWITHDEBINFO:STRING=-O2 -g -DNDEBUG",
+    "CMAKE_CXX_COMPILER:FILEPATH=/usr/bin/c++",
+    "CMAKE_CXX_COMPILER_AR:FILEPATH=/usr/bin/gcc-ar",
+    "CMAKE_CXX_COMPILER_RANLIB:FILEPATH=/usr/bin/gcc-ranlib",
+    "FETCHCONTENT_SOURCE_DIR_ABSL:PATH=",
+    "FETCHCONTENT_SOURCE_DIR_ARMADILLO:PATH=",
+    "FETCHCONTENT_SOURCE_DIR_GLOG:PATH=",
+    "FETCHCONTENT_SOURCE_DIR_GTEST:PATH=",
+    "FETCHCONTENT_SOURCE_DIR_NLOHMANN_JSON:PATH=",
+    "FETCHCONTENT_SOURCE_DIR_RE2:PATH=",
+    "FETCHCONTENT_SOURCE_DIR_SENTENCEPIECE:PATH=",
+    "HighPerInfFram_SOURCE_DIR:STATIC=/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine",
+    "KUIPER_AUTO_ALIGN_CONDA_PACKAGES:BOOL=ON",
+    "KUIPER_BUILD_DEMOS:BOOL=ON",
+    "KUIPER_BUILD_TESTS:BOOL=ON",
+    "KUIPER_ENABLE_NCCL:STRING=OFF",
+    "KUIPER_ENABLE_ZMQ:STRING=OFF",
+    "KUIPER_FALLBACK_CUDA_ARCHITECTURES:STRING=89",
+    "QWEN2_SUPPORT:BOOL=ON",
+    "RE2_SOURCE_DIR:STATIC=/tmp/Paged-Batch-Engine-build-qwen05/_deps/re2-src",
+    "USE_CPM:BOOL=ON",
+    "absl_SOURCE_DIR:STATIC=/tmp/Paged-Batch-Engine-build-qwen05/_deps/absl-src",
+    "armadillo_SOURCE_DIR:STATIC=/tmp/Paged-Batch-Engine-build-qwen05/_deps/armadillo-src",
+    "glog_SOURCE_DIR:STATIC=/tmp/Paged-Batch-Engine-build-qwen05/_deps/glog-src",
+    "gmock_SOURCE_DIR:STATIC=/tmp/Paged-Batch-Engine-build-qwen05/_deps/gtest-src/googlemock",
+    "googletest-distribution_SOURCE_DIR:STATIC=/tmp/Paged-Batch-Engine-build-qwen05/_deps/gtest-src",
+    "gtest_SOURCE_DIR:STATIC=/tmp/Paged-Batch-Engine-build-qwen05/_deps/gtest-src/googletest",
+    "nlohmann_json_SOURCE_DIR:STATIC=/tmp/Paged-Batch-Engine-build-qwen05/_deps/nlohmann_json-src",
+    "sentencepiece_SOURCE_DIR:STATIC=/tmp/Paged-Batch-Engine-build-qwen05/_deps/sentencepiece-src",
+    "CMAKE_CUDA_COMPILER-ADVANCED:INTERNAL=1",
+    "CMAKE_CUDA_FLAGS-ADVANCED:INTERNAL=1",
+    "CMAKE_CUDA_FLAGS_DEBUG-ADVANCED:INTERNAL=1",
+    "CMAKE_CUDA_FLAGS_MINSIZEREL-ADVANCED:INTERNAL=1",
+    "CMAKE_CUDA_FLAGS_RELEASE-ADVANCED:INTERNAL=1",
+    "CMAKE_CUDA_FLAGS_RELWITHDEBINFO-ADVANCED:INTERNAL=1",
+    "CMAKE_CXX_COMPILER-ADVANCED:INTERNAL=1",
+    "CMAKE_CXX_COMPILER_AR-ADVANCED:INTERNAL=1",
+    "CMAKE_CXX_COMPILER_RANLIB-ADVANCED:INTERNAL=1",
+    "CPM_PACKAGE_Armadillo_SOURCE_DIR:INTERNAL=/tmp/Paged-Batch-Engine-build-qwen05/_deps/armadillo-src",
+    "CPM_PACKAGE_GTest_SOURCE_DIR:INTERNAL=/tmp/Paged-Batch-Engine-build-qwen05/_deps/gtest-src",
+    "CPM_PACKAGE_absl_SOURCE_DIR:INTERNAL=/tmp/Paged-Batch-Engine-build-qwen05/_deps/absl-src",
+    "CPM_PACKAGE_glog_SOURCE_DIR:INTERNAL=/tmp/Paged-Batch-Engine-build-qwen05/_deps/glog-src",
+    "CPM_PACKAGE_nlohmann_json_SOURCE_DIR:INTERNAL=/tmp/Paged-Batch-Engine-build-qwen05/_deps/nlohmann_json-src",
+    "CPM_PACKAGE_re2_SOURCE_DIR:INTERNAL=/tmp/Paged-Batch-Engine-build-qwen05/_deps/re2-src",
+    "CPM_PACKAGE_sentencepiece_SOURCE_DIR:INTERNAL=/tmp/Paged-Batch-Engine-build-qwen05/_deps/sentencepiece-src",
+    "KUIPER_ENABLE_NCCL-STRINGS:INTERNAL=AUTO;ON;OFF",
+    "KUIPER_ENABLE_ZMQ-STRINGS:INTERNAL=AUTO;ON;OFF"
+  ],
+  "source_head": {
+    "command": [
+      "git",
+      "rev-parse",
+      "HEAD"
+    ],
+    "exit_code": 0,
+    "stdout": "f3597a763b6cd5cf60b826baa2dc94395c3d02fd\n",
+    "stderr": ""
+  },
+  "source_status": {
+    "command": [
+      "git",
+      "status",
+      "--short"
+    ],
+    "exit_code": 0,
+    "stdout": " M .gitignore\n M CMakeLists.txt\n M demo/CMakeLists.txt\n M demo/main_qwen2Instruct.cpp\n M demo/serving_qwen.cpp\n M infMain/include/base/base.h\n M infMain/include/base/block_allocator.h\n M infMain/include/base/compressed_radix_cache_tree.h\n M infMain/include/base/kv_block.h\n M infMain/include/base/kv_cache_manager.h\n M infMain/include/base/sequence_kv_manager.h\n M infMain/include/model/paged_kv_runtime.h\n M infMain/include/model/qwen2.h\n M infMain/include/serving/generation_config.h\n M infMain/include/serving/mixed_batch.h\n M infMain/include/serving/pd_handoff.h\n M infMain/include/serving/scheduler.h\n M infMain/include/serving/sequence_state.h\n M infMain/include/serving/serving_config.h\n M infMain/include/serving/serving_metrics.h\n M infMain/source/base/alloc.cpp\n M infMain/source/base/alloc_cpu.cpp\n M infMain/source/base/block_allocator.cpp\n M infMain/source/base/kv_cache_manager.cpp\n M infMain/source/base/sequence_kv_manager.cpp\n M infMain/source/model/paged_kv_runtime.cpp\n M infMain/source/model/qwen2.cpp\n M infMain/source/model/qwen2_batch.cpp\n M infMain/source/op/kernels/cuda/argmax_kernel.cu\n M infMain/source/op/kernels/cuda/rope_kernel.cu\n M infMain/source/op/kernels/cuda/rope_kernel.cuh\n M infMain/source/op/kernels/kernels_interface.h\n M infMain/source/op/kernels/kernels_interfaces.cpp\n M infMain/source/serving/pd_handoff.cpp\n M infMain/source/serving/scheduler.cpp\n M infMain/source/serving/serving_benchmark_app.cpp\n M infMain/source/serving/serving_online_engine.cpp\n M infMain/source/serving/serving_online_engine_pool.cpp\n M infMain/source/serving/serving_online_server.cpp\n M infMain/source/serving/serving_zmq_engine_core.cpp\n M infMain/source/serving/serving_zmq_rpc.cpp\n M infMain/source/tensor/tensor.cpp\n M test/CMakeLists.txt\n M test/test_kv_cache_manager.cpp\n M test/test_model/test_qwen2_device_init.cpp\n M test/test_op/test_cu_sampler.cpp\n M test/test_paged_attention.cpp\n M test/test_scheduler_radix_cache.cpp\n M test/test_serving/test_pd_handoff.cpp\n M test/test_splitkv_attention.cpp\n?? a.out\n?? build-v3/\n?? demo/pbe_data_service.cpp\n?? demo/pbe_ipc_pool_probe.cpp\n?? demo/pbe_multi_role_text.cpp\n?? demo/pbe_multi_role_vlm.cpp\n?? demo/pbe_vlm_language_role.cpp\n?? docs/\n?? infMain/include/cache/\n?? infMain/include/data/\n?? infMain/include/model/multimodal_input.h\n?? infMain/include/serving/node_memory_budget.h\n?? infMain/include/serving/prefix_builder.h\n?? infMain/include/serving/request_checkpoint.h\n?? infMain/include/serving/request_coordinator.h\n?? infMain/source/cache/\n?? infMain/source/data/\n?? infMain/source/serving/kv_connector_flight_adapter.cpp\n?? infMain/source/serving/node_memory_budget.cpp\n?? infMain/source/serving/prefix_builder.cpp\n?? infMain/source/serving/request_checkpoint.cpp\n?? infMain/source/serving/request_coordinator.cpp\n?? python/\n?? test/cache_core/\n?? test/data_core/\n?? test/test_block_lease.cpp\n?? test/test_cache_transfer_plan.cpp\n?? test/test_host_store.cpp\n?? test/test_host_store_cuda.cpp\n?? test/test_kv_pool_view.cpp\n?? test/test_logical_radix_probe.cpp\n?? test/test_model/test_qwen25_vl_chunked.cpp\n?? test/test_model/test_qwen25_vl_input.cpp\n?? test/test_model/test_qwen25_vl_model.cpp\n?? test/test_node_memory_budget.cpp\n?? test/test_p5_ablation.cpp\n?? test/test_page_directory.cpp\n?? test/test_page_migration.cpp\n?? test/test_page_migration_cuda.cpp\n?? test/test_qwen25_mrope.cpp\n?? test/test_request_checkpoint.cpp\n?? test/test_request_progress.cpp\n?? test/test_serving/test_request_coordinator.cpp\n?? test/test_transfer_scheduler.cpp\n?? tools/bench/data_flow/\n?? tools/launch/\n?? tools/models/\n",
+    "stderr": ""
+  },
+  "compiler": {
+    "command": [
+      "g++",
+      "--version"
+    ],
+    "exit_code": 0,
+    "stdout": "g++ (GCC) 10.3.1\nCopyright (C) 2020 Free Software Foundation, Inc.\nThis is free software; see the source for copying conditions.  There is NO\nwarranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n",
+    "stderr": ""
+  },
+  "cuda": {
+    "command": [
+      "nvcc",
+      "--version"
+    ],
+    "exit_code": 0,
+    "stdout": "nvcc: NVIDIA (R) Cuda compiler driver\nCopyright (c) 2005-2025 NVIDIA Corporation\nBuilt on Wed_Jan_15_19:20:09_PST_2025\nCuda compilation tools, release 12.8, V12.8.61\nBuild cuda_12.8.r12.8/compiler.35404655_0\n",
+    "stderr": ""
+  },
+  "gpu": {
+    "command": [
+      "nvidia-smi",
+      "--query-gpu=name,uuid,driver_version,memory.total",
+      "--format=csv"
+    ],
+    "exit_code": 0,
+    "stdout": "name, uuid, driver_version, memory.total [MiB]\nNVIDIA H20-3e, GPU-ee082303-bb7e-8d86-c9bf-8f660e6e3a2a, 550.127.08, 143771 MiB\nNVIDIA H20-3e, GPU-4728829f-56d6-426d-85ee-e753c1683bea, 550.127.08, 143771 MiB\n",
+    "stderr": ""
+  },
+  "topology": {
+    "command": [
+      "nvidia-smi",
+      "topo",
+      "-m"
+    ],
+    "exit_code": 0,
+    "stdout": "\t\u001b[4mGPU0\tGPU1\tNIC0\tNIC1\tNIC2\tNIC3\tNIC4\tNIC5\tNIC6\tNIC7\tCPU Affinity\tNUMA Affinity\tGPU NUMA ID\u001b[0m\nGPU0\t X \tNV18\tNODE\tNODE\tNODE\tNODE\tSYS\tSYS\tSYS\tSYS\t0-41\t0\t\tN/A\nGPU1\tNV18\t X \tNODE\tNODE\tPIX\tPIX\tSYS\tSYS\tSYS\tSYS\t0-41\t0\t\tN/A\nNIC0\tNODE\tNODE\t X \tPIX\tNODE\tNODE\tSYS\tSYS\tSYS\tSYS\t\t\t\t\nNIC1\tNODE\tNODE\tPIX\t X \tNODE\tNODE\tSYS\tSYS\tSYS\tSYS\t\t\t\t\nNIC2\tNODE\tPIX\tNODE\tNODE\t X \tPIX\tSYS\tSYS\tSYS\tSYS\t\t\t\t\nNIC3\tNODE\tPIX\tNODE\tNODE\tPIX\t X \tSYS\tSYS\tSYS\tSYS\t\t\t\t\nNIC4\tSYS\tSYS\tSYS\tSYS\tSYS\tSYS\t X \tPIX\tNODE\tNODE\t\t\t\t\nNIC5\tSYS\tSYS\tSYS\tSYS\tSYS\tSYS\tPIX\t X \tNODE\tNODE\t\t\t\t\nNIC6\tSYS\tSYS\tSYS\tSYS\tSYS\tSYS\tNODE\tNODE\t X \tPIX\t\t\t\t\nNIC7\tSYS\tSYS\tSYS\tSYS\tSYS\tSYS\tNODE\tNODE\tPIX\t X \t\t\t\t\n\nLegend:\n\n  X    = Self\n  SYS  = Connection traversing PCIe as well as the SMP interconnect between NUMA nodes (e.g., QPI/UPI)\n  NODE = Connection traversing PCIe as well as the interconnect between PCIe Host Bridges within a NUMA node\n  PHB  = Connection traversing PCIe as well as a PCIe Host Bridge (typically the CPU)\n  PXB  = Connection traversing multiple PCIe bridges (without traversing the PCIe Host Bridge)\n  PIX  = Connection traversing at most a single PCIe bridge\n  NV#  = Connection traversing a bonded set of # NVLinks\n\nNIC Legend:\n\n  NIC0: mlx5_0\n  NIC1: mlx5_1\n  NIC2: mlx5_2\n  NIC3: mlx5_3\n  NIC4: mlx5_4\n  NIC5: mlx5_5\n  NIC6: mlx5_6\n  NIC7: mlx5_7\n\n",
+    "stderr": ""
+  }
+}

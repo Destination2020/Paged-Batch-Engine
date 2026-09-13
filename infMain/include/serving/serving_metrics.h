@@ -40,12 +40,15 @@ struct SummaryStats {
   int64_t scheduler_decode_kv_preemptions = 0;
   int64_t scheduler_waiting_rejections = 0;
   int64_t scheduler_stalled_prefill_failures = 0;
+  int64_t cache_transfer_completions = 0;
+  int64_t cache_restore_wait_steps = 0;
   int64_t waiting_queue_samples = 0;
   int64_t running_queue_samples = 0;
   int32_t max_waiting_queue = 0;
   int32_t max_running_queue = 0;
   std::vector<double> request_ttft_ms;
-  std::vector<double> request_itl_ms;
+  std::vector<double> request_itl_ms;  // Legacy per-request means.
+  std::vector<double> token_gap_ms;
   std::vector<double> request_latency_ms;
   double total_schedule_ms = 0.0;
   double total_build_metadata_ms = 0.0;

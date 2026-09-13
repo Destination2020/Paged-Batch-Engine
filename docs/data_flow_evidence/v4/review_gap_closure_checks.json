@@ -1,0 +1,200 @@
+{
+  "e2_actual_runtime_state": {
+    "actual_worker_capacity_samples": 90,
+    "bounded_reservation_retry_implemented": true,
+    "calibration_schema": "pbe.v4.role-cost-calibration.v1",
+    "calibration_sha256": "e85556aa6adfcb8b321d3818c507415f36fbcdb826a2f6c1f1b3ac0af7c842ef",
+    "future_callback_completion_timestamps": true,
+    "normal_capacity_not_fixed_64mib": true,
+    "observed_serviceable_prefix_and_missing_pages": true,
+    "ok": true,
+    "requests": 165,
+    "runs": 15,
+    "throughput_formula_verified": true
+  },
+  "e3_actual_kv_eviction_and_recovery": {
+    "focused_tests": 19,
+    "ok": true,
+    "serving_workers": [
+      {
+        "actual_eviction_path": true,
+        "committed_demotions": 35,
+        "demote_decisions": 35,
+        "keep_decisions": 0,
+        "objects": 8,
+        "publish_rejections": 0,
+        "restores": 25
+      },
+      {
+        "actual_eviction_path": true,
+        "committed_demotions": 35,
+        "demote_decisions": 35,
+        "keep_decisions": 0,
+        "objects": 8,
+        "publish_rejections": 0,
+        "restores": 25
+      }
+    ]
+  },
+  "m9_full_replica_count_cost": {
+    "counts_as_prefill_decode_handoff_acceptance": false,
+    "ok": true,
+    "scope": "one versus two complete Language replicas",
+    "summaries": {
+      "split_language_roles": {
+        "client_stdev_ms": 24.986238444918335,
+        "effective_service_throughput_requests_per_s": 1.2840120896022642,
+        "measured_budget": {
+          "all_within_device_admission_limit": true,
+          "model_process_allocation_bytes": 14654898176,
+          "weight_processes": 2,
+          "worker_allocatable_kv_bytes": 37748736,
+          "workspace_reserved_bytes": 659292160
+        },
+        "median_client_ms": 770.4787999391556,
+        "median_itl_ms": 47.132056,
+        "median_ttft_ms": 57.70183,
+        "p95_client_ms": 816.9693797826767,
+        "p95_ttft_ms": 60.1234242,
+        "p99_client_ms": 825.0112920999527,
+        "p99_ttft_ms": 60.583581640000006,
+        "repeats": 5,
+        "shared_window_contribution_requests_per_s": 0.6477952707727651,
+        "token_itl_p50_ms": 46.97564,
+        "token_itl_p95_ms": 52.3901094,
+        "token_itl_p99_ms": 57.590875380000035
+      },
+      "unified_worker": {
+        "client_stdev_ms": 3.4762037195037885,
+        "effective_service_throughput_requests_per_s": 1.307423808383279,
+        "measured_budget": {
+          "all_within_device_admission_limit": true,
+          "model_process_allocation_bytes": 7327449088,
+          "weight_processes": 1,
+          "worker_allocatable_kv_bytes": 37748736,
+          "workspace_reserved_bytes": 329646080
+        },
+        "median_client_ms": 766.3257345557213,
+        "median_itl_ms": 47.3021278,
+        "median_ttft_ms": 50.994928,
+        "p95_client_ms": 768.8074693083763,
+        "p95_ttft_ms": 56.6693098,
+        "p99_client_ms": 769.1138502955437,
+        "p99_ttft_ms": 57.70933236,
+        "repeats": 5,
+        "shared_window_contribution_requests_per_s": 0.6477952707727651,
+        "token_itl_p50_ms": 46.993471,
+        "token_itl_p95_ms": 49.995502599999995,
+        "token_itl_p99_ms": 51.39313958
+      }
+    }
+  },
+  "m9_production_scheduler_lane": {
+    "cuda_full_payload_validation": {
+      "benchmark": "pbe_transfer_scheduler_cuda_payload",
+      "full_payload_validated_all": true,
+      "median_demand_completion_ms": {
+        "lanes_off": 31.734153,
+        "lanes_on": 26.689289
+      },
+      "median_demand_queue_ms": {
+        "lanes_off": 4.926629,
+        "lanes_on": 0.000489
+      },
+      "ok": true,
+      "only_ablation": "TransferScheduler.direction_lanes_enabled",
+      "physical_submissions_all": [
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3
+      ],
+      "repeats_each": 5
+    },
+    "model_repeats_each": 5,
+    "model_result_is_negative": true,
+    "ok": true
+  },
+  "m9_warm_persistent_prefill_decode_deployment": {
+    "all_three_model_processes_concurrently_resident": true,
+    "cold_start_excluded": true,
+    "completed_requests": 10,
+    "gate": {
+      "checks": {
+        "decode_did_not_recompute_prompt": true,
+        "five_repetitions_each": true,
+        "handoffs_released": true,
+        "independent_prefill_decode_pid": true,
+        "ipc_grants_and_leases_recovered": true,
+        "outputs_match_warmed_unified_oracle": true,
+        "persistent_and_warm": true,
+        "same_workload_and_owned_kv_budget": true,
+        "valid_handoff_and_distinct_grants": true,
+        "worker_kv_requests_recovered_to_model_baseline": true
+      },
+      "decode_pids": [
+        2837151
+      ],
+      "handoffs": 5,
+      "ok": true,
+      "prefill_pids": [
+        2837024
+      ],
+      "prompt_tokens_saved_each": [
+        95
+      ],
+      "schema": "pbe.v4.persistent-multimodal-pd-gate.v1"
+    },
+    "ok": true,
+    "summaries": {
+      "persistent_prefill_decode": {
+        "client_stdev_ms": 8.79504761339572,
+        "effective_service_throughput_requests_per_s": 1.2882622599593578,
+        "measured_budget": {
+          "all_within_device_admission_limit": true,
+          "model_process_allocation_bytes": 14654898176,
+          "owned_kv_slots": 64,
+          "weight_processes": 2,
+          "workspace_reserved_bytes": 659292160
+        },
+        "median_client_ms": 772.9498073458672,
+        "median_itl_ms": 47.454967333333336,
+        "median_ttft_ms": 59.292107820510864,
+        "p95_ttft_ms": 60.91286540031433,
+        "p99_ttft_ms": 61.041626930236816,
+        "repeats": 5,
+        "token_itl_p50_ms": 47.425581,
+        "token_itl_p95_ms": 48.4082095,
+        "token_itl_p99_ms": 49.19477132000001
+      },
+      "unified_pd_execution": {
+        "client_stdev_ms": 11.993247246877866,
+        "effective_service_throughput_requests_per_s": 1.285455263065594,
+        "measured_budget": {
+          "all_within_device_admission_limit": true,
+          "model_process_allocation_bytes": 7327449088,
+          "owned_kv_slots": 64,
+          "weight_processes": 1,
+          "workspace_reserved_bytes": 329646080
+        },
+        "median_client_ms": 771.1502015590668,
+        "median_itl_ms": 47.51155706666667,
+        "median_ttft_ms": 57.058861,
+        "p95_ttft_ms": 65.3964426,
+        "p99_ttft_ms": 67.01755812,
+        "repeats": 5,
+        "token_itl_p50_ms": 47.501011,
+        "token_itl_p95_ms": 49.6003599,
+        "token_itl_p99_ms": 51.88216412
+      }
+    }
+  },
+  "ok": true,
+  "schema": "pbe.v4.review-gap-closure.v1"
+}

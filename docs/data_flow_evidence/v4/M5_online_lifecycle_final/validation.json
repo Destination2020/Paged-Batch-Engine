@@ -1,0 +1,1 @@
+{"admission_limit_bytes": 149753298944, "cancelled_after_tokens": 2, "deadline_round_ms": 10503.424741327763, "encode_join_ms": 7676.862068474293, "ok": true, "peak_observed_used_bytes": 10028777472, "worker_pid": 2357574}

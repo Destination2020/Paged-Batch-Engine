@@ -1,0 +1,38 @@
+{
+  "stage": "M3",
+  "status": "accepted",
+  "date": "2026-09-12",
+  "checkout": "f3597a763b6cd5cf60b826baa2dc94395c3d02fd",
+  "protocol_version": 1,
+  "host_copy_oracle": {
+    "status": "passed",
+    "producer_bytes": 395380,
+    "consumers": 2,
+    "producer_prefill_tokens": 32,
+    "consumer_prefill_tokens_saved": [32, 32],
+    "producer_exited_before_consumers": true,
+    "token_outputs_equal_oracle": true,
+    "service_bytes_received": 395985,
+    "service_bytes_sent": 791392
+  },
+  "cuda_ipc": {
+    "same_gpu": {"status": "passed", "pool_bytes": 16777216, "transfer_bytes": 0},
+    "cross_gpu": {"status": "passed", "pool_bytes": 67108864, "transfer_bytes": 67108864, "path": "cross_gpu_p2p_copy"}
+  },
+  "tests": {
+    "data_contract": {"passed": 14, "failed": 0},
+    "serving_regression": {"passed": 27, "skipped": 2, "failed": 0},
+    "asan_ubsan_lsan": "passed",
+    "diff_check": "passed"
+  },
+  "model": {
+    "name": "Qwen2-0.5B-Instruct",
+    "model_sha256": "d2913568e42072b45cb1171b96b6c1e341ff5eb1c053ace0f9bf04457d3aebea",
+    "tokenizer_sha256": "f7c9b2dba4a296b1aa76c16a34b8225c0c118978400d4bb66bff0902d702f5b8"
+  },
+  "notes": [
+    "Host transport is reported as host_copy and is not called zero-copy.",
+    "NCCL regressions were gated because this build has NCCL disabled; CUDA P2P passed.",
+    "The M3 text fixture deliberately pads the prompt to a complete 16-token page boundary."
+  ]
+}

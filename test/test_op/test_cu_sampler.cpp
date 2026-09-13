@@ -224,3 +224,58 @@ TEST(test_sampler_cu, topk_topp_selected_rows_top1_matches_argmax) {
     EXPECT_EQ(token_ids.index<int32_t>(idx), expected[idx]);
   }
 }
+
+TEST(test_sampler_cu, topk_ties_use_token_order_across_threads) {
+  if (!HasCudaDevice()) {
+    GTEST_SKIP() << "CUDA device is not available";
+  }
+  auto alloc_cpu = base::CPUDeviceAllocatorFactory::get_instance();
+  auto alloc_cu = base::CUDADeviceAllocatorFactory::get_instance();
+
+  constexpr int32_t kNumRows = 3;
+  constexpr int32_t kVocabSize = 257;
+  std::vector<float> logits(kNumRows * kVocabSize, -100.0f);
+  for (int row = 0; row < kNumRows; ++row) {
+    logits[row * kVocabSize + 1] = 5.0f;
+    logits[row * kVocabSize + 128] = 5.0f;
+  }
+  const std::vector<int32_t> row_indices = {2, 0, 1};
+  const std::vector<int32_t> expected = {1, 128, 1};
+
+  tensor::Tensor logits_tensor(base::DataType::kDataTypeFp32, kNumRows, kVocabSize, true,
+                               alloc_cpu);
+  for (int32_t idx = 0; idx < kNumRows * kVocabSize; ++idx) {
+    logits_tensor.index<float>(idx) = logits[idx];
+  }
+  logits_tensor.to_cuda();
+
+  const int32_t sample_count = static_cast<int32_t>(row_indices.size());
+  tensor::Tensor row_indices_tensor(base::DataType::kDataTypeInt32, sample_count, true,
+                                    alloc_cpu);
+  tensor::Tensor temperatures(base::DataType::kDataTypeFp32, sample_count, true, alloc_cpu);
+  tensor::Tensor top_ps(base::DataType::kDataTypeFp32, sample_count, true, alloc_cpu);
+  tensor::Tensor top_ks(base::DataType::kDataTypeInt32, sample_count, true, alloc_cpu);
+  tensor::Tensor random_values(base::DataType::kDataTypeFp32, sample_count, true, alloc_cpu);
+  for (int32_t idx = 0; idx < sample_count; ++idx) {
+    row_indices_tensor.index<int32_t>(idx) = row_indices[idx];
+    temperatures.index<float>(idx) = 0.8f;
+    top_ps.index<float>(idx) = 1.0f;
+    top_ks.index<int32_t>(idx) = 2;
+    random_values.index<float>(idx) = idx == 1 ? 0.9f : 0.1f;
+  }
+  row_indices_tensor.to_cuda();
+  temperatures.to_cuda();
+  top_ps.to_cuda();
+  top_ks.to_cuda();
+  random_values.to_cuda();
+
+  tensor::Tensor token_ids(base::DataType::kDataTypeInt32, sample_count, true, alloc_cu);
+  kernel::sample_topk_topp_selected_rows_cu(logits_tensor, row_indices_tensor,
+                                            temperatures, top_ps, top_ks,
+                                            random_values, token_ids, nullptr);
+  token_ids.to_cpu();
+
+  for (int32_t idx = 0; idx < sample_count; ++idx) {
+    EXPECT_EQ(token_ids.index<int32_t>(idx), expected[idx]);
+  }
+}

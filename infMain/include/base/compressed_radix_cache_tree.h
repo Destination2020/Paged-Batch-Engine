@@ -18,7 +18,8 @@ namespace base {
 // model execution code. Tests can validate prefix matching, node splitting, and
 // path pinning with synthetic token/block-id data before the structure is wired
 // into the serving runtime.
-class CompressedRadixCacheTree {
+template <typename Payload>
+class BasicCompressedRadixCacheTree {
  public:
   using BlockKey = std::vector<int32_t>;
 
@@ -27,7 +28,7 @@ class CompressedRadixCacheTree {
     Node* parent = nullptr;
     std::map<BlockKey, std::unique_ptr<Node>> children;
     std::vector<int32_t> segment_tokens;
-    std::vector<std::vector<int32_t>> segment_block_ids_per_layer;
+    std::vector<std::vector<Payload>> segment_block_ids_per_layer;
     int32_t depth_blocks_before = 0;
     int32_t active_ref_count = 0;
     uint64_t last_access_tick = 0;
@@ -51,7 +52,7 @@ class CompressedRadixCacheTree {
     int32_t matched_tokens = 0;
     int32_t matched_blocks = 0;
     Node* matched_leaf = nullptr;
-    std::vector<std::vector<int32_t>> block_ids_per_layer;
+    std::vector<std::vector<Payload>> block_ids_per_layer;
   };
 
   struct InsertResult {
@@ -63,7 +64,7 @@ class CompressedRadixCacheTree {
     bool split_performed = false;
   };
 
-  CompressedRadixCacheTree(int32_t block_size, int32_t num_layers)
+  BasicCompressedRadixCacheTree(int32_t block_size, int32_t num_layers)
       : block_size_(block_size), num_layers_(num_layers) {
     if (block_size_ <= 0) {
       throw std::invalid_argument("block_size must be positive");
@@ -81,6 +82,33 @@ class CompressedRadixCacheTree {
   Node* root() const { return root_.get(); }
   int32_t split_count() const { return split_count_; }
   uint64_t access_tick() const { return access_tick_; }
+
+  // Read-only probe: no split, LRU touch, pin or caller scratch mutation.
+  MatchResult probe_prefix(const std::vector<int32_t>& tokens) const {
+    MatchResult result{0, 0, root_.get(), empty_block_ids()};
+    Node* node = root_.get();
+    const int32_t full_blocks = full_blocks_for_tokens(tokens);
+    while (result.matched_blocks < full_blocks) {
+      auto it = node->children.find(block_key(tokens, result.matched_blocks));
+      if (it == node->children.end()) break;
+      Node* child = it->second.get();
+      const auto count = common_prefix_blocks(child->segment_tokens, tokens,
+          result.matched_blocks, full_blocks - result.matched_blocks);
+      for (int32_t layer = 0; layer < num_layers_; ++layer) {
+        const auto& payload = child->segment_block_ids_per_layer[layer];
+        result.block_ids_per_layer[layer].insert(result.block_ids_per_layer[layer].end(),
+                                                payload.begin(), payload.begin() + count);
+      }
+      result.matched_blocks += count;
+      result.matched_tokens = result.matched_blocks * block_size_;
+      // Only a full segment is a pinnable leaf. Materialize with match_prefix
+      // after the caller accepts a prefix ending inside a segment.
+      if (count < child->segment_blocks(block_size_)) break;
+      node = child;
+      result.matched_leaf = node;
+    }
+    return result;
+  }
 
   MatchResult match_prefix(const std::vector<int32_t>& tokens) {
     const int32_t full_blocks = full_blocks_for_tokens(tokens);
@@ -131,7 +159,7 @@ class CompressedRadixCacheTree {
   }
 
   InsertResult insert(const std::vector<int32_t>& tokens,
-                      const std::vector<std::vector<int32_t>>& block_ids_per_layer) {
+                      const std::vector<std::vector<Payload>>& block_ids_per_layer) {
     const int32_t full_blocks = full_blocks_for_tokens(tokens);
     validate_block_ids(block_ids_per_layer, full_blocks);
 
@@ -209,7 +237,7 @@ class CompressedRadixCacheTree {
     }
   }
 
-  std::vector<std::vector<int32_t>> collect_block_ids(Node* leaf) const {
+  std::vector<std::vector<Payload>> collect_block_ids(Node* leaf) const {
     require_node(leaf);
     std::vector<const Node*> path;
     for (const Node* node = leaf; node != nullptr && node != root_.get();
@@ -218,7 +246,7 @@ class CompressedRadixCacheTree {
     }
     std::reverse(path.begin(), path.end());
 
-    std::vector<std::vector<int32_t>> result(num_layers_);
+    std::vector<std::vector<Payload>> result(num_layers_);
     for (const Node* node : path) {
       for (int32_t layer_idx = 0; layer_idx < num_layers_; ++layer_idx) {
         result[layer_idx].insert(result[layer_idx].end(),
@@ -245,7 +273,7 @@ class CompressedRadixCacheTree {
     return evictable_blocks(root_.get());
   }
 
-  std::vector<std::vector<int32_t>> erase_leaf(Node* leaf) {
+  std::vector<std::vector<Payload>> erase_leaf(Node* leaf) {
     require_node(leaf);
     if (leaf == root_.get()) {
       throw std::logic_error("cannot erase the radix root");
@@ -268,14 +296,14 @@ class CompressedRadixCacheTree {
       throw std::logic_error("parent does not own radix leaf under expected key");
     }
 
-    std::vector<std::vector<int32_t>> removed_block_ids =
+    std::vector<std::vector<Payload>> removed_block_ids =
         leaf->segment_block_ids_per_layer;
     parent->children.erase(it);
     return removed_block_ids;
   }
 
-  std::vector<std::vector<int32_t>> clear_and_collect_block_ids() {
-    std::vector<std::vector<int32_t>> block_ids(num_layers_);
+  std::vector<std::vector<Payload>> clear_and_collect_block_ids() {
+    std::vector<std::vector<Payload>> block_ids(num_layers_);
     collect_all_block_ids(root_.get(), &block_ids);
     root_->children.clear();
     root_->last_access_tick = ++access_tick_;
@@ -290,8 +318,8 @@ class CompressedRadixCacheTree {
     return static_cast<int32_t>(tokens.size()) / block_size_;
   }
 
-  std::vector<std::vector<int32_t>> empty_block_ids() const {
-    return std::vector<std::vector<int32_t>>(num_layers_);
+  std::vector<std::vector<Payload>> empty_block_ids() const {
+    return std::vector<std::vector<Payload>>(num_layers_);
   }
 
   BlockKey block_key(const std::vector<int32_t>& tokens, int32_t block_idx) const {
@@ -384,7 +412,7 @@ class CompressedRadixCacheTree {
 
   Node* append_child(Node* parent,
                      const std::vector<int32_t>& tokens,
-                     const std::vector<std::vector<int32_t>>& block_ids_per_layer,
+                     const std::vector<std::vector<Payload>>& block_ids_per_layer,
                      int32_t start_block,
                      int32_t end_block) {
     require_node(parent);
@@ -418,7 +446,7 @@ class CompressedRadixCacheTree {
     return raw;
   }
 
-  void validate_block_ids(const std::vector<std::vector<int32_t>>& block_ids_per_layer,
+  void validate_block_ids(const std::vector<std::vector<Payload>>& block_ids_per_layer,
                           int32_t required_blocks) const {
     if (static_cast<int32_t>(block_ids_per_layer.size()) != num_layers_) {
       throw std::invalid_argument("block_ids_per_layer layer count mismatch");
@@ -475,7 +503,7 @@ class CompressedRadixCacheTree {
   }
 
   void collect_all_block_ids(
-      const Node* node, std::vector<std::vector<int32_t>>* block_ids) const {
+      const Node* node, std::vector<std::vector<Payload>>* block_ids) const {
     if (node == nullptr || block_ids == nullptr) {
       throw std::invalid_argument("collect_all_block_ids received null input");
     }
@@ -497,6 +525,9 @@ class CompressedRadixCacheTree {
   uint64_t access_tick_ = 0;
   int32_t split_count_ = 0;
 };
+
+using CompressedRadixCacheTree = BasicCompressedRadixCacheTree<int32_t>;
+using LogicalRadixCacheTree = BasicCompressedRadixCacheTree<uint64_t>;
 
 }  // namespace base
 

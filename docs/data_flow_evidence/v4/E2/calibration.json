@@ -1,0 +1,24 @@
+{
+  "schema": "pbe.v4.role-cost-calibration.v1",
+  "hardware": "NVIDIA H20-3e",
+  "model": "Qwen2.5-VL-3B-Instruct PBE BF16 v1",
+  "observed": {
+    "prefill_ms_per_token": 1.7370868369565218,
+    "decode_ms_per_token": 46.49225862655123,
+    "cross_gpu_page_bandwidth_bytes_per_ms": 10886.279729361537,
+    "cross_gpu_samples": [
+      {"bytes": 3538944, "ms": 351.031},
+      {"bytes": 3538944, "ms": 302.707}
+    ]
+  },
+  "placement_run_configuration": {
+    "prefill_ms_per_token": 1.5,
+    "decode_ms_per_token": 45.0,
+    "bandwidth_bytes_per_ms": 4096.0,
+    "bandwidth_policy": "conservative floor below both measured page-transfer samples"
+  },
+  "prediction_result": {
+    "mean_absolute_error_ms": 1101.2845301313835,
+    "interpretation": "The intentionally conservative bandwidth and simple queue model overpredicted. The error is retained; no global-optimality claim is made."
+  }
+}

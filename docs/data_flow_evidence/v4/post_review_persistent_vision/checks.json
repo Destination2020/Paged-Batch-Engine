@@ -1,0 +1,42 @@
+{
+  "date": "2026-09-13",
+  "worker_pid": 2074523,
+  "model_loads": 1,
+  "processor_loads": 1,
+  "forward_calls": 1,
+  "batches": 2,
+  "mixed_batch": {
+    "requests": 2,
+    "feature_rows": [81, 121],
+    "forward_ms": 447.1902698278427,
+    "bundle_bytes": [334024, 498568],
+    "reserved_before_forward": true
+  },
+  "reuse": {
+    "same_feature_content": true,
+    "different_question_request_bundle": true,
+    "feature_cache_hit": true,
+    "additional_forward_calls": 0
+  },
+  "cancellation": {
+    "stage": "encode",
+    "cancelled_before_forward": true,
+    "published_request_bundle": false
+  },
+  "lifecycle": {
+    "typed_protocol": true,
+    "generation_checked": true,
+    "absolute_deadline": true,
+    "bounded_queue": true,
+    "data_leases_after_shutdown": 0
+  },
+  "pbe_bundle_integration": {
+    "dynamic_prefill_tokens": 106,
+    "feature_rows": 81,
+    "rope_delta": -72,
+    "decode_tokens": 16,
+    "decode_matches_prefill_oracle": true,
+    "kv_transport": "host_snapshot",
+    "evidence": "../post_review_persistent_vlm_bundle"
+  }
+}

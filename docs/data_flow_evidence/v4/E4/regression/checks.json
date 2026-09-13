@@ -1,0 +1,12 @@
+{
+  "checks": {
+    "build_targets": true,
+    "full_regression": true,
+    "plain_text_interface": true,
+    "shared_weight_unit_tests": true
+  },
+  "full_tests": 233,
+  "ok": true,
+  "schema": "pbe-e4-regression-v1",
+  "shared_weight_unit_tests": 4
+}

@@ -1,0 +1,1589 @@
+{
+  "schema": "pbe.qwen25_vl.reference.v1",
+  "model_path": "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct",
+  "image_path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/image.png",
+  "image_sha256": "79fcd8c4b6579e425a1423bd0b8ac9a0a0f00570db0998012db487954b7e68c3",
+  "torch": "2.9.1+cu128",
+  "transformers": "5.3.0",
+  "python": "3.12.3",
+  "cuda": "12.8",
+  "gpu": "NVIDIA H20-3e",
+  "dtype": "bfloat16",
+  "attention": "sdpa",
+  "max_new_tokens": 32,
+  "cases": [
+    {
+      "case": "text",
+      "batch_size": 1,
+      "sequence_length": 29,
+      "prompt_lengths": [
+        29
+      ],
+      "input_keys": [
+        "attention_mask",
+        "input_ids",
+        "mm_token_type_ids"
+      ],
+      "input_tensors": {
+        "input_ids": {
+          "shape": [
+            1,
+            29
+          ],
+          "dtype": "int64",
+          "min": 13.0,
+          "max": 151645.0,
+          "mean": 34151.1015625
+        },
+        "attention_mask": {
+          "shape": [
+            1,
+            29
+          ],
+          "dtype": "int64",
+          "min": 1.0,
+          "max": 1.0,
+          "mean": 1.0
+        },
+        "mm_token_type_ids": {
+          "shape": [
+            1,
+            29
+          ],
+          "dtype": "int64",
+          "min": 0.0,
+          "max": 0.0,
+          "mean": 0.0
+        }
+      },
+      "image_feature": null,
+      "position_axis_equal_for_text": true,
+      "rope_deltas": [
+        0
+      ],
+      "last_logits_top10_ids": [
+        [
+          40,
+          2121,
+          19152,
+          30040,
+          785,
+          5501,
+          12549,
+          39814,
+          26040,
+          95456
+        ]
+      ],
+      "last_logits_top10_values": [
+        [
+          28.125,
+          24.875,
+          23.25,
+          23.125,
+          23.125,
+          22.875,
+          22.125,
+          22.0,
+          21.75,
+          21.5
+        ]
+      ],
+      "generated_token_ids": [
+        [
+          40,
+          2776,
+          14589,
+          11,
+          714,
+          358,
+          4157,
+          7512,
+          458,
+          2168,
+          438,
+          498,
+          614,
+          537,
+          3897,
+          825,
+          13,
+          5209,
+          3410,
+          752,
+          448,
+          264,
+          4008,
+          476,
+          8135,
+          279,
+          2168,
+          773,
+          429,
+          358,
+          646,
+          7789
+        ]
+      ],
+      "greedy_top2_margin": [
+        [
+          3.25,
+          2.75,
+          4.875,
+          5.625,
+          2.0,
+          0.25,
+          1.375,
+          0.375,
+          0.0,
+          7.81547737121582,
+          0.75,
+          0.125,
+          0.5,
+          6.875,
+          2.875,
+          1.0,
+          1.7321434020996094,
+          2.0,
+          1.625,
+          0.3988075256347656,
+          11.285713195800781,
+          0.0,
+          1.25,
+          0.75,
+          0.5952358245849609,
+          0.0,
+          4.482145309448242,
+          1.625,
+          2.1547584533691406,
+          6.345241546630859,
+          3.125,
+          1.875
+        ]
+      ],
+      "repeated_token_ids": [
+        [
+          40,
+          2776,
+          14589,
+          11,
+          714,
+          358,
+          4157,
+          7512,
+          458,
+          2168,
+          438,
+          498,
+          614,
+          537,
+          3897,
+          825,
+          13,
+          5209,
+          3410,
+          752,
+          448,
+          264,
+          4008,
+          476,
+          8135,
+          279,
+          2168,
+          773,
+          429,
+          358,
+          646,
+          7789
+        ]
+      ],
+      "repeat_exact": true,
+      "decoded": [
+        "I'm sorry, but I cannot describe an image as you have not provided one. Please provide me with a description or upload the image so that I can assist"
+      ],
+      "fixture": "text.npz",
+      "fixture_sha256": "9c8c384d5e441872049c86577fe74b3e7dce2a9791df567e6ed44aedd9f474a7",
+      "raw_fixtures": {
+        "input_ids_i32": {
+          "path": "text.input_ids.i32.bin",
+          "bytes": 116,
+          "sha256": "2aefd93135757bbe23b9ff8e62643614dc4aaae9062c77f9adfb4876d11e38ab"
+        },
+        "position_ids_i32": {
+          "path": "text.position_ids.i32.bin",
+          "bytes": 348,
+          "sha256": "339c85d5434a8cd53a564470417124f6cfdeea6e21aa3f8f03b5dd082ef2ad36"
+        },
+        "inputs_embeds_bf16": {
+          "path": "text.inputs_embeds.bf16.bin",
+          "bytes": 118784,
+          "sha256": "301d9750ad66872984588cdac5a8c99e44a242e96399c2b8ef9bed2bb611007b"
+        },
+        "last_logits_f32": {
+          "path": "text.last_logits.f32.bin",
+          "bytes": 607744,
+          "sha256": "4f0695916e8d855445866cf3ab7b474f1dccb58190ee5cb597687a7a1aaa8abb"
+        },
+        "generation_logits_f32": {
+          "path": "text.generation_logits.f32.bin",
+          "bytes": 19447808,
+          "sha256": "8de61e1e75013920a1e4b85acdbd8ceddf95a704b62be7f6abd141649331f8ba"
+        },
+        "hidden_0_f32": {
+          "path": "text.hidden_0.f32.bin",
+          "bytes": 237568,
+          "sha256": "4eea99b2d9f19c92fc34319ed735ed27c14cbfded09a269242ab0e0726b0e45e"
+        },
+        "hidden_18_f32": {
+          "path": "text.hidden_18.f32.bin",
+          "bytes": 237568,
+          "sha256": "4876b1b778f3e3476d9f970165f1bf8a94f957efb8aa42b81a2a422d176c8dca"
+        },
+        "hidden_final_f32": {
+          "path": "text.hidden_final.f32.bin",
+          "bytes": 237568,
+          "sha256": "5e36c6953617c81b272326962e544bb5ffd49eeaad10be64accdf57e98bb1aa1"
+        },
+        "kv_key_0_f32": {
+          "path": "text.kv_key_0.f32.bin",
+          "bytes": 29696,
+          "sha256": "8e4d2ecacbe92b578526321be3cbe36555d9f5a0e06706f2ab222826cc5d982b"
+        },
+        "kv_value_0_f32": {
+          "path": "text.kv_value_0.f32.bin",
+          "bytes": 29696,
+          "sha256": "a391e7765e916008fd38da9a3f760bb542a2084b77f6890254e5b74782c19219"
+        },
+        "kv_key_18_f32": {
+          "path": "text.kv_key_18.f32.bin",
+          "bytes": 29696,
+          "sha256": "05b3a26f294b59a21df4bd4bf5a6604a61ed1d3d6514d9c8c70d46eea2e592d8"
+        },
+        "kv_value_18_f32": {
+          "path": "text.kv_value_18.f32.bin",
+          "bytes": 29696,
+          "sha256": "c1ecc7646ffb21c70331c9fadbbd5425bff2d90b35c9aa5e7024c0d4adc63815"
+        },
+        "kv_key_35_f32": {
+          "path": "text.kv_key_35.f32.bin",
+          "bytes": 29696,
+          "sha256": "36388bc6fa06d078fa7cdd37c887b078f7d91985625486c98e0366f1f99dda25"
+        },
+        "kv_value_35_f32": {
+          "path": "text.kv_value_35.f32.bin",
+          "bytes": 29696,
+          "sha256": "54ed8fab9fde37a8a5830a3df4601196d9bbd6171aafa2506cc13ace9db9ff3c"
+        }
+      }
+    },
+    {
+      "case": "one_image_224",
+      "batch_size": 1,
+      "sequence_length": 95,
+      "prompt_lengths": [
+        95
+      ],
+      "input_keys": [
+        "attention_mask",
+        "image_grid_thw",
+        "input_ids",
+        "mm_token_type_ids",
+        "pixel_values"
+      ],
+      "input_tensors": {
+        "input_ids": {
+          "shape": [
+            1,
+            95
+          ],
+          "dtype": "int64",
+          "min": 13.0,
+          "max": 151655.0,
+          "mean": 115785.3359375
+        },
+        "attention_mask": {
+          "shape": [
+            1,
+            95
+          ],
+          "dtype": "int64",
+          "min": 1.0,
+          "max": 1.0,
+          "mean": 1.0
+        },
+        "mm_token_type_ids": {
+          "shape": [
+            1,
+            95
+          ],
+          "dtype": "int64",
+          "min": 0.0,
+          "max": 1.0,
+          "mean": 0.6736842393875122
+        },
+        "pixel_values": {
+          "shape": [
+            256,
+            1176
+          ],
+          "dtype": "float32",
+          "min": -1.7922625541687012,
+          "max": 2.1458969116210938,
+          "mean": 1.8550543785095215
+        },
+        "image_grid_thw": {
+          "shape": [
+            1,
+            3
+          ],
+          "dtype": "int64",
+          "min": 1.0,
+          "max": 16.0,
+          "mean": 11.0
+        }
+      },
+      "image_feature": {
+        "shape": [
+          64,
+          2048
+        ],
+        "dtype": "bfloat16",
+        "min": -10.0625,
+        "max": 7.46875,
+        "mean": -0.002523102331906557
+      },
+      "position_axis_equal_for_text": false,
+      "rope_deltas": [
+        -56
+      ],
+      "last_logits_top10_ids": [
+        [
+          785,
+          1986,
+          40,
+          30040,
+          14374,
+          334,
+          95456,
+          39814,
+          5501,
+          641
+        ]
+      ],
+      "last_logits_top10_values": [
+        [
+          30.0,
+          27.0,
+          25.875,
+          24.5,
+          24.5,
+          24.375,
+          24.125,
+          23.75,
+          22.75,
+          22.25
+        ]
+      ],
+      "generated_token_ids": [
+        [
+          785,
+          2168,
+          374,
+          264,
+          6396,
+          15941,
+          429,
+          45380,
+          279,
+          1882,
+          315,
+          821,
+          8317,
+          1948,
+          264,
+          2943,
+          323,
+          264,
+          3538,
+          11,
+          11689,
+          21080,
+          389,
+          279,
+          990,
+          315,
+          33356,
+          320,
+          4988,
+          38424,
+          79857,
+          8
+        ]
+      ],
+      "greedy_top2_margin": [
+        [
+          3.0,
+          5.309526443481445,
+          1.0,
+          3.910717010498047,
+          2.875,
+          5.5,
+          0.0,
+          0.25,
+          1.1904773712158203,
+          3.125,
+          4.5,
+          0.25,
+          0.25,
+          1.25,
+          0.369049072265625,
+          1.4375,
+          1.4166679382324219,
+          0.20833396911621094,
+          1.0,
+          0.25,
+          1.125,
+          1.5,
+          14.25,
+          1.6785736083984375,
+          0.0,
+          3.3154773712158203,
+          0.3154754638671875,
+          1.375,
+          4.75,
+          4.625,
+          5.0,
+          0.375
+        ]
+      ],
+      "repeated_token_ids": [
+        [
+          785,
+          2168,
+          374,
+          264,
+          6396,
+          15941,
+          429,
+          45380,
+          279,
+          1882,
+          315,
+          821,
+          8317,
+          1948,
+          264,
+          2943,
+          323,
+          264,
+          3538,
+          11,
+          11689,
+          21080,
+          389,
+          279,
+          990,
+          315,
+          33356,
+          320,
+          4988,
+          38424,
+          79857,
+          8
+        ]
+      ],
+      "repeat_exact": true,
+      "decoded": [
+        "The image is a flowchart that illustrates the process of data transfer between a client and a server, specifically focusing on the use of APIs (Application Programming Interfaces)"
+      ],
+      "fixture": "one_image_224.npz",
+      "fixture_sha256": "a89e41a12a8c9ed65abc55e381960276e110cf963890e59f990690ef4bb65ba0",
+      "raw_fixtures": {
+        "input_ids_i32": {
+          "path": "one_image_224.input_ids.i32.bin",
+          "bytes": 380,
+          "sha256": "e58c2ac5d39cb5a353248db571a165fe53008ac96e9aace125c5f65d5b0808ff"
+        },
+        "position_ids_i32": {
+          "path": "one_image_224.position_ids.i32.bin",
+          "bytes": 1140,
+          "sha256": "240112995d57a4d6e54f931094d73d53bc5fe8174673b0141b577effe9cc32bc"
+        },
+        "inputs_embeds_bf16": {
+          "path": "one_image_224.inputs_embeds.bf16.bin",
+          "bytes": 389120,
+          "sha256": "3a0914724d55c9ad62f4d0a1cb613a012343a1746f79d36fd426d308f2508d87"
+        },
+        "last_logits_f32": {
+          "path": "one_image_224.last_logits.f32.bin",
+          "bytes": 607744,
+          "sha256": "dac7dda8640e2b9e45568a2a8f757d734da9423d682de84e7c3f4c1abcaef3c6"
+        },
+        "generation_logits_f32": {
+          "path": "one_image_224.generation_logits.f32.bin",
+          "bytes": 19447808,
+          "sha256": "9cd47889f84e102452ac50a1f636d9079455f02df154b820529f829b116bf964"
+        },
+        "hidden_0_f32": {
+          "path": "one_image_224.hidden_0.f32.bin",
+          "bytes": 778240,
+          "sha256": "161b17d126d5978ecd4e87259762b55e29014c1d0e90860d84fb84d98b116552"
+        },
+        "hidden_18_f32": {
+          "path": "one_image_224.hidden_18.f32.bin",
+          "bytes": 778240,
+          "sha256": "e26ca5827301076415880b9d4e0e7796ea47c08b9b75b901aa62814db78ed13b"
+        },
+        "hidden_final_f32": {
+          "path": "one_image_224.hidden_final.f32.bin",
+          "bytes": 778240,
+          "sha256": "2b944d225877bbf95bab129536d64fb490ed2e5c2832d76beba90da0785b742b"
+        },
+        "kv_key_0_f32": {
+          "path": "one_image_224.kv_key_0.f32.bin",
+          "bytes": 97280,
+          "sha256": "91c60a23e20f1c2ede15ff4934c876ffd17795a2b53db6fbb7ee38205986e913"
+        },
+        "kv_value_0_f32": {
+          "path": "one_image_224.kv_value_0.f32.bin",
+          "bytes": 97280,
+          "sha256": "5a97c36917b3220c3c6b5bac0fcede53b5b8c96f34bc528c80115440751a801d"
+        },
+        "kv_key_18_f32": {
+          "path": "one_image_224.kv_key_18.f32.bin",
+          "bytes": 97280,
+          "sha256": "4aaed860e37bebc6c69dc220b2243246ee67dfcdf38276eba97ac8b3c7abea90"
+        },
+        "kv_value_18_f32": {
+          "path": "one_image_224.kv_value_18.f32.bin",
+          "bytes": 97280,
+          "sha256": "bf56ae049ed92f2df5cc430b01fcd55bd4621fffdda2918e3e4ad27e45d653fb"
+        },
+        "kv_key_35_f32": {
+          "path": "one_image_224.kv_key_35.f32.bin",
+          "bytes": 97280,
+          "sha256": "5f8f80ffe354d9ef27221cb1efa018bb186ac15a5eaf85b0515f096f7f3ed439"
+        },
+        "kv_value_35_f32": {
+          "path": "one_image_224.kv_value_35.f32.bin",
+          "bytes": 97280,
+          "sha256": "68a1a60f3def9e431af2c421243249ae409266661196e5d7954ecac4ea6fa896"
+        }
+      }
+    },
+    {
+      "case": "one_image_wide",
+      "batch_size": 1,
+      "sequence_length": 91,
+      "prompt_lengths": [
+        91
+      ],
+      "input_keys": [
+        "attention_mask",
+        "image_grid_thw",
+        "input_ids",
+        "mm_token_type_ids",
+        "pixel_values"
+      ],
+      "input_tensors": {
+        "input_ids": {
+          "shape": [
+            1,
+            91
+          ],
+          "dtype": "int64",
+          "min": 13.0,
+          "max": 151655.0,
+          "mean": 114208.6484375
+        },
+        "attention_mask": {
+          "shape": [
+            1,
+            91
+          ],
+          "dtype": "int64",
+          "min": 1.0,
+          "max": 1.0,
+          "mean": 1.0
+        },
+        "mm_token_type_ids": {
+          "shape": [
+            1,
+            91
+          ],
+          "dtype": "int64",
+          "min": 0.0,
+          "max": 1.0,
+          "mean": 0.6593406796455383
+        },
+        "pixel_values": {
+          "shape": [
+            240,
+            1176
+          ],
+          "dtype": "float32",
+          "min": -1.777664065361023,
+          "max": 2.1458969116210938,
+          "mean": 1.8556697368621826
+        },
+        "image_grid_thw": {
+          "shape": [
+            1,
+            3
+          ],
+          "dtype": "int64",
+          "min": 1.0,
+          "max": 20.0,
+          "mean": 11.0
+        }
+      },
+      "image_feature": {
+        "shape": [
+          60,
+          2048
+        ],
+        "dtype": "bfloat16",
+        "min": -9.3125,
+        "max": 6.34375,
+        "mean": 0.0027708278503268957
+      },
+      "position_axis_equal_for_text": false,
+      "rope_deltas": [
+        -50
+      ],
+      "last_logits_top10_ids": [
+        [
+          785,
+          1986,
+          40,
+          14374,
+          334,
+          95456,
+          30040,
+          39814,
+          641,
+          5501
+        ]
+      ],
+      "last_logits_top10_values": [
+        [
+          29.875,
+          26.75,
+          25.125,
+          25.0,
+          25.0,
+          24.0,
+          23.625,
+          23.625,
+          22.25,
+          22.25
+        ]
+      ],
+      "generated_token_ids": [
+        [
+          785,
+          2168,
+          374,
+          264,
+          6396,
+          15941,
+          429,
+          45380,
+          279,
+          1882,
+          315,
+          821,
+          8692,
+          11,
+          11689,
+          21080,
+          389,
+          279,
+          11589,
+          315,
+          5333,
+          7388,
+          323,
+          862,
+          17420,
+          17991,
+          1119,
+          422,
+          48,
+          320,
+          1043,
+          17927
+        ]
+      ],
+      "greedy_top2_margin": [
+        [
+          3.125,
+          5.589286804199219,
+          0.5,
+          3.4345264434814453,
+          2.5,
+          5.75,
+          0.0,
+          0.375,
+          1.3095245361328125,
+          1.625,
+          3.375,
+          1.0,
+          0.75,
+          0.4940452575683594,
+          2.75,
+          0.875,
+          14.125,
+          0.8095245361328125,
+          0.0,
+          2.500001907348633,
+          0.9821414947509766,
+          1.125,
+          0.8333339691162109,
+          0.2440471649169922,
+          1.375,
+          0.625,
+          2.3214263916015625,
+          0.25,
+          2.375,
+          3.75,
+          3.5,
+          6.375
+        ]
+      ],
+      "repeated_token_ids": [
+        [
+          785,
+          2168,
+          374,
+          264,
+          6396,
+          15941,
+          429,
+          45380,
+          279,
+          1882,
+          315,
+          821,
+          8692,
+          11,
+          11689,
+          21080,
+          389,
+          279,
+          11589,
+          315,
+          5333,
+          7388,
+          323,
+          862,
+          17420,
+          17991,
+          1119,
+          422,
+          48,
+          320,
+          1043,
+          17927
+        ]
+      ],
+      "repeat_exact": true,
+      "decoded": [
+        "The image is a flowchart that illustrates the process of data processing, specifically focusing on the handling of API requests and their subsequent transformation into DQ (Data Quality"
+      ],
+      "fixture": "one_image_wide.npz",
+      "fixture_sha256": "a92e8c0cc23e6817cf512e3c3a884e7c94ec46bb27671ff7061c1914ce2dc336",
+      "raw_fixtures": {
+        "input_ids_i32": {
+          "path": "one_image_wide.input_ids.i32.bin",
+          "bytes": 364,
+          "sha256": "a6e506d5004436ecf378952a09e524e9207176c67a8391f1061bc0135f7358e2"
+        },
+        "position_ids_i32": {
+          "path": "one_image_wide.position_ids.i32.bin",
+          "bytes": 1092,
+          "sha256": "6a77baca68fed7551f8c98b0bc22ef38962555ae9999c202ff8e06fb7861faa5"
+        },
+        "inputs_embeds_bf16": {
+          "path": "one_image_wide.inputs_embeds.bf16.bin",
+          "bytes": 372736,
+          "sha256": "5369f12ec9733f84cf59cf003f56fc7c952b3fffb1cc71a989c671bf4c6baabe"
+        },
+        "last_logits_f32": {
+          "path": "one_image_wide.last_logits.f32.bin",
+          "bytes": 607744,
+          "sha256": "dffd2247ec8e104afa0e93677de2e2a966797057ea0a83f6c4ab9e4c2d9d3429"
+        },
+        "generation_logits_f32": {
+          "path": "one_image_wide.generation_logits.f32.bin",
+          "bytes": 19447808,
+          "sha256": "50cf8df07e7b87101cdca29e31cdcd5fcce73035ecba77f43d5159d14e262a2c"
+        },
+        "hidden_0_f32": {
+          "path": "one_image_wide.hidden_0.f32.bin",
+          "bytes": 745472,
+          "sha256": "5026bcb2e7fb962c0d42fe67ee752579c187ec4a2fcd5e3d9b262afd40c3d545"
+        },
+        "hidden_18_f32": {
+          "path": "one_image_wide.hidden_18.f32.bin",
+          "bytes": 745472,
+          "sha256": "c4ddd34c0448aa0059e1ce54a37c784ee9fa988530eb46a55678059bfce08fbf"
+        },
+        "hidden_final_f32": {
+          "path": "one_image_wide.hidden_final.f32.bin",
+          "bytes": 745472,
+          "sha256": "82590efbba4a94d71602a900d1bfc337bc2f43a5e5b66a6afc4737facd683047"
+        },
+        "kv_key_0_f32": {
+          "path": "one_image_wide.kv_key_0.f32.bin",
+          "bytes": 93184,
+          "sha256": "ec85c60d4e01e4be635f1624697a85037d0ef0cb1d576c292aaa8a618adb58d6"
+        },
+        "kv_value_0_f32": {
+          "path": "one_image_wide.kv_value_0.f32.bin",
+          "bytes": 93184,
+          "sha256": "6b1c24513e8f2e07875762a59f5f88d2e5c81f4d3e3e952fd390e8cba4c4de94"
+        },
+        "kv_key_18_f32": {
+          "path": "one_image_wide.kv_key_18.f32.bin",
+          "bytes": 93184,
+          "sha256": "e3784d117c5bcb080a2484af3bab85a010b7b86c36799446a82435cac57653d8"
+        },
+        "kv_value_18_f32": {
+          "path": "one_image_wide.kv_value_18.f32.bin",
+          "bytes": 93184,
+          "sha256": "2bc94d653d3eaf81f751c6c2171afb8b947d133015b0c3640d5d90354c471517"
+        },
+        "kv_key_35_f32": {
+          "path": "one_image_wide.kv_key_35.f32.bin",
+          "bytes": 93184,
+          "sha256": "b8db4445f03bd39e22efccd724f25db455e47dde05cf58d9949cd7f0e2b07b61"
+        },
+        "kv_value_35_f32": {
+          "path": "one_image_wide.kv_value_35.f32.bin",
+          "bytes": 93184,
+          "sha256": "26f0ac27d3ec133b9fe452984c217efb9040b592cc7dc6361d5dacacabec70d7"
+        }
+      }
+    },
+    {
+      "case": "two_images",
+      "batch_size": 1,
+      "sequence_length": 164,
+      "prompt_lengths": [
+        164
+      ],
+      "input_keys": [
+        "attention_mask",
+        "image_grid_thw",
+        "input_ids",
+        "mm_token_type_ids",
+        "pixel_values"
+      ],
+      "input_tensors": {
+        "input_ids": {
+          "shape": [
+            1,
+            164
+          ],
+          "dtype": "int64",
+          "min": 13.0,
+          "max": 151655.0,
+          "mean": 124601.84375
+        },
+        "attention_mask": {
+          "shape": [
+            1,
+            164
+          ],
+          "dtype": "int64",
+          "min": 1.0,
+          "max": 1.0,
+          "mean": 1.0
+        },
+        "mm_token_type_ids": {
+          "shape": [
+            1,
+            164
+          ],
+          "dtype": "int64",
+          "min": 0.0,
+          "max": 1.0,
+          "mean": 0.7560975551605225
+        },
+        "pixel_values": {
+          "shape": [
+            496,
+            1176
+          ],
+          "dtype": "float32",
+          "min": -1.7922625541687012,
+          "max": 2.1458969116210938,
+          "mean": 1.8553519248962402
+        },
+        "image_grid_thw": {
+          "shape": [
+            2,
+            3
+          ],
+          "dtype": "int64",
+          "min": 1.0,
+          "max": 20.0,
+          "mean": 11.0
+        }
+      },
+      "image_feature": {
+        "shape": [
+          124,
+          2048
+        ],
+        "dtype": "bfloat16",
+        "min": -10.0,
+        "max": 7.40625,
+        "mean": -7.530565926572308e-05
+      },
+      "position_axis_equal_for_text": false,
+      "rope_deltas": [
+        -99
+      ],
+      "last_logits_top10_ids": [
+        [
+          785,
+          1986,
+          40,
+          30040,
+          20629,
+          95456,
+          39814,
+          5501,
+          14374,
+          334
+        ]
+      ],
+      "last_logits_top10_values": [
+        [
+          30.25,
+          27.75,
+          26.0,
+          25.0,
+          24.25,
+          24.25,
+          24.125,
+          23.625,
+          23.375,
+          23.25
+        ]
+      ],
+      "generated_token_ids": [
+        [
+          785,
+          2168,
+          374,
+          264,
+          6396,
+          15941,
+          429,
+          45380,
+          279,
+          1882,
+          315,
+          821,
+          8692,
+          304,
+          264,
+          1849,
+          11,
+          4363,
+          5435,
+          311,
+          821,
+          6358,
+          476,
+          821,
+          6240,
+          13,
+          576,
+          1887,
+          3832,
+          315,
+          279,
+          2168
+        ]
+      ],
+      "greedy_top2_margin": [
+        [
+          2.5,
+          3.7142868041992188,
+          0.5,
+          4.148811340332031,
+          2.75,
+          5.125,
+          0.625,
+          1.25,
+          1.4285717010498047,
+          1.5,
+          3.7440452575683594,
+          0.75,
+          0.875,
+          0.125,
+          1.0238113403320312,
+          1.25,
+          1.7083320617675781,
+          0.375,
+          0.25,
+          15.0,
+          0.20833396911621094,
+          0.5,
+          5.023807525634766,
+          0.4404773712158203,
+          0.875,
+          3.404764175415039,
+          2.375,
+          1.785715103149414,
+          1.785715103149414,
+          1.3095245361328125,
+          2.8571414947509766,
+          3.6904754638671875
+        ]
+      ],
+      "repeated_token_ids": [
+        [
+          785,
+          2168,
+          374,
+          264,
+          6396,
+          15941,
+          429,
+          45380,
+          279,
+          1882,
+          315,
+          821,
+          8692,
+          304,
+          264,
+          1849,
+          11,
+          4363,
+          5435,
+          311,
+          821,
+          6358,
+          476,
+          821,
+          6240,
+          13,
+          576,
+          1887,
+          3832,
+          315,
+          279,
+          2168
+        ]
+      ],
+      "repeat_exact": true,
+      "decoded": [
+        "The image is a flowchart that illustrates the process of data processing in a system, likely related to data analysis or data management. The main subject of the image"
+      ],
+      "fixture": "two_images.npz",
+      "fixture_sha256": "d5ac2f2d6312732f87c205fccbac816942b802f696ffe13eb01a44b4a9d406e9",
+      "raw_fixtures": {
+        "input_ids_i32": {
+          "path": "two_images.input_ids.i32.bin",
+          "bytes": 656,
+          "sha256": "0a999fcbc22cd095b9cb90c48996bbbed8e278ee245c2981cd2eb9d70fcb570c"
+        },
+        "position_ids_i32": {
+          "path": "two_images.position_ids.i32.bin",
+          "bytes": 1968,
+          "sha256": "5966d07254f4d11c3f6d1d4d078f6f99ab011164184ce61c2de445c718923242"
+        },
+        "inputs_embeds_bf16": {
+          "path": "two_images.inputs_embeds.bf16.bin",
+          "bytes": 671744,
+          "sha256": "d1bb8c77b2f415a404eab05ecf70307773f380eb5f027d8f1ae7ad8fdd84f3d8"
+        },
+        "last_logits_f32": {
+          "path": "two_images.last_logits.f32.bin",
+          "bytes": 607744,
+          "sha256": "347cce9cc1aa7c23b6e6bd9d018735f7d2eac78a7c646a853d01d5f00f4cef60"
+        },
+        "generation_logits_f32": {
+          "path": "two_images.generation_logits.f32.bin",
+          "bytes": 19447808,
+          "sha256": "7d2195e522915235ddb64b016f92c6ca6ab18a34832b37287397fc2f25b21e57"
+        },
+        "hidden_0_f32": {
+          "path": "two_images.hidden_0.f32.bin",
+          "bytes": 1343488,
+          "sha256": "ea1e5b56a7ccb9ce866186c0904c2fb883db312552315f9854c7dc15b1c3e006"
+        },
+        "hidden_18_f32": {
+          "path": "two_images.hidden_18.f32.bin",
+          "bytes": 1343488,
+          "sha256": "1a5617f2f4aff67dce0405edcc61afc671e965e7c0da4bf7f30256d92473de86"
+        },
+        "hidden_final_f32": {
+          "path": "two_images.hidden_final.f32.bin",
+          "bytes": 1343488,
+          "sha256": "7a5feac784bb31a8a7fc2bf338cee43e13a7e2cc8c4d9b0c095c59d8584456d0"
+        },
+        "kv_key_0_f32": {
+          "path": "two_images.kv_key_0.f32.bin",
+          "bytes": 167936,
+          "sha256": "8b1b2ab663b01d64ce85c3dd1a40bd5333d1122df8240803b24b5e01f1d4abe2"
+        },
+        "kv_value_0_f32": {
+          "path": "two_images.kv_value_0.f32.bin",
+          "bytes": 167936,
+          "sha256": "acd7d1c4426a3c93e919f14950157f9bad6f059fafb47e594545f17a9464a03c"
+        },
+        "kv_key_18_f32": {
+          "path": "two_images.kv_key_18.f32.bin",
+          "bytes": 167936,
+          "sha256": "060cedc1dfbc520d5c0661ccd7172c50f5105a39dcd07dbeb3b85053ee5e1579"
+        },
+        "kv_value_18_f32": {
+          "path": "two_images.kv_value_18.f32.bin",
+          "bytes": 167936,
+          "sha256": "88e5379d628a197f35a0e7b8198d702ecaef5aea80993ccc42b9d44ce571950e"
+        },
+        "kv_key_35_f32": {
+          "path": "two_images.kv_key_35.f32.bin",
+          "bytes": 167936,
+          "sha256": "301c6428ad7783dfe713396e367c6a77a788a5fae630e9d8926e9e30a20e0e5f"
+        },
+        "kv_value_35_f32": {
+          "path": "two_images.kv_value_35.f32.bin",
+          "bytes": 167936,
+          "sha256": "67849f35fba76a0890f45b707b9e6dbfbffff34b8c274ab8aa5960cd78633da6"
+        }
+      }
+    },
+    {
+      "case": "mixed_batch",
+      "batch_size": 2,
+      "sequence_length": 95,
+      "prompt_lengths": [
+        95,
+        91
+      ],
+      "input_keys": [
+        "attention_mask",
+        "image_grid_thw",
+        "input_ids",
+        "mm_token_type_ids",
+        "pixel_values"
+      ],
+      "input_tensors": {
+        "input_ids": {
+          "shape": [
+            2,
+            95
+          ],
+          "dtype": "int64",
+          "min": 13.0,
+          "max": 151655.0,
+          "mean": 115785.0703125
+        },
+        "attention_mask": {
+          "shape": [
+            2,
+            95
+          ],
+          "dtype": "int64",
+          "min": 0.0,
+          "max": 1.0,
+          "mean": 0.9789473414421082
+        },
+        "mm_token_type_ids": {
+          "shape": [
+            2,
+            95
+          ],
+          "dtype": "int64",
+          "min": 0.0,
+          "max": 1.0,
+          "mean": 0.6526315808296204
+        },
+        "pixel_values": {
+          "shape": [
+            496,
+            1176
+          ],
+          "dtype": "float32",
+          "min": -1.7922625541687012,
+          "max": 2.1458969116210938,
+          "mean": 1.8553519248962402
+        },
+        "image_grid_thw": {
+          "shape": [
+            2,
+            3
+          ],
+          "dtype": "int64",
+          "min": 1.0,
+          "max": 20.0,
+          "mean": 11.0
+        }
+      },
+      "image_feature": {
+        "shape": [
+          124,
+          2048
+        ],
+        "dtype": "bfloat16",
+        "min": -10.0,
+        "max": 7.40625,
+        "mean": -7.530565926572308e-05
+      },
+      "position_axis_equal_for_text": false,
+      "rope_deltas": [
+        -56,
+        -50
+      ],
+      "last_logits_top10_ids": [
+        [
+          785,
+          1986,
+          40,
+          14374,
+          30040,
+          334,
+          95456,
+          39814,
+          5501,
+          641
+        ],
+        [
+          785,
+          1986,
+          40,
+          334,
+          14374,
+          95456,
+          39814,
+          30040,
+          641,
+          5501
+        ]
+      ],
+      "last_logits_top10_values": [
+        [
+          30.125,
+          27.125,
+          26.0,
+          24.625,
+          24.5,
+          24.375,
+          24.25,
+          23.875,
+          22.75,
+          22.25
+        ],
+        [
+          29.875,
+          26.75,
+          25.125,
+          25.0,
+          24.875,
+          23.875,
+          23.625,
+          23.5,
+          22.375,
+          22.25
+        ]
+      ],
+      "generated_token_ids": [
+        [
+          785,
+          2168,
+          374,
+          264,
+          6396,
+          15941,
+          92912,
+          279,
+          1882,
+          315,
+          821,
+          8317,
+          1948,
+          264,
+          2943,
+          323,
+          264,
+          3538,
+          11,
+          11689,
+          21080,
+          389,
+          279,
+          990,
+          315,
+          33356,
+          320,
+          4988,
+          38424,
+          79857,
+          8,
+          369
+        ],
+        [
+          785,
+          2168,
+          374,
+          264,
+          6396,
+          15941,
+          429,
+          45380,
+          279,
+          1882,
+          315,
+          821,
+          8692,
+          11,
+          11689,
+          21080,
+          389,
+          279,
+          11589,
+          315,
+          5333,
+          7388,
+          323,
+          862,
+          17420,
+          17991,
+          1119,
+          422,
+          48,
+          320,
+          1043,
+          17927
+        ]
+      ],
+      "greedy_top2_margin": [
+        [
+          3.0,
+          5.31547737121582,
+          1.0,
+          3.910717010498047,
+          2.875,
+          5.625,
+          0.125,
+          1.1904754638671875,
+          3.0,
+          4.375,
+          0.3125,
+          0.375,
+          1.125,
+          0.3750019073486328,
+          1.3125,
+          1.4226207733154297,
+          0.3511924743652344,
+          1.0,
+          0.125,
+          1.125,
+          1.75,
+          14.125,
+          1.785715103149414,
+          0.0,
+          3.077383041381836,
+          0.05952262878417969,
+          1.125,
+          4.5,
+          4.625,
+          4.875,
+          0.375,
+          1.125
+        ],
+        [
+          3.125,
+          5.595239639282227,
+          0.625,
+          3.4345264434814453,
+          2.375,
+          5.75,
+          0.0,
+          0.25,
+          1.1904773712158203,
+          1.5,
+          3.375,
+          1.3154754638671875,
+          0.75,
+          0.4940452575683594,
+          2.5,
+          0.875,
+          14.375,
+          0.6845245361328125,
+          0.0,
+          2.380952835083008,
+          0.7440471649169922,
+          1.0,
+          0.9523811340332031,
+          0.12499809265136719,
+          1.375,
+          0.875,
+          2.3214263916015625,
+          0.125,
+          2.25,
+          3.875,
+          3.625,
+          6.375
+        ]
+      ],
+      "repeated_token_ids": [
+        [
+          785,
+          2168,
+          374,
+          264,
+          6396,
+          15941,
+          92912,
+          279,
+          1882,
+          315,
+          821,
+          8317,
+          1948,
+          264,
+          2943,
+          323,
+          264,
+          3538,
+          11,
+          11689,
+          21080,
+          389,
+          279,
+          990,
+          315,
+          33356,
+          320,
+          4988,
+          38424,
+          79857,
+          8,
+          369
+        ],
+        [
+          785,
+          2168,
+          374,
+          264,
+          6396,
+          15941,
+          429,
+          45380,
+          279,
+          1882,
+          315,
+          821,
+          8692,
+          11,
+          11689,
+          21080,
+          389,
+          279,
+          11589,
+          315,
+          5333,
+          7388,
+          323,
+          862,
+          17420,
+          17991,
+          1119,
+          422,
+          48,
+          320,
+          1043,
+          17927
+        ]
+      ],
+      "repeat_exact": true,
+      "decoded": [
+        "The image is a flowchart illustrating the process of data transfer between a client and a server, specifically focusing on the use of APIs (Application Programming Interfaces) for",
+        "The image is a flowchart that illustrates the process of data processing, specifically focusing on the handling of API requests and their subsequent transformation into DQ (Data Quality"
+      ],
+      "fixture": "mixed_batch.npz",
+      "fixture_sha256": "038d9f28c37812b672523ae66fb2ef01b19ccd8276675a6481407db61ec9e9a4",
+      "raw_fixtures": {
+        "input_ids_i32": {
+          "path": "mixed_batch.input_ids.i32.bin",
+          "bytes": 760,
+          "sha256": "042c77e4e3f1d6af91118c6f54aa471dbc0d244c8f1b0d044aaaa6f4f8cf766a"
+        },
+        "position_ids_i32": {
+          "path": "mixed_batch.position_ids.i32.bin",
+          "bytes": 2280,
+          "sha256": "4a4229804f23fa5a099beb005cd25871aba444e730b1650939e0bb066c87eec1"
+        },
+        "inputs_embeds_bf16": {
+          "path": "mixed_batch.inputs_embeds.bf16.bin",
+          "bytes": 778240,
+          "sha256": "010461100e0d4bce89c764c0fa04da510aabb769c0e09f012792c3e42005bd74"
+        },
+        "last_logits_f32": {
+          "path": "mixed_batch.last_logits.f32.bin",
+          "bytes": 1215488,
+          "sha256": "a2f81693bd7cb52f2f32c0d270425975097e974fb15b43b10f14ee6fa7e0345b"
+        },
+        "generation_logits_f32": {
+          "path": "mixed_batch.generation_logits.f32.bin",
+          "bytes": 38895616,
+          "sha256": "5f9b18d0a62fb3cbf6f397587276cbe60779adcd0dedb103aaa520d3518e7f12"
+        },
+        "hidden_0_f32": {
+          "path": "mixed_batch.hidden_0.f32.bin",
+          "bytes": 1556480,
+          "sha256": "20f920325ab5d27b3ea99069ae7202d7bfb8ec496ec9fa23d445036633181a0d"
+        },
+        "hidden_18_f32": {
+          "path": "mixed_batch.hidden_18.f32.bin",
+          "bytes": 1556480,
+          "sha256": "1c1fa5983b3d342edcc99e7285bc1e72e4a829f2cf586464d9ec7bee19262c36"
+        },
+        "hidden_final_f32": {
+          "path": "mixed_batch.hidden_final.f32.bin",
+          "bytes": 1556480,
+          "sha256": "ea53bd8de16923314607bcffad1fde05423e9178761903b5acc32f282b067e91"
+        },
+        "kv_key_0_f32": {
+          "path": "mixed_batch.kv_key_0.f32.bin",
+          "bytes": 194560,
+          "sha256": "48905094e2d4f3d39c828c2269534d1d9709b5b09a1293d861ba5ba5aec0a8ce"
+        },
+        "kv_value_0_f32": {
+          "path": "mixed_batch.kv_value_0.f32.bin",
+          "bytes": 194560,
+          "sha256": "f961765b243b467dd9687f1f834da39dd419ed83828c3ebc6279b75133b96e11"
+        },
+        "kv_key_18_f32": {
+          "path": "mixed_batch.kv_key_18.f32.bin",
+          "bytes": 194560,
+          "sha256": "c7da994ee0d7891b8e900c3e3c456e39be17de9444a9c74d35a3b3163f9d146d"
+        },
+        "kv_value_18_f32": {
+          "path": "mixed_batch.kv_value_18.f32.bin",
+          "bytes": 194560,
+          "sha256": "d088bbad2149c3ab396f9a1dba3115bbe4b5ba248f177b11bb43140f537d9ea1"
+        },
+        "kv_key_35_f32": {
+          "path": "mixed_batch.kv_key_35.f32.bin",
+          "bytes": 194560,
+          "sha256": "526a9dc71dc7b27c0cfd6aae739996f2ba5c6e802725fee3650e5ccb3e016d53"
+        },
+        "kv_value_35_f32": {
+          "path": "mixed_batch.kv_value_35.f32.bin",
+          "bytes": 194560,
+          "sha256": "2defc3e367d3a3d6c9ed7ad962d8b965f076dd21754a2066ff92e883b2ee82cd"
+        }
+      }
+    }
+  ]
+}

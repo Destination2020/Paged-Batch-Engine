@@ -2,7 +2,10 @@
 
 #include <cuda_runtime_api.h>
 
+#include <algorithm>
+#include <chrono>
 #include <cstdlib>
+#include <iostream>
 #include <memory>
 #include <string>
 #include <utility>
@@ -153,7 +156,10 @@ class DualQwenTestApp final : public serving::ServingBenchmarkApp {
 std::vector<int32_t> run_single_model_generation(
     model::Qwen2Model* model,
     const std::vector<int32_t>& prompt_tokens,
-    serving::GenerationConfig generation_config) {
+    serving::GenerationConfig generation_config,
+    const std::vector<int32_t>& checkpoint_after_steps = {},
+    double* generation_ms = nullptr,
+    double* checkpoint_ms = nullptr) {
   serving::SchedulerConfig config;
   config.max_num_seqs = model::model_max_batch_size;
   config.max_num_batched_tokens = 16;
@@ -165,6 +171,9 @@ std::vector<int32_t> run_single_model_generation(
   }
   serving::Scheduler scheduler(config, model->kv_cache_manager());
   const int64_t client_id = scheduler.add_request(prompt_tokens, generation_config);
+  int32_t completed_steps = 0;
+  double checkpoint_total_ms = 0.0;
+  const auto generation_start = std::chrono::steady_clock::now();
   while (scheduler.has_active_requests()) {
     if (context != nullptr) {
       cudaSetDevice(context->device_id);
@@ -185,7 +194,26 @@ std::vector<int32_t> run_single_model_generation(
     scheduler.process_outputs(
         output, batch, sampled,
         [&](int32_t token) { return model->is_sentence_ending(token); });
+    ++completed_steps;
+    if (std::find(checkpoint_after_steps.begin(), checkpoint_after_steps.end(),
+                  completed_steps) != checkpoint_after_steps.end() &&
+        scheduler.has_active_requests()) {
+      const auto checkpoint_start = std::chrono::steady_clock::now();
+      if (context != nullptr) {
+        CHECK_EQ(cudaStreamSynchronize(static_cast<cudaStream_t>(stream)), cudaSuccess);
+      }
+      uint64_t revision = 0;
+      CHECK(scheduler.suspend_request(client_id, &revision));
+      CHECK(scheduler.restore_request(client_id, revision));
+      checkpoint_total_ms += std::chrono::duration<double, std::milli>(
+          std::chrono::steady_clock::now() - checkpoint_start).count();
+    }
   }
+  if (generation_ms) {
+    *generation_ms = std::chrono::duration<double, std::milli>(
+        std::chrono::steady_clock::now() - generation_start).count();
+  }
+  if (checkpoint_ms) *checkpoint_ms = checkpoint_total_ms;
   auto finished = scheduler.pop_finished();
   for (const auto& seq : finished) {
     if (seq.client_request_id == client_id) {
@@ -282,7 +310,46 @@ TEST(Qwen2DeviceInitTest, DualGpuP2PMatchesSingleModelGreedyTokens) {
   EXPECT_EQ(pd.output_tokens, baseline_tokens);
 }
 
+TEST(Qwen2DeviceInitTest, CheckpointResumeMatchesUninterruptedSampledTokens) {
+  if (!cuda_device_count_at_least(1)) {
+    GTEST_SKIP() << "A CUDA device is required";
+  }
+  const std::string tokenizer_path = env_or_empty("PBE_QWEN2_TEST_TOKENIZER");
+  const std::string model_path = env_or_empty("PBE_QWEN2_TEST_MODEL");
+  if (tokenizer_path.empty() || model_path.empty()) {
+    GTEST_SKIP() << "Set PBE_QWEN2_TEST_TOKENIZER and PBE_QWEN2_TEST_MODEL to run";
+  }
+  auto model = std::make_unique<model::Qwen2Model>(
+      base::TokenizerType::kEncodeBpe, tokenizer_path, model_path, false);
+  model->set_kv_cache_memory_utilization(0.20);
+  model->set_serving_workspace_token_capacity(16);
+  ASSERT_TRUE(model->init(base::DeviceType::kDeviceCUDA, 0));
+  const auto prompt = model->encode("Explain a paged KV cache briefly.");
+  serving::GenerationConfig generation_config(6, 0, true);
+  generation_config.sampling.seed = UINT64_C(0xf123456789abcdef);
+  generation_config.sampling.temperature = 0.8;
+  generation_config.sampling.top_p = 0.9;
+  generation_config.sampling.top_k = 20;
+  double baseline_ms = 0.0;
+  double resumed_ms = 0.0;
+  double checkpoint_ms = 0.0;
+  const auto baseline = run_single_model_generation(
+      model.get(), prompt, generation_config, {}, &baseline_ms);
+  model->kv_cache_manager()->clear_radix_cache();
+  const auto resumed = run_single_model_generation(
+      model.get(), prompt, generation_config, {1, 3}, &resumed_ms,
+      &checkpoint_ms);
+  EXPECT_EQ(resumed, baseline);
+  std::cout << "P5_CHECKPOINT baseline_ms=" << baseline_ms
+            << " resumed_ms=" << resumed_ms
+            << " checkpoint_ms=" << checkpoint_ms
+            << " checkpoints=2 output_tokens=" << resumed.size() << std::endl;
+}
+
 TEST(Qwen2DeviceInitTest, DualGpuNcclMatchesSingleModelGreedyTokens) {
+#ifndef KUIPER_ENABLE_NCCL
+  GTEST_SKIP() << "NCCL support is not enabled in this build";
+#endif
   if (!cuda_device_count_at_least(2)) {
     GTEST_SKIP() << "At least two CUDA devices are required";
   }
@@ -322,6 +389,9 @@ TEST(Qwen2DeviceInitTest, DualGpuNcclMatchesSingleModelGreedyTokens) {
 }
 
 TEST(Qwen2DeviceInitTest, DualGpuNcclLayerMatchesSingleModelGreedyTokens) {
+#ifndef KUIPER_ENABLE_NCCL
+  GTEST_SKIP() << "NCCL support is not enabled in this build";
+#endif
   if (!cuda_device_count_at_least(2)) {
     GTEST_SKIP() << "At least two CUDA devices are required";
   }

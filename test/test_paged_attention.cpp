@@ -35,7 +35,7 @@ TEST(PagedAttentionTest, SingleSequenceDecodeCorrectness) {
 
   // Create CUDA config
   CudaConfig cuda_config;
-  cudaStreamCreate(&cuda_config.stream);
+  ASSERT_EQ(cudaStreamCreate(&cuda_config.stream), cudaSuccess);
 
   // 1. Setup contiguous KV cache (baseline)
   Tensor key_cache_contiguous(dtype, num_layers, seq_len, kv_dim, true, alloc_cuda);
@@ -86,6 +86,10 @@ TEST(PagedAttentionTest, SingleSequenceDecodeCorrectness) {
                           const_cast<Tensor&>(layer_allocators[layer_idx]->value_pool()),
                           block_id, offset, block_size,
                           num_kv_heads, head_size, DeviceType::kDeviceCUDA, &cuda_config);
+    // key_token/value_token return their buffers to the caching allocator at
+    // the end of this iteration.  Finish the async scatter before those
+    // buffers can be reused by the next token.
+    ASSERT_EQ(cudaStreamSynchronize(cuda_config.stream), cudaSuccess);
   }
 
   // 3. Create query
@@ -120,7 +124,7 @@ TEST(PagedAttentionTest, SingleSequenceDecodeCorrectness) {
                       kv_manager.num_tokens_in_last_block(), block_size,
                       num_kv_heads, DeviceType::kDeviceCUDA, &cuda_config);
 
-  cudaStreamSynchronize(cuda_config.stream);
+  ASSERT_EQ(cudaStreamSynchronize(cuda_config.stream), cudaSuccess);
 
   // 6. Compare outputs
   std::vector<float> output_cont_cpu(dim);
@@ -139,5 +143,4 @@ TEST(PagedAttentionTest, SingleSequenceDecodeCorrectness) {
   std::cout << "Max difference: " << max_diff << std::endl;
   EXPECT_LT(max_diff, 1e-4f) << "Paged and contiguous outputs differ too much";
 
-  cudaStreamDestroy(cuda_config.stream);
 }

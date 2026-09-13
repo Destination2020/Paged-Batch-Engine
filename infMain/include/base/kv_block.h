@@ -48,6 +48,9 @@ class PageTable {
       block_ids_.pop_back();
     }
   }
+  void replace_last_block(int32_t physical_block_id) {
+    if (!block_ids_.empty()) block_ids_.back() = physical_block_id;
+  }
 
   // Increment token count (called after writing KV)
   void increment_token_count() { num_tokens_++; }
@@ -87,4 +90,3 @@ class PageTable {
 }  // namespace base
 
 #endif  // KUIPER_INCLUDE_BASE_KV_BLOCK_H_
-

@@ -1,0 +1,13 @@
+{
+  "actual_worker_capacity_samples": 90,
+  "bounded_reservation_retry_implemented": true,
+  "calibration_schema": "pbe.v4.role-cost-calibration.v1",
+  "calibration_sha256": "e85556aa6adfcb8b321d3818c507415f36fbcdb826a2f6c1f1b3ac0af7c842ef",
+  "future_callback_completion_timestamps": true,
+  "normal_capacity_not_fixed_64mib": true,
+  "observed_serviceable_prefix_and_missing_pages": true,
+  "ok": true,
+  "requests": 165,
+  "runs": 15,
+  "throughput_formula_verified": true
+}

@@ -1,0 +1,26 @@
+{
+  "checks": {
+    "decode_did_not_recompute_prompt": true,
+    "five_repetitions_each": true,
+    "handoffs_released": true,
+    "independent_prefill_decode_pid": true,
+    "ipc_grants_and_leases_recovered": true,
+    "outputs_match_warmed_unified_oracle": true,
+    "persistent_and_warm": true,
+    "same_workload_and_owned_kv_budget": true,
+    "valid_handoff_and_distinct_grants": true,
+    "worker_kv_requests_recovered": false
+  },
+  "decode_pids": [
+    2826456
+  ],
+  "handoffs": 5,
+  "ok": false,
+  "prefill_pids": [
+    2826327
+  ],
+  "prompt_tokens_saved_each": [
+    95
+  ],
+  "schema": "pbe.v4.persistent-multimodal-pd-gate.v1"
+}

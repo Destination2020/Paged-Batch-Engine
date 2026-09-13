@@ -184,7 +184,7 @@ std::shared_ptr<OnlineRequestHandle> ZmqOnlineEnginePool::submit(
   }
 
   auto handle = std::make_shared<ZmqRemoteRequestHandle>();
-  handle->set_remote_request_id(response.value("request_id", -1));
+  handle->set_remote_request_id(response.value("request_id", int64_t{-1}));
   {
     std::lock_guard<std::mutex> lock(impl_->mu);
     impl_->polling_threads.emplace_back(

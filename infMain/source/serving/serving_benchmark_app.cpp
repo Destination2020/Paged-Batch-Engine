@@ -74,6 +74,24 @@ bool parse_scheduling_policy(std::string_view value, SchedulingPolicy* policy) {
   return false;
 }
 
+const char* preemption_policy_name(PreemptionPolicy policy) {
+  switch (policy) {
+    case PreemptionPolicy::kRecompute: return "recompute";
+    case PreemptionPolicy::kCheckpoint: return "checkpoint";
+    case PreemptionPolicy::kAuto: return "auto";
+  }
+  return "unknown";
+}
+
+bool parse_preemption_policy(std::string_view value, PreemptionPolicy* policy) {
+  if (!policy) return false;
+  if (value == "recompute") *policy = PreemptionPolicy::kRecompute;
+  else if (value == "checkpoint") *policy = PreemptionPolicy::kCheckpoint;
+  else if (value == "auto") *policy = PreemptionPolicy::kAuto;
+  else return false;
+  return true;
+}
+
 bool parse_toggle_flag(std::string_view value, bool* out) {
   CHECK_NE(out, nullptr);
   if (value == "1" || value == "true" || value == "TRUE" || value == "yes" ||
@@ -158,6 +176,12 @@ BenchConfig parse_bench_config(int argc, char* argv[], int prompt_start_index) {
       return true;
     };
 
+    auto read_size = [&](std::string_view prefix, size_t& out) {
+      if (!starts_with(arg, prefix)) return false;
+      out = static_cast<size_t>(std::stoull(std::string(arg.substr(prefix.size()))));
+      return true;
+    };
+
     auto read_bool = [&](std::string_view prefix, bool& out) {
       if (!starts_with(arg, prefix)) {
         return false;
@@ -178,6 +202,17 @@ BenchConfig parse_bench_config(int argc, char* argv[], int prompt_start_index) {
       return true;
     };
 
+    if (starts_with(arg, "--seed=")) {
+      config.sampling.seed = std::stoull(std::string(arg.substr(7)));
+      continue;
+    }
+    if (read_double("--temperature=", config.sampling.temperature) ||
+        read_double("--top-p=", config.sampling.top_p) ||
+        read_int("--top-k=", config.sampling.top_k) ||
+        read_bool("--ignore-eos=", config.ignore_eos)) {
+      config.sampling.normalize();
+      continue;
+    }
     if (read_int("--max-new-tokens=", config.max_new_tokens) ||
         read_auto_int("--max-batched-tokens=", config.max_num_batched_tokens,
                       config.max_num_batched_tokens_request,
@@ -191,12 +226,18 @@ BenchConfig parse_bench_config(int argc, char* argv[], int prompt_start_index) {
         read_int("--max-partial-prefills=", config.max_partial_prefills) ||
         read_int("--max-long-partial-prefills=", config.max_long_partial_prefills) ||
         read_int("--warmup-rounds=", config.warmup_rounds) ||
+        read_int("--kv-cache-blocks-per-layer=", config.kv_cache_blocks_per_layer) ||
         read_double("--kv-cache-memory-utilization=", config.kv_cache_memory_utilization) ||
         read_double("--gpu-memory-utilization=", config.kv_cache_memory_utilization) ||
         read_toggle("--radix-cache=", config.radix_cache_enabled,
                     config.radix_cache_config_explicit) ||
         read_toggle("--enable-radix-cache=", config.radix_cache_enabled,
                     config.radix_cache_config_explicit) ||
+        read_bool("--host-cache=", config.host_cache_enabled) ||
+        read_size("--host-cache-bytes=", config.host_cache_bytes) ||
+        read_size("--host-cache-pages=", config.host_cache_pages) ||
+        read_size("--host-cache-inflight-pages=", config.host_cache_inflight_pages) ||
+        read_bool("--host-demote-after-warmup=", config.host_demote_after_warmup) ||
         read_bool("--quiet=", config.quiet) ||
         read_bool("--step-profile=", config.print_step_profile) ||
         read_bool("--step-trace=", config.print_step_trace) ||
@@ -232,6 +273,13 @@ BenchConfig parse_bench_config(int argc, char* argv[], int prompt_start_index) {
           std::string(arg.substr(prefill_zmq_endpoint_prefix.size()));
       continue;
     }
+    const std::string_view data_service_endpoint_prefix =
+        "--data-service-endpoint=";
+    if (starts_with(arg, data_service_endpoint_prefix)) {
+      config.data_service_endpoint =
+          std::string(arg.substr(data_service_endpoint_prefix.size()));
+      continue;
+    }
     const std::string_view pd_mode_prefix = "--pd-mode=";
     if (starts_with(arg, pd_mode_prefix)) {
       config.pd_mode = std::string(arg.substr(pd_mode_prefix.size()));
@@ -249,6 +297,14 @@ BenchConfig parse_bench_config(int argc, char* argv[], int prompt_start_index) {
           << "Invalid --scheduling-policy=" << value << ". Expected fcfs or priority.";
       continue;
     }
+    const std::string_view preemption_policy_prefix = "--preemption-policy=";
+    if (starts_with(arg, preemption_policy_prefix)) {
+      const auto value = arg.substr(preemption_policy_prefix.size());
+      CHECK(parse_preemption_policy(value, &config.preemption_policy))
+          << "Invalid --preemption-policy=" << value
+          << ". Expected recompute, checkpoint, or auto.";
+      continue;
+    }
   }
   config.max_new_tokens = std::max(1, config.max_new_tokens);
   config.max_num_batched_tokens = std::max(1, config.max_num_batched_tokens);
@@ -257,10 +313,18 @@ BenchConfig parse_bench_config(int argc, char* argv[], int prompt_start_index) {
   config.max_partial_prefills = std::max(0, config.max_partial_prefills);
   config.max_long_partial_prefills = std::max(0, config.max_long_partial_prefills);
   config.warmup_rounds = std::max(0, config.warmup_rounds);
+  config.kv_cache_blocks_per_layer =
+      std::max(0, config.kv_cache_blocks_per_layer);
   config.http_worker_threads = std::max(0, config.http_worker_threads);
   config.http_listen_backlog = std::max(1, config.http_listen_backlog);
   config.kv_cache_memory_utilization =
       std::min(1.0, std::max(0.01, config.kv_cache_memory_utilization));
+  if (config.host_cache_enabled) {
+    CHECK_GT(config.host_cache_bytes, 0u) << "--host-cache-bytes must be positive";
+    CHECK_GT(config.host_cache_pages, 0u) << "--host-cache-pages must be positive";
+    CHECK_GT(config.host_cache_inflight_pages, 0u)
+        << "--host-cache-inflight-pages must be positive";
+  }
   config.listen_port = std::max(1, std::min(65535, config.listen_port));
   config.max_queue_size = std::max(1, config.max_queue_size);
   config.request_timeout_ms = std::max(0, config.request_timeout_ms);
@@ -490,6 +554,7 @@ void print_config_summary(const BenchConfig& config) {
             << " prefill_chunk_cap_request=" << config.prefill_chunk_cap_request
             << " prefill_chunk_cap_resolved=" << config.prefill_chunk_cap
             << " scheduling_policy=" << scheduling_policy_name(config.scheduling_policy)
+            << " preemption_policy=" << preemption_policy_name(config.preemption_policy)
             << " long_prefill_token_threshold=" << config.long_prefill_token_threshold
             << " max_partial_prefills=" << config.max_partial_prefills
             << " max_long_partial_prefills=" << config.max_long_partial_prefills
@@ -507,10 +572,17 @@ void print_config_summary(const BenchConfig& config) {
             << " http_listen_backlog=" << config.http_listen_backlog
             << " kv_cache_memory_utilization="
             << format_double(config.kv_cache_memory_utilization, 3)
+            << " kv_cache_blocks_per_layer_request="
+            << config.kv_cache_blocks_per_layer
             << " warmup_rounds=" << config.warmup_rounds
             << " radix_cache_config_explicit="
             << (config.radix_cache_config_explicit ? 1 : 0)
             << " radix_cache_enabled=" << (config.radix_cache_enabled ? 1 : 0)
+            << " host_cache_enabled=" << (config.host_cache_enabled ? 1 : 0)
+            << " host_cache_bytes=" << config.host_cache_bytes
+            << " host_cache_pages=" << config.host_cache_pages
+            << " host_cache_inflight_pages=" << config.host_cache_inflight_pages
+            << " host_demote_after_warmup=" << (config.host_demote_after_warmup ? 1 : 0)
             << " prompt_count=" << config.prompt_token_stats.prompt_count
             << " prompt_min_tokens=" << config.prompt_token_stats.min_prompt_tokens
             << " prompt_p50_tokens=" << config.prompt_token_stats.p50_prompt_tokens
@@ -592,6 +664,8 @@ void print_final_summary(const SummaryStats& stats,
             << " scheduler_decode_kv_preemptions=" << stats.scheduler_decode_kv_preemptions
             << " scheduler_waiting_rejections=" << stats.scheduler_waiting_rejections
             << " scheduler_stalled_prefill_failures=" << stats.scheduler_stalled_prefill_failures
+            << " scheduler_cache_transfer_completions=" << stats.cache_transfer_completions
+            << " scheduler_cache_restore_wait_steps=" << stats.cache_restore_wait_steps
             << " avg_waiting_queue=" << format_double(stats.active_steps > 0 ? static_cast<double>(stats.waiting_queue_samples) / stats.active_steps : 0.0)
             << " avg_running_queue=" << format_double(stats.active_steps > 0 ? static_cast<double>(stats.running_queue_samples) / stats.active_steps : 0.0)
             << " max_waiting_queue=" << stats.max_waiting_queue
@@ -608,6 +682,11 @@ void print_final_summary(const SummaryStats& stats,
             << " ttft_p50_ms=" << format_double(percentile(stats.request_ttft_ms, 0.50))
             << " ttft_p95_ms=" << format_double(percentile(stats.request_ttft_ms, 0.95))
             << " ttft_p99_ms=" << format_double(percentile(stats.request_ttft_ms, 0.99))
+            << " token_gap_count=" << stats.token_gap_ms.size()
+            << " token_gap_p50_ms=" << format_double(percentile(stats.token_gap_ms, 0.50))
+            << " token_gap_p95_ms=" << format_double(percentile(stats.token_gap_ms, 0.95))
+            << " token_gap_p99_ms=" << format_double(percentile(stats.token_gap_ms, 0.99))
+            << " request_mean_token_gap_p95_ms=" << format_double(percentile(stats.request_itl_ms, 0.95))
             << " itl_ms=" << format_double(itl_mean_ms)
             << " itl_p50_ms=" << format_double(percentile(stats.request_itl_ms, 0.50))
             << " itl_p95_ms=" << format_double(percentile(stats.request_itl_ms, 0.95))
@@ -624,6 +703,10 @@ void print_final_summary(const SummaryStats& stats,
             << " radix_cache_published_blocks=" << radix_stats.published_blocks
             << " radix_cache_evictions=" << radix_stats.evictions
             << " radix_cache_evicted_blocks=" << radix_stats.evicted_blocks
+            << " host_demoted_blocks=" << radix_stats.host_demoted_blocks
+            << " host_restore_requests=" << radix_stats.host_restore_requests
+            << " host_restored_blocks=" << radix_stats.host_restored_blocks
+            << " host_restore_failures=" << radix_stats.host_restore_failures
             << " radix_cache_nodes=" << radix_cache_nodes
             << " radix_cache_splits=" << radix_cache_splits
             << " radix_cache_evictable_blocks=" << radix_cache_evictable_blocks
@@ -646,6 +729,21 @@ int ServingBenchmarkApp::run(int argc, char* argv[]) {
 
   prepare_benchmark_config();
   run_warmup();
+  if (bench_config_.host_demote_after_warmup) {
+    CHECK(kv_cache_manager()->host_cache_enabled())
+        << "--host-demote-after-warmup requires --host-cache=1";
+    int32_t admitted = 0;
+    while (true) {
+      const auto batch = kv_cache_manager()->demote_radix_cache_to_host();
+      admitted += batch;
+      CHECK(kv_cache_manager()->drain_cache_transfers())
+          << "host cache warmup demotion could not establish physical completion";
+      if (batch == 0) break;
+    }
+    LOG(INFO) << "Host cache warmup demotion admitted_pages=" << admitted
+              << " host_demoted_pages="
+              << kv_cache_manager()->radix_cache_stats().host_demoted_blocks;
+  }
   kv_cache_manager()->reset_radix_cache_stats();
   if (bench_config_.online_server) {
     if (is_zmq_engine_core_role(bench_config_.online_process_role)) {
@@ -720,6 +818,7 @@ RemotePrefillResult ServingBenchmarkApp::run_remote_prefill_generation(
   prefill_config.max_num_batched_tokens = bench_config_.max_num_batched_tokens;
   prefill_config.prefill_chunk_cap = bench_config_.prefill_chunk_cap;
   prefill_config.policy = bench_config_.scheduling_policy;
+  prefill_config.preemption_policy = bench_config_.preemption_policy;
   prefill_config.long_prefill_token_threshold =
       bench_config_.long_prefill_token_threshold;
   prefill_config.max_partial_prefills = bench_config_.max_partial_prefills;
@@ -1130,6 +1229,7 @@ ServingBenchmarkApp::run_remote_zmq_cpu_pd_generation(
   decode_config.max_num_batched_tokens = bench_config_.max_num_batched_tokens;
   decode_config.prefill_chunk_cap = bench_config_.prefill_chunk_cap;
   decode_config.policy = bench_config_.scheduling_policy;
+  decode_config.preemption_policy = bench_config_.preemption_policy;
   decode_config.long_prefill_token_threshold =
       bench_config_.long_prefill_token_threshold;
   decode_config.max_partial_prefills = bench_config_.max_partial_prefills;
@@ -1339,6 +1439,7 @@ ServingBenchmarkApp::run_remote_zmq_nccl_pd_generation(
   decode_config.max_num_batched_tokens = bench_config_.max_num_batched_tokens;
   decode_config.prefill_chunk_cap = bench_config_.prefill_chunk_cap;
   decode_config.policy = bench_config_.scheduling_policy;
+  decode_config.preemption_policy = bench_config_.preemption_policy;
   decode_config.long_prefill_token_threshold =
       bench_config_.long_prefill_token_threshold;
   decode_config.max_partial_prefills = bench_config_.max_partial_prefills;
@@ -1416,6 +1517,7 @@ ServingBenchmarkApp::PDGenerationResult ServingBenchmarkApp::run_dual_gpu_pd_gen
   prefill_config.max_num_batched_tokens = bench_config_.max_num_batched_tokens;
   prefill_config.prefill_chunk_cap = bench_config_.prefill_chunk_cap;
   prefill_config.policy = bench_config_.scheduling_policy;
+  prefill_config.preemption_policy = bench_config_.preemption_policy;
   prefill_config.long_prefill_token_threshold = bench_config_.long_prefill_token_threshold;
   prefill_config.max_partial_prefills = bench_config_.max_partial_prefills;
   prefill_config.max_long_partial_prefills = bench_config_.max_long_partial_prefills;
@@ -1878,8 +1980,10 @@ int ServingBenchmarkApp::run_dual_gpu_pd_offline() {
   for (size_t i = 0; i < prompts_.size(); ++i) {
     const auto request_start = Clock::now();
     auto tokens = encode_prompt(prompts_[i]);
-    PDGenerationResult generation = run_dual_gpu_pd_generation(
-        std::move(tokens), GenerationConfig(bench_config_.max_new_tokens));
+    GenerationConfig config(bench_config_.max_new_tokens);
+    config.sampling = bench_config_.sampling;
+    config.ignore_eos = bench_config_.ignore_eos;
+    PDGenerationResult generation = run_dual_gpu_pd_generation(std::move(tokens), config);
     const auto request_end = Clock::now();
     if (generation.failed) {
       ++summary_.failed_requests;
@@ -1945,10 +2049,13 @@ bool ServingBenchmarkApp::parse_args(int argc, char* argv[]) {
     LOG(INFO) << "Usage: " << usage_name()
               << " <model.bin> <tokenizer.json> [prompt1] [prompt2] ..."
               << " [--max-new-tokens=N] [--max-batched-tokens=N]"
+              << " [--temperature=0.0] [--top-k=0] [--top-p=1.0] [--seed=N] [--ignore-eos=0|1]"
               << " [--prefill-chunk-cap=N] [--scheduling-policy=fcfs|priority]"
+              << " [--preemption-policy=recompute|checkpoint|auto]"
               << " [--long-prefill-token-threshold=N] [--max-partial-prefills=N]"
               << " [--max-long-partial-prefills=N]"
-              << " [--device-id=N] [--kv-cache-memory-utilization=0.8] [--quiet=0|1]"
+              << " [--device-id=N] [--kv-cache-memory-utilization=0.8]"
+              << " [--kv-cache-blocks-per-layer=N] [--quiet=0|1]"
               << " [--pd-mode=off|dual-gpu-p2p|dual-gpu-nccl|dual-gpu-nccl-layer|remote-zmq-cpu|remote-zmq-nccl|remote-zmq-nccl-layer]"
               << " [--prefill-device-id=N]"
               << " [--decode-device-id=N]"
@@ -1961,7 +2068,8 @@ bool ServingBenchmarkApp::parse_args(int argc, char* argv[]) {
               << " [--online-process-role=inproc|zmq-http-api|zmq-engine-core|zmq-prefill-engine-core|zmq-decode-engine-core]"
               << " [--engine-zmq-endpoint=tcp://127.0.0.1:19090]"
               << " [--prefill-zmq-endpoint=tcp://127.0.0.1:19091]"
-              << " [--engine-zmq-timeout-ms=N]";
+              << " [--engine-zmq-timeout-ms=N]"
+              << " [--data-service-endpoint=/path/to/pbe-data.sock]";
     return false;
   }
 
@@ -2060,6 +2168,7 @@ void ServingBenchmarkApp::run_warmup() {
   sched_config.max_num_batched_tokens = bench_config_.max_num_batched_tokens;
   sched_config.prefill_chunk_cap = bench_config_.prefill_chunk_cap;
   sched_config.policy = bench_config_.scheduling_policy;
+  sched_config.preemption_policy = bench_config_.preemption_policy;
   sched_config.long_prefill_token_threshold = bench_config_.long_prefill_token_threshold;
   sched_config.max_partial_prefills = bench_config_.max_partial_prefills;
   sched_config.max_long_partial_prefills = bench_config_.max_long_partial_prefills;
@@ -2102,6 +2211,7 @@ void ServingBenchmarkApp::create_scheduler() {
   sched_config.max_num_batched_tokens = bench_config_.max_num_batched_tokens;
   sched_config.prefill_chunk_cap = bench_config_.prefill_chunk_cap;
   sched_config.policy = bench_config_.scheduling_policy;
+  sched_config.preemption_policy = bench_config_.preemption_policy;
   sched_config.long_prefill_token_threshold = bench_config_.long_prefill_token_threshold;
   sched_config.max_partial_prefills = bench_config_.max_partial_prefills;
   sched_config.max_long_partial_prefills = bench_config_.max_long_partial_prefills;
@@ -2125,7 +2235,10 @@ void ServingBenchmarkApp::submit_requests_to(Scheduler& scheduler,
       std::cout << "Request " << i << ": \"" << prompts_[i]
                 << "\" (" << tokens.size() << " tokens)" << std::endl;
     }
-    scheduler.add_request(std::move(tokens), GenerationConfig(max_new_tokens));
+    GenerationConfig generation(max_new_tokens);
+    generation.sampling = bench_config_.sampling;
+    generation.ignore_eos = bench_config_.ignore_eos;
+    scheduler.add_request(std::move(tokens), generation);
   }
 }
 
@@ -2175,6 +2288,9 @@ void ServingBenchmarkApp::run_serving_step(void* stream) {
   const auto schedule_end = Clock::now();
   if (sched_out.total_tokens == 0) {
     record_no_progress_step(sched_out);
+    if (kv_cache_manager()->cache_transfers_pending()) {
+      std::this_thread::sleep_for(std::chrono::microseconds(50));
+    }
     ++step_;
     return;
   }
@@ -2282,6 +2398,8 @@ void ServingBenchmarkApp::process_finished(const std::vector<SequenceState>& fin
     if (seq.generated_tokens > 1) {
       summary_.request_itl_ms.push_back(seq.itl_ms());
     }
+    const auto gaps = seq.token_gaps_ms();
+    summary_.token_gap_ms.insert(summary_.token_gap_ms.end(), gaps.begin(), gaps.end());
     summary_.request_latency_ms.push_back(seq.latency_ms());
     print_request_metric(seq);
 
@@ -2313,6 +2431,8 @@ void ServingBenchmarkApp::record_no_progress_step(const SchedulerOutput& sched_o
   summary_.scheduler_decode_kv_preemptions = scheduler_metrics.decode_kv_preemptions;
   summary_.scheduler_waiting_rejections = scheduler_metrics.waiting_rejections;
   summary_.scheduler_stalled_prefill_failures = scheduler_metrics.stalled_prefill_failures;
+  summary_.cache_transfer_completions = scheduler_metrics.cache_transfer_completions;
+  summary_.cache_restore_wait_steps = scheduler_metrics.cache_restore_wait_steps;
 }
 
 void ServingBenchmarkApp::record_step_profile(const StepProfile& profile,
@@ -2341,6 +2461,8 @@ void ServingBenchmarkApp::record_step_profile(const StepProfile& profile,
   summary_.scheduler_decode_kv_preemptions = scheduler_metrics.decode_kv_preemptions;
   summary_.scheduler_waiting_rejections = scheduler_metrics.waiting_rejections;
   summary_.scheduler_stalled_prefill_failures = scheduler_metrics.stalled_prefill_failures;
+  summary_.cache_transfer_completions = scheduler_metrics.cache_transfer_completions;
+  summary_.cache_restore_wait_steps = scheduler_metrics.cache_restore_wait_steps;
 }
 
 void ServingBenchmarkApp::maybe_print_step_profile(const StepProfile& profile,

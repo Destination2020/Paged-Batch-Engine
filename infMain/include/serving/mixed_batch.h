@@ -30,6 +30,8 @@ struct MixedBatchMetadata {
   // All on GPU
   tensor::Tensor token_ids;       // [num_tokens] int32
   tensor::Tensor positions;       // [num_tokens] int32
+  tensor::Tensor mrope_positions; // optional axis-major [3, num_tokens] int32
+  tensor::Tensor input_embeddings_override; // optional [num_tokens, hidden_size]
   tensor::Tensor slot_mapping;    // [num_tokens] int32, -1 when not materialized yet
   tensor::Tensor seq_lens;        // [num_requests] int32
   tensor::Tensor seq_start_locs;  // [num_requests + 1] int32
@@ -47,7 +49,6 @@ struct MixedBatchMetadata {
 }  // namespace serving
 
 #endif  // KUIPER_INCLUDE_SERVING_MIXED_BATCH_H_
-
 
 
 

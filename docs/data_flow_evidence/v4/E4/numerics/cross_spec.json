@@ -1,0 +1,8 @@
+{
+  "rounds": [
+    [{"request_id":"cross-05","generation":1,"parts":[{"type":"image","path":"/tmp/pbe-e1-different.png","size":252},{"type":"text","text":"Describe this image for fixed case 05."}],"max_new_tokens":8,"diagnostic_key":"case-05","diagnostic_mode":"cross","diagnostic_dump_logits_step":2}],
+    [{"request_id":"cross-09","generation":1,"parts":[{"type":"image","path":"/tmp/pbe-e1-different.png","size":252},{"type":"text","text":"Describe this image for fixed case 09."}],"max_new_tokens":8,"diagnostic_key":"case-09","diagnostic_mode":"cross","diagnostic_dump_logits_step":2}],
+    [{"request_id":"cross-15","generation":1,"parts":[{"type":"image","path":"/tmp/pbe-e1-different.png","size":308},{"type":"text","text":"Describe this image for fixed case 15."}],"max_new_tokens":8,"diagnostic_key":"case-15","diagnostic_mode":"cross","diagnostic_dump_logits_step":4}],
+    [{"request_id":"cross-19","generation":1,"parts":[{"type":"image","path":"/tmp/pbe-e1-different.png","size":308},{"type":"text","text":"Describe this image for fixed case 19."}],"max_new_tokens":8,"diagnostic_key":"case-19","diagnostic_mode":"cross","diagnostic_dump_logits_step":4}]
+  ]
+}

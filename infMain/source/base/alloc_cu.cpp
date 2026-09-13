@@ -5,6 +5,8 @@ namespace base {
 
 CUDADeviceAllocator::CUDADeviceAllocator() : DeviceAllocator(DeviceType::kDeviceCUDA) {}
 
+CUDADeviceAllocator::~CUDADeviceAllocator() { release_all_cached(); }
+
 void* CUDADeviceAllocator::allocate(size_t byte_size) const {
   int id = -1;
   cudaError_t state = cudaGetDevice(&id);
@@ -113,6 +115,52 @@ void CUDADeviceAllocator::release(void* ptr) const {
   }
   state = cudaFree(ptr);
   CHECK(state == cudaSuccess) << "Error: CUDA error when release memory on device";
+}
+
+void CUDADeviceAllocator::release_all_cached() const {
+  int original_device = -1;
+  const cudaError_t get_device_status = cudaGetDevice(&original_device);
+  if (get_device_status != cudaSuccess) {
+    // Static allocator destruction may run after the CUDA runtime has already
+    // torn down its primary contexts. The driver owns the remaining process
+    // allocations at that point; avoid issuing invalid cleanup calls.
+    cuda_buffers_map_.clear();
+    big_buffers_map_.clear();
+    no_busy_cnt_.clear();
+    reserved_bytes_map_.clear();
+    return;
+  }
+  auto release_map = [](auto& buffers_by_device, auto& reserved_bytes) {
+    for (auto& [device, buffers] : buffers_by_device) {
+      const cudaError_t set_status = cudaSetDevice(device);
+      if (set_status != cudaSuccess) {
+        LOG(ERROR) << "Unable to select CUDA device " << device
+                   << " while releasing allocator cache: "
+                   << cudaGetErrorString(set_status);
+        continue;
+      }
+      for (auto& buffer : buffers) {
+        if (buffer.data == nullptr) continue;
+        const cudaError_t free_status = cudaFree(buffer.data);
+        if (free_status != cudaSuccess) {
+          LOG(ERROR) << "Unable to release cached CUDA allocation on device "
+                     << device << ": " << cudaGetErrorString(free_status);
+          continue;
+        }
+        if (reserved_bytes[device] >= buffer.byte_size)
+          reserved_bytes[device] -= buffer.byte_size;
+        buffer.data = nullptr;
+      }
+      buffers.clear();
+    }
+  };
+  release_map(cuda_buffers_map_, reserved_bytes_map_);
+  release_map(big_buffers_map_, reserved_bytes_map_);
+  cuda_buffers_map_.clear();
+  big_buffers_map_.clear();
+  no_busy_cnt_.clear();
+  reserved_bytes_map_.clear();
+  cudaSetDevice(original_device);
 }
 std::shared_ptr<CUDADeviceAllocator> CUDADeviceAllocatorFactory::instance = nullptr;
 

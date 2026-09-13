@@ -1,0 +1,23 @@
+{
+  "date": "2026-09-13",
+  "attempts": [
+    {"directory": "../post_review_four_branch_cow", "result": "failed", "cause": "cancel role did not mark imported prefix pages as initial"},
+    {"directory": "../post_review_four_branch_cow_retry", "result": "failed", "cause": "declared decode window exceeded the four-page private grant and was correctly not admitted"},
+    {"directory": ".", "result": "passed"}
+  ],
+  "prefill_tokens": 95,
+  "branches": 4,
+  "concurrent_active_grants": 5,
+  "concurrent_free_slots": 32,
+  "completed_branches": 2,
+  "cancelled_branches": 2,
+  "tokens_before_cancel_each": 5,
+  "completed_tokens_each": 16,
+  "completed_outputs_match_prefill_oracle": true,
+  "partial_tail_cow_bytes_each": 589824,
+  "free_slots_after_branches": 48,
+  "active_grants_after_branches": 1,
+  "free_slots_after_prefix_release": 64,
+  "active_grants_after_prefix_release": 0,
+  "data_leases_after_run": 0
+}

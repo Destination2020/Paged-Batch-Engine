@@ -1,0 +1,44 @@
+{
+  "date": "2026-09-13",
+  "checkout": "f3597a763b6cd5cf60b826baa2dc94395c3d02fd",
+  "hardware": "NVIDIA H20-3e",
+  "model": "Qwen/Qwen2.5-VL-3B-Instruct@66285546d2b821cf421d4f5eb2576359d3770cd3",
+  "serving_main_path": {
+    "requests": 2,
+    "prefill_tokens": 71,
+    "decode_tokens": 32,
+    "mixed_prefill_steps": 1,
+    "batched_decode_steps": 15,
+    "completed_requests": 2,
+    "failed_requests": 0,
+    "external_pool_bytes": 37748736,
+    "external_pool_slots": 64,
+    "active_grants_during_serving": 1,
+    "free_slots_during_serving": 0,
+    "free_slots_after_model_destroy": 64,
+    "active_grants_after_model_destroy": 0,
+    "data_leases_after_serving": 0,
+    "transport": "same_gpu_ipc_map",
+    "host_kv_snapshot_bytes": 0
+  },
+  "cross_gpu_multi_role": {
+    "prefill_device": 0,
+    "decode_device": 1,
+    "decode_consumers": 2,
+    "replica_bytes_each": 37748736,
+    "replica_ms": [432.271, 407.309],
+    "transport": "cross_gpu_p2p_replica",
+    "decode_a_matches_prefill_oracle": true,
+    "decode_b_matches_prefill_oracle": true,
+    "cow_bytes_each": 589824,
+    "free_slots_after_prefix_release": 64,
+    "active_grants_after_prefix_release": 0,
+    "data_leases_after_run": 0
+  },
+  "regression": {
+    "tests": 23,
+    "passed": 23,
+    "failed": 0,
+    "note": "The first attempt used a stale test executable and was invalid; test_llm was relinked before the recorded regression.log run."
+  }
+}

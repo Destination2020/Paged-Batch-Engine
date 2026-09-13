@@ -1,0 +1,1103 @@
+{
+  "case_pairs": 20,
+  "checks": {
+    "all_40_mode_outputs_present": true,
+    "both_frozen_m5_rules_pass": true,
+    "both_runs_ok": true,
+    "budget_invariants": true,
+    "private_shared_divergences_have_cross_logits": true,
+    "shared_attention_binding": true,
+    "shared_owner_one_upload": true
+  },
+  "comparisons": [
+    {
+      "exact": true,
+      "private_tokens": [
+        1986,
+        2168,
+        7952,
+        311,
+        387,
+        264,
+        6396,
+        15941
+      ],
+      "request_id": "case-00-mixed",
+      "shared_tokens": [
+        1986,
+        2168,
+        7952,
+        311,
+        387,
+        264,
+        6396,
+        15941
+      ]
+    },
+    {
+      "exact": true,
+      "private_tokens": [
+        1986,
+        2168,
+        7952,
+        311,
+        387,
+        264,
+        6396,
+        15941
+      ],
+      "request_id": "case-00-single",
+      "shared_tokens": [
+        1986,
+        2168,
+        7952,
+        311,
+        387,
+        264,
+        6396,
+        15941
+      ]
+    },
+    {
+      "exact": true,
+      "private_tokens": [
+        1986,
+        2168,
+        7952,
+        311,
+        387,
+        264,
+        6396,
+        15941
+      ],
+      "request_id": "case-01-mixed",
+      "shared_tokens": [
+        1986,
+        2168,
+        7952,
+        311,
+        387,
+        264,
+        6396,
+        15941
+      ]
+    },
+    {
+      "exact": true,
+      "private_tokens": [
+        1986,
+        2168,
+        7952,
+        311,
+        387,
+        264,
+        6396,
+        15941
+      ],
+      "request_id": "case-01-single",
+      "shared_tokens": [
+        1986,
+        2168,
+        7952,
+        311,
+        387,
+        264,
+        6396,
+        15941
+      ]
+    },
+    {
+      "exact": true,
+      "private_tokens": [
+        1986,
+        2168,
+        374,
+        264,
+        6396,
+        15941,
+        429,
+        45380
+      ],
+      "request_id": "case-02-mixed",
+      "shared_tokens": [
+        1986,
+        2168,
+        374,
+        264,
+        6396,
+        15941,
+        429,
+        45380
+      ]
+    },
+    {
+      "exact": true,
+      "private_tokens": [
+        1986,
+        2168,
+        374,
+        264,
+        6396,
+        15941,
+        429,
+        45380
+      ],
+      "request_id": "case-02-single",
+      "shared_tokens": [
+        1986,
+        2168,
+        374,
+        264,
+        6396,
+        15941,
+        429,
+        45380
+      ]
+    },
+    {
+      "exact": true,
+      "private_tokens": [
+        1986,
+        2168,
+        374,
+        264,
+        11682,
+        6396,
+        15941,
+        429
+      ],
+      "request_id": "case-03-mixed",
+      "shared_tokens": [
+        1986,
+        2168,
+        374,
+        264,
+        11682,
+        6396,
+        15941,
+        429
+      ]
+    },
+    {
+      "exact": true,
+      "private_tokens": [
+        1986,
+        2168,
+        374,
+        264,
+        11682,
+        6396,
+        15941,
+        429
+      ],
+      "request_id": "case-03-single",
+      "shared_tokens": [
+        1986,
+        2168,
+        374,
+        264,
+        11682,
+        6396,
+        15941,
+        429
+      ]
+    },
+    {
+      "exact": true,
+      "private_tokens": [
+        1986,
+        2168,
+        7952,
+        311,
+        387,
+        264,
+        6396,
+        15941
+      ],
+      "request_id": "case-04-mixed",
+      "shared_tokens": [
+        1986,
+        2168,
+        7952,
+        311,
+        387,
+        264,
+        6396,
+        15941
+      ]
+    },
+    {
+      "exact": true,
+      "private_tokens": [
+        1986,
+        2168,
+        7952,
+        311,
+        387,
+        264,
+        6396,
+        15941
+      ],
+      "request_id": "case-04-single",
+      "shared_tokens": [
+        1986,
+        2168,
+        7952,
+        311,
+        387,
+        264,
+        6396,
+        15941
+      ]
+    },
+    {
+      "exact": false,
+      "private_tokens": [
+        1986,
+        2168,
+        374,
+        264,
+        6396,
+        15941,
+        429,
+        45380
+      ],
+      "request_id": "case-05-mixed",
+      "shared_tokens": [
+        1986,
+        2168,
+        7952,
+        311,
+        387,
+        264,
+        6396,
+        15941
+      ]
+    },
+    {
+      "exact": false,
+      "private_tokens": [
+        1986,
+        2168,
+        7952,
+        311,
+        387,
+        264,
+        6396,
+        15941
+      ],
+      "request_id": "case-05-single",
+      "shared_tokens": [
+        1986,
+        2168,
+        374,
+        264,
+        6396,
+        15941,
+        429,
+        45380
+      ]
+    },
+    {
+      "exact": true,
+      "private_tokens": [
+        1986,
+        2168,
+        374,
+        264,
+        6396,
+        15941,
+        429,
+        45380
+      ],
+      "request_id": "case-06-mixed",
+      "shared_tokens": [
+        1986,
+        2168,
+        374,
+        264,
+        6396,
+        15941,
+        429,
+        45380
+      ]
+    },
+    {
+      "exact": true,
+      "private_tokens": [
+        1986,
+        2168,
+        374,
+        264,
+        6396,
+        15941,
+        429,
+        45380
+      ],
+      "request_id": "case-06-single",
+      "shared_tokens": [
+        1986,
+        2168,
+        374,
+        264,
+        6396,
+        15941,
+        429,
+        45380
+      ]
+    },
+    {
+      "exact": true,
+      "private_tokens": [
+        1986,
+        2168,
+        374,
+        264,
+        11682,
+        6396,
+        15941,
+        429
+      ],
+      "request_id": "case-07-mixed",
+      "shared_tokens": [
+        1986,
+        2168,
+        374,
+        264,
+        11682,
+        6396,
+        15941,
+        429
+      ]
+    },
+    {
+      "exact": true,
+      "private_tokens": [
+        1986,
+        2168,
+        374,
+        264,
+        11682,
+        6396,
+        15941,
+        429
+      ],
+      "request_id": "case-07-single",
+      "shared_tokens": [
+        1986,
+        2168,
+        374,
+        264,
+        11682,
+        6396,
+        15941,
+        429
+      ]
+    },
+    {
+      "exact": true,
+      "private_tokens": [
+        1986,
+        2168,
+        7952,
+        311,
+        387,
+        264,
+        6396,
+        15941
+      ],
+      "request_id": "case-08-mixed",
+      "shared_tokens": [
+        1986,
+        2168,
+        7952,
+        311,
+        387,
+        264,
+        6396,
+        15941
+      ]
+    },
+    {
+      "exact": true,
+      "private_tokens": [
+        1986,
+        2168,
+        7952,
+        311,
+        387,
+        264,
+        6396,
+        15941
+      ],
+      "request_id": "case-08-single",
+      "shared_tokens": [
+        1986,
+        2168,
+        7952,
+        311,
+        387,
+        264,
+        6396,
+        15941
+      ]
+    },
+    {
+      "exact": true,
+      "private_tokens": [
+        1986,
+        2168,
+        7952,
+        311,
+        387,
+        264,
+        6396,
+        15941
+      ],
+      "request_id": "case-09-mixed",
+      "shared_tokens": [
+        1986,
+        2168,
+        7952,
+        311,
+        387,
+        264,
+        6396,
+        15941
+      ]
+    },
+    {
+      "exact": false,
+      "private_tokens": [
+        1986,
+        2168,
+        7952,
+        311,
+        387,
+        264,
+        6396,
+        15941
+      ],
+      "request_id": "case-09-single",
+      "shared_tokens": [
+        1986,
+        2168,
+        374,
+        264,
+        6396,
+        15941,
+        429,
+        45380
+      ]
+    },
+    {
+      "exact": true,
+      "private_tokens": [
+        1986,
+        2168,
+        374,
+        264,
+        6396,
+        15941,
+        429,
+        45380
+      ],
+      "request_id": "case-10-mixed",
+      "shared_tokens": [
+        1986,
+        2168,
+        374,
+        264,
+        6396,
+        15941,
+        429,
+        45380
+      ]
+    },
+    {
+      "exact": true,
+      "private_tokens": [
+        1986,
+        2168,
+        374,
+        264,
+        6396,
+        15941,
+        429,
+        45380
+      ],
+      "request_id": "case-10-single",
+      "shared_tokens": [
+        1986,
+        2168,
+        374,
+        264,
+        6396,
+        15941,
+        429,
+        45380
+      ]
+    },
+    {
+      "exact": true,
+      "private_tokens": [
+        1986,
+        2168,
+        374,
+        264,
+        11682,
+        6396,
+        15941,
+        429
+      ],
+      "request_id": "case-11-mixed",
+      "shared_tokens": [
+        1986,
+        2168,
+        374,
+        264,
+        11682,
+        6396,
+        15941,
+        429
+      ]
+    },
+    {
+      "exact": true,
+      "private_tokens": [
+        1986,
+        2168,
+        374,
+        264,
+        11682,
+        6396,
+        15941,
+        429
+      ],
+      "request_id": "case-11-single",
+      "shared_tokens": [
+        1986,
+        2168,
+        374,
+        264,
+        11682,
+        6396,
+        15941,
+        429
+      ]
+    },
+    {
+      "exact": true,
+      "private_tokens": [
+        1986,
+        2168,
+        7952,
+        311,
+        387,
+        264,
+        6396,
+        15941
+      ],
+      "request_id": "case-12-mixed",
+      "shared_tokens": [
+        1986,
+        2168,
+        7952,
+        311,
+        387,
+        264,
+        6396,
+        15941
+      ]
+    },
+    {
+      "exact": true,
+      "private_tokens": [
+        1986,
+        2168,
+        7952,
+        311,
+        387,
+        264,
+        6396,
+        15941
+      ],
+      "request_id": "case-12-single",
+      "shared_tokens": [
+        1986,
+        2168,
+        7952,
+        311,
+        387,
+        264,
+        6396,
+        15941
+      ]
+    },
+    {
+      "exact": true,
+      "private_tokens": [
+        1986,
+        2168,
+        7952,
+        311,
+        387,
+        264,
+        6396,
+        15941
+      ],
+      "request_id": "case-13-mixed",
+      "shared_tokens": [
+        1986,
+        2168,
+        7952,
+        311,
+        387,
+        264,
+        6396,
+        15941
+      ]
+    },
+    {
+      "exact": true,
+      "private_tokens": [
+        1986,
+        2168,
+        7952,
+        311,
+        387,
+        264,
+        6396,
+        15941
+      ],
+      "request_id": "case-13-single",
+      "shared_tokens": [
+        1986,
+        2168,
+        7952,
+        311,
+        387,
+        264,
+        6396,
+        15941
+      ]
+    },
+    {
+      "exact": true,
+      "private_tokens": [
+        1986,
+        2168,
+        374,
+        264,
+        6396,
+        15941,
+        429,
+        45380
+      ],
+      "request_id": "case-14-mixed",
+      "shared_tokens": [
+        1986,
+        2168,
+        374,
+        264,
+        6396,
+        15941,
+        429,
+        45380
+      ]
+    },
+    {
+      "exact": true,
+      "private_tokens": [
+        1986,
+        2168,
+        374,
+        264,
+        6396,
+        15941,
+        429,
+        45380
+      ],
+      "request_id": "case-14-single",
+      "shared_tokens": [
+        1986,
+        2168,
+        374,
+        264,
+        6396,
+        15941,
+        429,
+        45380
+      ]
+    },
+    {
+      "exact": false,
+      "private_tokens": [
+        1986,
+        2168,
+        374,
+        264,
+        11682,
+        6396,
+        15941,
+        429
+      ],
+      "request_id": "case-15-mixed",
+      "shared_tokens": [
+        1986,
+        2168,
+        374,
+        264,
+        6396,
+        15941,
+        429,
+        45380
+      ]
+    },
+    {
+      "exact": false,
+      "private_tokens": [
+        1986,
+        2168,
+        374,
+        264,
+        6396,
+        15941,
+        429,
+        45380
+      ],
+      "request_id": "case-15-single",
+      "shared_tokens": [
+        1986,
+        2168,
+        374,
+        264,
+        11682,
+        6396,
+        15941,
+        429
+      ]
+    },
+    {
+      "exact": true,
+      "private_tokens": [
+        1986,
+        2168,
+        7952,
+        311,
+        387,
+        264,
+        6396,
+        15941
+      ],
+      "request_id": "case-16-mixed",
+      "shared_tokens": [
+        1986,
+        2168,
+        7952,
+        311,
+        387,
+        264,
+        6396,
+        15941
+      ]
+    },
+    {
+      "exact": true,
+      "private_tokens": [
+        1986,
+        2168,
+        7952,
+        311,
+        387,
+        264,
+        6396,
+        15941
+      ],
+      "request_id": "case-16-single",
+      "shared_tokens": [
+        1986,
+        2168,
+        7952,
+        311,
+        387,
+        264,
+        6396,
+        15941
+      ]
+    },
+    {
+      "exact": true,
+      "private_tokens": [
+        1986,
+        2168,
+        7952,
+        311,
+        387,
+        264,
+        6396,
+        15941
+      ],
+      "request_id": "case-17-mixed",
+      "shared_tokens": [
+        1986,
+        2168,
+        7952,
+        311,
+        387,
+        264,
+        6396,
+        15941
+      ]
+    },
+    {
+      "exact": true,
+      "private_tokens": [
+        1986,
+        2168,
+        7952,
+        311,
+        387,
+        264,
+        6396,
+        15941
+      ],
+      "request_id": "case-17-single",
+      "shared_tokens": [
+        1986,
+        2168,
+        7952,
+        311,
+        387,
+        264,
+        6396,
+        15941
+      ]
+    },
+    {
+      "exact": true,
+      "private_tokens": [
+        1986,
+        2168,
+        374,
+        264,
+        6396,
+        15941,
+        429,
+        45380
+      ],
+      "request_id": "case-18-mixed",
+      "shared_tokens": [
+        1986,
+        2168,
+        374,
+        264,
+        6396,
+        15941,
+        429,
+        45380
+      ]
+    },
+    {
+      "exact": true,
+      "private_tokens": [
+        1986,
+        2168,
+        374,
+        264,
+        6396,
+        15941,
+        429,
+        45380
+      ],
+      "request_id": "case-18-single",
+      "shared_tokens": [
+        1986,
+        2168,
+        374,
+        264,
+        6396,
+        15941,
+        429,
+        45380
+      ]
+    },
+    {
+      "exact": false,
+      "private_tokens": [
+        1986,
+        2168,
+        374,
+        264,
+        6396,
+        15941,
+        429,
+        45380
+      ],
+      "request_id": "case-19-mixed",
+      "shared_tokens": [
+        1986,
+        2168,
+        374,
+        264,
+        11682,
+        6396,
+        15941,
+        429
+      ]
+    },
+    {
+      "exact": false,
+      "private_tokens": [
+        1986,
+        2168,
+        374,
+        264,
+        6396,
+        15941,
+        429,
+        45380
+      ],
+      "request_id": "case-19-single",
+      "shared_tokens": [
+        1986,
+        2168,
+        374,
+        264,
+        11682,
+        6396,
+        15941,
+        429
+      ]
+    }
+  ],
+  "cross_mode_logits": {
+    "checks": {
+      "both_runs_ok": true,
+      "four_observed_cases": true,
+      "frozen_logits_rule_all": true,
+      "same_history_all": true
+    },
+    "ok": true,
+    "rows": [
+      {
+        "accepted": true,
+        "case": "case-05",
+        "logits_max_abs": 0.1875,
+        "logits_mean_abs": 0.02949047848431624,
+        "private_margin": 0.0,
+        "private_token": 7952,
+        "private_top2_ids": [
+          374,
+          7952
+        ],
+        "same_history": true,
+        "selected_equal": false,
+        "shared_margin": 0.125,
+        "shared_token": 374,
+        "shared_top2_ids": [
+          374,
+          7952
+        ],
+        "step": 2,
+        "top2_union": [
+          374,
+          7952
+        ]
+      },
+      {
+        "accepted": true,
+        "case": "case-09",
+        "logits_max_abs": 0.171875,
+        "logits_mean_abs": 0.031168436972862194,
+        "private_margin": 0.0,
+        "private_token": 7952,
+        "private_top2_ids": [
+          374,
+          7952
+        ],
+        "same_history": true,
+        "selected_equal": true,
+        "shared_margin": 0.0,
+        "shared_token": 7952,
+        "shared_top2_ids": [
+          374,
+          7952
+        ],
+        "step": 2,
+        "top2_union": [
+          374,
+          7952
+        ]
+      },
+      {
+        "accepted": true,
+        "case": "case-15",
+        "logits_max_abs": 0.1875,
+        "logits_mean_abs": 0.02874722483661261,
+        "private_margin": 0.125,
+        "private_token": 6396,
+        "private_top2_ids": [
+          6396,
+          11682
+        ],
+        "same_history": true,
+        "selected_equal": false,
+        "shared_margin": 0.0,
+        "shared_token": 11682,
+        "shared_top2_ids": [
+          6396,
+          11682
+        ],
+        "step": 4,
+        "top2_union": [
+          6396,
+          11682
+        ]
+      },
+      {
+        "accepted": true,
+        "case": "case-19",
+        "logits_max_abs": 0.21875,
+        "logits_mean_abs": 0.03764076319718521,
+        "private_margin": 0.125,
+        "private_token": 6396,
+        "private_top2_ids": [
+          6396,
+          11682
+        ],
+        "same_history": true,
+        "selected_equal": true,
+        "shared_margin": 0.125,
+        "shared_token": 6396,
+        "shared_top2_ids": [
+          6396,
+          11682
+        ],
+        "step": 4,
+        "top2_union": [
+          6396,
+          11682
+        ]
+      }
+    ],
+    "schema": "pbe-e4-cross-mode-logits-v1"
+  },
+  "divergent_cases": [
+    "05",
+    "09",
+    "15",
+    "19"
+  ],
+  "exact_mode_outputs": 33,
+  "frozen_rule": {
+    "both_choices_in_shared_top2": true,
+    "max_logits_abs_lt": 0.75,
+    "max_logits_mean_abs_lt": 0.2,
+    "max_top2_margin_le": 0.25,
+    "same_history_required": true
+  },
+  "mode_outputs": 40,
+  "ok": true,
+  "schema": "pbe-e4-20-case-numerics-v1"
+}

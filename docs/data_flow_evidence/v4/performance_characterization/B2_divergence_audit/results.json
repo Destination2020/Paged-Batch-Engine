@@ -1,0 +1,104 @@
+{
+  "comparisons": 5,
+  "ok": true,
+  "performance_sample": false,
+  "reason": "teacher-history evidence for first output divergence observed in formal 90% stress trials",
+  "rows": [
+    {
+      "accepted": true,
+      "baseline_margin": 0.0,
+      "baseline_token": 61891,
+      "baseline_top2_ids": [
+        45380,
+        61891
+      ],
+      "candidate_margin": 0.0,
+      "candidate_token": 61891,
+      "candidate_top2_ids": [
+        45380,
+        61891
+      ],
+      "key": "paired-step2-0",
+      "logits_max_abs": 0.25,
+      "logits_mean_abs": 0.038721933290864506,
+      "same_history": true
+    },
+    {
+      "accepted": true,
+      "baseline_margin": 0.0,
+      "baseline_token": 61891,
+      "baseline_top2_ids": [
+        45380,
+        61891
+      ],
+      "candidate_margin": 0.0,
+      "candidate_token": 61891,
+      "candidate_top2_ids": [
+        45380,
+        61891
+      ],
+      "key": "paired-step2-1",
+      "logits_max_abs": 0.34375,
+      "logits_mean_abs": 0.068677605607601,
+      "same_history": true
+    },
+    {
+      "accepted": true,
+      "baseline_margin": 0.0,
+      "baseline_token": 61891,
+      "baseline_top2_ids": [
+        45380,
+        61891
+      ],
+      "candidate_margin": 0.0,
+      "candidate_token": 61891,
+      "candidate_top2_ids": [
+        45380,
+        61891
+      ],
+      "key": "paired-step2-2",
+      "logits_max_abs": 0.2518310546875,
+      "logits_mean_abs": 0.05596174813160499,
+      "same_history": true
+    },
+    {
+      "accepted": true,
+      "baseline_margin": 0.125,
+      "baseline_token": 45380,
+      "baseline_top2_ids": [
+        45380,
+        61891
+      ],
+      "candidate_margin": 0.0,
+      "candidate_token": 61891,
+      "candidate_top2_ids": [
+        45380,
+        61891
+      ],
+      "key": "paired-step2-3",
+      "logits_max_abs": 0.34375,
+      "logits_mean_abs": 0.045638139619356255,
+      "same_history": true
+    },
+    {
+      "accepted": true,
+      "baseline_margin": 0.0,
+      "baseline_token": 61891,
+      "baseline_top2_ids": [
+        45380,
+        61891
+      ],
+      "candidate_margin": 0.0,
+      "candidate_token": 61891,
+      "candidate_top2_ids": [
+        45380,
+        61891
+      ],
+      "key": "paired-step2-4",
+      "logits_max_abs": 0.3125,
+      "logits_mean_abs": 0.037783389278666354,
+      "same_history": true
+    }
+  ],
+  "schema": "pbe-v4-b2-step2-paired-audit-v1"
+}

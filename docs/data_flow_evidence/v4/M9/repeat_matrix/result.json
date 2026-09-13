@@ -1,0 +1,298 @@
+{
+  "ok": true,
+  "same_worker": true,
+  "scenarios": {
+    "repeat_0": {
+      "hit_percent": 0.0,
+      "hits": 0,
+      "requests": 10,
+      "rows": [
+        {
+          "bundle_bytes": 17544,
+          "cache_hit": false,
+          "forward_ms": 336.42300963401794,
+          "index": 0,
+          "size": 28,
+          "wall_ms": 537.5410467386246,
+          "worker_pid": 2368126
+        },
+        {
+          "bundle_bytes": 17544,
+          "cache_hit": false,
+          "forward_ms": 17.659753561019897,
+          "index": 1,
+          "size": 56,
+          "wall_ms": 200.14295727014542,
+          "worker_pid": 2368126
+        },
+        {
+          "bundle_bytes": 38088,
+          "cache_hit": false,
+          "forward_ms": 33.52830559015274,
+          "index": 2,
+          "size": 84,
+          "wall_ms": 354.78532314300537,
+          "worker_pid": 2368126
+        },
+        {
+          "bundle_bytes": 66824,
+          "cache_hit": false,
+          "forward_ms": 58.043770492076874,
+          "index": 3,
+          "size": 112,
+          "wall_ms": 575.9495571255684,
+          "worker_pid": 2368126
+        },
+        {
+          "bundle_bytes": 103880,
+          "cache_hit": false,
+          "forward_ms": 44.16518658399582,
+          "index": 4,
+          "size": 140,
+          "wall_ms": 825.7514014840126,
+          "worker_pid": 2368126
+        },
+        {
+          "bundle_bytes": 149128,
+          "cache_hit": false,
+          "forward_ms": 41.59409552812576,
+          "index": 5,
+          "size": 168,
+          "wall_ms": 1121.5678229928017,
+          "worker_pid": 2368126
+        },
+        {
+          "bundle_bytes": 202504,
+          "cache_hit": false,
+          "forward_ms": 41.27873480319977,
+          "index": 6,
+          "size": 196,
+          "wall_ms": 1491.076447069645,
+          "worker_pid": 2368126
+        },
+        {
+          "bundle_bytes": 264200,
+          "cache_hit": false,
+          "forward_ms": 39.16998952627182,
+          "index": 7,
+          "size": 224,
+          "wall_ms": 1903.9504304528236,
+          "worker_pid": 2368126
+        },
+        {
+          "bundle_bytes": 334088,
+          "cache_hit": false,
+          "forward_ms": 48.77126216888428,
+          "index": 8,
+          "size": 252,
+          "wall_ms": 2409.953258931637,
+          "worker_pid": 2368126
+        },
+        {
+          "bundle_bytes": 412296,
+          "cache_hit": false,
+          "forward_ms": 49.598559737205505,
+          "index": 9,
+          "size": 280,
+          "wall_ms": 2992.0856654644012,
+          "worker_pid": 2368126
+        }
+      ]
+    },
+    "repeat_50": {
+      "hit_percent": 50.0,
+      "hits": 5,
+      "requests": 10,
+      "rows": [
+        {
+          "bundle_bytes": 498632,
+          "cache_hit": false,
+          "forward_ms": 53.23956906795502,
+          "index": 0,
+          "size": 308,
+          "wall_ms": 3567.4091652035713,
+          "worker_pid": 2368126
+        },
+        {
+          "bundle_bytes": 498632,
+          "cache_hit": true,
+          "forward_ms": 0.0,
+          "index": 1,
+          "size": 308,
+          "wall_ms": 3719.2250043153763,
+          "worker_pid": 2368126
+        },
+        {
+          "bundle_bytes": 498632,
+          "cache_hit": true,
+          "forward_ms": 0.0,
+          "index": 2,
+          "size": 308,
+          "wall_ms": 3517.293192446232,
+          "worker_pid": 2368126
+        },
+        {
+          "bundle_bytes": 498632,
+          "cache_hit": true,
+          "forward_ms": 0.0,
+          "index": 3,
+          "size": 308,
+          "wall_ms": 3511.5159079432487,
+          "worker_pid": 2368126
+        },
+        {
+          "bundle_bytes": 498632,
+          "cache_hit": true,
+          "forward_ms": 0.0,
+          "index": 4,
+          "size": 308,
+          "wall_ms": 3725.4467979073524,
+          "worker_pid": 2368126
+        },
+        {
+          "bundle_bytes": 498632,
+          "cache_hit": true,
+          "forward_ms": 0.0,
+          "index": 5,
+          "size": 308,
+          "wall_ms": 3513.5178565979004,
+          "worker_pid": 2368126
+        },
+        {
+          "bundle_bytes": 593160,
+          "cache_hit": false,
+          "forward_ms": 60.22363901138306,
+          "index": 6,
+          "size": 336,
+          "wall_ms": 4124.84497576952,
+          "worker_pid": 2368126
+        },
+        {
+          "bundle_bytes": 696008,
+          "cache_hit": false,
+          "forward_ms": 68.60530376434326,
+          "index": 7,
+          "size": 364,
+          "wall_ms": 4879.151418805122,
+          "worker_pid": 2368126
+        },
+        {
+          "bundle_bytes": 807048,
+          "cache_hit": false,
+          "forward_ms": 71.00111246109009,
+          "index": 8,
+          "size": 392,
+          "wall_ms": 5634.6902176737785,
+          "worker_pid": 2368126
+        },
+        {
+          "bundle_bytes": 926344,
+          "cache_hit": false,
+          "forward_ms": 77.65620201826096,
+          "index": 9,
+          "size": 420,
+          "wall_ms": 6431.733630597591,
+          "worker_pid": 2368126
+        }
+      ]
+    },
+    "repeat_90": {
+      "hit_percent": 90.0,
+      "hits": 9,
+      "requests": 10,
+      "rows": [
+        {
+          "bundle_bytes": 1053704,
+          "cache_hit": false,
+          "forward_ms": 79.24119383096695,
+          "index": 0,
+          "size": 448,
+          "wall_ms": 7469.643652439117,
+          "worker_pid": 2368126
+        },
+        {
+          "bundle_bytes": 1053704,
+          "cache_hit": true,
+          "forward_ms": 0.0,
+          "index": 1,
+          "size": 448,
+          "wall_ms": 7320.312492549419,
+          "worker_pid": 2368126
+        },
+        {
+          "bundle_bytes": 1053704,
+          "cache_hit": true,
+          "forward_ms": 0.0,
+          "index": 2,
+          "size": 448,
+          "wall_ms": 7333.253927528858,
+          "worker_pid": 2368126
+        },
+        {
+          "bundle_bytes": 1053704,
+          "cache_hit": true,
+          "forward_ms": 0.0,
+          "index": 3,
+          "size": 448,
+          "wall_ms": 7363.510236144066,
+          "worker_pid": 2368126
+        },
+        {
+          "bundle_bytes": 1053704,
+          "cache_hit": true,
+          "forward_ms": 0.0,
+          "index": 4,
+          "size": 448,
+          "wall_ms": 7305.659219622612,
+          "worker_pid": 2368126
+        },
+        {
+          "bundle_bytes": 1053704,
+          "cache_hit": true,
+          "forward_ms": 0.0,
+          "index": 5,
+          "size": 448,
+          "wall_ms": 7335.275284945965,
+          "worker_pid": 2368126
+        },
+        {
+          "bundle_bytes": 1053704,
+          "cache_hit": true,
+          "forward_ms": 0.0,
+          "index": 6,
+          "size": 448,
+          "wall_ms": 7317.028164863586,
+          "worker_pid": 2368126
+        },
+        {
+          "bundle_bytes": 1053704,
+          "cache_hit": true,
+          "forward_ms": 0.0,
+          "index": 7,
+          "size": 448,
+          "wall_ms": 7350.615508854389,
+          "worker_pid": 2368126
+        },
+        {
+          "bundle_bytes": 1053704,
+          "cache_hit": true,
+          "forward_ms": 0.0,
+          "index": 8,
+          "size": 448,
+          "wall_ms": 7295.187212526798,
+          "worker_pid": 2368126
+        },
+        {
+          "bundle_bytes": 1053704,
+          "cache_hit": true,
+          "forward_ms": 0.0,
+          "index": 9,
+          "size": 448,
+          "wall_ms": 7299.543514847755,
+          "worker_pid": 2368126
+        }
+      ]
+    }
+  },
+  "worker_pid": 2368126
+}

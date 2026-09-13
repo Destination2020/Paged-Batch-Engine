@@ -109,10 +109,10 @@ template <typename T>
 int32_t sample_host_row_with_config(const T* row,
                                     int32_t vocab_size,
                                     const serving::SamplingConfig& sampling,
-                                    const std::vector<int32_t>& previous_tokens,
-                                    std::mt19937* rng) {
+                                    const std::vector<int32_t>& prompt_tokens,
+                                    const std::vector<int32_t>& output_tokens,
+                                    float uniform_draw) {
   CHECK_NE(row, nullptr);
-  CHECK_NE(rng, nullptr);
   if (sampling_is_greedy(sampling)) {
     int32_t best = 0;
     float best_val = host_logit_to_float(row[0]);
@@ -131,15 +131,15 @@ int32_t sample_host_row_with_config(const T* row,
   for (int32_t vocab_idx = 0; vocab_idx < vocab_size; ++vocab_idx) {
     float logit = host_logit_to_float(row[vocab_idx]);
     if (sampling.repetition_penalty != 1.0) {
-      for (int32_t prev : previous_tokens) {
-        if (prev == vocab_idx) {
+      const bool repeated =
+          std::find(prompt_tokens.begin(), prompt_tokens.end(), vocab_idx) != prompt_tokens.end() ||
+          std::find(output_tokens.begin(), output_tokens.end(), vocab_idx) != output_tokens.end();
+      if (repeated) {
           if (logit > 0.0f) {
             logit = static_cast<float>(logit / sampling.repetition_penalty);
           } else {
             logit = static_cast<float>(logit * sampling.repetition_penalty);
           }
-          break;
-        }
       }
     }
     candidates.push_back({vocab_idx, logit, 0.0});
@@ -150,7 +150,8 @@ int32_t sample_host_row_with_config(const T* row,
       : static_cast<int32_t>(candidates.size());
   std::partial_sort(candidates.begin(), candidates.begin() + top_k, candidates.end(),
                     [](const SamplingCandidate& lhs, const SamplingCandidate& rhs) {
-                      return lhs.logit > rhs.logit;
+                      return lhs.logit > rhs.logit ||
+                             (lhs.logit == rhs.logit && lhs.token < rhs.token);
                     });
   candidates.resize(top_k);
 
@@ -170,7 +171,8 @@ int32_t sample_host_row_with_config(const T* row,
 
   std::sort(candidates.begin(), candidates.end(),
             [](const SamplingCandidate& lhs, const SamplingCandidate& rhs) {
-              return lhs.prob > rhs.prob;
+              return lhs.prob > rhs.prob ||
+                     (lhs.prob == rhs.prob && lhs.token < rhs.token);
             });
   if (sampling.top_p < 1.0) {
     double cumulative = 0.0;
@@ -189,8 +191,7 @@ int32_t sample_host_row_with_config(const T* row,
   for (const auto& candidate : candidates) {
     weight_sum += candidate.prob;
   }
-  std::uniform_real_distribution<double> dist(0.0, weight_sum);
-  double draw = dist(*rng);
+  double draw = static_cast<double>(uniform_draw) * weight_sum;
   for (const auto& candidate : candidates) {
     draw -= candidate.prob;
     if (draw <= 0.0) {
@@ -350,6 +351,55 @@ void Qwen2Layers::materialize(std::shared_ptr<base::DeviceContext> context,
   }
 }
 
+base::Status Qwen2Layers::bind_shared_weights(
+    const SharedWeightBinding& binding, SharedWeightBindingReport* report) {
+  if (!binding.valid() || !report)
+    return base::error::InvalidArgument("invalid shared weight binding");
+  auto bind = [&](const std::shared_ptr<op::Layer>& layer) -> base::Status {
+    auto parameter = std::dynamic_pointer_cast<op::LayerParam>(layer);
+    if (!parameter)
+      return base::error::InvalidArgument("shared weight target is not parameterized");
+    return parameter->bind_external_weights(
+        binding.host_file_base, binding.device_file_base, binding.file_bytes,
+        binding.dtype, &report->bound_tensor_views,
+        &report->bound_tensor_logical_bytes);
+  };
+  auto bind_vector = [&](const std::vector<std::shared_ptr<op::Layer>>& layers)
+      -> base::Status {
+    for (const auto& layer : layers) {
+      auto status = bind(layer);
+      if (!status) return status;
+    }
+    return base::error::Success();
+  };
+  auto status = bind(embedding_layer_);
+  if (!status) return status;
+  report->embedding_view_bound = true;
+  for (const auto* layers : {&wq_layers_, &wk_layers_, &wv_layers_, &wo_layers_,
+                             &w1_layers_, &w2_layers_, &w3_layers_,
+                             &rmsnorm_layers_}) {
+    status = bind_vector(*layers);
+    if (!status) return status;
+  }
+  report->attention_views_bound =
+      !wq_layers_.empty() && !wk_layers_.empty() && !wv_layers_.empty() &&
+      !wo_layers_.empty();
+  status = bind(cls_layer_);
+  if (!status) return status;
+  report->output_view_bound = true;
+  report->enabled = true;
+  report->imported_logical_bytes = binding.file_bytes;
+  // Qwen's tied output head aliases the embedding range. The explicit E4
+  // manifest is authoritative for all other ranges and gaps in the file.
+  const auto embedding_parameter =
+      std::dynamic_pointer_cast<op::LayerParam>(embedding_layer_);
+  CHECK(embedding_parameter != nullptr);
+  report->unique_tensor_ranges = report->bound_tensor_views - 1;
+  report->unique_tensor_bytes = report->bound_tensor_logical_bytes -
+      embedding_parameter->get_weight(0).byte_size();
+  return base::error::Success();
+}
+
 Qwen2Model::Qwen2Model(base::TokenizerType tokenizer_type, std::string token_path,
                        std::string model_path, bool is_quant_model)
     : Model(tokenizer_type, base::ModelType::kModelTypeLLama2, std::move(token_path),
@@ -448,6 +498,19 @@ base::Status Qwen2Model::init(base::DeviceType device_type, int32_t device_id) {
   if (!read_status) {
     return read_status;
   }
+  if (shared_weight_binding_.device_file_base != nullptr) {
+    if (device_type_ != base::DeviceType::kDeviceCUDA ||
+        shared_weight_binding_.file_bytes != raw_model_data_->file_size ||
+        shared_weight_binding_.dtype != raw_model_data_->data_type ||
+        shared_weight_binding_.owner_incarnation == 0 ||
+        shared_weight_binding_.allocation_id == 0 ||
+        shared_weight_binding_.generation == 0 ||
+        shared_weight_binding_.capsule == nullptr) {
+      return error::InvalidArgument(
+          "shared weight identity/dtype/size/device mismatch before compute");
+    }
+    shared_weight_binding_.host_file_base = raw_model_data_->data;
+  }
   if (device_type_ == base::DeviceType::kDeviceCUDA &&
       raw_model_data_ != nullptr &&
       raw_model_data_->data_type == base::DataType::kDataTypeBf16 &&
@@ -530,7 +593,7 @@ base::Status Qwen2Model::forward_with_request(const tensor::Tensor& input,
     base::BlockAllocator& layer_allocator = kv_cache_manager_->allocator_mut(layer_idx);
     CHECK(paged_kv_runtime_ != nullptr);
     paged_kv_runtime_->scatter_single_token(
-        key_temp, value_temp, layer_allocator, block_id, offset, model_block_size,
+        key_temp, value_temp, layer_allocator.pool_view(), block_id, offset, model_block_size,
         config_->kv_head_num_, config_->head_size_);
 
     // Paged MHA — reuse pre-allocated device buffers
@@ -570,7 +633,7 @@ base::Status Qwen2Model::forward_with_request(const tensor::Tensor& input,
     decode_args.partial_max = &get_buffer(ModelBufferType::kSplitKVPartialMax);
     decode_args.partial_sum = &get_buffer(ModelBufferType::kSplitKVPartialSum);
     CHECK(paged_kv_runtime_ != nullptr);
-    paged_kv_runtime_->decode(layer_allocator, decode_args);
+    paged_kv_runtime_->decode(layer_allocator.pool_view(), decode_args);
 
     tensor::Tensor attn_output = first_row_view(get_buffer(ModelBufferType::kAttnOutput),
                                                 config_->dim_);
@@ -886,6 +949,11 @@ void Qwen2Model::init_mem() {
 
   if (device_type_ != base::DeviceType::kDeviceCPU) {
     require_compute_queue_or_die(device_context_);
+    if (shared_weight_binding_.device_file_base != nullptr) {
+      auto bind_status = qwen_layers_->bind_shared_weights(
+          shared_weight_binding_, &shared_weight_report_);
+      CHECK(bind_status) << bind_status.get_err_msg();
+    }
     qwen_layers_->materialize(device_context_, runtime_data_type_);
   }
 
@@ -1042,7 +1110,12 @@ void Qwen2Model::init_mem() {
   // fraction of the remaining free device memory with a safety reserve and retry
   // fallback for oversized requests.
   int32_t total_blocks = model_num_blocks * model_max_batch_size;
-  if (device_type_ != base::DeviceType::kDeviceCPU) {
+  if (device_type_ != base::DeviceType::kDeviceCPU &&
+      kv_cache_blocks_per_layer_ > 0) {
+    total_blocks = kv_cache_blocks_per_layer_;
+    LOG(INFO) << "Using explicit KV cache capacity: blocks_per_layer="
+              << total_blocks;
+  } else if (device_type_ != base::DeviceType::kDeviceCPU) {
     DynamicKVCacheSizingConfig kv_sizing_config;
     kv_sizing_config.layer_num = config_->layer_num_;
     kv_sizing_config.block_size = model_block_size;
@@ -1062,10 +1135,23 @@ void Qwen2Model::init_mem() {
     std::vector<std::unique_ptr<base::BlockAllocator>> layer_allocators;
     layer_allocators.reserve(config_->layer_num_);
     bool allocation_ok = true;
+    if (external_kv_pool_.valid()) {
+      CHECK_EQ(device_type_,base::DeviceType::kDeviceCUDA);
+      CHECK_EQ(external_kv_pool_.num_layers,config_->layer_num_);
+      CHECK_EQ(external_kv_pool_.num_blocks,total_blocks);
+      CHECK_EQ(external_kv_pool_.block_size,model_block_size);
+      CHECK_EQ(external_kv_pool_.num_kv_heads,config_->kv_head_num_);
+      CHECK_EQ(external_kv_pool_.head_size,config_->head_size_);
+      CHECK(external_kv_pool_.storage_dtype==kv_storage_spec.storage_dtype);
+      CHECK(kv_storage_spec.storage_mode==base::BlockStorageMode::kPlain)
+          << "external KV pool currently supports BF16/plain storage";
+    }
     for (int32_t i = 0; i < config_->layer_num_; ++i) {
-      auto allocator = std::make_unique<base::BlockAllocator>(
-          total_blocks, model_block_size, config_->kv_head_num_, config_->head_size_,
-          kv_storage_spec, device_type_);
+      auto allocator = external_kv_pool_.valid()
+          ? std::make_unique<base::BlockAllocator>(i,external_kv_pool_)
+          : std::make_unique<base::BlockAllocator>(
+                total_blocks, model_block_size, config_->kv_head_num_, config_->head_size_,
+                kv_storage_spec, device_type_);
       if (allocator->key_pool().is_empty() || allocator->value_pool().is_empty() ||
           (kv_storage_spec.has_scales() &&
            (allocator->key_scale_pool().is_empty() ||
@@ -1078,14 +1164,21 @@ void Qwen2Model::init_mem() {
 
     if (allocation_ok) {
       kv_cache_manager_ = std::make_unique<base::KVCacheManager>(
-          model_block_size, config_->layer_num_, std::move(layer_allocators));
+          model_block_size, config_->layer_num_, std::move(layer_allocators),
+          host_cache_config_);
       if (radix_cache_enabled_override_set_) {
         kv_cache_manager_->set_radix_cache_enabled(radix_cache_enabled_override_);
       }
       break;
     }
 
-    const int32_t next_blocks = std::max(kMinDynamicKVBlocks, total_blocks * 90 / 100);
+    CHECK(!external_kv_pool_.valid())
+        << "external KV pool binding failed validation or allocation";
+
+    const int32_t minimum_blocks = kv_cache_blocks_per_layer_ > 0
+                                       ? 1
+                                       : kMinDynamicKVBlocks;
+    const int32_t next_blocks = std::max(minimum_blocks, total_blocks * 90 / 100);
     CHECK_LT(next_blocks, total_blocks)
         << "Unable to allocate minimum KV cache pool. kv_cache_memory_utilization="
         << kv_cache_memory_utilization_ << ", blocks_per_layer=" << total_blocks;
@@ -1573,6 +1666,72 @@ serving::SampledTokenView Qwen2Model::batch_sample(int32_t batch_size) const {
   return batch_sample_device(forward_output, row_indices_device, batch_size);
 }
 
+base::Status Qwen2Model::copy_logits_row_to_host(int32_t row,
+                                                 std::vector<float>* logits) const {
+  if (logits == nullptr || row < 0 || row >= serving_workspace_token_capacity_) {
+    return base::error::InvalidArgument("invalid logits row or output");
+  }
+  const auto& output = get_buffer(ModelBufferType::kForwardOutput);
+  const int32_t vocab = std::abs(config_->vocab_size_);
+  const int64_t offset = static_cast<int64_t>(row) * vocab;
+  logits->resize(vocab);
+  if (output.data_type() == base::DataType::kDataTypeFp32) {
+    runtime_copy_or_die(device_context_, output.ptr<float>() + offset, logits->data(),
+                        static_cast<size_t>(vocab) * sizeof(float),
+                        output.device_type() == base::DeviceType::kDeviceCUDA
+                            ? base::CopyDirection::kDeviceToHost
+                            : base::CopyDirection::kHostToHost,
+                        compute_queue_or_null(device_context_), true);
+    return base::error::Success();
+  }
+  if (output.data_type() != base::DataType::kDataTypeBf16) {
+    return base::error::InvalidArgument("unsupported logits dtype");
+  }
+  std::vector<uint16_t> raw(vocab);
+  runtime_copy_or_die(device_context_, output.ptr<uint16_t>() + offset, raw.data(),
+                      static_cast<size_t>(vocab) * sizeof(uint16_t),
+                      output.device_type() == base::DeviceType::kDeviceCUDA
+                          ? base::CopyDirection::kDeviceToHost
+                          : base::CopyDirection::kHostToHost,
+                      compute_queue_or_null(device_context_), true);
+  for (int32_t i = 0; i < vocab; ++i) {
+    (*logits)[i] = host_logit_to_float(raw[i]);
+  }
+  return base::error::Success();
+}
+
+base::Status Qwen2Model::copy_final_hidden_row_to_host(
+    int32_t row, std::vector<float>* hidden) const {
+  if (hidden == nullptr || row < 0 || row >= serving_workspace_token_capacity_) {
+    return base::error::InvalidArgument("invalid hidden-state row or output");
+  }
+  const auto& value = get_buffer(ModelBufferType::kInputEmbeddings);
+  const int32_t width = config_->dim_;
+  const int64_t offset = static_cast<int64_t>(row) * width;
+  hidden->resize(width);
+  if (value.data_type() == base::DataType::kDataTypeFp32) {
+    runtime_copy_or_die(device_context_, value.ptr<float>() + offset, hidden->data(),
+                        static_cast<size_t>(width) * sizeof(float),
+                        value.device_type() == base::DeviceType::kDeviceCUDA
+                            ? base::CopyDirection::kDeviceToHost
+                            : base::CopyDirection::kHostToHost,
+                        compute_queue_or_null(device_context_), true);
+    return base::error::Success();
+  }
+  if (value.data_type() != base::DataType::kDataTypeBf16) {
+    return base::error::InvalidArgument("unsupported hidden-state dtype");
+  }
+  std::vector<uint16_t> raw(width);
+  runtime_copy_or_die(device_context_, value.ptr<uint16_t>() + offset, raw.data(),
+                      static_cast<size_t>(width) * sizeof(uint16_t),
+                      value.device_type() == base::DeviceType::kDeviceCUDA
+                          ? base::CopyDirection::kDeviceToHost
+                          : base::CopyDirection::kHostToHost,
+                      compute_queue_or_null(device_context_), true);
+  for (int32_t i = 0; i < width; ++i) (*hidden)[i] = host_logit_to_float(raw[i]);
+  return base::error::Success();
+}
+
 serving::SampledTokenView Qwen2Model::batch_sample(const serving::MixedBatchMetadata& batch) const {
   base::nvtx::ScopedRange range("batch_sample_mixed", base::nvtx::kColorSample);
   if (batch.logits_row_indices.empty()) {
@@ -1624,6 +1783,49 @@ serving::SampledTokenView Qwen2Model::batch_sample(
       reshape_view(get_buffer(ModelBufferType::kForwardOutput),
                    {batch.num_tokens, config_->vocab_size_});
 
+  const auto trace_samples = [&](const char* backend) {
+    const char* enabled = std::getenv("KUIPER_TRACE_REQUEST_SAMPLING");
+    if (enabled == nullptr || enabled[0] != '1') return;
+    for (int32_t i = 0; i < sample_count; ++i) {
+      const auto* seq = sched_out.scheduled_seqs[batch.sample_row_to_request[i]];
+      const auto seed = seq->generation_config.sampling.seed;
+      const auto counter = seq->sampling_counter;
+      LOG(WARNING) << "REQUEST_SAMPLE backend=" << backend
+                   << " handle=" << seq->request_id << " seed=" << seed
+                   << " counter=" << counter << " batch=" << sample_count
+                   << " uniform24=" << static_cast<uint32_t>(
+                       serving::request_sample_uniform(seed, counter) * 16777216.0f)
+                   << " token=" << host_tokens[i];
+      if (counter == 19 && device_type_ == base::DeviceType::kDeviceCUDA) {
+        const int64_t offset = static_cast<int64_t>(batch.logits_row_indices[i]) * config_->vocab_size_;
+        std::vector<float> row(config_->vocab_size_);
+        if (forward_output.data_type() == base::DataType::kDataTypeFp32) {
+          runtime_copy_or_die(device_context_, forward_output.ptr<float>() + offset, row.data(),
+                              row.size() * sizeof(float), base::CopyDirection::kDeviceToHost,
+                              compute_queue_or_null(device_context_), true);
+        } else {
+          std::vector<uint16_t> raw(row.size());
+          runtime_copy_or_die(device_context_, forward_output.ptr<uint16_t>() + offset, raw.data(),
+                              raw.size() * sizeof(uint16_t), base::CopyDirection::kDeviceToHost,
+                              compute_queue_or_null(device_context_), true);
+          for (size_t j = 0; j < row.size(); ++j) row[j] = host_logit_to_float(raw[j]);
+        }
+        std::vector<std::pair<float, int32_t>> ranked;
+        for (int32_t j = 0; j < config_->vocab_size_; ++j) ranked.emplace_back(row[j], j);
+        std::partial_sort(ranked.begin(), ranked.begin() + 16, ranked.end(), std::greater<>());
+        std::string top;
+        for (int j = 0; j < 16; ++j) top += std::to_string(ranked[j].second) + ":" +
+                                                std::to_string(ranked[j].first) + ",";
+        LOG(WARNING) << "REQUEST_LOGITS handle=" << seq->request_id << " seed=" << seed
+                     << " counter=" << counter << " top=" << top
+                     << " host_oracle=" << sample_host_row_with_config(row.data(),
+                        config_->vocab_size_, seq->generation_config.sampling,
+                        seq->prompt_tokens, seq->output_tokens,
+                        serving::request_sample_uniform(seed, counter));
+      }
+    }
+  };
+
   bool can_use_cuda_sampling = device_type_ == base::DeviceType::kDeviceCUDA &&
                                !batch_sample_cpu_fallback_enabled();
   for (int32_t sample_idx = 0; sample_idx < sample_count; ++sample_idx) {
@@ -1643,8 +1845,6 @@ serving::SampledTokenView Qwen2Model::batch_sample(
     float* top_ps = batch_sampler_workspace_.top_ps.host.ptr<float>();
     int32_t* top_ks = batch_sampler_workspace_.top_ks.host.ptr<int32_t>();
     float* random_values = batch_sampler_workspace_.random_values.host.ptr<float>();
-    std::mt19937 rng(0xC0FFEEu + static_cast<uint32_t>(sample_count));
-    std::uniform_real_distribution<float> uniform(0.0f, 0.99999994f);
     for (int32_t sample_idx = 0; sample_idx < sample_count; ++sample_idx) {
       const int32_t request_idx = batch.sample_row_to_request[sample_idx];
       const auto* seq = sched_out.scheduled_seqs[request_idx];
@@ -1652,7 +1852,8 @@ serving::SampledTokenView Qwen2Model::batch_sample(
       temperatures[sample_idx] = static_cast<float>(std::max(1.0e-6, sampling.temperature));
       top_ps[sample_idx] = static_cast<float>(sampling.top_p);
       top_ks[sample_idx] = sampling.top_k;
-      random_values[sample_idx] = uniform(rng);
+      random_values[sample_idx] = serving::request_sample_uniform(
+          sampling.seed, seq->sampling_counter);
     }
     void* queue = compute_queue_or_null(device_context_);
     runtime_copy_or_die(device_context_, temperatures,
@@ -1684,12 +1885,12 @@ serving::SampledTokenView Qwen2Model::batch_sample(
     runtime_copy_or_die(device_context_, token_ids_device.ptr<int32_t>(), host_tokens,
                         static_cast<size_t>(sample_count) * sizeof(int32_t),
                         base::CopyDirection::kDeviceToHost, queue, true);
+    trace_samples(can_use_cuda_sampling ? "cuda" : "cpu");
     return {host_tokens, sample_count};
   }
 
   base::nvtx::ScopedRange range("batch_sample_configured_cpu", base::nvtx::kColorSample);
 
-  std::mt19937 rng(0xC0FFEEu + static_cast<uint32_t>(sample_count));
   const int64_t logits_elements = static_cast<int64_t>(batch.num_tokens) * config_->vocab_size_;
   if (forward_output.data_type() == base::DataType::kDataTypeFp32) {
     std::vector<float> logits_cpu;
@@ -1709,8 +1910,12 @@ serving::SampledTokenView Qwen2Model::batch_sample(
       const auto* seq = sched_out.scheduled_seqs[request_idx];
       host_tokens[sample_idx] = sample_host_row_with_config(
           logits_ptr + static_cast<int64_t>(row_idx) * config_->vocab_size_,
-          config_->vocab_size_, seq->generation_config.sampling, seq->output_tokens, &rng);
+          config_->vocab_size_, seq->generation_config.sampling,
+          seq->prompt_tokens, seq->output_tokens,
+          serving::request_sample_uniform(seq->generation_config.sampling.seed,
+                                          seq->sampling_counter));
     }
+    trace_samples(can_use_cuda_sampling ? "cuda" : "cpu");
     return {host_tokens, sample_count};
   }
 
@@ -1732,8 +1937,12 @@ serving::SampledTokenView Qwen2Model::batch_sample(
     const auto* seq = sched_out.scheduled_seqs[request_idx];
     host_tokens[sample_idx] = sample_host_row_with_config(
         logits_ptr + static_cast<int64_t>(row_idx) * config_->vocab_size_,
-        config_->vocab_size_, seq->generation_config.sampling, seq->output_tokens, &rng);
+        config_->vocab_size_, seq->generation_config.sampling,
+        seq->prompt_tokens, seq->output_tokens,
+          serving::request_sample_uniform(seq->generation_config.sampling.seed,
+                                          seq->sampling_counter));
   }
+  trace_samples("cpu");
   return {host_tokens, sample_count};
 }
 

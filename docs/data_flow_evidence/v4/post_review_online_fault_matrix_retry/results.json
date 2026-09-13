@@ -1,0 +1,11 @@
+{
+  "malformed_rejected_before_compute": true,
+  "same_language_pid_after_malformed": true,
+  "budget_used_after_malformed": 0,
+  "old_incarnation": 39360152408459382,
+  "new_incarnation": 39359614358577180,
+  "stale_object_rejected_after_restart": true,
+  "language_shutdown_after_owner_loss": true,
+  "ipc_after_restart": "total_slots=64 free_slots=64 active_grants=0",
+  "data_after_restart": "incarnation=39359614358577180 bytes_used=0 objects=0 leases=0 bytes_received=380 bytes_sent=192 requests=6"
+}

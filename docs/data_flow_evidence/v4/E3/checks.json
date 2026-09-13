@@ -1,0 +1,21 @@
+{
+  "stage": "E3",
+  "status": "accepted",
+  "date": "2026-09-13",
+  "actual_kv_serving_path_connected": true,
+  "actual_path": "radix cache -> PageDirectory -> RecoveryDependencyGraph -> TransferScheduler -> PageMigrationEngine",
+  "serving_worker_counts_each": {"demote_decisions": 35, "committed_demotions": 35, "restores": 25, "publish_rejections": 0},
+  "page_dependency_reclaimed_on_clear_and_evict": true,
+  "recovery_kinds": ["recomputable", "preserve_until_released"],
+  "requirements": ["exact_continuation", "numeric_tolerance"],
+  "dependency_dag_bounded": true,
+  "separate_reference_classes": true,
+  "lifecycle_iterations": 10000,
+  "actual_path_focused_tests": 19,
+  "actual_path_cases": ["active consumer prevents demotion", "Host full retains last replica", "schema version mismatch rejects publication", "page recovery objects return to schema-only baseline"],
+  "physical_host_restore": {"demoted_blocks": 5, "restored_blocks": 5, "failures": 0},
+  "vision_feature_gpu_host_restore": {"objects": 1, "bytes": 262144, "consumer_tier": "gpu", "encoder_forward_after_restore": 0},
+  "multimodal_checkpoint": {"positions": true, "rope_delta": true, "rng": true, "outbox": true, "feature_dependency": true, "private_tail_tokens": 14, "private_tail_restored": true},
+  "policy_repetitions": 5,
+  "evidence": ["dependency_eviction_integration_final2.log", "../M9/model_transfer_scheduler_lane_final_gpu0_v2/results.json", "feature_gpu_host_recovery/result.json", "real_recovery/final_run/validation.json", "faults/contract_and_cuda_tests.log", "../M9/pressure_policy_ab/results.json"]
+}

@@ -1,0 +1,131 @@
+{
+  "checks": {
+    "capacity_exhaustion_not_published": true,
+    "changed_content_rejected": true,
+    "concurrent_followers_single_upload": true,
+    "consumer_crash_detected": true,
+    "idempotent_acquire_release": true,
+    "identity_mismatches_rejected": true,
+    "load_cancel_not_published": true,
+    "mapping_failure_releases_lease": true,
+    "old_generation_rejected": true,
+    "owner_crash_fail_stop": true,
+    "restart_recovers_clean": true,
+    "unknown_layout_rejected_and_rolled_back": true
+  },
+  "events": [
+    {
+      "event": "same_path_changed_content_rejected",
+      "exit_code": 7,
+      "socket_visible": false
+    },
+    {
+      "event": "loading_cancelled_before_ready",
+      "exit_code": -9,
+      "socket_visible": false
+    },
+    {
+      "event": "wrong_content_rejected",
+      "exit_code": 8,
+      "stderr": "error=8"
+    },
+    {
+      "event": "wrong_dtype_rejected",
+      "exit_code": 8,
+      "stderr": "error=8"
+    },
+    {
+      "event": "wrong_bytes_rejected",
+      "exit_code": 8,
+      "stderr": "error=8"
+    },
+    {
+      "active_after_release": 0,
+      "active_after_replay": 1,
+      "duplicate_release_exit": 0,
+      "event": "reply_lost_replay_and_duplicate_release",
+      "first": {
+        "allocation_id": 1,
+        "consumer_incarnation": 8001,
+        "generation": 1,
+        "lease_id": 1,
+        "service_incarnation": 37209168334520659
+      },
+      "first_release_exit": 0,
+      "replay": {
+        "allocation_id": 1,
+        "consumer_incarnation": 8001,
+        "generation": 1,
+        "lease_id": 1,
+        "service_incarnation": 37209168334520659
+      },
+      "same_lease": true
+    },
+    {
+      "active_leases_after": 0,
+      "event": "physical_gpu_mapping_mismatch",
+      "exit_code": 3,
+      "stderr": "shared weight mapping requires the owner's physical GPU"
+    },
+    {
+      "active_weight_leases_after": 0,
+      "event": "unknown_layout_rejected_before_compute",
+      "exit_code": 1,
+      "free_slots_after": 128,
+      "stderr": "PBE_VLM_LANGUAGE_FATAL invalid_shared_weight_identity",
+      "total_slots": 128
+    },
+    {
+      "active_leases": 2,
+      "allocation_count": 1,
+      "allocation_ids": [
+        1,
+        1
+      ],
+      "event": "concurrent_followers_share_ready_object",
+      "lease_ids": [
+        3,
+        4
+      ],
+      "upload_count": 1,
+      "worker_pids": [
+        3107805,
+        3107806
+      ]
+    },
+    {
+      "active_leases_before_isolation": 1,
+      "consumer_pid": 3107919,
+      "event": "consumer_sigkill_requires_owner_isolation"
+    },
+    {
+      "event": "owner_restart_rejects_old_generation",
+      "new_active_leases": 0,
+      "new_incarnation": 37215524342075509,
+      "old_incarnation": 37209168334520659,
+      "stale_release_exit": 10
+    },
+    {
+      "event": "owner_crash_blocks_new_compute",
+      "response": {
+        "error": "data_owner_unavailable_or_restarted_fail_stop",
+        "ok": false,
+        "op_id": 2,
+        "worker_pid": 3108168
+      },
+      "worker_pid": 3108168
+    },
+    {
+      "active_leases_after_worker_exit": 0,
+      "event": "fresh_generation_recovers_service",
+      "owner_incarnation": 37214589204831062
+    },
+    {
+      "event": "physical_capacity_exhausted_before_publication",
+      "exit_code": 6,
+      "socket_visible": false
+    }
+  ],
+  "ok": true,
+  "schema": "pbe-e4-fault-matrix-v1"
+}

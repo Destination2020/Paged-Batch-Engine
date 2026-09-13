@@ -1,0 +1,922 @@
+{
+  "after_data_service_mib": 6286,
+  "after_vision_mib": 8141,
+  "decode_status": {
+    "batches": 0,
+    "budget": {
+      "bundles": {
+        "capacity": 67108864,
+        "peak": 0,
+        "used": 0
+      },
+      "kv": {
+        "capacity": 37748736,
+        "peak": 0,
+        "used": 0
+      },
+      "staging": {
+        "capacity": 33554432,
+        "peak": 0,
+        "used": 0
+      },
+      "weights": {
+        "capacity": 0,
+        "peak": 0,
+        "used": 0
+      },
+      "workspaces": {
+        "capacity": 329646080,
+        "peak": 329646080,
+        "used": 329646080
+      }
+    },
+    "budget_invariant": true,
+    "device_memory": {
+      "admission_limit_bytes": 149753298944,
+      "external_kv_owner_bytes": 75497472,
+      "model_file_bytes": 6173974564,
+      "model_process_allocation_bytes": 419430400,
+      "peak_observed_used_bytes": 10074456064,
+      "preexisting_used_bytes": 9655025664,
+      "private_model_nonworkspace_bytes": 89784320,
+      "total_bytes": 150021734400,
+      "within_admission_limit": true,
+      "workspace_bytes_per_token": 643840,
+      "workspace_reserved_bytes": 329646080
+    },
+    "feature_copy_bytes": 0,
+    "host_cache_budget": {
+      "capacity": 268435456,
+      "peak": 0,
+      "used": 0
+    },
+    "ok": true,
+    "op_id": 3,
+    "pd": {
+      "active_handoffs": 0,
+      "decode_requests": 2,
+      "initial_prefill_slots": 64,
+      "kv_active_requests": 1,
+      "kv_request_baseline": 1,
+      "prefill_requests": 0,
+      "serving_active_requests": 0
+    },
+    "pool": {
+      "active_grants": 2,
+      "free_slots": 0,
+      "total_slots": 128,
+      "worker_allocatable_kv_bytes": 37748736,
+      "worker_granted_slots": 64,
+      "worker_initial_slots": 64
+    },
+    "radix_cache": {
+      "cache_hits": 0,
+      "cache_misses": 0,
+      "evicted_blocks": 0,
+      "host_demoted_blocks": 0,
+      "host_restore_failures": 0,
+      "host_restore_requests": 0,
+      "host_restored_blocks": 0,
+      "lookup_requests": 0,
+      "published_blocks": 0,
+      "tokens_reused": 0
+    },
+    "radix_cache_enabled": false,
+    "recovery_dependency": {
+      "actual_eviction_path": true,
+      "committed_demotions": 0,
+      "demote_decisions": 0,
+      "keep_decisions": 0,
+      "objects": 1,
+      "publish_rejections": 0,
+      "restores": 0
+    },
+    "requests": 0,
+    "transfer_scheduler": {
+      "background_completed": 0,
+      "demand_completed": 0,
+      "max_d2h_active": 0,
+      "max_h2d_active": 0,
+      "oldest_queue_ticks": 0,
+      "physical_submissions": 0
+    },
+    "weights": {
+      "allocation_id": 1,
+      "attention_views_bound": true,
+      "bound_tensor_logical_bytes": 6794207232,
+      "bound_tensor_views": 435,
+      "consumer_incarnation": 37276630546743632,
+      "embedding_view_bound": true,
+      "generation": 1,
+      "hardware_read_only_enforced": false,
+      "import_lease_id": 2,
+      "imported_logical_bytes": 6173974564,
+      "layout": "pbe-qwen2-bf16-v1",
+      "mode": "shared",
+      "output_view_bound": true,
+      "owner_active_leases": 2,
+      "owner_allocation_count": 1,
+      "owner_incarnation": 37272167311114736,
+      "owner_upload_count": 1,
+      "physical_bytes": 6173974564,
+      "shared": true,
+      "trusted_read_only_contract": true,
+      "unique_tensor_bytes": 6171877376,
+      "unique_tensor_ranges": 434
+    },
+    "worker_pid": 3093577
+  },
+  "experiment": "fixed_kv",
+  "gpu_baseline_mib": 1,
+  "gpu_recovered_mib": 1,
+  "ipc_after_workers": {
+    "active_grants": 0,
+    "exit_code": 0,
+    "free_slots": 128,
+    "raw": "total_slots=128 free_slots=128 active_grants=0",
+    "total_slots": 128
+  },
+  "kv_blocks": 128,
+  "lifecycle": {
+    "decode_pid": 3093577,
+    "decode_survived_prefill_exit": true,
+    "new_importer_joined": true,
+    "new_importer_pid": 3093685,
+    "weight_stats_after_join": {
+      "active_leases": 2,
+      "allocation_count": 1,
+      "allocation_id": 1,
+      "exit_code": 0,
+      "generation": 1,
+      "owner_incarnation": 37272167311114736,
+      "physical_bytes": 6173974564,
+      "raw": "state=2 owner_incarnation=37272167311114736 allocation_id=1 generation=1 physical_bytes=6173974564 upload_bytes=6173974564 upload_count=1 active_leases=2 allocation_count=1 staging_peak_bytes=67108864 upload_ms=5888.72",
+      "staging_peak_bytes": 67108864,
+      "state": 2,
+      "upload_bytes": 6173974564,
+      "upload_count": 1,
+      "upload_ms": 5888.72
+    }
+  },
+  "measurement": {
+    "decode_actual_computed_prompt_tokens": 0,
+    "decode_pid": 3093577,
+    "decode_scheduled_prefill_tokens": 0,
+    "handoff_valid": true,
+    "independent_role_pids": true,
+    "itl_ms": 50.06053753333333,
+    "ok": true,
+    "output_matches_prefill_oracle": true,
+    "prefill_ms": 837.6642018556595,
+    "prefill_pid": 3093526,
+    "prefill_tokens_saved": 95,
+    "prompt_tokens": 95,
+    "token_itl_ms": [
+      50.817161,
+      49.942381,
+      49.857064,
+      49.556679,
+      49.989855,
+      49.826686,
+      49.800552,
+      49.485115,
+      49.936216,
+      49.830905,
+      49.9089,
+      52.224304,
+      49.599916,
+      50.272971,
+      49.859358
+    ],
+    "tokens": [
+      785,
+      2168,
+      374,
+      264,
+      6396,
+      15941,
+      429,
+      45380,
+      279,
+      1882,
+      315,
+      821,
+      8692,
+      304,
+      264,
+      9437
+    ],
+    "ttft_ms": 837.6642018556595,
+    "wall_ms": 1589.470773935318
+  },
+  "memory_timeline": [
+    {
+      "device": 0,
+      "monotonic_ns": 48231892504379026,
+      "used_mib": 1
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48231892819399945,
+      "used_mib": 1
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48231893208147163,
+      "used_mib": 1
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48231893639523749,
+      "used_mib": 20
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48231893994149503,
+      "used_mib": 6286
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48231894337490178,
+      "used_mib": 6286
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48231894683908731,
+      "used_mib": 6286
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48231895036845791,
+      "used_mib": 6286
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48231895408296027,
+      "used_mib": 6286
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48231895782270364,
+      "used_mib": 6286
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48231896184761895,
+      "used_mib": 6286
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48231896665317658,
+      "used_mib": 6286
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48231896979222302,
+      "used_mib": 6286
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48231897319174336,
+      "used_mib": 6286
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48231897633662857,
+      "used_mib": 6286
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48231898021339884,
+      "used_mib": 6286
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48231898407968192,
+      "used_mib": 6286
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48231898753898693,
+      "used_mib": 6286
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48231899069778435,
+      "used_mib": 6286
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48231899388794810,
+      "used_mib": 6286
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48231899704330321,
+      "used_mib": 6286
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48231900018432700,
+      "used_mib": 6286
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48231900344109171,
+      "used_mib": 6286
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48231900659963990,
+      "used_mib": 6286
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48231900973877493,
+      "used_mib": 6286
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48231901308052148,
+      "used_mib": 6286
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48231901622544579,
+      "used_mib": 6286
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48231901940249125,
+      "used_mib": 6286
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48231902257944119,
+      "used_mib": 6286
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48231902570121024,
+      "used_mib": 6286
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48231902883717885,
+      "used_mib": 6286
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48231903198205116,
+      "used_mib": 6286
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48231903510151120,
+      "used_mib": 6286
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48231903822672533,
+      "used_mib": 6286
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48231904175359326,
+      "used_mib": 6286
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48231904516530298,
+      "used_mib": 6286
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48231904830125405,
+      "used_mib": 6286
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48231905196707730,
+      "used_mib": 6286
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48231905510507299,
+      "used_mib": 6286
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48231905824586668,
+      "used_mib": 6286
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48231906191768007,
+      "used_mib": 6286
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48231906506078946,
+      "used_mib": 6286
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48231906820851144,
+      "used_mib": 6286
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48231907223531889,
+      "used_mib": 6286
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48231907534790523,
+      "used_mib": 6286
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48231907846165139,
+      "used_mib": 6286
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48231908270101776,
+      "used_mib": 6286
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48231908608559487,
+      "used_mib": 6286
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48231908920284254,
+      "used_mib": 6286
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48231909233144162,
+      "used_mib": 6286
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48231909544139446,
+      "used_mib": 6286
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48231909855114658,
+      "used_mib": 6286
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48231910175993502,
+      "used_mib": 6286
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48231910494170677,
+      "used_mib": 6286
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48231910810547271,
+      "used_mib": 6286
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48231911173601698,
+      "used_mib": 6286
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48231911485162918,
+      "used_mib": 6286
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48231911794162420,
+      "used_mib": 6286
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48231912184690141,
+      "used_mib": 6286
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48231912494088727,
+      "used_mib": 6286
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48231912809210671,
+      "used_mib": 6286
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48231913182261849,
+      "used_mib": 6286
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48231913512251286,
+      "used_mib": 6286
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48231913836612024,
+      "used_mib": 6286
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48231914226263839,
+      "used_mib": 6929
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48231914536151513,
+      "used_mib": 7979
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48231914846517560,
+      "used_mib": 7979
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48231915195336163,
+      "used_mib": 8133
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48231915503652212,
+      "used_mib": 8141
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48231915813629951,
+      "used_mib": 8141
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48231916189727352,
+      "used_mib": 8141
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48231916500584316,
+      "used_mib": 8141
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48231916810895284,
+      "used_mib": 8141
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48231917198942558,
+      "used_mib": 8141
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48231917534601727,
+      "used_mib": 8549
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48231917858261287,
+      "used_mib": 8557
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48231918275639126,
+      "used_mib": 8875
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48231918606990158,
+      "used_mib": 8875
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48231918917944864,
+      "used_mib": 8875
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48231919227878554,
+      "used_mib": 8875
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48231919547253777,
+      "used_mib": 8875
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48231919873203253,
+      "used_mib": 8908
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48231920198961897,
+      "used_mib": 9282
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48231920508252284,
+      "used_mib": 9608
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48231920817106110,
+      "used_mib": 9608
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48231921190182228,
+      "used_mib": 9608
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48231921505084646,
+      "used_mib": 9608
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48231921817610539,
+      "used_mib": 9608
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48231922177811965,
+      "used_mib": 9608
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48231922487999501,
+      "used_mib": 9608
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48231922808773523,
+      "used_mib": 9608
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48231923178485000,
+      "used_mib": 9202
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48231923503542479,
+      "used_mib": 8877
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48231923818004106,
+      "used_mib": 8877
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48231924173413075,
+      "used_mib": 8877
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48231924494688769,
+      "used_mib": 9198
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48231924811122752,
+      "used_mib": 9282
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48231925180285766,
+      "used_mib": 9608
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48231925493345668,
+      "used_mib": 9608
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48231925809985443,
+      "used_mib": 9608
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48231926190826748,
+      "used_mib": 8469
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48231926506497674,
+      "used_mib": 8141
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48231926823418176,
+      "used_mib": 8141
+    },
+    {
+      "device": 0,
+      "monotonic_ns": 48231927230455800,
+      "used_mib": 8141
+    }
+  ],
+  "mode": "shared",
+  "order": 13,
+  "prefill_ready": {
+    "absolute_deadline": true,
+    "async_queue_capacity": 16,
+    "event": "ready",
+    "external_cancel": true,
+    "protocol": "pbe-vlm-language-jsonl-v2",
+    "worker_pid": 3093526
+  },
+  "prefill_status": {
+    "batches": 0,
+    "budget": {
+      "bundles": {
+        "capacity": 67108864,
+        "peak": 264200,
+        "used": 0
+      },
+      "kv": {
+        "capacity": 37748736,
+        "peak": 4128768,
+        "used": 0
+      },
+      "staging": {
+        "capacity": 33554432,
+        "peak": 262144,
+        "used": 0
+      },
+      "weights": {
+        "capacity": 0,
+        "peak": 0,
+        "used": 0
+      },
+      "workspaces": {
+        "capacity": 329646080,
+        "peak": 329646080,
+        "used": 329646080
+      }
+    },
+    "budget_invariant": true,
+    "device_memory": {
+      "admission_limit_bytes": 149753298944,
+      "external_kv_owner_bytes": 75497472,
+      "model_file_bytes": 6173974564,
+      "model_process_allocation_bytes": 419430400,
+      "peak_observed_used_bytes": 10074456064,
+      "preexisting_used_bytes": 8885829632,
+      "private_model_nonworkspace_bytes": 89784320,
+      "total_bytes": 150021734400,
+      "within_admission_limit": true,
+      "workspace_bytes_per_token": 643840,
+      "workspace_reserved_bytes": 329646080
+    },
+    "feature_copy_bytes": 0,
+    "host_cache_budget": {
+      "capacity": 268435456,
+      "peak": 0,
+      "used": 0
+    },
+    "ok": true,
+    "op_id": 5,
+    "pd": {
+      "active_handoffs": 0,
+      "decode_requests": 0,
+      "initial_prefill_slots": 0,
+      "kv_active_requests": 1,
+      "kv_request_baseline": 1,
+      "prefill_requests": 2,
+      "serving_active_requests": 0
+    },
+    "pool": {
+      "active_grants": 2,
+      "free_slots": 0,
+      "total_slots": 128,
+      "worker_allocatable_kv_bytes": 37748736,
+      "worker_granted_slots": 64,
+      "worker_initial_slots": 0
+    },
+    "radix_cache": {
+      "cache_hits": 0,
+      "cache_misses": 0,
+      "evicted_blocks": 0,
+      "host_demoted_blocks": 0,
+      "host_restore_failures": 0,
+      "host_restore_requests": 0,
+      "host_restored_blocks": 0,
+      "lookup_requests": 0,
+      "published_blocks": 0,
+      "tokens_reused": 0
+    },
+    "radix_cache_enabled": false,
+    "recovery_dependency": {
+      "actual_eviction_path": true,
+      "committed_demotions": 0,
+      "demote_decisions": 0,
+      "keep_decisions": 0,
+      "objects": 1,
+      "publish_rejections": 0,
+      "restores": 0
+    },
+    "requests": 0,
+    "transfer_scheduler": {
+      "background_completed": 0,
+      "demand_completed": 0,
+      "max_d2h_active": 0,
+      "max_h2d_active": 0,
+      "oldest_queue_ticks": 0,
+      "physical_submissions": 0
+    },
+    "weights": {
+      "allocation_id": 1,
+      "attention_views_bound": true,
+      "bound_tensor_logical_bytes": 6794207232,
+      "bound_tensor_views": 435,
+      "consumer_incarnation": 37276443433906855,
+      "embedding_view_bound": true,
+      "generation": 1,
+      "hardware_read_only_enforced": false,
+      "import_lease_id": 1,
+      "imported_logical_bytes": 6173974564,
+      "layout": "pbe-qwen2-bf16-v1",
+      "mode": "shared",
+      "output_view_bound": true,
+      "owner_active_leases": 2,
+      "owner_allocation_count": 1,
+      "owner_incarnation": 37272167311114736,
+      "owner_upload_count": 1,
+      "physical_bytes": 6173974564,
+      "shared": true,
+      "trusted_read_only_contract": true,
+      "unique_tensor_bytes": 6171877376,
+      "unique_tensor_ranges": 434
+    },
+    "worker_pid": 3093526
+  },
+  "repetition": 2,
+  "service_command": [
+    "build-v3/demo/pbe_data_service",
+    "serve-gpu-weights",
+    "/tmp/pbe-e4-data-3076186-13.sock",
+    "2147483648",
+    "0",
+    "36",
+    "128",
+    "16",
+    "2",
+    "128",
+    "4",
+    "/tmp/Paged-Batch-Engine-models/Qwen2.5-VL-3B-Instruct.pbe-bf16-v1.bin",
+    "526ed2ed568a8d639211d9eb3cd91aaba56f67bbe89017ec2d2bf2bed6a0bf52",
+    "pbe-qwen2-bf16-v1",
+    "67108864",
+    "4096"
+  ],
+  "service_weight_stats": {
+    "active_leases": 2,
+    "allocation_count": 1,
+    "allocation_id": 1,
+    "exit_code": 0,
+    "generation": 1,
+    "owner_incarnation": 37272167311114736,
+    "physical_bytes": 6173974564,
+    "raw": "state=2 owner_incarnation=37272167311114736 allocation_id=1 generation=1 physical_bytes=6173974564 upload_bytes=6173974564 upload_count=1 active_leases=2 allocation_count=1 staging_peak_bytes=67108864 upload_ms=5888.72",
+    "staging_peak_bytes": 67108864,
+    "state": 2,
+    "upload_bytes": 6173974564,
+    "upload_count": 1,
+    "upload_ms": 5888.72
+  },
+  "startup_peak_mib": 9608,
+  "steady_mib": 9608,
+  "trial": "fixed_kv-13-shared-2",
+  "weight_after_workers": {
+    "active_leases": 0,
+    "allocation_count": 1,
+    "allocation_id": 1,
+    "exit_code": 0,
+    "generation": 1,
+    "owner_incarnation": 37272167311114736,
+    "physical_bytes": 6173974564,
+    "raw": "state=2 owner_incarnation=37272167311114736 allocation_id=1 generation=1 physical_bytes=6173974564 upload_bytes=6173974564 upload_count=1 active_leases=0 allocation_count=1 staging_peak_bytes=67108864 upload_ms=5888.72",
+    "staging_peak_bytes": 67108864,
+    "state": 2,
+    "upload_bytes": 6173974564,
+    "upload_count": 1,
+    "upload_ms": 5888.72
+  },
+  "worker_slots_each": 64
+}

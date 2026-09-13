@@ -109,7 +109,9 @@ void record_sampled_token(SequenceState* seq,
 }  // namespace
 
 Scheduler::Scheduler(const SchedulerConfig& config, base::KVCacheManager* kv_manager)
-    : config_(config), kv_manager_(kv_manager) {
+    : config_(config), kv_manager_(kv_manager),
+      checkpoint_store_(config.max_checkpoint_records,
+                        config.max_checkpoint_bytes) {
   CHECK_NE(kv_manager_, nullptr);
   CHECK_GT(config_.max_num_seqs, 0);
   CHECK_GT(config_.max_num_batched_tokens, 0);
@@ -217,6 +219,8 @@ int64_t Scheduler::add_decode_ready_request(base::RequestId request_id,
   seq.prompt_tokens = std::move(prompt_tokens);
   seq.generation_config = generation_config;
   seq.generated_tokens = 1;
+  seq.sampling_counter = 1;
+  seq.token_times.push_back(now);
   seq.next_token = first_token;
   seq.output_tokens.push_back(first_token);
   seq.finished = false;
@@ -268,6 +272,8 @@ bool Scheduler::cancel_request(int64_t client_request_id, const std::string& rea
     }
     fail_sequence(&*it, now, reason);
     kv_manager_->free_request(it->request_id);
+    checkpoint_store_.cancel_client(client_request_id, kv_manager_);
+    restored_checkpoints_.erase(client_request_id);
     finished_.push_back(std::move(*it));
     waiting_.erase(it);
     return true;
@@ -278,15 +284,122 @@ bool Scheduler::cancel_request(int64_t client_request_id, const std::string& rea
       continue;
     }
     fail_sequence(&seq, now, reason);
+    checkpoint_store_.cancel_client(client_request_id, kv_manager_);
+    restored_checkpoints_.erase(client_request_id);
     reap_finished_running();
+    return true;
+  }
+  const auto suspended = suspended_.find(client_request_id);
+  if (suspended != suspended_.end()) {
+    checkpoint_store_.cancel_client(client_request_id, kv_manager_);
+    checkpoint_store_.erase(suspended->second);
+    suspended_.erase(suspended);
     return true;
   }
   return false;
 }
 
+bool Scheduler::set_multimodal_checkpoint_state(
+    int64_t client_request_id, std::vector<int32_t> positions,
+    int64_t rope_delta, int32_t image_begin, int32_t feature_rows,
+    int32_t hidden_size, std::string feature_content,
+    std::string feature_representation, bool exact_dependency) {
+  auto set_on = [&](std::deque<SequenceState>* sequences) {
+    for (auto& sequence : *sequences) {
+      if (sequence.client_request_id != client_request_id) continue;
+      sequence.multimodal_positions = std::move(positions);
+      sequence.multimodal_rope_delta = rope_delta;
+      sequence.multimodal_image_begin = image_begin;
+      sequence.multimodal_feature_rows = feature_rows;
+      sequence.multimodal_hidden_size = hidden_size;
+      sequence.multimodal_feature_content = std::move(feature_content);
+      sequence.multimodal_feature_representation =
+          std::move(feature_representation);
+      sequence.multimodal_exact_dependency = exact_dependency;
+      return true;
+    }
+    return false;
+  };
+  return set_on(&waiting_) || set_on(&running_);
+}
+
+int32_t Scheduler::request_computed_tokens(int64_t client_request_id) const {
+  for (const auto& sequence : waiting_)
+    if (sequence.client_request_id == client_request_id) return sequence.computed_tokens;
+  for (const auto& sequence : running_)
+    if (sequence.client_request_id == client_request_id) return sequence.computed_tokens;
+  return -1;
+}
+
+bool Scheduler::suspend_request(int64_t client_request_id, uint64_t* revision) {
+  if (!revision || suspended_.count(client_request_id)) return false;
+  auto suspend_from = [&](std::deque<SequenceState>* sequences) {
+    for (auto it = sequences->begin(); it != sequences->end(); ++it) {
+      if (it->client_request_id != client_request_id) continue;
+      if (it->scheduled_tokens != 0 || it->finished || it->failed) return false;
+      const auto previous = it->status;
+      it->status = SequenceStatus::kSuspend;
+      it->status = SequenceStatus::kOffloading;
+      CheckpointTicket ticket;
+      if (!checkpoint_store_.save(*it, config_.checkpoint_model_namespace,
+                                  kv_manager_, &ticket)) {
+        it->status = previous;
+        return false;
+      }
+      it->status = SequenceStatus::kSuspended;
+      kv_manager_->free_request(it->request_id);
+      suspended_.emplace(client_request_id, ticket);
+      *revision = ticket.revision;
+      sequences->erase(it);
+      return true;
+    }
+    return false;
+  };
+  return suspend_from(&waiting_) || suspend_from(&running_);
+}
+
+bool Scheduler::restore_request(int64_t client_request_id, uint64_t revision) {
+  const auto it = suspended_.find(client_request_id);
+  if (it == suspended_.end() || it->second.revision != revision) return false;
+  const auto ticket = it->second;
+  if (!checkpoint_store_.begin_restore(ticket, config_.checkpoint_model_namespace,
+                                       kv_manager_)) return false;
+  SequenceState restored;
+  restored.status = SequenceStatus::kRestoring;
+  if (!checkpoint_store_.commit_restore(ticket, kv_manager_, &restored)) return false;
+  suspended_.erase(it);
+  restored_checkpoints_[client_request_id] = ticket;
+  if (restored.is_prefill()) enqueue_waiting_sequence(std::move(restored));
+  else admit_decode_ready_sequence(std::move(restored));
+  return true;
+}
+
+bool Scheduler::checkpoint_manifest(
+    int64_t client_request_id, uint64_t revision,
+    RequestCheckpointManifest* manifest) const {
+  return checkpoint_store_.manifest({client_request_id, revision}, manifest);
+}
+
 SchedulerOutput Scheduler::schedule_step() {
   ++scheduler_step_;
   ++metrics_.schedule_steps;
+  metrics_.cache_transfer_completions += kv_manager_->service_cache_transfers();
+  maybe_restore_checkpointed_request();
+  auto refresh_restored = [&](std::deque<SequenceState>& sequences) {
+    for (auto& seq : sequences) {
+      if (kv_manager_->request_restore_state(seq.request_id) ==
+          base::RequestRestoreState::kReady) {
+        seq.computed_tokens = kv_manager_->get_context_len(seq.request_id);
+      }
+    }
+  };
+  refresh_restored(waiting_);
+  refresh_restored(running_);
+  if (kv_manager_->host_cache_enabled() && (!waiting_.empty() || !running_.empty()) &&
+      min_unused_blocks_across_layers() == 0) {
+    kv_manager_->demote_radix_cache_to_host();
+    metrics_.cache_transfer_completions += kv_manager_->service_cache_transfers();
+  }
   reap_finished_running();
   reap_preempted_running();
 
@@ -357,6 +470,7 @@ void Scheduler::reset_request_arrival_times() {
     seq.first_token_recorded = false;
     seq.finished_time_recorded = false;
     seq.generated_tokens = 0;
+    seq.token_times.clear();
     seq.failed = false;
     if (seq.status == SequenceStatus::kFailed) {
       seq.status = SequenceStatus::kWaiting;
@@ -370,6 +484,7 @@ void Scheduler::reset_request_arrival_times() {
     seq.first_token_recorded = false;
     seq.finished_time_recorded = false;
     seq.generated_tokens = 0;
+    seq.token_times.clear();
     seq.failed = false;
     if (seq.status == SequenceStatus::kFailed) {
       seq.status = SequenceStatus::kRunning;
@@ -381,7 +496,7 @@ void Scheduler::reset_request_arrival_times() {
 }
 
 bool Scheduler::has_active_requests() const {
-  return !waiting_.empty() || !running_.empty();
+  return !waiting_.empty() || !running_.empty() || !suspended_.empty();
 }
 
 int32_t Scheduler::total_kv_token_capacity() const {
@@ -389,7 +504,7 @@ int32_t Scheduler::total_kv_token_capacity() const {
 }
 
 int32_t Scheduler::reusable_free_blocks() const {
-  return kv_manager_->num_free_blocks(0) + kv_manager_->radix_cache_evictable_blocks();
+  return kv_manager_->schedulable_free_blocks(0);
 }
 
 void Scheduler::reserve_metadata_capacity_for_request(
@@ -518,6 +633,10 @@ int32_t Scheduler::running_long_partial_prefills() const {
 }
 
 bool Scheduler::can_schedule_prefill_now(const SequenceState& seq) const {
+  if (kv_manager_->request_restore_state(seq.request_id) ==
+      base::RequestRestoreState::kPending) {
+    return false;
+  }
   if (!seq.is_prefill()) {
     return false;
   }
@@ -759,6 +878,20 @@ void Scheduler::handle_no_progress_step(const SchedulerOutput& output) {
   }
   reap_finished_running();
   reap_preempted_running();
+  const auto waiting_on_restore = [&](const auto& sequences) {
+    return std::any_of(sequences.begin(), sequences.end(), [&](const auto& seq) {
+      return kv_manager_->request_restore_state(seq.request_id) ==
+             base::RequestRestoreState::kPending;
+    });
+  };
+  if (waiting_on_restore(waiting_) || waiting_on_restore(running_)) {
+    ++metrics_.cache_restore_wait_steps;
+    return;
+  }
+  if (kv_manager_->cache_transfers_pending()) {
+    ++metrics_.cache_restore_wait_steps;
+    return;
+  }
   if (reject_waiting_request_that_cannot_start()) {
     return;
   }
@@ -767,7 +900,13 @@ void Scheduler::handle_no_progress_step(const SchedulerOutput& output) {
 
 
 void Scheduler::reap_finished_running() {
+  const size_t before = finished_.size();
   move_finished_sequences_to_output(&running_, &finished_, kv_manager_);
+  for (size_t i = before; i < finished_.size(); ++i) {
+    const auto client = finished_[i].client_request_id;
+    if (restored_checkpoints_.erase(client))
+      checkpoint_store_.cancel_client(client, kv_manager_);
+  }
 }
 
 void Scheduler::reap_preempted_running() {
@@ -775,6 +914,8 @@ void Scheduler::reap_preempted_running() {
   while (it != running_.end()) {
     if (it->status == SequenceStatus::kPreempted) {
       enqueue_waiting_sequence(std::move(*it));
+      it = running_.erase(it);
+    } else if (it->status == SequenceStatus::kSuspended) {
       it = running_.erase(it);
     } else {
       ++it;
@@ -794,6 +935,29 @@ void Scheduler::preempt_sequence(SequenceState* seq, const std::string& reason) 
   CHECK(!seq->finished);
   CHECK(!seq->failed);
 
+  const bool wants_checkpoint =
+      config_.preemption_policy == PreemptionPolicy::kCheckpoint ||
+      config_.preemption_policy == PreemptionPolicy::kAuto;
+  if (wants_checkpoint && !suspended_.count(seq->client_request_id)) {
+    CheckpointTicket ticket;
+    seq->last_preempt_reason = reason;
+    seq->preemption_count++;
+    if (checkpoint_store_.save(*seq, config_.checkpoint_model_namespace,
+                               kv_manager_, &ticket)) {
+      kv_manager_->free_request(seq->request_id);
+      seq->scheduled_tokens = 0;
+      seq->status = SequenceStatus::kSuspended;
+      suspended_[seq->client_request_id] = ticket;
+      ++metrics_.checkpoint_preemptions;
+      LOG(WARNING) << "Checkpoint-preempted request " << seq->client_request_id
+                   << ": " << reason << ", revision=" << ticket.revision;
+      return;
+    }
+    ++metrics_.checkpoint_fallbacks;
+    --seq->preemption_count;
+  }
+
+  ++metrics_.recompute_preemptions;
   kv_manager_->free_request(seq->request_id);
   seq->request_id = kv_manager_->register_request_with_radix_cache(seq->prompt_tokens);
   seq->computed_tokens = kv_manager_->get_context_len(seq->request_id);
@@ -809,6 +973,15 @@ void Scheduler::preempt_sequence(SequenceState* seq, const std::string& reason) 
                << ": " << reason
                << ", recompute_tokens=" << seq->target_tokens()
                << ", preemption_count=" << seq->preemption_count;
+}
+
+void Scheduler::maybe_restore_checkpointed_request() {
+  // Checkpoint victims yield to all runnable work. Once it drains, restoring
+  // one victim cannot deadlock behind work that needs the same owner thread.
+  if (!waiting_.empty() || !running_.empty() || suspended_.empty()) return;
+  const auto item = *suspended_.begin();
+  if (restore_request(item.first, item.second.revision))
+    ++metrics_.checkpoint_restores;
 }
 
 void Scheduler::process_decode_output(
@@ -904,6 +1077,10 @@ bool Scheduler::reject_waiting_request_that_cannot_start() {
     return false;
   }
   auto& seq = waiting_.front();
+  if (kv_manager_->request_restore_state(seq.request_id) ==
+      base::RequestRestoreState::kPending) {
+    return false;
+  }
   if (seq.ready_step > scheduler_step_) {
     return false;
   }
@@ -935,7 +1112,7 @@ bool Scheduler::reject_waiting_request_that_cannot_start() {
   int32_t chunk = 0;
   if (can_admit_waiting_sequence(
           seq, desired_chunk,
-          kv_manager_->num_free_blocks(0) + kv_manager_->radix_cache_evictable_blocks(),
+          kv_manager_->schedulable_free_blocks(0),
           &chunk)) {
     return false;
   }
@@ -955,8 +1132,7 @@ bool Scheduler::reject_waiting_request_that_cannot_start() {
              std::to_string(failed.target_tokens() + 1) +
              ", kv_capacity_tokens=" + std::to_string(total_kv_token_capacity()) + ")";
   } else {
-    const int32_t reusable_free_blocks =
-        kv_manager_->num_free_blocks(0) + kv_manager_->radix_cache_evictable_blocks();
+    const int32_t reusable_free_blocks = kv_manager_->schedulable_free_blocks(0);
     reason = "prefill_cannot_start(remaining_prompt_tokens=" +
              std::to_string(failed.remaining_tokens()) +
              ", free_kv_blocks=" + std::to_string(kv_manager_->num_free_blocks(0)) +
@@ -973,6 +1149,10 @@ bool Scheduler::reject_waiting_request_that_cannot_start() {
 
 bool Scheduler::fail_stalled_prefill_request() {
   for (auto& seq : running_) {
+    if (kv_manager_->request_restore_state(seq.request_id) ==
+        base::RequestRestoreState::kPending) {
+      continue;
+    }
     if (!seq.is_prefill()) {
       continue;
     }

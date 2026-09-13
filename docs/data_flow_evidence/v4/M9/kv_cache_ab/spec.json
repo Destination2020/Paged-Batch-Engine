@@ -1,0 +1,40 @@
+{
+  "rounds": [
+    [
+      {
+        "request_id": "producer",
+        "generation": 1,
+        "parts": [
+          {
+            "type": "image",
+            "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/image.png",
+            "size": 224
+          },
+          {
+            "type": "text",
+            "text": "Describe this image in one sentence."
+          }
+        ],
+        "max_new_tokens": 16
+      }
+    ],
+    [
+      {
+        "request_id": "replay",
+        "generation": 1,
+        "parts": [
+          {
+            "type": "image",
+            "path": "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-hldy-nlp/MMA/cairuwei/chengbingsen/omni_flow_tts/Paged-Batch-Engine/image.png",
+            "size": 224
+          },
+          {
+            "type": "text",
+            "text": "Describe this image in one sentence."
+          }
+        ],
+        "max_new_tokens": 16
+      }
+    ]
+  ]
+}

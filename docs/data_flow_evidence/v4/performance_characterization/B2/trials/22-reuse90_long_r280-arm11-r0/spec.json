@@ -1,0 +1,232 @@
+{
+  "rounds": [
+    [
+      {
+        "generation": 1,
+        "max_new_tokens": 8,
+        "parts": [
+          {
+            "path": "docs/data_flow_evidence/v4/performance_characterization/B2/inputs/variant-10.png",
+            "size": 280,
+            "type": "image"
+          },
+          {
+            "text": "Warm the model without entering the measured identities.",
+            "type": "text"
+          }
+        ],
+        "request_id": "warmup-22-reuse90_long_r280-arm11-r0"
+      }
+    ],
+    [
+      {
+        "diagnostic_dump_logits_step": 0,
+        "diagnostic_key": "b2-22-reuse90_long_r280-arm11-r0-content-0-question-0",
+        "diagnostic_mode": "request-0",
+        "generation": 1,
+        "max_new_tokens": 8,
+        "parts": [
+          {
+            "path": "docs/data_flow_evidence/v4/performance_characterization/B2/inputs/variant-00.png",
+            "size": 280,
+            "type": "image"
+          },
+          {
+            "text": "Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Finish with the main subject.",
+            "type": "text"
+          }
+        ],
+        "request_id": "b2-22-reuse90_long_r280-arm11-r0-00"
+      }
+    ],
+    [
+      {
+        "diagnostic_dump_logits_step": 0,
+        "diagnostic_key": "b2-22-reuse90_long_r280-arm11-r0-content-0-question-1",
+        "diagnostic_mode": "request-1",
+        "generation": 1,
+        "max_new_tokens": 8,
+        "parts": [
+          {
+            "path": "docs/data_flow_evidence/v4/performance_characterization/B2/inputs/variant-00.png",
+            "size": 280,
+            "type": "image"
+          },
+          {
+            "text": "Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Finish with the central object.",
+            "type": "text"
+          }
+        ],
+        "request_id": "b2-22-reuse90_long_r280-arm11-r0-01"
+      }
+    ],
+    [
+      {
+        "diagnostic_dump_logits_step": 0,
+        "diagnostic_key": "b2-22-reuse90_long_r280-arm11-r0-content-0-question-0",
+        "diagnostic_mode": "request-2",
+        "generation": 1,
+        "max_new_tokens": 8,
+        "parts": [
+          {
+            "path": "docs/data_flow_evidence/v4/performance_characterization/B2/inputs/variant-00.png",
+            "size": 280,
+            "type": "image"
+          },
+          {
+            "text": "Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Finish with the main subject.",
+            "type": "text"
+          }
+        ],
+        "request_id": "b2-22-reuse90_long_r280-arm11-r0-02"
+      }
+    ],
+    [
+      {
+        "diagnostic_dump_logits_step": 0,
+        "diagnostic_key": "b2-22-reuse90_long_r280-arm11-r0-content-0-question-1",
+        "diagnostic_mode": "request-3",
+        "generation": 1,
+        "max_new_tokens": 8,
+        "parts": [
+          {
+            "path": "docs/data_flow_evidence/v4/performance_characterization/B2/inputs/variant-00.png",
+            "size": 280,
+            "type": "image"
+          },
+          {
+            "text": "Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Finish with the central object.",
+            "type": "text"
+          }
+        ],
+        "request_id": "b2-22-reuse90_long_r280-arm11-r0-03"
+      }
+    ],
+    [
+      {
+        "diagnostic_dump_logits_step": 0,
+        "diagnostic_key": "b2-22-reuse90_long_r280-arm11-r0-content-0-question-0",
+        "diagnostic_mode": "request-4",
+        "generation": 1,
+        "max_new_tokens": 8,
+        "parts": [
+          {
+            "path": "docs/data_flow_evidence/v4/performance_characterization/B2/inputs/variant-00.png",
+            "size": 280,
+            "type": "image"
+          },
+          {
+            "text": "Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Finish with the main subject.",
+            "type": "text"
+          }
+        ],
+        "request_id": "b2-22-reuse90_long_r280-arm11-r0-04"
+      }
+    ],
+    [
+      {
+        "diagnostic_dump_logits_step": 0,
+        "diagnostic_key": "b2-22-reuse90_long_r280-arm11-r0-content-0-question-1",
+        "diagnostic_mode": "request-5",
+        "generation": 1,
+        "max_new_tokens": 8,
+        "parts": [
+          {
+            "path": "docs/data_flow_evidence/v4/performance_characterization/B2/inputs/variant-00.png",
+            "size": 280,
+            "type": "image"
+          },
+          {
+            "text": "Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Finish with the central object.",
+            "type": "text"
+          }
+        ],
+        "request_id": "b2-22-reuse90_long_r280-arm11-r0-05"
+      }
+    ],
+    [
+      {
+        "diagnostic_dump_logits_step": 0,
+        "diagnostic_key": "b2-22-reuse90_long_r280-arm11-r0-content-0-question-0",
+        "diagnostic_mode": "request-6",
+        "generation": 1,
+        "max_new_tokens": 8,
+        "parts": [
+          {
+            "path": "docs/data_flow_evidence/v4/performance_characterization/B2/inputs/variant-00.png",
+            "size": 280,
+            "type": "image"
+          },
+          {
+            "text": "Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Finish with the main subject.",
+            "type": "text"
+          }
+        ],
+        "request_id": "b2-22-reuse90_long_r280-arm11-r0-06"
+      }
+    ],
+    [
+      {
+        "diagnostic_dump_logits_step": 0,
+        "diagnostic_key": "b2-22-reuse90_long_r280-arm11-r0-content-0-question-1",
+        "diagnostic_mode": "request-7",
+        "generation": 1,
+        "max_new_tokens": 8,
+        "parts": [
+          {
+            "path": "docs/data_flow_evidence/v4/performance_characterization/B2/inputs/variant-00.png",
+            "size": 280,
+            "type": "image"
+          },
+          {
+            "text": "Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Finish with the central object.",
+            "type": "text"
+          }
+        ],
+        "request_id": "b2-22-reuse90_long_r280-arm11-r0-07"
+      }
+    ],
+    [
+      {
+        "diagnostic_dump_logits_step": 0,
+        "diagnostic_key": "b2-22-reuse90_long_r280-arm11-r0-content-0-question-0",
+        "diagnostic_mode": "request-8",
+        "generation": 1,
+        "max_new_tokens": 8,
+        "parts": [
+          {
+            "path": "docs/data_flow_evidence/v4/performance_characterization/B2/inputs/variant-00.png",
+            "size": 280,
+            "type": "image"
+          },
+          {
+            "text": "Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Finish with the main subject.",
+            "type": "text"
+          }
+        ],
+        "request_id": "b2-22-reuse90_long_r280-arm11-r0-08"
+      }
+    ],
+    [
+      {
+        "diagnostic_dump_logits_step": 0,
+        "diagnostic_key": "b2-22-reuse90_long_r280-arm11-r0-content-0-question-1",
+        "diagnostic_mode": "request-9",
+        "generation": 1,
+        "max_new_tokens": 8,
+        "parts": [
+          {
+            "path": "docs/data_flow_evidence/v4/performance_characterization/B2/inputs/variant-00.png",
+            "size": 280,
+            "type": "image"
+          },
+          {
+            "text": "Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Describe every visible component, relationship, direction, label, and layout detail. Finish with the central object.",
+            "type": "text"
+          }
+        ],
+        "request_id": "b2-22-reuse90_long_r280-arm11-r0-09"
+      }
+    ]
+  ]
+}
