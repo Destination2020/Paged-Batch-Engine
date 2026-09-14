@@ -433,6 +433,50 @@ bool KVCacheManager::restore_external_shared_request(
   slot.published_full_tokens=0;*restored_id=id;return true;
 }
 
+bool KVCacheManager::attach_external_shared_pages(
+    const ExternalKVRequestState& state) {
+  if (state.schema_version != 1 || state.block_size != block_size_ ||
+      state.num_layers != num_layers_ || state.valid_tokens <= 0 ||
+      state.block_ids_per_layer.size() != static_cast<size_t>(num_layers_))
+    return false;
+  const size_t expected = static_cast<size_t>(
+      (state.valid_tokens + block_size_ - 1) / block_size_);
+  size_t attached_layers = 0;
+  for (int32_t layer = 0; layer < num_layers_; ++layer) {
+    if (state.block_ids_per_layer[layer].size() != expected) break;
+    size_t attached_pages = 0;
+    for (int32_t id : state.block_ids_per_layer[layer]) {
+      if (!layer_allocators_[layer]->attach_external(id)) break;
+      ++attached_pages;
+    }
+    if (attached_pages != expected) {
+      while (attached_pages)
+        layer_allocators_[layer]->detach_external(
+            state.block_ids_per_layer[layer][--attached_pages]);
+      break;
+    }
+    ++attached_layers;
+  }
+  if (attached_layers == static_cast<size_t>(num_layers_)) return true;
+  while (attached_layers) {
+    const size_t layer = --attached_layers;
+    for (int32_t id : state.block_ids_per_layer[layer])
+      layer_allocators_[layer]->detach_external(id);
+  }
+  return false;
+}
+
+bool KVCacheManager::detach_external_shared_pages(
+    const ExternalKVRequestState& state) {
+  if (state.block_ids_per_layer.size() != static_cast<size_t>(num_layers_))
+    return false;
+  bool ok = true;
+  for (int32_t layer = 0; layer < num_layers_; ++layer)
+    for (int32_t id : state.block_ids_per_layer[layer])
+      ok = layer_allocators_[layer]->detach_external(id) && ok;
+  return ok;
+}
+
 uint64_t KVCacheManager::total_block_copy_bytes() const {
   uint64_t total=0;for(const auto& allocator:layer_allocators_)
     total+=allocator->payload_copy_bytes();return total;

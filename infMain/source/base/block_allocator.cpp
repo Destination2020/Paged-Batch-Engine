@@ -68,6 +68,7 @@ BlockAllocator::BlockAllocator(int32_t num_blocks, int32_t block_size,
   io_pins_.resize(num_blocks, 0);
   // Initialize refcounts and free queue.
   ref_counts_.resize(num_blocks, 0);
+  allocatable_.resize(num_blocks, 1);
   for (int32_t i = 0; i < num_blocks; ++i) {
     free_queue_.push(i);
   }
@@ -113,9 +114,10 @@ BlockAllocator::BlockAllocator(int32_t layer_index,
   pool_id_=next_external_pool_id.fetch_add(1);CHECK_NE(pool_id_,0u);
   generations_.resize(num_blocks_,0);compute_pins_.resize(num_blocks_,0);
   io_pins_.resize(num_blocks_,0);ref_counts_.resize(num_blocks_,0);
+  allocatable_.resize(num_blocks_,0);
   std::vector<uint8_t> assigned(num_blocks_,0);
   for(int32_t id:binding.initial_blocks){CHECK_GE(id,0);CHECK_LT(id,num_blocks_);CHECK(!assigned[id]);assigned[id]=1;generations_[id]=1;ref_counts_[id]=1;}
-  for(int32_t id:binding.allocatable_blocks){CHECK_GE(id,0);CHECK_LT(id,num_blocks_);CHECK(!assigned[id]);assigned[id]=1;free_queue_.push(id);}
+  for(int32_t id:binding.allocatable_blocks){CHECK_GE(id,0);CHECK_LT(id,num_blocks_);CHECK(!assigned[id]);assigned[id]=1;allocatable_[id]=1;free_queue_.push(id);}
   LOG(INFO)<<"External BlockAllocator bound: layer="<<layer_index
            <<" blocks="<<num_blocks_<<" initial="<<binding.initial_blocks.size()
            <<" allocatable="<<binding.allocatable_blocks.size()
@@ -152,6 +154,25 @@ void BlockAllocator::incref(int32_t block_id) {
   ++ref_counts_[block_id];
 }
 
+bool BlockAllocator::attach_external(int32_t block_id) {
+  if (!external_pool_ || block_id < 0 || block_id >= num_blocks_ ||
+      allocatable_[block_id]) return false;
+  if (ref_counts_[block_id] == 0) {
+    if (generations_[block_id] == std::numeric_limits<uint64_t>::max()) return false;
+    ++generations_[block_id];
+  }
+  ++ref_counts_[block_id];
+  return true;
+}
+
+bool BlockAllocator::detach_external(int32_t block_id) {
+  if (!external_pool_ || block_id < 0 || block_id >= num_blocks_ ||
+      allocatable_[block_id] || ref_counts_[block_id] <= 0 ||
+      compute_pins_[block_id] || io_pins_[block_id]) return false;
+  --ref_counts_[block_id];
+  return true;
+}
+
 int32_t BlockAllocator::ref_count(int32_t block_id) const {
   CHECK_GE(block_id, 0);
   CHECK_LT(block_id, num_blocks_);
@@ -164,7 +185,7 @@ void BlockAllocator::free(int32_t block_id) {
   CHECK_GT(ref_counts_[block_id], 0) << "Double free of block " << block_id;
 
   --ref_counts_[block_id];
-  if (ref_counts_[block_id] == 0 &&
+  if (ref_counts_[block_id] == 0 && allocatable_[block_id] &&
       generations_[block_id] != std::numeric_limits<uint64_t>::max()) {
     free_queue_.push(block_id);
   }

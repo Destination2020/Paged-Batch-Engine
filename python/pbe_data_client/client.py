@@ -3,7 +3,7 @@ from __future__ import annotations
 import enum, os, socket, struct, time
 from dataclasses import dataclass
 
-MAGIC=0x53534250; VERSION=2; HEADER=struct.Struct("<IHHHHQQI")
+MAGIC=0x53534250; VERSION=3; HEADER=struct.Struct("<IHHHHQQI")
 REF_MAGIC=0x52444250; REF_SIZE=100
 class DataError(enum.IntEnum):
     OK=0; INVALID_ARGUMENT=1; UNSUPPORTED_VERSION=2; UNKNOWN_OBJECT=3

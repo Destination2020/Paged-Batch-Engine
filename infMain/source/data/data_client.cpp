@@ -154,6 +154,73 @@ DataError DataClient::reserve_ipc_slots(uint32_t count,IpcSlotGrant* grant,
 DataError DataClient::release_ipc_slots(const LeaseToken& token) const {std::vector<uint8_t>q,r;wire::Put(token.service_incarnation,&q);wire::Put(token.consumer_incarnation,&q);wire::Put(token.lease_id,&q);return transact(DataServiceOp::kReleaseIpcSlots,q,&r);}
 DataError DataClient::ipc_pool_stats(IpcPoolStats*stats)const{if(!stats)return DataError::kInvalidArgument;std::vector<uint8_t>r;auto status=transact(DataServiceOp::kIpcPoolStats,{},&r);if(status!=DataError::kOk)return status;const uint8_t*p=r.data(),*e=p+r.size();return wire::Get(&p,e,&stats->total_slots)&&wire::Get(&p,e,&stats->free_slots)&&wire::Get(&p,e,&stats->active_grants)&&p==e?DataError::kOk:DataError::kInvalidArgument;}
 
+DataError DataClient::acquire_ipc_attach(
+    const RemoteDataLease& metadata, const LeaseToken& source_grant,
+    uint64_t provider_incarnation, uint64_t target_incarnation,
+    uint32_t valid_tokens, const std::vector<int32_t>& slots,
+    IpcAttachGrant* grant, OperationId operation) const {
+  if (!grant || !grant->slots.empty() || !metadata.token.lease_id ||
+      !source_grant.lease_id || !provider_incarnation || !target_incarnation ||
+      slots.empty()) return DataError::kInvalidArgument;
+  if (operation.owner_incarnation == 0) operation.owner_incarnation = target_incarnation;
+  if (operation.owner_incarnation != target_incarnation)
+    return DataError::kInvalidArgument;
+  if (operation.sequence == 0) operation.sequence = next_operation_.fetch_add(1);
+  std::vector<uint8_t> encoded_ref;
+  if (EncodeDataRef(metadata.ref, &encoded_ref) != DataError::kOk)
+    return DataError::kInvalidArgument;
+  std::vector<uint8_t> q, r;
+  wire::Put(operation.owner_incarnation, &q); wire::Put(operation.sequence, &q);
+  wire::Put(metadata.token.service_incarnation, &q);
+  wire::Put(metadata.token.consumer_incarnation, &q);
+  wire::Put(metadata.token.lease_id, &q);
+  wire::Put<uint64_t>(encoded_ref.size(), &q);
+  wire::PutBytes(encoded_ref.data(), encoded_ref.size(), &q);
+  wire::Put(source_grant.service_incarnation, &q);
+  wire::Put(source_grant.consumer_incarnation, &q);
+  wire::Put(source_grant.lease_id, &q);
+  wire::Put(provider_incarnation, &q); wire::Put(target_incarnation, &q);
+  wire::Put(valid_tokens, &q); wire::Put<uint32_t>(slots.size(), &q);
+  for (int32_t slot : slots) {
+    if (slot < 0) return DataError::kInvalidArgument;
+    wire::Put<uint32_t>(slot, &q);
+  }
+  auto status = transact(DataServiceOp::kAcquireIpcAttach, q, &r);
+  if (status == DataError::kNotReady)
+    status = transact(DataServiceOp::kAcquireIpcAttach, q, &r);
+  if (status != DataError::kOk) return status;
+  const uint8_t* p = r.data(); const uint8_t* e = p + r.size(); uint32_t n = 0;
+  if (!wire::Get(&p,e,&grant->token.service_incarnation) ||
+      !wire::Get(&p,e,&grant->token.consumer_incarnation) ||
+      !wire::Get(&p,e,&grant->token.lease_id) ||
+      !wire::Get(&p,e,&grant->source_grant.service_incarnation) ||
+      !wire::Get(&p,e,&grant->source_grant.consumer_incarnation) ||
+      !wire::Get(&p,e,&grant->source_grant.lease_id) ||
+      !wire::Get(&p,e,&grant->metadata_allocation.owner_incarnation) ||
+      !wire::Get(&p,e,&grant->metadata_allocation.allocation_id) ||
+      !wire::Get(&p,e,&grant->metadata_allocation.generation) ||
+      !wire::Get(&p,e,&grant->provider_incarnation) ||
+      !wire::Get(&p,e,&grant->target_incarnation) ||
+      !wire::Get(&p,e,&grant->valid_tokens) || !wire::Get(&p,e,&n) ||
+      n != slots.size()) return DataError::kInvalidArgument;
+  grant->slots.resize(n);
+  for (auto& slot : grant->slots) {
+    uint32_t value = 0;
+    if (!wire::Get(&p,e,&value) || value > INT32_MAX)
+      return DataError::kInvalidArgument;
+    slot = static_cast<int32_t>(value);
+  }
+  return p == e ? DataError::kOk : DataError::kInvalidArgument;
+}
+
+DataError DataClient::release_ipc_attach(const LeaseToken& token) const {
+  std::vector<uint8_t> q, r;
+  wire::Put(token.service_incarnation, &q);
+  wire::Put(token.consumer_incarnation, &q);
+  wire::Put(token.lease_id, &q);
+  return transact(DataServiceOp::kReleaseIpcAttach, q, &r);
+}
+
 DataError DataClient::acquire_shared_weight(const Digest256& model_content,
                                             const Digest256& layout_identity,
                                             base::DataType dtype,

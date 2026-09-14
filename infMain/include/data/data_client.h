@@ -14,7 +14,7 @@ namespace data {
 
 inline constexpr const char* kDefaultDataEndpoint = "/tmp/pbe-data-service.sock";
 inline constexpr uint32_t kDataServiceWireMagic = 0x53534250;  // "PBSS"
-inline constexpr uint16_t kDataServiceProtocolVersion = 2;
+inline constexpr uint16_t kDataServiceProtocolVersion = 3;
 inline constexpr uint64_t kMaxDataServicePayloadBytes = 1ULL << 30;
 
 enum class DataServiceOp : uint16_t {
@@ -34,6 +34,8 @@ enum class DataServiceOp : uint16_t {
   kAcquireSharedWeight = 14,
   kReleaseSharedWeight = 15,
   kSharedWeightStats = 16,
+  kAcquireIpcAttach = 17,
+  kReleaseIpcAttach = 18,
 };
 
 struct DataServiceStats {
@@ -65,6 +67,19 @@ struct RemoteDataLease {
 
 struct IpcSlotGrant {
   LeaseToken token;
+  std::vector<int32_t> slots;
+};
+
+// Request-scoped permission to install immutable pages produced under a
+// different worker's slot grant.  The data service, rather than the consumer,
+// validates the metadata object, source generation and exact page subset.
+struct IpcAttachGrant {
+  LeaseToken token;
+  LeaseToken source_grant;
+  AllocationHandle metadata_allocation;
+  uint64_t provider_incarnation = 0;
+  uint64_t target_incarnation = 0;
+  uint32_t valid_tokens = 0;
   std::vector<int32_t> slots;
 };
 
@@ -101,6 +116,15 @@ class DataClient {
                               OperationId operation = {}) const;
   DataError release_ipc_slots(const LeaseToken& token) const;
   DataError ipc_pool_stats(IpcPoolStats* stats) const;
+  DataError acquire_ipc_attach(const RemoteDataLease& metadata,
+                               const LeaseToken& source_grant,
+                               uint64_t provider_incarnation,
+                               uint64_t target_incarnation,
+                               uint32_t valid_tokens,
+                               const std::vector<int32_t>& slots,
+                               IpcAttachGrant* grant,
+                               OperationId operation = {}) const;
+  DataError release_ipc_attach(const LeaseToken& token) const;
   DataError acquire_shared_weight(const Digest256& model_content,
                                   const Digest256& layout_identity,
                                   base::DataType dtype, uint64_t expected_bytes,

@@ -178,9 +178,14 @@ def run_trial(args, experiment, mode, repetition, order):
             record["prefill_ready"] = prefill.ready
 
             if experiment == "fixed_kv":
-                warm = request(short_encoded, f"{trial_name}-warm")
+                # Generate the deterministic numerical oracle during warm-up,
+                # outside the measured serving interval.  Radix reuse is
+                # disabled for these workers and the warm handoff is released
+                # before the measured request, so no oracle KV survives into
+                # the formal sample.
+                warm = request(short_encoded, f"{trial_name}-warm", 16)
                 p_warm = prefill.call({"op": "pd_prefill", "request": warm,
-                                       "oracle_steps": 8}, timeout=180)
+                                       "oracle_steps": 16}, timeout=180)
                 if not p_warm.get("ok"):
                     raise RuntimeError(f"warm prefill failed: {p_warm}")
                 decode = LanguageProcess(worker_command(
@@ -188,20 +193,23 @@ def run_trial(args, experiment, mode, repetition, order):
                 d_warm = decode.call({"op": "pd_decode", "request_id": warm["request_id"],
                     "generation": 1, "kv_content": p_warm["kv_content"],
                     "kv_representation": p_warm["kv_representation"],
-                    "max_new_tokens": 8}, timeout=180)
+                    "expected_provider_incarnation": p_warm["provider_incarnation"],
+                    "max_new_tokens": 16}, timeout=180)
                 release = prefill.call({"op": "pd_release", "request_id": warm["request_id"],
                                         "generation": 1}, timeout=180)
                 if not d_warm.get("ok") or not release.get("ok") or \
                         d_warm["tokens"] != p_warm["oracle_tokens"]:
                     raise RuntimeError("warm P/D handoff mismatch")
+                expected_tokens = p_warm["oracle_tokens"]
                 measured = request(short_encoded, f"{trial_name}-measured", 16)
                 started = time.perf_counter()
                 p = prefill.call({"op": "pd_prefill", "request": measured,
-                                  "oracle_steps": 16}, timeout=180)
+                                  "oracle_steps": 0}, timeout=180)
                 p_done = time.perf_counter()
                 d = decode.call({"op": "pd_decode", "request_id": measured["request_id"],
                     "generation": 1, "kv_content": p["kv_content"],
                     "kv_representation": p["kv_representation"],
+                    "expected_provider_incarnation": p["provider_incarnation"],
                     "max_new_tokens": 16}, timeout=180)
                 finished = time.perf_counter()
                 released = prefill.call({"op": "pd_release",
@@ -215,7 +223,15 @@ def run_trial(args, experiment, mode, repetition, order):
                     "decode_actual_computed_prompt_tokens": d["actual_computed_prompt_tokens"],
                     "decode_scheduled_prefill_tokens": d["scheduled_prefill_tokens"],
                     "prefill_tokens_saved": d["prefill_tokens_saved"],
-                    "output_matches_prefill_oracle": d["tokens"] == p["oracle_tokens"],
+                    "output_matches_prefill_oracle": d["tokens"] == expected_tokens,
+                    "oracle_steps_in_timing": 0,
+                    "oracle_in_timing": False,
+                    "diagnostics_in_timing": False,
+                    "timing_boundary": "pd_prefill RPC send through pd_decode RPC response",
+                    "cleanup_boundary": "pd_release and lifecycle probes after response window",
+                    "oracle_source": "warm-up pd_prefill fork; compared after timed response",
+                    "timed_prefill_oracle_tokens": p["oracle_tokens"],
+                    "expected_tokens": expected_tokens,
                     "tokens": d["tokens"], "prefill_ms": (p_done-started)*1000,
                     "wall_ms": (finished-started)*1000, "ttft_ms": d["ttft_ms"] +
                     (p_done-started)*1000, "itl_ms": d["itl_ms"],
@@ -248,6 +264,7 @@ def run_trial(args, experiment, mode, repetition, order):
                         "request_id": item["request_id"], "generation": 1,
                         "kv_content": publication["kv_content"],
                         "kv_representation": publication["kv_representation"],
+                        "expected_provider_incarnation": publication["provider_incarnation"],
                         "max_new_tokens": 8}, timeout=180))
                     prefill.call({"op": "pd_release", "request_id": item["request_id"],
                                   "generation": 1}, timeout=180)

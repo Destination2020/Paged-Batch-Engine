@@ -1,6 +1,8 @@
 # PBE 多角色与多模态执行计划 V4
 
-> 新增交付任务：第 20 节 B1–B6 为“性能证据整理与补测”，当前 **0/6，待执行**，本次仅补充计划。保留 M0–M9 10/10、E1–E4 4/4 的历史功能验收口径；新增实验尚未完成，不据此预先宣称性能提升或任意 N:P/D 拓扑已验收。
+> 2026-09-14 第 21 节 N1–N6 已执行完成并通过统一门禁，当前 **6/6**。正式 E4 已剥离在线 oracle；生产 Coordinator、动态 provider-generation attach、1P1D/1P2D/2P1D/2P2D 故障生命周期、private/shared 90-cell 拓扑矩阵、固定物理预算容量阶梯和当前二进制 20-case 数值回归均有可重放证据。详见 `docs/data_flow_evidence/v4/performance_attribution_multi_pd/`。
+
+> 第 20 节 B1–B6 的历史首轮结果为 **5/6**；第 21 节补齐生产多 P/D 后已复核更新为 **6/6**。结论仅覆盖同机同卡 TP=1、统一/1P1D/1P2D/2P1D/2P2D 的冻结矩阵，不外推任意 N:P/D 或通用最优拓扑。
 
 > 2026-09-13 E4 执行完成：同卡 P/D 跨进程只读权重共享已通过真实主路径、故障、数值、回归、sanitizer 与两组五次实验，见 `V4_E4_SHARED_WEIGHT_COMPLETION_20260913.md`；当前 **E4 为 1/1**，历史 M0–M9 为 10/10，扩展 E1–E4 为 **4/4**。逐层传输/计算重叠、流式角色图/背压、异构 TP 布局转换仍不在此次范围。
 
@@ -382,7 +384,7 @@ consumer 崩溃不以 RPC 超时/TTL 当作 GPU quiescence；无法证明停止�
 
 以上全部已有真实主路径证据，E4 更新为 **1/1**、扩展合计 **4/4**。执行摘要、失败/skip、证据路径和重放入口见 `V4_E4_SHARED_WEIGHT_COMPLETION_20260913.md`。
 
-## 20. 性能证据整理与补测：面向简历和技术面试（B1–B6，待执行）
+## 20. 性能证据整理与补测：面向简历和技术面试（B1–B6，6/6）
 
 ### 20.1 目标、执行范围与先后顺序
 
@@ -486,11 +488,145 @@ consumer 崩溃不以 RPC 超时/TTL 当作 GPU quiescence；无法证明停止�
 
 禁止“全面加速”“领先其他框架”等未经同条件外部对照的表述。单卡多进程本身不是独占能力；例如 Dynamo 的 SGLang 后端有[同卡 P/D 示例](https://github.com/ai-dynamo/dynamo/blob/main/examples/backends/sglang/launch/disagg_same_gpu.sh)。该链接只证明存在同卡部署能力，不能据此推断其他框架全部支持或不支持共享物理权重。若未来做跨框架性能对照，应另行冻结版本、模型、kernel、缓存与资源条件，本轮不强制新增外部框架部署。
 
-- [ ] B1 完成证据审计、缺口清单及冻结测量协议。
-- [ ] B2 完成缓存复用率/开销/端到端效果矩阵。
-- [ ] B3 完成公平显存、容量与服务收益实验。
-- [ ] B4 完成选路/恢复证据整理及必要补测。
-- [ ] B5 完成单卡 1P1D/1P2D/2P1D/2P2D 与统一执行对照；不支持项明确未验收。
-- [ ] B6 完成复算门禁、图表、报告、可引用简历指标和资源清理。
+- [x] B1 完成证据审计、缺口清单及冻结测量协议。
+- [x] B2 完成缓存复用率/开销/端到端效果矩阵；正式记录为 40 trials/400 requests，另保留跨臂数值分叉补充审计。
+- [x] B3 完成公平显存、容量与服务收益刻画；固定预算阶梯为 50 个真实两请求探针。容量结论严格限定为外部分配夹点，最多只访问 48 个请求页，不能表述为最大在线请求数、SLO 并发或 SLO goodput。
+- [x] B4 完成选路/恢复证据复算；复用现有 30 个 trial，没有为重复已有证据而重跑 GPU。
+- [x] B5 已由第 21 节补齐：生产 Coordinator、provider-generation 动态页授权、全部 P→D 边、故障生命周期、private/shared 90-cell/450 独立窗口/3150-request 矩阵及固定预算容量对照通过；结论仍限定为本次最佳观测配置。
+- [x] B6 完成复算门禁、SVG/PNG 图表、报告、带 baseline/条件/来源的简历指标和资源清理。
 
-完成标准是证据完整、可重放且结论与数据一致，允许所有性能结果为零或负收益；不要求为获得正收益继续增加新功能。当前本节仅为执行计划，**B1–B6 为 0/6**。
+完成标准是证据完整、可重放且结论与数据一致，允许所有性能结果为零或负收益；不要求为获得正收益继续增加新功能。历史首轮为 5/6；经第 21 节生产主路径补齐后当前结果为 **B1–B6 6/6**。完整报告、原始记录、复算表、绘图、命令和 manifest 位于 `docs/data_flow_evidence/v4/performance_characterization/` 与 `docs/data_flow_evidence/v4/performance_attribution_multi_pd/`。
+
+## 21. 负收益归因与生产多 P/D 主路径补齐（N1–N6，已完成）
+
+### 21.1 授权范围、接手顺序与已知事实
+
+本节授权执行者修改必要的测量工具、生产 Coordinator、角色协议、页授权与生命周期实现，完成负收益归因和真实 1P1D/1P2D/2P1D/2P2D 主路径。它补充第 20 节原本只允许测试补充的范围，并解除 B5 因缺生产实现而无法继续的执行限制；不提前改变 B5 验收状态。
+
+继续限定同机、同 GPU 多角色、TP=1、兼容 Qwen2.5-VL BF16。保留已验收跨卡路径并做受影响回归，不新增跨机、Mooncake/RDMA、异构 TP、逐层传输重叠、流式角色 DSL、自动弹性伸缩或新的模型角色。默认保留当前通信后端，不把换库当作性能归因。
+
+接手者先读取本计划、`performance_characterization/PERFORMANCE_REPORT.md`、`RESUME_METRICS.md`、`REPLAY.md`、E4 完成报告及当前 dirty diff；保存源码/二进制/模型/输入/环境 hash，保护原有修改，只安装缺失依赖。不要重新实施已通过的 M0–M9/E1–E4，也不要覆盖历史实验记录。
+
+截至本节编写时，代码阅读已确认两项具体问题，执行前必须重新核对当前版本：
+
+1. `tools/bench/data_flow/run_e4_shared_weight_ab.py` 的 fixed-KV 计时区间调用 `pd_prefill(..., oracle_steps=16)`，之后再调用正式 `pd_decode`。`demo/pbe_vlm_language_role.cpp` 的 `PDPrefill` 在 oracle_steps>0 时 fork 请求并执行 `RunPDDecode`，因此该计时包含校验用 Decode。两臂均包含该工作，历史比较仍保留，但不能直接解释为无校验 serving 的性能，也不能未经对照就认定它是负收益根因。
+2. `python/pbe_roles/coordinator.py` 的当前主入口围绕单个 `LanguageProcess` 执行；language role 的 Decode 导入检查启动时 `initial_slots_`。多个进程或多个 importer 测试不等于生产多 P/D 注册、路由和动态授权已成立。
+
+| 阶段 | 交付 | 依赖 | 状态 |
+| --- | --- | --- | --- |
+| N1 | 校正测量对象、剥离实验专用 oracle、冻结 1P1D 基线 | 当前 checkout | 已完成 |
+| N2 | 请求关键路径埋点与 B2/E4/E3 负收益归因 | N1 | 已完成 |
+| N3 | 静态角色注册与生产 1P1D 协调状态机 | N1；正式实验取 N2 测量合同 | 已完成 |
+| N4 | 动态 provider-generation 页授权与真实 1P2D | N3 | 已完成 |
+| N5 | 2P1D、2P2D 与跨角色故障生命周期闭环 | N4 | 已完成 |
+| N6 | 同预算拓扑实验、回归、B5 复核与交付 | N2、N5 | 已完成 |
+
+首先交付 N1/N2 的归因报告，以及 N3/N4 的生产 1P2D；随后完成 N5/N6。不要在 1P1D 计时边界尚不清楚时直接做大规模角色数量实验。
+
+### 21.2 N1：校正测量对象并冻结可比较基线
+
+实施入口：`run_e4_shared_weight_ab.py`、`run_b2_cache_matrix.py`、`analyze_b6_performance.py`、`validate_b1_b6_performance.py`、现有数值 validator、`pbe_vlm_language_role.cpp`。
+
+1. 将数值 oracle 生成放到独立校验阶段，保存按模型/输入/采样/位置身份索引的期望值。正式性能请求使用 `oracle_steps=0`，返回后在计时外比较结果；不能移除数值验收，也不能让 oracle 的 KV/feature 污染正式 cold-cache 起点。冻结 BF16 同历史 logits/top-2 规则，不更改阈值来提高通过率。
+2. 审计 B2/E4/E3 的诊断 forward、status RPC、hash、JSON 编码、日志写入和资源采样是否进入计时。服务必需的序列化、同步、准入和生命周期工作仍计入服务成本；仅实验专用工作允许移出。若清理不在客户端响应前，则单列其时间，并在持续负载吞吐中包含其资源成本，不能通过无限延迟回收获得虚假加速。
+3. 保留带 oracle 的历史测量，新增 `oracle_in_timing`、`diagnostics_in_timing`、`timing_boundary` 和 `cleanup_boundary` 字段。跑少量诊断对照量化有/无 oracle 的绝对成本；无在线 oracle 的 private/shared 正式对照各至少 5 次，采用相同拓扑、KV 页数、模型、输入、实际输出步数及资源预算。
+4. 不把 B2 的 `server_ttft_ms` 写成客户端 TTFT；当前非流式接口没有首 token 可见时刻，继续标 N/A。历史 concurrency=1 的 requests/s 明确称请求周转/完成窗口吞吐，不能当作饱和服务吞吐。不同输出 token 数会影响完成时间：另建固定生成步数的诊断臂，真实 EOS 行为保留单独报告。
+5. 对成对试验固定随机顺序、预热和缓存初态，保存每次绝对值及波动；配置变化后重新冻结版本。不要从最终耗时里凭估算“减掉 oracle 时间”冒充重测。
+
+验收：validator 检查正式性能请求没有 oracle Decode/实验额外 forward；测量外数值门禁通过；旧指标的新解释、修正后对照和仍有效的显存结论分列。若历史性能结论不再适用，标记 superseded 并链接新证据，不删除原数据。
+
+### 21.3 N2：关键路径测量、因果对照与定向修复
+
+为每条请求统一记录 request id/generation、trial/arm、worker id/incarnation、stage/span id、父 span、开始/结束和状态。CPU 使用单调时钟；同机跨进程时间的可比性先校验。GPU 对指定 stream 用 CUDA event，标明 event 测量包含的依赖等待；禁止为计时在每个 decode step 插入全设备同步。使用已有 profiler 工具做独立诊断 trace，profiler 轮次不进入正式延迟统计；保持模型内部原有同步语义，不为了好看删除必要 fence。
+
+| 区间 | 必须区分的工作 |
+| --- | --- |
+| Vision | processor、特征查询/命中、排队、forward、bundle 构造/发布 |
+| Coordinator | 输入等待、角色选择、准入、RPC 往返、join 和取消 |
+| Prefill 准备 | feature 获取/copy、语义前缀查询、缺页恢复、batch 元数据 |
+| Prefill 执行 | 模型 GPU forward、首 token 采样、必要同步 |
+| Handoff | seal/publish、目录/acquire、授权验证、页表安装 |
+| Decode | 各步 GPU forward、CPU 调度/采样、RPC/同步及步骤间空隙 |
+| 结束 | 序列化、响应可见、请求清理和共享引用回收 |
+
+每条记录包含 actual prompt/output tokens、cache hit 口径、copy bytes、page 数、队列状态、资源计费及必要的 GPU 利用率/频率观测。可重叠 span 按关键路径分析，不简单相加为总耗时；用总窗口减已解释区间得到 unaccounted time，并逐步缩小测量缺口。记录埋点 off/on 开销，低扰动正式测量与高详细度诊断分开。
+
+归因必须采用“观察 → 假设 → 单变量实验 → 复验”，至少覆盖：
+
+- **B2：模型 TTFT 降而完成吞吐降。** 对照四臂 feature/KV 缓存，分别比较视觉/前处理、bundle/RPC、模型首步、完整 Decode、实际输出长度、缓存维护与诊断成本。优先复用 raw 定位，再补可控实验；不预判 Python、IPC 或目录就是原因。
+- **E4：共享权重固定 KV 吞吐下降。** N1 排除在线 oracle 后，检查同样 forward 的 GPU 时长、同步等待、CPU 空隙、布局/隐式复制与运行干扰。共享模式是否更慢以重复结果决定，不按架构直觉推断。
+- **E3：少重算但恢复更慢。** 单列保存、D2H/H2D、分配、依赖检查、同步和必要重算；固定输入/恢复点，测试小/大恢复范围。保留 correctness-only 基线，不将丢数据或省略依赖验证的配置当作优化方案。
+
+发现明确且可修复的冗余 copy、重复 RPC、实验同步或非必要串行等待后，可做范围内定向修复；一次只改变一个主要因素，保存修复前后差异、回归和至少 5 次配对实验。不能用扩大显存/stream、放宽超时/正确性、绕过生命周期检查解释加速。差异小于噪声时记录证据不足；N2 完成需要每组负收益有关键路径分解与受控复验，允许结果是开销合理或差异不显著，不强求正收益。
+
+交付：`ATTRIBUTION_REPORT.md`、每组 latency breakdown、假设/实验/结论清单、修复前后 trace、不能解释的残差与下一步。明确区分已证明根因、相关性和未验证猜测。
+
+### 21.4 N3：通用静态角色注册与生产 1P1D 协调
+
+复用 `python/pbe_roles/coordinator.py`、现有 `LanguageProcess`/异步协议、`serving/role_placement.*`、NodeMemoryBudget、DataClient 和真实 pd_prefill/pd_decode/pd_release。可新增 `RoleRegistry`、`PDRequestState` 等小模块，不复制已有路由、租约或预算账本。
+
+1. 使用配置注册 worker_id、incarnation、P/D capability、endpoint、GPU UUID、模型/布局/dtype、ready/draining 状态、队列与可准入容量及观测时间。首次只需静态 endpoints + readiness/代际校验，不做自动扩缩容。过期/未知容量不得当作空闲；重启后旧 worker identity 不可重新 ready。
+2. 生产入口接收完整图文请求，通过明确状态机执行 `prepare → place → reserve → prefill → handoff → decode → finish/cancel/fail → reclaim`。benchmark 只向该入口发请求，不再手工跨多个 worker 拼出一条链来代替 Coordinator。
+3. 按固定顺序预留 D 增长容量、P 计算容量及必要 feature/staging；任何部分失败完整回滚，避免角色互相占着资源等待形成死锁。选择策略初版可固定/round-robin，随后复用 E2 有界重选；执行开始后不能改 endpoint 假装无状态重试。
+4. 状态绑定 request id/generation/stage operation-id，跨角色沿用原绝对 deadline；响应乱序、reply-lost、重复提交和迟到完成必须幂等或明确拒绝。终态不可被旧完成事件复活，已接收取消须防止后续 stage 继续启动。
+5. 角色间 handoff 使用生产协议及最少必要 metadata；每个 D 保留自己的输出状态/进度与私有增长预算。非流式入口可继续保留，不为测客户端 TTFT 强行扩大为流式 API。
+
+验收：原始客户端→生产 Coordinator→独立 P→数据交接→独立 D→客户端全链路可重放；真实输出与数值 oracle 一致，Decode 不重算已完成前缀，成功/拒绝/取消/超时均能收敛资源。固定 1P1D 与现有基线做功能与测量边界回归。
+
+### 21.5 N4：动态页授权与真实 1P2D
+
+优先检查 `data/protocol.*`、`data/data_client.*`、`data/node_agent.*`、`data/ipc_pool.*`、`data/kv_snapshot_codec.*`、`base/kv_cache_manager.*` 和 `pbe_vlm_language_role.cpp` 的 `initial_slots_`/`PDDecode`。沿用完整 LeaseToken 与 owner 账本，必要协议变更须版本化并明确兼容/拒绝行为。
+
+1. 将固定启动 slot 白名单演进为请求级、版本化的 attach 授权。绑定 KV ContentId/RepresentationId、物理 owner incarnation、allocation id/generation、pool/layout/device、有效页范围与 token 长度、源 provider identity、目标 consumer identity 及权限；字段具体组织以既有合同为准，不能只用 PID、局部 page index 或来源字符串判断可信。
+2. Data service 验证源页已发布且持有可服务引用，授予 D 自己的使用租约；P 提供的索引仅是候选，不是直接访问权。先获取/校验授权和必要 producer fence，再安装页表；失败时不得部分启动 attention。一个 owner pool 内多个 P 的 grants 必须互不冲突，D 只读共享区不能混入其私有 free list。
+3. 区分源计算 worker 与物理 owner：P 正常结束后数据能否继续存活取决于明确的保留/消费者引用，不能隐式依赖 P 请求永不释放。D 的租约不能靠释放 P 的 token 来代替；私有尾页增长及 COW 按 D 的预算分配。
+4. 对同卡两个 D 验证同一权重 allocation 的独立 importer；分别路由真实请求，并在机制测试中让两个 D 消费同一合格前缀，检查共享前缀和私有尾页写入隔离。fan-out 机制测试与实际服务吞吐样本分开，不把复制同一答案当作双倍用户吞吐。
+5. 正常取消一个 D 不影响另一个；P 正常退出后持有效共享数据引用的 D 可完成。进程强杀/owner 崩溃仍遵守完成证明、隔离和 fail-stop 合同，不能靠 timeout/TTL 冒充 CUDA quiescence。
+
+验收：生产 Coordinator 驱动 1P2D，两个 D 都有实际 attention/完成请求证据；覆盖共享前缀、尾页 COW、一个分支取消、P 正常退出、新 D 加入（静态重启配置即可）及授权拒绝。保留独立 PID、allocation/grant/lease、actual computed tokens、copy bytes 和资源时间线。
+
+### 21.6 N5：2P1D、2P2D 与故障闭环
+
+1. 2P1D：两 P 分别产生内容，由同一 D 按当前授权安装页表。构造相同局部页编号但不同 pool/provider、同 token placeholder 不同媒体、旧 provider 重启、发布/撤销与 attach 竞争；不允许通过启动时把所有 slot 加白掩盖缺少动态授权。
+2. 2P2D：每条允许的 P→D 路径都执行至少一个真实请求，两 P 和两 D 均参与；同时测独立请求与语义相同前缀复用。多生产者 canonical 竞争复用已有合同，未提交/部分写入页面不可共享，不要求两 P 直接写同一 allocation。
+3. Coordinator 状态管理非阻塞，一个慢 P/D 不得阻塞其他无依赖请求的完成与回收。依赖顺序由请求状态决定，不依赖响应到达顺序；记录各 worker 队列/完成数，防止仅启动多进程而实际一直用第一组。
+
+| 故障/竞争点 | 必须成立 |
+| --- | --- |
+| 排队/预留后取消或超时 | 不启动无效 stage，释放已取得的安全 reservation |
+| P 执行中取消、P 已完成但 D 未 attach | 输出不交付给已终态请求，引用/fence 决定何时可回收 |
+| D attach 成功后 P 正常退出 | D 对已获授权数据的使用不依赖 P 请求继续运行 |
+| 一个 D 退出或超时 | 不释放其他 D 的共享前缀/权重；其私有增长页安全回收 |
+| P/D 重启、旧代 handoff/release 到达 | 不命中新 worker/新 allocation，不复活已终态请求 |
+| Data service/exporter 异常退出 | 停止新 compute 准入，关联 worker 按 fail-stop 清理旧 CUDA 状态后重建 |
+| 授权成功但回复丢失、取消与完成同时发生 | 幂等重放/终态收敛，不能重复消费增长预算或泄漏租约 |
+| D 容量不足、COW/恢复失败 | typed 拒绝或有界重新选择；无越权页表和部分继续计算 |
+
+正常 churn 验证稳定基线与最终卸载回收；硬故障的 quarantine 单独记录上限和安全恢复流程，不为满足“0 lease”提前释放仍可能在执行的 GPU 内存。恢复旧服务代际不允许透明复活旧映射。
+
+验收：1P1D/1P2D/2P1D/2P2D 的端到端功能与故障矩阵逐项可执行，真实多角色 CUDA 测试及针对性 compute-sanitizer 通过；模拟状态机测试只作为补充，不能替代真实模型/进程验收。
+
+### 21.7 N6：公平拓扑实验、B5 复核与最终交付
+
+沿用第 20 节测量协议及 N1/N2 的修正边界；正式测量不含在线 oracle、profiler 或额外诊断 forward。
+
+- 比较统一单进程 mixed/continuous batching 与 1P1D/1P2D/2P1D/2P2D；拆分拓扑各测 private/shared，保持相同 GPU、模型/数值合同、输入轨迹、缓存初态、总 CPU/active/stream 配额与预算。统一模式保留完整批处理能力，不能故意串行化基线；增加角色导致的私有 workspace/context 增量需计费，不要求其凭空消失。
+- 分开做固定总 KV/负载的开销实验、固定总物理显存的容量实验。容量两臂采用同一探测算法、硬预算、安全余量及实际 workspace；可分配块上限、实际访问页面和满足服务目标的并发分别记录，不将历史仅访问 48 页的夹点扩大为在线容量结论。
+- 负载覆盖长输入短输出、短输入长输出和混合三类；先导阶段冻结实际长度与低/中/接近饱和到达率。保留闭环 concurrency=1 作诊断，正式拓扑比较增加开环 offered-load 扫描与队列观测，避免阻塞式客户端掩盖积压。各 cell 至少 5 次随机顺序独立 trial；样本/时长遵循第 20 节，任何缩减在看结果前写明。
+- 记录完成窗口吞吐、输出 tok/s、队列、拒绝/超时、端到端 latency、模型 TTFT/ITL、每角色实际执行、共享/私有物理显存和 transfer bytes。当前非流式 API 的客户端 TTFT/ITL 仍 N/A；如采用完整请求延迟 SLO，必须预先冻结并明确标为 E2E-SLO goodput，不能冒称 token-streaming SLO。
+- 同一卡多进程不等于硬件隔离或 kernel 必然并发；MPS/MIG/频率/并发设置保持一致并披露。保留多进程变慢、低利用率、偏置路由及干扰结果，给出“最佳观测配置及条件”，不宣称任意 N/M 最优。
+
+交付目录：`docs/data_flow_evidence/v4/performance_attribution_multi_pd/`，包含 `baseline_manifest.json`、`protocol.json`、`N1/` 至 `N6/` 原始命令/请求 trace/资源时间线、数值与故障记录、`ATTRIBUTION_REPORT.md`、`TOPOLOGY_REPORT.md`、`results.json`、`checks.json`、`REPLAY.md`、新 completion manifest 及有条件简历指标。构建后的二进制 hash 与执行记录绑定；不覆盖历史 manifest 来伪装旧证据对应当前源码。
+
+新增 validator 必须从原始记录验证：正式样本 oracle_steps=0、代码/输入/配置一致、真实角色参与、provider-generation 授权、完整输出、取消回收、预算、重复次数、计时公式与资源基线。复用并扩展现有脚本，不能手写 ok=true；正常 regression、Python 协议测试及相关 CUDA/模型回归全部通过。仅对受影响路径及原要求门禁重跑，不以无关重复测试代替缺失的真实多角色证据。
+
+只有 N5 功能/生命周期和 N6 完整拓扑实验满足第 20 节 B5 要求后，才将 B5 勾选并将 B1–B6 从 5/6 更新为 6/6；同时重算受影响 B2/B3/B4/B6 指标、更新报告的历史/当前标签与证据 manifest。此前 E4 -6.65% 等结果按 N1 审计准确注明包含在线 oracle 的测量范围，不静默沿用为正式服务性能。
+
+- [x] N1 无在线 oracle 的正确性/性能分离与基线复验。
+- [x] N2 B2/E4/E3 关键路径、受控归因及必要定向修复。
+- [x] N3 静态多角色注册与生产 1P1D 状态机。
+- [x] N4 动态授权、生产 1P2D、共享与取消回收。
+- [x] N5 生产 2P1D/2P2D 及全路径故障生命周期矩阵。
+- [x] N6 公平拓扑实验、回归、B5 复核和可重放交付。
+
+当前 N1–N6 为 **6/6**，B5 已复核验收，B1–B6 更新为 6/6。N6 v2 包含 90 个聚合 cell、450 个独立 observation window 和 3150/3150 个完成请求；近饱和为 200 ms 间隔、持续 2,000 ms 的有限到达列车，不作渐近饱和声明。最佳 split 相对 unified 的五窗口中位吞吐变化仅为 private +0.18%～+0.82%、shared -0.13%～+1.09%，trial 范围重叠，不能宣称稳定吞吐提升。原始负收益、非全序列相同的 BF16 结果、NCCL skip、旧单窗口探索结果和历史 blocked 审计均保留；最终边界与重放入口见本节证据目录的 `results.json`、`checks.json`、`ATTRIBUTION_REPORT.md`、`TOPOLOGY_REPORT_V2.md` 与 `REPLAY.md`。

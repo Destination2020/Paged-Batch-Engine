@@ -83,6 +83,15 @@ DataError ContentRegistry::release(const LeaseToken& token) {
   leases_.erase(it);
   return DataError::kOk;
 }
+bool ContentRegistry::validates_lease(const LeaseToken& token,
+                                      const DataRef& ref) const {
+  std::lock_guard<std::mutex> lock(mutex_);
+  if (token.service_incarnation != runtime_.owner_incarnation()) return false;
+  const auto it = leases_.find(token.lease_id);
+  return it != leases_.end() &&
+      it->second.operation.owner_incarnation == token.consumer_incarnation &&
+      it->second.lease.ref() == ref;
+}
 DataError ContentRegistry::withdraw(const DataRef& ref) {
   std::lock_guard<std::mutex> lock(mutex_); return runtime_.withdraw(ref);
 }

@@ -32,6 +32,8 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--root", type=Path, default=Path("."))
     parser.add_argument("--output-dir", type=Path, required=True)
+    parser.add_argument("--evidence-root", type=Path,
+                        help="evidence tree to hash; defaults to output-dir")
     parser.add_argument("--build", type=Path, required=True)
     parser.add_argument("--model", type=Path, required=True)
     parser.add_argument("--model-dir", type=Path, required=True)
@@ -40,6 +42,7 @@ def main() -> int:
     root = args.root.resolve()
     out = args.output_dir
     out.mkdir(parents=True, exist_ok=True)
+    evidence_root = args.evidence_root or out
 
     suffixes = {".c", ".cc", ".cpp", ".cu", ".cuh", ".h", ".hpp", ".py", ".sh"}
     source_files = []
@@ -61,7 +64,7 @@ def main() -> int:
         args.model_dir / "preprocessor_config.json",
         args.model_dir / "tokenizer.json", args.image)]
     evidence_files = []
-    for path in sorted(out.rglob("*")):
+    for path in sorted(evidence_root.rglob("*")):
         if (path.is_file() and path.name not in {"manifest.json", "workspace_state.patch"} and
                 "trials" not in path.parts and not path.name.endswith(".log")):
             evidence_files.append(capture(path))

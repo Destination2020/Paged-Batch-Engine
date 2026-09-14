@@ -44,6 +44,15 @@ NodeAgent::NodeAgent(NodeAgentConfig c):config_(std::move(c)){
   registry_=std::make_unique<ContentRegistry>(config_.incarnation,config_.capacity_bytes,
                                               config_.capacity_objects,config_.capacity_leases);
 }
+void NodeAgent::collect_ipc_grant_locked(uint64_t grant_id) {
+  auto grant = ipc_grants_.find(grant_id);
+  if (grant == ipc_grants_.end() || grant->second.attach_refs != 0 ||
+      !grant->second.release_requested) return;
+  for (int32_t slot : grant->second.slots)
+    if (ipc_slot_owners_[slot] == grant_id) ipc_slot_owners_[slot] = 0;
+  ipc_grant_operations_.erase(grant->second.operation);
+  ipc_grants_.erase(grant);
+}
 NodeAgent::~NodeAgent(){stop();for(auto&x:workers_)if(x.joinable())x.join();::unlink(config_.endpoint.c_str());}
 void NodeAgent::stop(){
   stopping_=true;
@@ -135,8 +144,107 @@ void NodeAgent::serve_connection(int fd){
     else if(op==DataServiceOp::kShutdown&&p==e){status=DataError::kOk;shutdown_after_reply=true;}
     else if(op==DataServiceOp::kGetIpcPool&&p==e&&ipc_pool_){IpcPoolDescriptor descriptor;std::string error;if(ipc_pool_->descriptor(config_.incarnation,&descriptor,&error)&&EncodeIpcPoolDescriptor(descriptor,&out))status=DataError::kOk;}
     else if(op==DataServiceOp::kReserveIpcSlots&&ipc_pool_){OperationId operation;uint32_t count=0;if(wire::Get(&p,e,&operation.owner_incarnation)&&wire::Get(&p,e,&operation.sequence)&&wire::Get(&p,e,&count)&&p==e&&operation.owner_incarnation&&operation.sequence&&count){std::lock_guard<std::mutex> lock(ipc_pool_mutex_);auto replay=ipc_grant_operations_.find(operation);uint64_t id=0;if(replay!=ipc_grant_operations_.end()){id=replay->second;if(ipc_grants_[id].slots.size()!=count)status=DataError::kInvalidArgument;}else{size_t free=std::count(ipc_slot_owners_.begin(),ipc_slot_owners_.end(),0);if(free<count)status=DataError::kCapacityExhausted;else{id=next_ipc_grant_id_++;IpcGrantEntry entry;entry.operation=operation;for(size_t slot=0;slot<ipc_slot_owners_.size()&&entry.slots.size()<count;++slot)if(ipc_slot_owners_[slot]==0){ipc_slot_owners_[slot]=id;entry.slots.push_back(slot);}ipc_grants_[id]=entry;ipc_grant_operations_[operation]=id;status=DataError::kOk;}}if(status==DataError::kOk){const auto&entry=ipc_grants_[id];wire::Put(config_.incarnation,&out);wire::Put(operation.owner_incarnation,&out);wire::Put(id,&out);wire::Put<uint32_t>(entry.slots.size(),&out);for(int32_t slot:entry.slots)wire::Put<uint32_t>(slot,&out);}}}
-    else if(op==DataServiceOp::kReleaseIpcSlots&&ipc_pool_){LeaseToken token;if(wire::Get(&p,e,&token.service_incarnation)&&wire::Get(&p,e,&token.consumer_incarnation)&&wire::Get(&p,e,&token.lease_id)&&p==e){std::lock_guard<std::mutex> lock(ipc_pool_mutex_);if(token.service_incarnation!=config_.incarnation)status=DataError::kOwnerRestarted;else{auto grant=ipc_grants_.find(token.lease_id);if(grant==ipc_grants_.end())status=DataError::kOk;else if(grant->second.operation.owner_incarnation!=token.consumer_incarnation)status=DataError::kInvalidArgument;else{for(int32_t slot:grant->second.slots)if(ipc_slot_owners_[slot]==token.lease_id)ipc_slot_owners_[slot]=0;ipc_grant_operations_.erase(grant->second.operation);ipc_grants_.erase(grant);status=DataError::kOk;}}}}
+    else if(op==DataServiceOp::kReleaseIpcSlots&&ipc_pool_){LeaseToken token;if(wire::Get(&p,e,&token.service_incarnation)&&wire::Get(&p,e,&token.consumer_incarnation)&&wire::Get(&p,e,&token.lease_id)&&p==e){std::lock_guard<std::mutex> lock(ipc_pool_mutex_);if(token.service_incarnation!=config_.incarnation)status=DataError::kOwnerRestarted;else{auto grant=ipc_grants_.find(token.lease_id);if(grant==ipc_grants_.end())status=DataError::kOk;else if(grant->second.operation.owner_incarnation!=token.consumer_incarnation)status=DataError::kInvalidArgument;else{grant->second.release_requested=true;collect_ipc_grant_locked(token.lease_id);status=DataError::kOk;}}}}
     else if(op==DataServiceOp::kIpcPoolStats&&p==e&&ipc_pool_){std::lock_guard<std::mutex> lock(ipc_pool_mutex_);wire::Put<uint64_t>(ipc_slot_owners_.size(),&out);wire::Put<uint64_t>(std::count(ipc_slot_owners_.begin(),ipc_slot_owners_.end(),0),&out);wire::Put<uint64_t>(ipc_grants_.size(),&out);status=DataError::kOk;}
+    else if (op == DataServiceOp::kAcquireIpcAttach && ipc_pool_) {
+      OperationId operation; LeaseToken metadata_lease, source_grant;
+      uint64_t ref_bytes = 0, provider = 0, target = 0;
+      uint32_t valid_tokens = 0, count = 0; DataRef metadata_ref;
+      bool valid = wire::Get(&p,e,&operation.owner_incarnation) &&
+          wire::Get(&p,e,&operation.sequence) &&
+          wire::Get(&p,e,&metadata_lease.service_incarnation) &&
+          wire::Get(&p,e,&metadata_lease.consumer_incarnation) &&
+          wire::Get(&p,e,&metadata_lease.lease_id) &&
+          wire::Get(&p,e,&ref_bytes) &&
+          ref_bytes <= static_cast<uint64_t>(e-p) &&
+          DecodeDataRef(p, static_cast<size_t>(ref_bytes), &metadata_ref) == DataError::kOk;
+      if (valid) p += ref_bytes;
+      valid = valid && wire::Get(&p,e,&source_grant.service_incarnation) &&
+          wire::Get(&p,e,&source_grant.consumer_incarnation) &&
+          wire::Get(&p,e,&source_grant.lease_id) &&
+          wire::Get(&p,e,&provider) && wire::Get(&p,e,&target) &&
+          wire::Get(&p,e,&valid_tokens) && wire::Get(&p,e,&count) &&
+          operation.owner_incarnation == target && operation.sequence &&
+          provider && target && count && count <= ipc_slot_owners_.size();
+      std::vector<int32_t> slots;
+      for (uint32_t i = 0; valid && i < count; ++i) {
+        uint32_t slot = 0; valid = wire::Get(&p,e,&slot) &&
+            slot < ipc_slot_owners_.size(); slots.push_back(static_cast<int32_t>(slot));
+      }
+      std::sort(slots.begin(), slots.end());
+      valid = valid && p == e &&
+          std::adjacent_find(slots.begin(), slots.end()) == slots.end() &&
+          source_grant.service_incarnation == config_.incarnation &&
+          metadata_ref.allocation.owner_incarnation == config_.incarnation &&
+          registry_->validates_lease(metadata_lease, metadata_ref);
+      if (valid) {
+        std::lock_guard<std::mutex> lock(ipc_pool_mutex_);
+        const auto replay = ipc_attach_operations_.find(operation);
+        uint64_t attach_id = 0;
+        if (replay != ipc_attach_operations_.end()) {
+          attach_id = replay->second;
+          const auto& old = ipc_attaches_.at(attach_id);
+          valid = old.source_grant_id == source_grant.lease_id &&
+              old.metadata_allocation == metadata_ref.allocation &&
+              old.provider_incarnation == provider && old.target_incarnation == target &&
+              old.valid_tokens == valid_tokens && old.slots == slots;
+        } else {
+          auto source = ipc_grants_.find(source_grant.lease_id);
+          valid = source != ipc_grants_.end() && !source->second.release_requested &&
+              source->second.operation.owner_incarnation == source_grant.consumer_incarnation;
+          for (int32_t slot : slots)
+            valid = valid && ipc_slot_owners_[slot] == source_grant.lease_id;
+          if (valid) {
+            attach_id = next_ipc_attach_id_++;
+            ipc_attaches_[attach_id] = {operation, source_grant.lease_id,
+                metadata_ref.allocation, provider, target, valid_tokens, slots};
+            ipc_attach_operations_[operation] = attach_id;
+            ++source->second.attach_refs;
+          }
+        }
+        if (valid) {
+          const auto& attach = ipc_attaches_.at(attach_id);
+          wire::Put(config_.incarnation,&out); wire::Put(target,&out);
+          wire::Put(attach_id,&out);
+          wire::Put(source_grant.service_incarnation,&out);
+          wire::Put(source_grant.consumer_incarnation,&out);
+          wire::Put(source_grant.lease_id,&out);
+          wire::Put(attach.metadata_allocation.owner_incarnation,&out);
+          wire::Put(attach.metadata_allocation.allocation_id,&out);
+          wire::Put(attach.metadata_allocation.generation,&out);
+          wire::Put(provider,&out); wire::Put(target,&out);
+          wire::Put(valid_tokens,&out); wire::Put<uint32_t>(slots.size(),&out);
+          for (int32_t slot : slots) wire::Put<uint32_t>(slot,&out);
+          status = DataError::kOk;
+        } else status = DataError::kInvalidArgument;
+      }
+    }
+    else if (op == DataServiceOp::kReleaseIpcAttach && ipc_pool_) {
+      LeaseToken token;
+      if (wire::Get(&p,e,&token.service_incarnation) &&
+          wire::Get(&p,e,&token.consumer_incarnation) &&
+          wire::Get(&p,e,&token.lease_id) && p == e) {
+        std::lock_guard<std::mutex> lock(ipc_pool_mutex_);
+        if (token.service_incarnation != config_.incarnation) {
+          status = DataError::kOwnerRestarted;
+        } else {
+          auto attach = ipc_attaches_.find(token.lease_id);
+          if (attach == ipc_attaches_.end()) status = DataError::kOk;
+          else if (attach->second.target_incarnation != token.consumer_incarnation)
+            status = DataError::kInvalidArgument;
+          else {
+            const uint64_t source_id = attach->second.source_grant_id;
+            ipc_attach_operations_.erase(attach->second.operation);
+            ipc_attaches_.erase(attach);
+            auto source = ipc_grants_.find(source_id);
+            if (source != ipc_grants_.end() && source->second.attach_refs)
+              --source->second.attach_refs;
+            collect_ipc_grant_locked(source_id);
+            status = DataError::kOk;
+          }
+        }
+      }
+    }
     else if (op == DataServiceOp::kAcquireSharedWeight && shared_weight_) {
       OperationId operation;
       Digest256 content{}, layout{};

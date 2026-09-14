@@ -132,6 +132,10 @@ class BlockAllocator {
 
   // Increase the reference count on an allocated block.
   void incref(int32_t block_id);
+  // Install/remove a data-service-authorized immutable reference. These slots
+  // never enter this process's private free queue.
+  bool attach_external(int32_t block_id);
+  bool detach_external(int32_t block_id);
 
   int32_t ref_count(int32_t block_id) const;
 
@@ -220,6 +224,7 @@ class BlockAllocator {
   tensor::Tensor value_scale_pool_;
 
   std::vector<int32_t> ref_counts_; // ref_counts_[block_id] = live references
+  std::vector<uint8_t> allocatable_;
   std::queue<int32_t> free_queue_;  // Queue of free block IDs
 };
 

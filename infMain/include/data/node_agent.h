@@ -56,10 +56,28 @@ class NodeAgent {
   std::unique_ptr<SharedWeightOwner> shared_weight_;
   std::mutex ipc_pool_mutex_;
   std::vector<uint64_t> ipc_slot_owners_;
-  struct IpcGrantEntry { OperationId operation; std::vector<int32_t> slots; };
+  struct IpcGrantEntry {
+    OperationId operation;
+    std::vector<int32_t> slots;
+    uint64_t attach_refs = 0;
+    bool release_requested = false;
+  };
   std::map<uint64_t,IpcGrantEntry> ipc_grants_;
   std::map<OperationId,uint64_t> ipc_grant_operations_;
   uint64_t next_ipc_grant_id_=1;
+  struct IpcAttachEntry {
+    OperationId operation;
+    uint64_t source_grant_id = 0;
+    AllocationHandle metadata_allocation;
+    uint64_t provider_incarnation = 0;
+    uint64_t target_incarnation = 0;
+    uint32_t valid_tokens = 0;
+    std::vector<int32_t> slots;
+  };
+  std::map<uint64_t, IpcAttachEntry> ipc_attaches_;
+  std::map<OperationId, uint64_t> ipc_attach_operations_;
+  uint64_t next_ipc_attach_id_ = 1;
+  void collect_ipc_grant_locked(uint64_t grant_id);
   std::mutex shared_weight_mutex_;
   struct SharedWeightLeaseEntry { OperationId operation; };
   std::map<uint64_t, SharedWeightLeaseEntry> shared_weight_leases_;

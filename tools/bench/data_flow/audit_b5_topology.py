@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
-"""Audit production multi-P/D support without treating manual workers as serving support."""
+"""Derive B5 production topology support from accepted N5/N6 evidence."""
+
+from __future__ import annotations
 
 import argparse
 import hashlib
@@ -7,73 +9,91 @@ import json
 from pathlib import Path
 
 
-def sha(path):
+TOPOLOGIES = ("unified", "1P1D", "1P2D", "2P1D", "2P2D")
+
+
+def sha(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def lines_with(path, needles):
-    rows = []
-    for number, line in enumerate(path.read_text().splitlines(), 1):
-        if any(needle in line for needle in needles):
-            rows.append({"line": number, "text": line.strip()})
-    return rows
+def lines_with(path: Path, needles) -> list[dict]:
+    return [{"line": number, "text": line.strip()}
+            for number, line in enumerate(path.read_text().splitlines(), 1)
+            if any(needle in line for needle in needles)]
 
 
-def main():
+def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--root", type=Path, default=Path("."))
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
     root = args.root.resolve()
-    coordinator = root / "python/pbe_roles/coordinator.py"
+    evidence = root / "docs/data_flow_evidence/v4/performance_attribution_multi_pd"
+    n5_path = evidence / "N5/multi_pd_reservation_cancel_v2/result.json"
+    n6_path = evidence / "N6/topology_analysis_v2.json"
+    n5, n6 = json.loads(n5_path.read_text()), json.loads(n6_path.read_text())
+    coordinator = root / "python/pbe_roles/pd_runtime.py"
     role = root / "demo/pbe_vlm_language_role.cpp"
-    runner = root / "tools/bench/data_flow/run_persistent_pd_deployment_ab.py"
-    validation_path = root / "docs/data_flow_evidence/v4/M9/persistent_pd_deployment_final_gpu0_v4/validation.json"
-    validation = json.loads(validation_path.read_text())
+    required_faults = {
+        "atomic_reservation_contention_and_recovery",
+        "external_cancel_and_deadline_reach_active_decode",
+        "ordered_worker_reservations_consumed",
+        "all_ipc_grants_reclaimed",
+        "all_topologies_and_edges",
+    }
+    accepted = (n5.get("ok") is True and n6.get("ok") is True and
+                all(n5.get("checks", {}).get(name) for name in required_faults) and
+                len(n6.get("cells", [])) == 90 and
+                len(n6.get("trials", [])) == 450 and
+                sum(row["completed_requests"] for row in n6.get("cells", [])) == 3150)
+    matrix = {
+        topology: ("validated production coordinator; private/shared measured"
+                   if topology != "unified" else
+                   "validated production unified baseline and batch-capability probe; private/shared measured")
+        for topology in TOPOLOGIES
+    }
     result = {
-        "schema": "pbe-v4-b5-topology-support-audit-v1",
-        "accepted": False,
-        "status": "blocked_by_missing_production_coordination",
-        "validated_existing": {
-            "unified_1p1d_process": {"status": "validated_baseline", "source": str(validation_path.relative_to(root))},
-            "split_1p1d": {"status": "validated", "source": str(validation_path.relative_to(root)),
-                            "gate_ok": validation.get("ok") is True},
+        "schema": "pbe-v4-b5-topology-support-v3",
+        "accepted": accepted,
+        "status": ("complete_with_bounded_topology_claim" if accepted else
+                   "blocked_by_failed_production_evidence"),
+        "matrix": matrix,
+        "blocking_contracts": [] if accepted else
+            ["N5 production fault matrix or N6 independent-window topology matrix failed"],
+        "measurement_boundary": {
+            "cells": len(n6.get("cells", [])),
+            "independent_trials": len(n6.get("trials", [])),
+            "requests": sum(row.get("completed_requests", 0)
+                            for row in n6.get("cells", [])),
+            "trials_per_cell": 5,
+            "requests_per_trial": {"low": 5, "medium": 5, "near_saturation": 11},
+            "near_saturation_arrival_train_ms": 2000,
+            "fixed_total_kv_slots": n6.get("fixed_kv_total_slots"),
+            "client_ttft_itl": n6.get("client_ttft_itl"),
+            "claim": "best observed under frozen conditions; finite overload, no significance, asymptotic saturation, universal topology optimum, or hardware-isolation claim",
         },
-        "matrix": {
-            "unified": "validated historical baseline",
-            "1P1D": "validated real persistent handoff",
-            "1P2D": "unsupported in production Coordinator",
-            "2P1D": "unsupported in production Coordinator",
-            "2P2D": "unsupported in production Coordinator",
+        "completion_evidence": {
+            "coordinator": str(coordinator.relative_to(root)),
+            "functional_fault_reservation_cancel": str(n5_path.relative_to(root)),
+            "fixed_kv_independent_window_matrix": str(n6_path.relative_to(root)),
+            "fixed_physical_budget_capacity": str((evidence / "N6/capacity/results.json").relative_to(root)),
+            "compute_sanitizer": str((evidence / "N5/compute_sanitizer_reservation_v2/result.json").relative_to(root)),
         },
-        "blocking_contracts": [
-            "Coordinator constructs exactly one language process and has no Prefill/Decode role registry",
-            "No production request router selects among multiple Prefill providers or Decode consumers",
-            "Decode page authorization is a static initial-slot vector fixed at process construction",
-            "A Decode worker cannot dynamically add a later Prefill provider generation/slot grant",
-            "No validator proves all P-to-D paths, four-process participation, cancellation and recovery",
-        ],
-        "why_manual_probe_is_insufficient":
-            "Starting extra LanguageProcess instances in a benchmark could exercise IPC, but would not prove the production launcher, registry, routing, authorization, or lifecycle contract required by B5.",
         "code_evidence": {
-            "coordinator": {"path": str(coordinator.relative_to(root)), "sha256": sha(coordinator),
-                            "matches": lines_with(coordinator, ["language = LanguageProcess", "run_round(language"])},
-            "language_role": {"path": str(role.relative_to(root)), "sha256": sha(role),
-                              "matches": lines_with(role, ["initial_slots_", "binary_search(initial_slots_"])},
-            "persistent_runner": {"path": str(runner.relative_to(root)), "sha256": sha(runner),
-                                  "matches": lines_with(runner, ["prefill = worker", "decode = worker"])},
+            "coordinator": {"path": str(coordinator.relative_to(root)),
+                            "sha256": sha(coordinator),
+                            "matches": lines_with(coordinator, ["pd_reserve", "deadline_ns", "def cancel("])},
+            "language_role": {"path": str(role.relative_to(root)),
+                              "sha256": sha(role),
+                              "matches": lines_with(role, ["PDReserve", "active_reservations", "deadline_monotonic_ns"])},
         },
-        "next_implementation_entry": [
-            "typed role registration with incarnation and capability",
-            "dynamic provider-generation page authorization independent of process startup",
-            "request routing across P/D pairs with idempotent lifecycle rollback",
-            "then run private/shared 1P2D, 2P1D and 2P2D five-trial cells",
-        ],
+        "supersedes": "pbe-v4-b5-topology-support-v2 and the earlier blocked audit; historical artifacts remain preserved",
     }
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(result, indent=2, sort_keys=True) + "\n")
-    print(json.dumps({"accepted": False, "status": result["status"]}, sort_keys=True))
+    print(json.dumps({"accepted": accepted, "status": result["status"]}, sort_keys=True))
+    return 0 if accepted else 1
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

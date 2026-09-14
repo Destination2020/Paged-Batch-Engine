@@ -88,6 +88,7 @@ def main():
         decode_warm = decode.call({"op": "pd_decode", "request_id": "warm-pd",
             "generation": 1, "kv_content": prefill_warm["kv_content"],
             "kv_representation": prefill_warm["kv_representation"],
+            "expected_provider_incarnation": prefill_warm["provider_incarnation"],
             "max_new_tokens": item["max_new_tokens"]}, timeout=180)
         released = prefill.call({"op": "pd_release", "request_id": "warm-pd",
                                  "generation": 1}, timeout=180)
@@ -130,6 +131,7 @@ def main():
                 d = decode.call({"op": "pd_decode", "request_id": request_id,
                     "generation": 1, "kv_content": p["kv_content"],
                     "kv_representation": p["kv_representation"],
+                    "expected_provider_incarnation": p["provider_incarnation"],
                     "max_new_tokens": item["max_new_tokens"]}, timeout=180)
                 d_completed = time.perf_counter()
                 release = prefill.call({"op": "pd_release", "request_id": request_id,

@@ -144,6 +144,8 @@ class KVCacheManager {
   // binding/provider retains its baseline reference across request teardown.
   bool restore_external_shared_request(const ExternalKVRequestState& state,
                                        RequestId* restored_id);
+  bool attach_external_shared_pages(const ExternalKVRequestState& state);
+  bool detach_external_shared_pages(const ExternalKVRequestState& state);
 
   // Same-pool fork. All pages are initially shared; appending to a partial
   // tail triggers device-local COW before the writable slot is returned.

@@ -25,6 +25,7 @@ class ContentRegistry {
                     DataLeaseKind lease_kind, const OperationId& operation,
                     RemoteDataLease* lease);
   DataError release(const LeaseToken& token);
+  bool validates_lease(const LeaseToken& token, const DataRef& ref) const;
   DataError withdraw(const DataRef& ref);
   DataError release_producer(const AllocationHandle& handle);
   DataServiceStats stats() const;

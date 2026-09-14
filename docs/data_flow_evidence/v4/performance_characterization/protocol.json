@@ -30,6 +30,7 @@
     "independent_trials_per_cell": 5,
     "load_generation": "closed-loop, fixed concurrency 1; no open-loop queueing claim",
     "measured_requests_per_trial": 10,
+    "numerical_comparison": "pair arm00 and candidate by cell/repetition/request; exact output sequences pass, divergences require first-step same-history M5/E4 logits evidence",
     "order": "fixed seed randomized across all 40 trials",
     "representative": {
       "arms": [
@@ -74,7 +75,11 @@
   },
   "b5": {
     "audit_before_measurement": true,
-    "manual_process_orchestration_is_not_production_support": true
+    "manual_process_orchestration_is_not_production_support": true,
+    "accepted_source": "section-21 N5 production reservation/cancel/fault matrix plus N6 v2 topology analysis",
+    "independent_windows_per_cell": 5,
+    "requests_per_window": {"low": 5, "medium": 5, "near_saturation": 11},
+    "near_saturation_boundary": "finite 2,000 ms arrival train at 200 ms intervals followed by cohort drain; not asymptotic saturation"
   },
   "binaries": {
     "build-v3/demo/pbe_data_service": {
@@ -157,5 +162,5 @@
     "nccl": "off",
     "python": "3.12.3"
   },
-  "source_head": "f3597a763b6cd5cf60b826baa2dc94395c3d02fd"
+  "source_head": "13f28ece482b60a79a218977eddcbfcd3fd045f8"
 }

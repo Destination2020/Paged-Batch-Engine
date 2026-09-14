@@ -14,6 +14,7 @@
 #include <memory>
 #include <mutex>
 #include <numeric>
+#include <set>
 #include <stdexcept>
 #include <string>
 #include <thread>
@@ -56,6 +57,20 @@ std::string Hex(const data::Digest256& digest) {
     result.push_back(alphabet[byte & 15]);
   }
   return result;
+}
+
+std::string DeviceUuid(int device) {
+  cudaDeviceProp properties{};
+  if (cudaGetDeviceProperties(&properties, device) != cudaSuccess)
+    return "unavailable";
+  static const char alphabet[] = "0123456789abcdef";
+  std::string value;
+  value.reserve(sizeof(properties.uuid.bytes) * 2);
+  for (unsigned char byte : properties.uuid.bytes) {
+    value.push_back(alphabet[byte >> 4]);
+    value.push_back(alphabet[byte & 15]);
+  }
+  return value;
 }
 
 bool ParseHex(const std::string& text, data::Digest256* digest) {
@@ -142,14 +157,16 @@ std::vector<int32_t> ParseSlots(const std::string& value) {
 std::vector<uint8_t> PackPersistentPDKV(
     const base::ExternalKVRequestState& state,
     const data::LeaseToken& pool_lease, int32_t first_token,
-    int64_t rope_delta, const std::vector<int32_t>& prompt) {
+    int64_t rope_delta, const std::vector<int32_t>& prompt,
+    uint64_t provider_incarnation) {
   std::vector<uint8_t> output;
   data::wire::Put(kPersistentPDKVPayloadMagic, &output);
-  data::wire::Put<uint16_t>(1, &output);
+  data::wire::Put<uint16_t>(2, &output);
   data::wire::Put<uint16_t>(0, &output);
   data::wire::Put(pool_lease.service_incarnation, &output);
   data::wire::Put(pool_lease.consumer_incarnation, &output);
   data::wire::Put(pool_lease.lease_id, &output);
+  data::wire::Put(provider_incarnation, &output);
   data::wire::Put<uint32_t>(first_token, &output);
   uint64_t delta_bits = 0;
   std::memcpy(&delta_bits, &rope_delta, sizeof(delta_bits));
@@ -170,7 +187,7 @@ std::vector<uint8_t> PackPersistentPDKV(
 bool UnpackPersistentPDKV(
     const std::vector<uint8_t>& bytes, base::ExternalKVRequestState* state,
     data::LeaseToken* pool_lease, int32_t* first_token, int64_t* rope_delta,
-    std::vector<int32_t>* prompt) {
+    std::vector<int32_t>* prompt, uint64_t* provider_incarnation) {
   const uint8_t* cursor = bytes.data();
   const uint8_t* end = cursor + bytes.size();
   uint32_t magic = 0, first = 0, block = 0, layers = 0, valid = 0, committed = 0;
@@ -182,6 +199,7 @@ bool UnpackPersistentPDKV(
       !data::wire::Get(&cursor, end, &pool_lease->service_incarnation) ||
       !data::wire::Get(&cursor, end, &pool_lease->consumer_incarnation) ||
       !data::wire::Get(&cursor, end, &pool_lease->lease_id) ||
+      !data::wire::Get(&cursor, end, provider_incarnation) ||
       !data::wire::Get(&cursor, end, &first) ||
       !data::wire::Get(&cursor, end, &delta_bits) ||
       !data::wire::Get(&cursor, end, &block) ||
@@ -189,8 +207,9 @@ bool UnpackPersistentPDKV(
       !data::wire::Get(&cursor, end, &valid) ||
       !data::wire::Get(&cursor, end, &committed) ||
       !data::wire::Get(&cursor, end, &prompt_size) ||
-      magic != kPersistentPDKVPayloadMagic || version != 1 || reserved ||
-      layers == 0 || layers > 256 || !pool_lease->lease_id) return false;
+      magic != kPersistentPDKVPayloadMagic || version != 2 || reserved ||
+      layers == 0 || layers > 256 || !pool_lease->lease_id ||
+      !*provider_incarnation) return false;
   state->schema_version = 1;
   state->block_size = block;
   state->num_layers = layers;
@@ -353,6 +372,9 @@ class LanguageRole {
         model_(std::make_unique<model::Qwen2Model>(
             base::TokenizerType::kEncodeBpe, tokenizer, model_path, false)),
         device_(device), initial_slots_(std::move(initial_slots)) {
+    worker_incarnation_ = (static_cast<uint64_t>(getpid()) << 32) ^
+        static_cast<uint64_t>(Clock::now().time_since_epoch().count());
+    if (!worker_incarnation_) worker_incarnation_ = 1;
     ScopeExit rollback([this] {
       model_.reset();
       shared_weight_import_.reset();
@@ -505,9 +527,13 @@ class LanguageRole {
   }
 
   ~LanguageRole() {
+    for (const auto& item : pd_reservations_) budget_.release(item.second.demands);
+    pd_reservations_.clear();
     for (const auto& item : pd_holds_) {
       if (model_->kv_cache_manager()->is_valid_request(item.second.request_id))
         model_->kv_cache_manager()->free_request(item.second.request_id);
+      if (item.second.metadata_ref.allocation.allocation_id)
+        client_.withdraw(item.second.metadata_ref);
     }
     pd_holds_.clear();
     cudaDeviceSynchronize();
@@ -535,6 +561,8 @@ class LanguageRole {
     cancelled = std::max(cancelled, generation);
     return true;
   }
+
+  uint64_t worker_incarnation() const { return worker_incarnation_; }
 
   bool RequestCheckpoint(const std::string& request_id, uint64_t generation) {
     if (request_id.empty() || generation == 0) return false;
@@ -591,6 +619,87 @@ class LanguageRole {
     manager->clear_radix_cache();
     return {{"ok", true}, {"event", "prefix_cache_cleared"},
             {"recovery_objects", manager->recovery_dependency_object_count()}};
+  }
+
+  Json PDReserve(const Json& command) {
+    EnsureOwnerAlive();
+    const std::string request_id = command.value("request_id", "");
+    const uint64_t generation = command.value("generation", uint64_t{0});
+    const std::string role = command.value("role", "");
+    const int64_t deadline_ns = command.value("deadline_monotonic_ns", int64_t{0});
+    const int32_t max_new_tokens = command.value("max_new_tokens", 0);
+    if (request_id.empty() || generation == 0 ||
+        (role != "prefill" && role != "decode") || deadline_ns <= 0 ||
+        max_new_tokens <= 0 || max_new_tokens > 256)
+      throw std::runtime_error("invalid_pd_reservation_request");
+    const auto deadline = Clock::time_point(std::chrono::nanoseconds(deadline_ns));
+    if (Clock::now() >= deadline)
+      throw std::runtime_error("pd_reservation_deadline_exceeded");
+    if (IsCancelled(request_id, generation))
+      throw std::runtime_error("pd_reservation_cancelled");
+    const std::string key = request_id + ":" + std::to_string(generation);
+    auto existing = pd_reservations_.find(key);
+    if (existing != pd_reservations_.end()) {
+      if (existing->second.role != role)
+        throw std::runtime_error("pd_reservation_role_mismatch");
+      return {{"ok", true}, {"worker_pid", getpid()},
+              {"reservation_id", existing->second.reservation_id},
+              {"request_id", request_id}, {"generation", generation},
+              {"role", role}, {"idempotent", true}};
+    }
+    const size_t block_bytes = descriptor_.bytes / descriptor_.num_blocks;
+    std::vector<serving::MemoryDemand> demands;
+    if (role == "decode") {
+      const size_t growth_blocks = (static_cast<size_t>(max_new_tokens) +
+          descriptor_.block_size - 1) / descriptor_.block_size;
+      demands = {{serving::MemoryPool::kKV, growth_blocks * block_bytes}};
+    } else {
+      if (!command.contains("required") || !command["required"].is_object())
+        throw std::runtime_error("pd_prefill_reservation_requirements_missing");
+      const auto& required = command["required"];
+      demands = {{serving::MemoryPool::kKV,
+                  required.value("kv_bytes", size_t{0})},
+                 {serving::MemoryPool::kBundles,
+                  required.value("bundle_bytes", size_t{0})},
+                 {serving::MemoryPool::kStaging,
+                  required.value("staging_bytes", size_t{0})}};
+      if (demands[0].bytes == 0 || demands[1].bytes == 0)
+        throw std::runtime_error("invalid_pd_prefill_reservation_requirements");
+    }
+    if (!budget_.reserve(demands))
+      throw std::runtime_error("pd_reservation_budget_exhausted");
+    PDReservation reservation;
+    reservation.reservation_id = next_pd_reservation_id_++;
+    reservation.role = role;
+    reservation.deadline = deadline;
+    reservation.demands = demands;
+    const auto reservation_id = reservation.reservation_id;
+    pd_reservations_.emplace(key, std::move(reservation));
+    return {{"ok", true}, {"worker_pid", getpid()},
+            {"worker_incarnation", worker_incarnation_},
+            {"reservation_id", reservation_id}, {"request_id", request_id},
+            {"generation", generation}, {"role", role}, {"idempotent", false},
+            {"demands", {{"kv_bytes", demands[0].bytes},
+                          {"bundle_bytes", role == "prefill" ? demands[1].bytes : 0},
+                          {"staging_bytes", role == "prefill" ? demands[2].bytes : 0}}}};
+  }
+
+  Json PDUnreserve(const Json& command) {
+    const std::string request_id = command.value("request_id", "");
+    const uint64_t generation = command.value("generation", uint64_t{0});
+    const uint64_t reservation_id = command.value("reservation_id", uint64_t{0});
+    const std::string key = request_id + ":" + std::to_string(generation);
+    auto found = pd_reservations_.find(key);
+    if (found == pd_reservations_.end())
+      return {{"ok", true}, {"worker_pid", getpid()},
+              {"event", "pd_reservation_already_released"}};
+    if (!reservation_id || reservation_id != found->second.reservation_id)
+      throw std::runtime_error("pd_reservation_id_mismatch");
+    budget_.release(found->second.demands);
+    pd_reservations_.erase(found);
+    return {{"ok", true}, {"worker_pid", getpid()},
+            {"event", "pd_reservation_released"},
+            {"remaining_reservations", pd_reservations_.size()}};
   }
 
   Json PDPrefill(const Json& command) {
@@ -661,8 +770,12 @@ class LanguageRole {
     input.demands = {{serving::MemoryPool::kKV, blocks * block_bytes},
                      {serving::MemoryPool::kBundles, input.bundle.bytes.size()},
                      {serving::MemoryPool::kStaging, input.feature_bytes}};
-    if (!budget_.reserve(input.demands))
+    const uint64_t reservation_id = command.value("reservation_id", uint64_t{0});
+    if (reservation_id) {
+      ConsumePDReservation(held_key, "prefill", reservation_id, input.demands);
+    } else if (!budget_.reserve(input.demands)) {
       throw std::runtime_error("pd_prefill_budget_exhausted");
+    }
     bool demands_owned = true;
     try {
       serving::SchedulerConfig config;
@@ -700,6 +813,12 @@ class LanguageRole {
       const int32_t first_token = sampled[0];
       if (cudaDeviceSynchronize() != cudaSuccess)
         throw std::runtime_error("pd_prefill_sync_failed");
+      const int64_t deadline_ns = item.value("deadline_monotonic_ns", int64_t{0});
+      if (IsCancelled(input.request_id, input.generation))
+        throw std::runtime_error("pd_prefill_cancelled");
+      if (deadline_ns > 0 && Clock::now() >=
+          Clock::time_point(std::chrono::nanoseconds(deadline_ns)))
+        throw std::runtime_error("pd_prefill_deadline_exceeded");
       base::ExternalKVRequestState state;
       if (!model_->kv_cache_manager()->export_external_request(
               batch.request_ids[0], &state))
@@ -717,7 +836,8 @@ class LanguageRole {
                              input.rope_delta, oracle_steps)["tokens"];
       }
       const auto payload = PackPersistentPDKV(
-          state, grant_.token, first_token, input.rope_delta, input.tokens);
+          state, grant_.token, first_token, input.rope_delta, input.tokens,
+          worker_incarnation_);
       data::DataReservation reservation;
       uint64_t owner = 0;
       if (client_.ping(&owner) != data::DataError::kOk)
@@ -727,7 +847,7 @@ class LanguageRole {
       reservation.kind = data::DataKind::kKVPage;
       reservation.content = data::ContentIdFromBytes(payload.data(), payload.size());
       reservation.representation = data::RepresentationIdFromString(
-          "pbe-v4-persistent-pd-kv-v1");
+          "pbe-v4-persistent-pd-kv-v2-dynamic-attach");
       reservation.logical_bytes = payload.size();
       data::AllocationHandle allocation;
       if (client_.reserve(reservation, &allocation) != data::DataError::kOk)
@@ -740,6 +860,7 @@ class LanguageRole {
         throw std::runtime_error("pd_handoff_seal_failed");
       PDHold hold;
       hold.request_id = batch.request_ids[0];
+      hold.metadata_ref = ref;
       hold.demands = input.demands;
       input.demands.clear();
       demands_owned = false;
@@ -751,6 +872,8 @@ class LanguageRole {
               {"handoff_valid", true}, {"kv_content", Hex(ref.content.digest)},
               {"kv_representation", Hex(reservation.representation.digest)},
               {"pool_grant", grant_.token.lease_id}, {"pool_slots", grant_.slots},
+              {"provider_incarnation", worker_incarnation_},
+              {"consumed_reservation_id", reservation_id},
               {"prompt_tokens", input.tokens.size()},
               {"exported_valid_tokens", state.valid_tokens},
               {"first_token", first_token}, {"oracle_tokens", std::move(oracle)},
@@ -766,6 +889,35 @@ class LanguageRole {
   Json PDDecode(const Json& command) {
     EnsureOwnerAlive();
     const auto started = Clock::now();
+    const std::string external_request_id = command.value("request_id", "");
+    const uint64_t external_generation = command.value("generation", uint64_t{0});
+    const int64_t deadline_ns = command.value("deadline_monotonic_ns", int64_t{0});
+    const auto deadline = deadline_ns > 0
+        ? Clock::time_point(std::chrono::nanoseconds(deadline_ns))
+        : Clock::now() + std::chrono::seconds(120);
+    if (external_request_id.empty() || external_generation == 0)
+      throw std::runtime_error("invalid_pd_decode_request_identity");
+    if (Clock::now() >= deadline)
+      throw std::runtime_error("pd_decode_deadline_exceeded");
+    if (IsCancelled(external_request_id, external_generation))
+      throw std::runtime_error("pd_decode_cancelled");
+    const std::string reservation_key = external_request_id + ":" +
+        std::to_string(external_generation);
+    const uint64_t reservation_id = command.value("reservation_id", uint64_t{0});
+    std::vector<serving::MemoryDemand> decode_demands;
+    if (reservation_id) {
+      const size_t block_bytes = descriptor_.bytes / descriptor_.num_blocks;
+      const int32_t max_new_tokens = command.value("max_new_tokens", 16);
+      const size_t growth_blocks = (static_cast<size_t>(max_new_tokens) +
+          descriptor_.block_size - 1) / descriptor_.block_size;
+      ConsumePDReservation(reservation_key, "decode", reservation_id,
+          {{serving::MemoryPool::kKV, growth_blocks * block_bytes}}, &decode_demands);
+    }
+    struct DecodeBudgetRelease {
+      serving::NodeMemoryBudget* budget;
+      std::vector<serving::MemoryDemand>* demands;
+      ~DecodeBudgetRelease() { if (!demands->empty()) budget->release(*demands); }
+    } decode_budget_release{&budget_, &decode_demands};
     data::ContentId content;
     data::RepresentationId representation;
     if (!ParseHex(command.value("kv_content", ""), &content.digest) ||
@@ -785,27 +937,110 @@ class LanguageRole {
     int32_t first_token = -1;
     int64_t rope_delta = 0;
     std::vector<int32_t> prompt;
+    uint64_t provider_incarnation = 0;
     if (!UnpackPersistentPDKV(lease.bytes, &state, &prefix_grant,
-            &first_token, &rope_delta, &prompt))
+            &first_token, &rope_delta, &prompt, &provider_incarnation))
       throw std::runtime_error("pd_handoff_decode_failed");
+    const uint64_t expected_provider = command.value(
+        "expected_provider_incarnation", uint64_t{0});
+    if (!expected_provider || expected_provider != provider_incarnation)
+      throw std::runtime_error("pd_provider_generation_mismatch");
     std::vector<int32_t> pages = state.block_ids_per_layer.empty()
         ? std::vector<int32_t>{} : state.block_ids_per_layer.front();
     for (const auto& layer : state.block_ids_per_layer)
       if (layer != pages) throw std::runtime_error("pd_handoff_layer_ids_diverged");
     for (int32_t page : pages)
-      if (!std::binary_search(initial_slots_.begin(), initial_slots_.end(), page))
-        throw std::runtime_error("pd_handoff_page_not_in_prefill_grant");
+      if (std::find(grant_.slots.begin(), grant_.slots.end(), page) !=
+          grant_.slots.end())
+        throw std::runtime_error("pd_handoff_page_overlaps_private_grant");
+    const auto attach_started = Clock::now();
+    data::IpcAttachGrant attach;
+    const data::OperationId attach_operation{
+        worker_incarnation_, lease.ref.allocation.allocation_id};
+    const auto attach_status = client_.acquire_ipc_attach(
+        lease, prefix_grant, provider_incarnation, worker_incarnation_,
+        static_cast<uint32_t>(state.valid_tokens), pages, &attach,
+        attach_operation);
+    auto authorized_slots = attach.slots;
+    auto requested_slots = pages;
+    std::sort(authorized_slots.begin(), authorized_slots.end());
+    std::sort(requested_slots.begin(), requested_slots.end());
+    const bool slots_match = authorized_slots == requested_slots;
+    const bool attach_matches = attach_status == data::DataError::kOk &&
+        slots_match && attach.source_grant == prefix_grant &&
+        attach.metadata_allocation == lease.ref.allocation &&
+        attach.provider_incarnation == provider_incarnation &&
+        attach.target_incarnation == worker_incarnation_ &&
+        attach.valid_tokens == static_cast<uint32_t>(state.valid_tokens);
+    if (!attach_matches) {
+      if (attach.token.lease_id) client_.release_ipc_attach(attach.token);
+      throw std::runtime_error("pd_dynamic_attach_authorization_failed:" +
+          std::to_string(static_cast<int>(attach_status)) + ":slots=" +
+          std::to_string(slots_match) + ":source=" +
+          std::to_string(attach.source_grant == prefix_grant) + ":metadata=" +
+          std::to_string(attach.metadata_allocation == lease.ref.allocation) +
+          ":provider=" + std::to_string(
+              attach.provider_incarnation == provider_incarnation) +
+          ":target=" + std::to_string(
+              attach.target_incarnation == worker_incarnation_) +
+          ":tokens=" + std::to_string(
+              attach.valid_tokens == static_cast<uint32_t>(state.valid_tokens)));
+    }
+    struct AttachRelease {
+      base::KVCacheManager* manager;
+      const base::ExternalKVRequestState* state;
+      data::DataClient* client;
+      data::IpcAttachGrant* attach;
+      bool installed = false;
+      ~AttachRelease() {
+        if (installed) manager->detach_external_shared_pages(*state);
+        if (attach->token.lease_id) client->release_ipc_attach(attach->token);
+      }
+    } attach_release{model_->kv_cache_manager(), &state, &client_, &attach};
+    const double attach_rpc_ms = std::chrono::duration<double, std::milli>(
+        Clock::now() - attach_started).count();
+    const uint64_t attach_completed_ns = static_cast<uint64_t>(
+        Clock::now().time_since_epoch().count());
+    const int32_t hold_after_attach_ms = command.value("hold_after_attach_ms", 0);
+    if (hold_after_attach_ms < 0 || hold_after_attach_ms > 10000)
+      throw std::runtime_error("invalid_hold_after_attach_ms");
+    for (int32_t waited = 0; waited < hold_after_attach_ms; waited += 10) {
+      if (IsCancelled(external_request_id, external_generation))
+        throw std::runtime_error("pd_decode_cancelled_during_handoff");
+      if (Clock::now() >= deadline)
+        throw std::runtime_error("pd_decode_deadline_during_handoff");
+      std::this_thread::sleep_for(std::chrono::milliseconds(
+          std::min<int32_t>(10, hold_after_attach_ms - waited)));
+    }
+    if (!model_->kv_cache_manager()->attach_external_shared_pages(state)) {
+      throw std::runtime_error("pd_dynamic_page_table_attach_failed");
+    }
+    attach_release.installed = true;
     base::RequestId request_id = -1;
     if (!model_->kv_cache_manager()->restore_external_shared_request(state, &request_id))
       throw std::runtime_error("pd_handoff_restore_failed");
     Json result = RunPDDecode(request_id, prompt, first_token, rope_delta,
-                              command.value("max_new_tokens", 16));
+                              command.value("max_new_tokens", 16),
+                              external_request_id, external_generation, deadline);
     result["ok"] = true;
     result["worker_pid"] = getpid();
     result["request_id"] = command.value("request_id", "");
     result["generation"] = command.value("generation", uint64_t{0});
     result["handoff_valid"] = prefix_grant.lease_id != 0 && !pages.empty();
     result["prefix_grant"] = prefix_grant.lease_id;
+    result["attach_grant"] = attach.token.lease_id;
+    result["provider_incarnation"] = provider_incarnation;
+    result["consumer_incarnation"] = worker_incarnation_;
+    result["consumed_reservation_id"] = reservation_id;
+    result["deadline_monotonic_ns"] = deadline_ns;
+    result["metadata_allocation"] = {
+        {"owner_incarnation", lease.ref.allocation.owner_incarnation},
+        {"allocation_id", lease.ref.allocation.allocation_id},
+        {"generation", lease.ref.allocation.generation}};
+    result["authorized_pages"] = pages;
+    result["attach_rpc_ms"] = attach_rpc_ms;
+    result["attach_completed_ns"] = attach_completed_ns;
+    result["hold_after_attach_ms"] = hold_after_attach_ms;
     result["private_grant"] = grant_.token.lease_id;
     result["imported_metadata_bytes"] = lease.bytes.size();
     result["prompt_tokens"] = prompt.size();
@@ -826,6 +1061,7 @@ class LanguageRole {
       return {{"ok", false}, {"error", "pd_handoff_not_found"}};
     model_->kv_cache_manager()->free_request(found->second.request_id);
     budget_.release(found->second.demands);
+    client_.withdraw(found->second.metadata_ref);
     pd_holds_.erase(found);
     return {{"ok", true}, {"worker_pid", getpid()},
             {"event", "pd_handoff_released"}, {"remaining_handoffs", pd_holds_.size()}};
@@ -1407,6 +1643,7 @@ class LanguageRole {
             {"batches", batches_}, {"requests", total_requests_},
             {"pd", {{"prefill_requests", pd_prefill_requests_},
                      {"decode_requests", pd_decode_requests_},
+                     {"active_reservations", pd_reservations_.size()},
                      {"active_handoffs", pd_holds_.size()},
                      {"kv_active_requests", active_kv_requests},
                      {"kv_request_baseline", model_kv_request_baseline_},
@@ -1496,7 +1733,10 @@ class LanguageRole {
  private:
   Json RunPDDecode(base::RequestId request_id,
                    const std::vector<int32_t>& prompt, int32_t first_token,
-                   int64_t rope_delta, int32_t steps) {
+                   int64_t rope_delta, int32_t steps,
+                   const std::string& external_request_id = "",
+                   uint64_t external_generation = 0,
+                   Clock::time_point deadline = Clock::time_point::max()) {
     if (steps <= 0 || steps > 256)
       throw std::runtime_error("invalid_pd_decode_steps");
     serving::SchedulerConfig config;
@@ -1507,13 +1747,26 @@ class LanguageRole {
     generation.sampling.repetition_penalty = 1.05;
     const int32_t initial_context =
         model_->kv_cache_manager()->get_context_len(request_id);
-    scheduler.add_decode_ready_request(
+    // Cancellation addresses the scheduler's client id, not the imported KV id.
+    const int64_t client_id = scheduler.add_decode_ready_request(
         request_id, prompt, generation, initial_context, first_token);
     auto allocator = base::CUDADeviceAllocatorFactory::get_instance();
     int32_t produced = 1;
     int64_t scheduled_prefill_tokens = 0;
     int64_t scheduled_decode_tokens = 0;
+    std::string abort_reason;
     while (scheduler.has_active_requests()) {
+      if (!external_request_id.empty() &&
+          IsCancelled(external_request_id, external_generation)) {
+        abort_reason = "pd_decode_cancelled";
+        scheduler.cancel_request(client_id, abort_reason);
+        continue;
+      }
+      if (Clock::now() >= deadline) {
+        abort_reason = "pd_decode_deadline_exceeded";
+        scheduler.cancel_request(client_id, abort_reason);
+        continue;
+      }
       auto output = scheduler.schedule_step();
       if (output.total_tokens <= 0) continue;
       scheduled_prefill_tokens += output.total_tokens - output.num_decode_seqs;
@@ -1535,6 +1788,7 @@ class LanguageRole {
     if (cudaDeviceSynchronize() != cudaSuccess)
       throw std::runtime_error("pd_decode_sync_failed");
     auto finished = scheduler.pop_finished();
+    if (!abort_reason.empty()) throw std::runtime_error(abort_reason);
     if (finished.size() != 1 || finished[0].failed)
       throw std::runtime_error("pd_decode_did_not_finish");
     return {{"tokens", finished[0].output_tokens},
@@ -1550,7 +1804,38 @@ class LanguageRole {
   struct PDHold {
     base::RequestId request_id = -1;
     std::vector<serving::MemoryDemand> demands;
+    data::DataRef metadata_ref;
   };
+
+  struct PDReservation {
+    uint64_t reservation_id = 0;
+    std::string role;
+    Clock::time_point deadline;
+    std::vector<serving::MemoryDemand> demands;
+  };
+
+  void ConsumePDReservation(
+      const std::string& key, const std::string& role, uint64_t reservation_id,
+      const std::vector<serving::MemoryDemand>& expected,
+      std::vector<serving::MemoryDemand>* consumed = nullptr) {
+    auto found = pd_reservations_.find(key);
+    if (found == pd_reservations_.end())
+      throw std::runtime_error("pd_reservation_not_found");
+    if (found->second.reservation_id != reservation_id ||
+        found->second.role != role || found->second.demands.size() != expected.size())
+      throw std::runtime_error("pd_reservation_binding_mismatch");
+    for (size_t i = 0; i < expected.size(); ++i)
+      if (found->second.demands[i].pool != expected[i].pool ||
+          found->second.demands[i].bytes != expected[i].bytes)
+        throw std::runtime_error("pd_reservation_demand_mismatch");
+    if (Clock::now() >= found->second.deadline) {
+      budget_.release(found->second.demands);
+      pd_reservations_.erase(found);
+      throw std::runtime_error("pd_reservation_expired");
+    }
+    if (consumed) *consumed = found->second.demands;
+    pd_reservations_.erase(found);
+  }
 
   bool AdmitGeneration(const std::string& request_id, uint64_t generation,
                        std::string* error) {
@@ -1624,6 +1909,7 @@ class LanguageRole {
   data::DataClient client_;
   std::unique_ptr<model::Qwen2Model> model_;
   int device_ = 0;
+  uint64_t worker_incarnation_ = 0;
   const int32_t hidden_size_ = 2048;
   data::IpcPoolDescriptor descriptor_;
   data::IpcSlotGrant grant_;
@@ -1643,6 +1929,8 @@ class LanguageRole {
   uint64_t pd_decode_requests_ = 0;
   int32_t model_kv_request_baseline_ = 0;
   std::map<std::string, PDHold> pd_holds_;
+  std::map<std::string, PDReservation> pd_reservations_;
+  uint64_t next_pd_reservation_id_ = 1;
   std::map<std::pair<std::string, int32_t>, NumericalSnapshot> numerical_baselines_;
   size_t device_total_bytes_ = 0;
   size_t device_free_before_model_ = 0;
@@ -1694,7 +1982,12 @@ int main(int argc, char** argv) {
       std::cout << response.dump() << std::endl;
     };
     emit({{"event", "ready"}, {"worker_pid", getpid()},
-          {"protocol", "pbe-vlm-language-jsonl-v2"},
+          {"worker_incarnation", role.worker_incarnation()},
+          {"protocol", "pbe-vlm-language-jsonl-v3"},
+          {"capabilities", {"prefill", "decode"}},
+          {"gpu_uuid", DeviceUuid(std::stoi(argv[4]))},
+          {"model_layout", "qwen25-vl-3b-instruct-pbe-bf16-v1"},
+          {"dtype", "bf16"},
           {"async_queue_capacity", 16}, {"external_cancel", true},
           {"absolute_deadline", true}});
     std::mutex queue_mutex;
@@ -1711,6 +2004,51 @@ int main(int argc, char** argv) {
           command = std::move(queue.front());
           queue.pop_front();
         }
+        // Coalesce infer RPCs already visible inside the bounded batch window.
+        // This preserves the unified worker's mixed/continuous batching path
+        // for open-loop clients instead of serializing one scheduler per RPC.
+        if (command.value("op", "infer") == "infer") {
+          std::vector<Json> commands{command};
+          {
+            std::unique_lock<std::mutex> lock(queue_mutex);
+            queue_cv.wait_for(lock, std::chrono::milliseconds(2));
+            while (!queue.empty() && queue.front().value("op", "infer") == "infer") {
+              commands.push_back(std::move(queue.front()));
+              queue.pop_front();
+            }
+          }
+          if (commands.size() > 1) {
+            Json merged = commands.front();
+            merged["requests"] = Json::array();
+            for (const auto& input : commands)
+              for (const auto& request : input.value("requests", Json::array()))
+                merged["requests"].push_back(request);
+            Json common;
+            try { common = role.Infer(merged); }
+            catch (const std::exception& error) {
+              common = {{"ok", false}, {"error", error.what()},
+                        {"worker_pid", getpid()}};
+            }
+            for (const auto& input : commands) {
+              std::set<std::string> ids;
+              for (const auto& request : input.value("requests", Json::array()))
+                ids.insert(request.value("request_id", ""));
+              Json split = common;
+              split["outputs"] = Json::array();
+              split["rejections"] = Json::array();
+              for (const auto& output : common.value("outputs", Json::array()))
+                if (ids.count(output.value("request_id", "")))
+                  split["outputs"].push_back(output);
+              for (const auto& rejection : common.value("rejections", Json::array()))
+                if (ids.count(rejection.value("request_id", "")))
+                  split["rejections"].push_back(rejection);
+              split["op_id"] = input.value("op_id", uint64_t{0});
+              split["coalesced_rpc_count"] = commands.size();
+              emit(std::move(split));
+            }
+            continue;
+          }
+        }
         Json response;
         const auto op_id = command.value("op_id", uint64_t{0});
         try {
@@ -1721,6 +2059,8 @@ int main(int argc, char** argv) {
           else if (op == "demote_prefix") response = role.DemotePrefixToHost();
           else if (op == "demote_prefix_async") response = role.DemotePrefixAsync();
           else if (op == "clear_prefix_cache") response = role.ClearPrefixCache();
+          else if (op == "pd_reserve") response = role.PDReserve(command);
+          else if (op == "pd_unreserve") response = role.PDUnreserve(command);
           else if (op == "pd_prefill") response = role.PDPrefill(command);
           else if (op == "pd_decode") response = role.PDDecode(command);
           else if (op == "pd_release") response = role.PDRelease(command);
@@ -1758,6 +2098,7 @@ int main(int argc, char** argv) {
         if (op != "infer" && op != "status" && op != "probe" &&
             op != "demote_prefix" && op != "demote_prefix_async" &&
             op != "clear_prefix_cache" &&
+            op != "pd_reserve" && op != "pd_unreserve" &&
             op != "pd_prefill" && op != "pd_decode" && op != "pd_release" &&
             op != "shutdown") {
           emit({{"ok", false}, {"error", "unknown_op"},

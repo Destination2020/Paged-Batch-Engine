@@ -38,7 +38,9 @@ def main() -> int:
     root, out = args.root, args.evidence
     b2, b3 = load(out/"B2/results.json"), load(out/"B3/results.json")
     b4, b5 = load(out/"B4/results.json"), load(out/"B5/support_matrix.json")
-    result, manifest = load(out/"results.json"), load(out/"manifest.json")
+    result = load(out/"results.json")
+    completion = out/"completion_n1_n6/manifest.json"
+    manifest = load(completion) if completion.exists() else load(out/"manifest.json")
     checks = {}
 
     checks["b1_inventory_and_protocol"] = (
@@ -83,7 +85,7 @@ def main() -> int:
     checks["b3_resource_recovery"] = b3["ok"] and all(
         row["gpu_recovered_mib"] <= row["gpu_baseline_mib"] + 256 for row in b3["records"])
     checks["b3_claim_is_bounded"] = (
-        "not maximum" in b3["capacity_claim_boundary"] and
+        "does not claim maximum" in b3["capacity_claim_boundary"] and
         result["phases"]["B3"]["slo_goodput"].startswith("N/A"))
 
     checks["b4_existing_trials_recomputed"] = (
@@ -95,10 +97,13 @@ def main() -> int:
     checks["b4_dependency_restore_accounting"] = (
         dependency["host_demoted_blocks"] == dependency["host_restored_blocks"] and
         dependency["restore_failures"] == 0)
-    checks["b5_explicitly_unaccepted"] = (
-        b5["accepted"] is False and len(b5["blocking_contracts"]) >= 4 and
-        all("unsupported" in b5["matrix"][topology]
-            for topology in ("1P2D", "2P1D", "2P2D")))
+    checks["b5_production_topologies_accepted"] = (
+        b5["accepted"] is True and not b5["blocking_contracts"] and
+        all("validated" in b5["matrix"][topology]
+            for topology in ("unified", "1P1D", "1P2D", "2P1D", "2P2D")) and
+        b5["measurement_boundary"]["cells"] == 90 and
+        b5["measurement_boundary"]["independent_trials"] == 450 and
+        b5["measurement_boundary"]["requests"] == 3150)
 
     with (out/"summary.csv").open(newline="", encoding="utf-8") as handle:
         summary = list(csv.DictReader(handle))
@@ -128,11 +133,11 @@ def main() -> int:
     gpu_apps = subprocess.check_output(
         ["nvidia-smi", "--query-compute-apps=pid", "--format=csv,noheader"], text=True).strip()
     checks["b6_gpu_processes_released"] = not gpu_apps
-    checks["overall_exactly_5_of_6"] = (
-        result["ok"] and result["accepted_phases"] == 5 and
-        result["phases"]["B5"]["accepted"] is False)
+    checks["overall_exactly_6_of_6"] = (
+        result["ok"] and result["accepted_phases"] == 6 and
+        result["phases"]["B5"]["accepted"] is True)
 
-    output = {"schema": "pbe-v4-b1-b6-validation-v1", "ok": all(checks.values()),
+    output = {"schema": "pbe-v4-b1-b6-validation-v2", "ok": all(checks.values()),
               "checks": checks, "accepted_phases": result["accepted_phases"],
               "total_phases": 6}
     (out/"validation.json").write_text(json.dumps(output, indent=2, sort_keys=True) + "\n")

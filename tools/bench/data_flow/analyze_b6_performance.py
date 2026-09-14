@@ -76,8 +76,8 @@ def plots(out: Path, b2, b3, e4, b5):
     fixed = e4["summary"]
     fig, ax = plt.subplots(figsize=(7, 5))
     names = ["private 1P1D", "shared 1P1D"]
-    values = [fixed["fixed_kv.private"]["steady_mib_p50"],
-              fixed["fixed_kv.shared"]["steady_mib_p50"]]
+    values = [fixed["private"]["steady_mib_p50"],
+              fixed["shared"]["steady_mib_p50"]]
     bars = ax.bar(names, values, color=["#c66", "#4a8"])
     ax.bar_label(bars, fmt="%.0f MiB")
     ax.set(ylabel="Observed total GPU memory (MiB)",
@@ -109,7 +109,7 @@ def plots(out: Path, b2, b3, e4, b5):
     fig, ax = plt.subplots(figsize=(8, 4))
     bars = ax.bar(labels, supported, color=["#4a8" if value else "#bbb" for value in supported])
     ax.set(ylim=(0, 1.25), ylabel="Production path validated (1=yes)",
-           title="Topology support matrix (scale curve unavailable: B5 blocked)")
+           title="Topology support matrix (V4 N5/N6 production evidence)")
     ax.bar_label(bars, labels=["validated" if value else "unsupported" for value in supported])
     ax.grid(axis="y", alpha=.25)
     fig.tight_layout(); fig.savefig(plot_dir / "b5_topology_support.svg")
@@ -127,22 +127,36 @@ def main() -> int:
     b3 = load(out / "B3" / "results.json")
     b4 = load(out / "B4" / "results.json")
     b5 = load(out / "B5" / "support_matrix.json")
-    e4 = load(root / "docs/data_flow_evidence/v4/E4/results.json")
+    section21 = root / "docs/data_flow_evidence/v4/performance_attribution_multi_pd"
+    e4 = load(section21 / "N1/oracle_free_e4/results.json")
+    n6 = load(section21 / "N6/topology_analysis_v2.json")
+    n6_capacity = load(section21 / "N6/capacity/results.json")
 
     raw = out / "raw"; raw.mkdir(parents=True, exist_ok=True)
     requests = jsonl_rows(out / "B2" / "requests.jsonl")
     requests += jsonl_rows(out / "B4" / "placement_requests.jsonl")
     requests += jsonl_rows(out / "B4" / "recovery_requests.jsonl")
+    for mode in ("private", "shared"):
+        for topology in ("unified", "1P1D", "1P2D", "2P1D", "2P2D"):
+            topology_raw = load(section21 / "N6/raw_v2" / mode / topology / "result.json")
+            requests += [{"experiment": "B5_topology", "mode": mode,
+                          "topology": topology, **row}
+                         for row in topology_raw["records"]]
     dump_jsonl(raw / "requests.jsonl", requests)
     trials = [{"experiment": "B2", **row} for row in b2["records"]]
     trials += [{"experiment": "B3_capacity", **row} for row in b3["records"]]
     trials += [{"experiment": "B4_placement", **row} for row in b4["placement"]["trials"]]
     trials += [{"experiment": "B4_recovery", **row} for row in b4["recovery"]["trials"]]
+    trials += [{"experiment": "B5_topology_window", **row} for row in n6["trials"]]
+    trials += [{"experiment": "B5_capacity_current", **row}
+               for row in n6_capacity["records"]]
     dump_jsonl(raw / "trials.jsonl", trials)
     resources = [{"experiment": "B3_capacity", "trial": row["trial"], **sample}
                  for row in b3["records"] for sample in row["memory_timeline"]]
-    resources += [{"experiment": "E4", "trial": row["trial"], **sample}
+    resources += [{"experiment": "N1_oracle_free_E4", "trial": row["trial"], **sample}
                   for row in e4["records"] for sample in row["memory_timeline"]]
+    resources += [{"experiment": "B5_capacity_current", "trial": row["trial"], **sample}
+                  for row in n6_capacity["records"] for sample in row["memory_timeline"]]
     dump_jsonl(raw / "resources.jsonl", resources)
 
     summary = []
@@ -159,15 +173,17 @@ def main() -> int:
             add_metric(summary, "B2", cell, "server_ttft_p50", "ms", "both_off", name,
                        base["server_ttft_ms_median"], candidate["server_ttft_ms_median"],
                        5, 50, "B2/results.json", "model-side timing, not streaming client TTFT", False)
-    fixed_private, fixed_shared = e4["summary"]["fixed_kv.private"], e4["summary"]["fixed_kv.shared"]
+    fixed_private, fixed_shared = e4["summary"]["private"], e4["summary"]["shared"]
     add_metric(summary, "B3", "fixed_128_KV_blocks_1P1D", "steady_physical_memory", "MiB",
                "private", "shared", fixed_private["steady_mib_p50"],
-               fixed_shared["steady_mib_p50"], 5, 5, "../E4/results.json",
+               fixed_shared["steady_mib_p50"], 5, 5,
+               "../performance_attribution_multi_pd/N1/oracle_free_e4/results.json",
                "total observed GPU memory; H20-3e; imported logical mappings not counted twice", False)
     add_metric(summary, "B3", "fixed_128_KV_blocks_1P1D", "throughput", "requests/s",
-               "private", "shared", fixed_private["throughput_requests_per_s"],
-               fixed_shared["throughput_requests_per_s"], 5, 5, "../E4/results.json",
-               "one measured request/trial; descriptive overhead, not reliable tail throughput")
+               "private", "shared", fixed_private["turnaround_throughput_requests_per_s"],
+               fixed_shared["turnaround_throughput_requests_per_s"], 5, 5,
+               "../performance_attribution_multi_pd/N1/oracle_free_e4/results.json",
+               "oracle-free one measured request/trial; descriptive overhead, not reliable tail throughput")
     private_capacity = b3["summary"]["private"]["median_last_success_blocks"]
     shared_capacity = b3["summary"]["shared"]["median_last_success_blocks"]
     add_metric(summary, "B3", f"{b3['hard_budget_mib']}_MiB_peak_plus_safety_budget",
@@ -209,6 +225,20 @@ def main() -> int:
                recovery["drop_recompute"]["median_latency_ms"],
                recovery["dependency_host_checkpoint"]["median_latency_ms"], 5, 5,
                "B4/results.json", "server-side latency; recovery can be slower", False)
+    for mode in ("private", "shared"):
+        for workload in ("long_input_short_output", "short_input_long_output", "mixed"):
+            candidates = [row for row in n6["cells"] if row["mode"] == mode and
+                          row["workload"] == workload and
+                          row["load"] == "near_saturation"]
+            baseline = next(row for row in candidates if row["topology"] == "unified")
+            best = max((row for row in candidates if row["topology"] != "unified"),
+                       key=lambda row: row["throughput_requests_per_s"])
+            add_metric(summary, "B5", f"{mode}_{workload}_near_saturation",
+                       "completion_window_throughput", "requests/s", "unified",
+                       best["topology"], baseline["throughput_requests_per_s"],
+                       best["throughput_requests_per_s"], 5, 55,
+                       "../performance_attribution_multi_pd/N6/topology_analysis_v2.json",
+                       "median of five independent 11-request windows; finite 2 s arrival train, no significance or general optimum claim")
 
     fields = list(summary[0])
     with (out / "summary.csv").open("w", newline="", encoding="utf-8") as handle:
@@ -225,12 +255,14 @@ def main() -> int:
                "allocated_blocks_max": b3_alloc_max,
                "slo_goodput": "N/A: no true streaming timestamps or predeclared SLO"},
         "B4": {"status": "complete", "accepted": b4["ok"]},
-        "B5": {"status": b5["status"], "accepted": False,
-               "blocking_contracts": b5["blocking_contracts"]},
-        "B6": {"status": "complete_with_B5_scale_curve_unavailable", "accepted": True},
+        "B5": {"status": b5["status"], "accepted": b5["accepted"],
+               "topology_cells": n6["cells"] and len(n6["cells"]),
+               "independent_trials": len(n6["trials"]),
+               "requests": sum(row["completed_requests"] for row in n6["cells"])},
+        "B6": {"status": "complete_with_bounded_topology_claims", "accepted": True},
     }
     accepted = sum(value["accepted"] for value in statuses.values())
-    result = {"schema": "pbe-v4-b1-b6-performance-v1", "ok": accepted == 5,
+    result = {"schema": "pbe-v4-b1-b6-performance-v2", "ok": accepted == 6,
               "accepted_phases": accepted, "total_phases": 6, "phases": statuses,
               "formula": {"latency_improvement": "(baseline-candidate)/baseline*100",
                           "throughput_change": "(candidate-baseline)/baseline*100"},
@@ -240,33 +272,56 @@ def main() -> int:
                   "Client TTFT and SLO goodput are N/A because the coordinator is non-streaming.",
                   "Five 10-request B2 trials/cell characterize medians/ranges, not reliable p99.",
                   "B3 capacity is an external-allocation hard-budget bracket; only the reported request-access pages were exercised, so it is not a maximum live-request or SLO-concurrency claim.",
-                  "B5 multi-P/D scale curves were not fabricated; production registration, routing and dynamic page authorization are absent.",
+                  "B5 best-observed topology results are limited to one H20-3e, one model and one seed; each cell has five independent windows, and finite overload is not asymptotic saturation.",
               ]}
     (out / "results.json").write_text(json.dumps(result, indent=2, sort_keys=True) + "\n")
 
     memory_drop = (fixed_private["steady_mib_p50"]-fixed_shared["steady_mib_p50"]) / fixed_private["steady_mib_p50"]*100
-    throughput_change = (fixed_shared["throughput_requests_per_s"]-fixed_private["throughput_requests_per_s"]) / fixed_private["throughput_requests_per_s"]*100
+    throughput_change = (fixed_shared["turnaround_throughput_requests_per_s"]-fixed_private["turnaround_throughput_requests_per_s"]) / fixed_private["turnaround_throughput_requests_per_s"]*100
     da_gain = (place["data_aware"]["mean_throughput_requests_per_s"]-place["fixed"]["mean_throughput_requests_per_s"]) / place["fixed"]["mean_throughput_requests_per_s"]*100
     recompute_drop = (recovery["drop_recompute"]["median_recomputed_tokens"]-recovery["dependency_host_checkpoint"]["median_recomputed_tokens"]) / recovery["drop_recompute"]["median_recomputed_tokens"]*100
+    b2_long_base = b2["summary"]["reuse90_long_r280.arm00"]
+    b2_long_cached = b2["summary"]["reuse90_long_r280.arm11"]
+    b2_long_ttft_drop = ((b2_long_base["server_ttft_ms_median"]-
+                          b2_long_cached["server_ttft_ms_median"]) /
+                         b2_long_base["server_ttft_ms_median"]*100)
+    b2_long_throughput_change = ((b2_long_cached["throughput_rps_median"]-
+                                  b2_long_base["throughput_rps_median"]) /
+                                 b2_long_base["throughput_rps_median"]*100)
+    b2_long_compute_drop = ((b2_long_base["actual_computed_tokens"]-
+                             b2_long_cached["actual_computed_tokens"]) /
+                            b2_long_base["actual_computed_tokens"]*100)
+    topology_gains = {"private": [], "shared": []}
+    for mode in topology_gains:
+        for workload in ("long_input_short_output", "short_input_long_output", "mixed"):
+            candidates = [row for row in n6["cells"] if row["mode"] == mode and
+                          row["workload"] == workload and
+                          row["load"] == "near_saturation"]
+            baseline = next(row for row in candidates if row["topology"] == "unified")
+            winner = max((row for row in candidates if row["topology"] != "unified"),
+                         key=lambda row: row["throughput_requests_per_s"])
+            topology_gains[mode].append((winner["throughput_requests_per_s"] /
+                                         baseline["throughput_requests_per_s"] - 1) * 100)
     report = f"""# V4 B1–B6 performance characterization
 
 ## Outcome
 
-The evidence gate accepts **{accepted}/6** phases. B1–B4 and B6 are complete within the frozen boundaries. B5 remains unaccepted because the production coordinator has no generic multi-P/D registry, router, or dynamic provider-generation page authorization.
+The evidence gate accepts **{accepted}/6** phases. B5 is now accepted by the V4 N3–N6 production registry, dynamic provider-generation authorization, fault matrix and private/shared open-load topology evidence.
 
 ## Results and trade-offs
 
-- Fixed 128-block 1P1D shared weights reduced observed steady GPU memory from {fixed_private['steady_mib_p50']:.0f} to {fixed_shared['steady_mib_p50']:.0f} MiB ({memory_drop:.2f}% lower), while measured one-request-cohort throughput changed from {fixed_private['throughput_requests_per_s']:.4f} to {fixed_shared['throughput_requests_per_s']:.4f} requests/s ({throughput_change:.2f}%). This is a memory/overhead result, not a maximum-throughput claim.
+- In the corrected oracle-free fixed-128-block 1P1D run, shared weights reduced observed steady GPU memory from {fixed_private['steady_mib_p50']:.0f} to {fixed_shared['steady_mib_p50']:.0f} MiB ({memory_drop:.2f}% lower), while request-turnaround throughput changed from {fixed_private['turnaround_throughput_requests_per_s']:.4f} to {fixed_shared['turnaround_throughput_requests_per_s']:.4f} requests/s ({throughput_change:.2f}%). This supersedes the old -6.65% performance number, which included an online oracle decode.
 - E2 data-aware placement changed observation-window throughput from {place['fixed']['mean_throughput_requests_per_s']:.4f} to {place['data_aware']['mean_throughput_requests_per_s']:.4f} requests/s ({da_gain:+.2f}%) over 5 trials/55 requests per policy. Server TTFT and prediction error remain separate in the historical source; the policy is not claimed to improve every latency metric.
 - E3 dependency host checkpointing reduced median recomputation from {recovery['drop_recompute']['median_recomputed_tokens']:.0f} to {recovery['dependency_host_checkpoint']['median_recomputed_tokens']:.0f} tokens ({recompute_drop:.2f}% fewer), but median latency changed from {recovery['drop_recompute']['median_latency_ms']:.2f} to {recovery['dependency_host_checkpoint']['median_latency_ms']:.2f} ms. Correct recovery and acceleration are distinct claims.
-- B2 factorial values and low-reuse overhead are in `summary.csv` and the reuse plots. Each cell has 5 independent trials and 50 measured requests per arm where that arm is present.
+- In the B2 90%-image-reuse, long-prompt, 280px stress cell, enabling both caches reduced median model-side TTFT from {b2_long_base['server_ttft_ms_median']:.2f} to {b2_long_cached['server_ttft_ms_median']:.2f} ms ({b2_long_ttft_drop:.2f}%) and computed tokens from {b2_long_base['actual_computed_tokens']} to {b2_long_cached['actual_computed_tokens']} ({b2_long_compute_drop:.2f}%), while median completed-request throughput changed from {b2_long_base['throughput_rps_median']:.4f} to {b2_long_cached['throughput_rps_median']:.4f} requests/s ({b2_long_throughput_change:+.2f}%). Each arm has 5 independent trials/50 measured requests; this is a cache-efficiency/TTFT result with a retained throughput regression.
 - B3 uses the same {b3['hard_budget_mib']} MiB post-observation boundary and identical allocation ladder for private/shared. Its bracket is not a maximum live-request capacity result: at most {b3_access_max} request pages were accessed while as many as {b3_alloc_max} blocks were allocated.
+- In the five-window finite-overload topology matrix, the best split changed median completion-window throughput by {min(topology_gains['private']):+.2f}% to {max(topology_gains['private']):+.2f}% versus private unified and {min(topology_gains['shared']):+.2f}% to {max(topology_gains['shared']):+.2f}% versus shared unified. Trial ranges overlap, so this does not establish a stable throughput improvement.
 
 ## Measurement boundaries
 
 The B2 workload is closed-loop concurrency 1. The client receives a complete response rather than a token stream, so true client TTFT and SLO goodput are N/A; `server_ttft_ms` is never relabelled as client TTFT. B2's reduced 10-request trial size was frozen before the accepted run and does not support reliable p99 claims. All failures/rejections remain in raw denominators.
 
-The topology plot is deliberately a support matrix rather than a fabricated scale curve. Unified and 1P1D paths are historically validated; 1P2D, 2P1D and 2P2D remain unsupported on the production path.
+The topology report contains 90 private/shared cells, 450 independent windows and 3,150 requests across unified, 1P1D, 1P2D, 2P1D and 2P2D. Each cell has five independent windows; low/medium windows contain five requests and near-saturation windows contain eleven requests submitted every 200 ms for a finite 2,000 ms arrival train. Its best-observed values are bounded to the frozen hardware/model/seed; this is not an asymptotic saturation claim, and the non-streaming client still provides no true client TTFT/ITL or SLO goodput.
 
 ## Evidence
 
@@ -277,15 +332,15 @@ Raw requests/trials/resources are under `raw/`; exact trial commands are in B2/B
 
 These are candidate statements, not universal claims. Keep the conditions and trade-offs when quoting them.
 
-1. **Shared-weight memory:** On one NVIDIA H20-3e with Qwen2.5-VL-3B BF16 and a persistent 1P1D topology at the same 128-block KV allocation, shared read-only weights reduced median observed steady GPU memory from **{fixed_private['steady_mib_p50']:.0f} to {fixed_shared['steady_mib_p50']:.0f} MiB ({memory_drop:.2f}%)** across 5 trials per arm; the one-request-cohort throughput changed **{throughput_change:+.2f}%**, so this is a memory saving with measured overhead, not an end-to-end speedup claim. Source: `../E4/results.json`.
+1. **Shared-weight memory:** On one NVIDIA H20-3e with Qwen2.5-VL-3B BF16 and a persistent 1P1D topology at the same 128-block KV allocation, shared read-only weights reduced median observed steady GPU memory from **{fixed_private['steady_mib_p50']:.0f} to {fixed_shared['steady_mib_p50']:.0f} MiB ({memory_drop:.2f}%)** across 5 oracle-free trials per arm; request-turnaround throughput changed **{throughput_change:+.2f}%**, so this is a memory saving with measured overhead, not an end-to-end speedup claim. Source: `../performance_attribution_multi_pd/N1/oracle_free_e4/results.json`.
 
 2. **Data-aware placement:** With the same two workers and capacity, 5 trials/55 requests per policy, data-aware placement changed completion-window throughput from **{place['fixed']['mean_throughput_requests_per_s']:.4f} to {place['data_aware']['mean_throughput_requests_per_s']:.4f} requests/s ({da_gain:+.2f}%)** versus fixed placement. This does not claim lower TTFT and retains the measured prediction error/decision overhead. Source: `B4/results.json` and `raw/requests.jsonl`.
 
 3. **Dependency recovery:** Under the frozen E3 pressure case, dependency host checkpointing reduced median recomputation from **{recovery['drop_recompute']['median_recomputed_tokens']:.0f} to {recovery['dependency_host_checkpoint']['median_recomputed_tokens']:.0f} tokens ({recompute_drop:.2f}%)** over 5 trials, with all 25 demoted blocks restored and 0 restore failures; median latency moved from **{recovery['drop_recompute']['median_latency_ms']:.2f} to {recovery['dependency_host_checkpoint']['median_latency_ms']:.2f} ms**, so the supported claim is correct recovery/less recomputation rather than acceleration. Source: `B4/results.json`.
 
-4. **Multimodal cache factorial:** Quote a B2 cache number only together with its exact reuse rate, 224/280px and short/long cell, closed-loop concurrency 1, 5 trials/50 requests per arm, and the `summary.csv` baseline. These results provide server TTFT and completed-request throughput; true streaming client TTFT, reliable p99 and SLO goodput are **N/A**.
+4. **Multimodal cache factorial:** In the 90%-image-reuse, long-prompt, 280px B2 stress cell (closed-loop concurrency 1; 5 trials/50 measured requests per arm), enabling feature and semantic-KV caches reduced median model-side TTFT from **{b2_long_base['server_ttft_ms_median']:.2f} to {b2_long_cached['server_ttft_ms_median']:.2f} ms ({b2_long_ttft_drop:.2f}%)**, reduced actually computed prompt tokens from **{b2_long_base['actual_computed_tokens']} to {b2_long_cached['actual_computed_tokens']} ({b2_long_compute_drop:.2f}%)**, and reduced physical vision forwards from **{b2_long_base['vision_physical_forwards']} to {b2_long_cached['vision_physical_forwards']}**; median completed-request throughput regressed **{b2_long_throughput_change:.2f}%** ({b2_long_base['throughput_rps_median']:.4f} to {b2_long_cached['throughput_rps_median']:.4f} requests/s). True streaming client TTFT, reliable p99 and SLO goodput are **N/A**. Source: `B2/results.json`, `summary.csv`, and `raw/requests.jsonl`.
 
-Do not claim arbitrary N:P/D support or a topology scale optimum: B5 is blocked for 1P2D/2P1D/2P2D on the production coordinator.
+5. **Bounded multi-P/D deployment:** On the same H20-3e with a fixed total of 128 KV slots, the production coordinator completed **3,150/3,150** requests in **450 independent observation windows** across unified, 1P1D, 1P2D, 2P1D and 2P2D private/shared cells. At finite near-saturation, the best observed split topology changed median completion-window throughput by **{min(topology_gains['private']):+.2f}% to {max(topology_gains['private']):+.2f}%** versus private unified and **{min(topology_gains['shared']):+.2f}% to {max(topology_gains['shared']):+.2f}%** versus shared unified across the three workloads. Trial ranges overlap, so this does not establish a stable throughput improvement. Every cell has five independent windows; near-saturation uses eleven requests at 200 ms intervals over a 2,000 ms arrival train. This is not a significance, asymptotic-saturation, or universal topology-optimum claim. Source: `../performance_attribution_multi_pd/N6/topology_analysis_v2.json`.
 """
     (out / "RESUME_METRICS.md").write_text(resume)
     print(json.dumps({"ok": result["ok"], "accepted": accepted,
