@@ -84,6 +84,7 @@ struct RemoteKVLayerPayload {
 };
 
 struct RemotePrefillResult {
+  uint64_t shared_arena_epoch = 0;
   GlobalRequestId client_request_id;
   HandoffId handoff_id;
   std::vector<int32_t> prompt_tokens;

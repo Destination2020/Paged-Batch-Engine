@@ -1,0 +1,82 @@
+{
+  "scenario": "drain",
+  "backend": "mps_process",
+  "owner_refuses_live_leases": true,
+  "epoch": 4380180750658288,
+  "leases_when_stop_requested": 1,
+  "active_http_stream_completed": true,
+  "supervisor_exit": 130,
+  "shutdown": {
+    "backend": "mps_process",
+    "events": [
+      {
+        "event": "shutdown_phase",
+        "monotonic_ns": 4380184292688946,
+        "phase": "api"
+      },
+      {
+        "event": "api_drain_requested",
+        "monotonic_ns": 4380184292696060,
+        "pid": 12786
+      },
+      {
+        "event": "api_drained",
+        "monotonic_ns": 4380184907839905,
+        "pid": 12786
+      },
+      {
+        "event": "shutdown_phase",
+        "monotonic_ns": 4380184907865312,
+        "phase": "workers"
+      },
+      {
+        "event": "worker_stopped",
+        "monotonic_ns": 4380185124706407,
+        "name": "qwen25-0.5b",
+        "pid": 12739,
+        "mode": "drain",
+        "gpu_synchronized": true
+      },
+      {
+        "event": "worker_stopped",
+        "monotonic_ns": 4380185291640798,
+        "name": "qwen25-1.5b",
+        "pid": 12764,
+        "mode": "drain",
+        "gpu_synchronized": true
+      },
+      {
+        "event": "shutdown_phase",
+        "monotonic_ns": 4380185291672163,
+        "phase": "auxiliary"
+      },
+      {
+        "event": "shutdown_phase",
+        "monotonic_ns": 4380185291716873,
+        "phase": "owner"
+      },
+      {
+        "event": "arena_before_exit",
+        "monotonic_ns": 4380185294660964,
+        "free_bytes": 536870912,
+        "arena_bytes": 536870912,
+        "lease_count": 0
+      },
+      {
+        "event": "owner_stopped",
+        "monotonic_ns": 4380185411674023,
+        "pid": 12705,
+        "arena_freed": true
+      },
+      {
+        "event": "shutdown_phase",
+        "monotonic_ns": 4380185411708675,
+        "phase": "complete"
+      }
+    ],
+    "graceful": true,
+    "mps_recovery_required": false,
+    "owned_mps_daemon_stopped": true
+  },
+  "all_gpu_processes_exited": true
+}

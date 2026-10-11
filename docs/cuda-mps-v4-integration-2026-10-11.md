@@ -40,3 +40,50 @@ IPC 探针在真实 exec 子进程中增加 V4 compute/I/O 租约、请求释放
 此次 GPU 可用显存低于默认配置的 6400 MiB 预检需求，因此验证配置只将未承诺余量从 768 改为 512 MiB，模型私有预算、512 MiB Arena、128-token 请求配置不变。仓库默认配置保持原值；实际启动应先执行 `--check`。这不是放宽 allocator 硬预算。
 
 独立 `test/cache_core` 目标仍有 V4 原有的 CUDA 头文件及 DataChecksum、RecoveryDependencyGraph、PrefixBuilder 链接依赖缺口，未宣称该独立目标通过；上述相关 CPU 测试在完整 `test_llm` 目标中通过。本次未重跑双 H20/VLM 全套验收或 Transformers 数值对照，也未验证 MPS 实际 kernel 并发。
+
+## 2026-10-12 原生 Linux / RTX 5090 验收补充
+
+在 Ubuntu 22.04、RTX 5090（SM 120）、驱动 610.57.04 上，从远端功能分支 `a8cc255` 开始构建。工作目录为 `/workspace/Paged-Batch-Engine`，模型目录为 `/workspace/pbe-models`。
+
+构建使用 CUDA 12.8.61、SentencePiece 0.2.0、Abseil 20240722.0（C++17），以及系统的 RE2、GTest、Armadillo、OpenSSL、ZeroMQ、nlohmann-json 开发包。系统旧版 SentencePiece/Abseil 组合会发生 `string_view` 冲突，需要配套安装。
+
+本轮同时修正两个可移植性问题：RE2 缺少 CMake config 时回退到 pkg-config；tokenizer 直接遍历 `vocabs.items()`，兼容 Ubuntu 22.04 的 nlohmann-json 3.10.5。这两项修正已纳入本次发布。
+
+```bash
+cmake -S . -B build-mps -G Ninja \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DCMAKE_CUDA_COMPILER=/usr/local/cuda-12.8/bin/nvcc \
+  -DCMAKE_CUDA_ARCHITECTURES=120 \
+  -Dabsl_DIR=/usr/local/lib/cmake/absl \
+  -DPython3_EXECUTABLE=/usr/bin/python3 \
+  -DQWEN2_SUPPORT=ON -DKUIPER_ENABLE_NCCL=OFF
+cmake --build build-mps -j 8
+ctest --test-dir build-mps --output-on-failure
+python3 tools/serving/deploy_multi_model.py \
+  --build-dir build-mps --backend mps_process --start-mps --probe
+```
+
+验收通过了 8 组默认回归，以及真实 MPS 的同 server 客户端注册、CUDA IPC 内存/事件、不同 KV 几何的数据校验、延迟释放、完整回收和优雅关闭。主测试 210 通过、12 跳过；历史测试 43 通过；补充提供 0.5B 模型后，断点恢复测试单独通过。
+
+最初两次 Nsight Systems 默认 CUDA 跟踪遇到 IPC 探针超时，没有 CUDA kernel 数据。后续改用 `--trace=cuda-sw,nvtx` 已完成探针和真实双模型采集，并补充 kernel 内 SM 执行采样与关闭 MPS 的三轮对照；见[实机并行与异构 KV 复用证据](benchmarks/mps-kernel-evidence-2026-10-12/README.md)。起止时间重叠本身仍不能排除进程时间片切换。NCCL 本轮构建关闭，双 GPU/视觉夹具相关边界仍未验收。
+
+结构化结果与日志：[RTX 5090 验收记录](benchmarks/rtx5090-mps-2026-10-12/report.json)。双模型推理结果以该报告后续记录为准。
+
+### 双模型 MPS 结果
+
+Qwen2.5-0.5B-Instruct 与 Qwen2.5-1.5B-Instruct 的 BF16 权重和 tokenizer 均从已验证的本机文件传输，逐文件 SHA-256 一致。两模型真实 MPS 部署通过了独立基线输出对照、UTF-8 流式输出、路由、取消记录回收、非法请求拒绝和共享池完整回收。5 轮交替测试共 10 个请求，每个请求结束后 `free_bytes=536870912`、`lease_count=0`。
+
+沿用原来的 1536/3584 MiB 私有预算时，第一个 MPS worker 报显存不足。本机验收使用 4096/6144 MiB 私有预算，加上映射的 512 MiB arena 后，MPS 单客户端限额为 4608/6656 MiB。这些值保留余量，不是已测最小预算。不能仅按权重文件大小设置 MPS 限额，还需考虑 CUDA 上下文、工作区与共享映射的计费。
+
+生命周期结果：drain 优雅退出且不要求恢复；测试直接关闭 worker 的 cancel 场景和 Owner 故障场景均停止整个部署域并标记恢复需要，所有 GPU 进程退出。这里的直接 worker 关闭测试与普通请求取消不同；普通请求取消已在双模型功能验收中通过。
+
+远端启动已验证配置：
+
+```bash
+cd /workspace/Paged-Batch-Engine
+python3 tools/serving/deploy_multi_model.py \
+  --config /workspace/pbe-validation/qwen25-mps.json \
+  --build-dir build-mps --backend mps_process --start-mps
+```
+
+配置默认仅监听 `127.0.0.1:8080`。本轮验收完成后服务保持停止；该命令用于按需启动。

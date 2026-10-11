@@ -2,6 +2,7 @@
 #define KUIPER_INCLUDE_SERVING_SERVING_ONLINE_ENGINE_H_
 
 #include <condition_variable>
+#include <array>
 #include <cstdint>
 #include <deque>
 #include <memory>
@@ -90,6 +91,7 @@ class OnlineServingEngine {
   void run_loop();
   void run_pd_loop();
   void run_remote_pd_batch_loop();
+  void run_split_pd_loop();
   void run_pd_submission(PendingSubmission submission);
   void flush_submissions();
   void flush_cancellations();
@@ -108,6 +110,8 @@ class OnlineServingEngine {
   mutable std::mutex mu_;
   std::condition_variable cv_;
   std::deque<PendingSubmission> submissions_;
+  std::array<std::deque<PendingSubmission>, 2> split_submissions_;
+  nlohmann::json split_pd_metrics_;
   std::vector<std::pair<int64_t, std::string>> cancellations_;
   int32_t pending_submissions_ = 0;
   bool stopping_ = false;

@@ -55,6 +55,13 @@ struct PDConfig {
   std::string pd_mode = "off";
   int32_t prefill_device_id = 0;
   int32_t decode_device_id = 1;
+  std::string short_prefill_endpoint;
+  std::string long_prefill_endpoint;
+  int32_t short_prompt_tokens = 512;
+  int32_t short_decode_slots = 4;
+  int32_t long_decode_slots = 2;
+  int32_t short_kv_tokens = 16384;
+  int32_t long_kv_tokens = 32768;
 };
 
 struct ProcessConfig {
@@ -132,7 +139,7 @@ inline bool is_dual_gpu_pd_mode(const std::string& pd_mode) {
 }
 
 inline bool is_remote_pd_mode(const std::string& pd_mode) {
-  return pd_mode == "remote-zmq-cpu" || pd_mode == "remote-zmq-nccl" ||
+  return pd_mode == "split-prefill-ipc" || pd_mode == "remote-zmq-cpu" || pd_mode == "remote-zmq-nccl" ||
          pd_mode == "remote-zmq-nccl-layer";
 }
 
@@ -141,6 +148,7 @@ inline bool is_pd_mode(const std::string& pd_mode) {
 }
 
 inline const char* pd_transfer_backend(const std::string& pd_mode) {
+  if (pd_mode == "split-prefill-ipc") return "shared-arena-device-copy";
   if (pd_mode == "remote-zmq-cpu") {
     return "zmq-cpu";
   }

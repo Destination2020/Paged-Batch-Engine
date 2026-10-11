@@ -534,7 +534,7 @@ bool ServingBenchmarkApp::parse_args(int argc, char* argv[]) {
               << " [--max-long-partial-prefills=N]"
               << " [--device-id=N] [--kv-cache-memory-utilization=0.8]"
               << " [--kv-cache-blocks-per-layer=N] [--quiet=0|1]"
-              << " [--pd-mode=off|dual-gpu-p2p|dual-gpu-nccl|dual-gpu-nccl-layer|remote-zmq-cpu|remote-zmq-nccl|remote-zmq-nccl-layer]"
+              << " [--pd-mode=off|dual-gpu-p2p|dual-gpu-nccl|dual-gpu-nccl-layer|remote-zmq-cpu|remote-zmq-nccl|remote-zmq-nccl-layer|split-prefill-ipc]"
               << " [--prefill-device-id=N]"
               << " [--decode-device-id=N]"
               << " [--warmup-rounds=N]"

@@ -1,0 +1,116 @@
+{
+  "backend": "mps_process",
+  "events": [
+    {
+      "event": "fault",
+      "monotonic_ns": 825461779723,
+      "reason": "Both clients are not registered with the same MPS server"
+    },
+    {
+      "event": "shutdown_phase",
+      "monotonic_ns": 825461807966,
+      "phase": "api"
+    },
+    {
+      "event": "shutdown_phase",
+      "monotonic_ns": 825461811813,
+      "phase": "workers"
+    },
+    {
+      "event": "shutdown_phase",
+      "monotonic_ns": 825461814749,
+      "phase": "auxiliary"
+    },
+    {
+      "event": "fault",
+      "monotonic_ns": 825463308203,
+      "reason": "MPS client 9292 not registered; GPU termination unconfirmed"
+    },
+    {
+      "event": "gpu_termination_unconfirmed",
+      "monotonic_ns": 825463309565,
+      "name": "probe-a",
+      "pid": 9292
+    },
+    {
+      "event": "fault",
+      "monotonic_ns": 825463311018,
+      "reason": "forced process exit: probe-a"
+    },
+    {
+      "event": "forced_exit",
+      "monotonic_ns": 825527422850,
+      "name": "probe-a",
+      "pid": 9292
+    },
+    {
+      "event": "fault",
+      "monotonic_ns": 825529596439,
+      "reason": "MPS client 9293 not registered; GPU termination unconfirmed"
+    },
+    {
+      "event": "gpu_termination_unconfirmed",
+      "monotonic_ns": 825529598262,
+      "name": "probe-b",
+      "pid": 9293
+    },
+    {
+      "event": "fault",
+      "monotonic_ns": 825529600316,
+      "reason": "forced process exit: probe-b"
+    },
+    {
+      "event": "forced_exit",
+      "monotonic_ns": 825593611307,
+      "name": "probe-b",
+      "pid": 9293
+    },
+    {
+      "event": "shutdown_phase",
+      "monotonic_ns": 825593631646,
+      "phase": "owner"
+    },
+    {
+      "event": "arena_before_exit",
+      "monotonic_ns": 825594628694,
+      "free_bytes": 29097984,
+      "arena_bytes": 33554432,
+      "lease_count": 2
+    },
+    {
+      "event": "fault",
+      "monotonic_ns": 825595395667,
+      "reason": "arena_has_live_leases"
+    },
+    {
+      "event": "fault",
+      "monotonic_ns": 825597128851,
+      "reason": "MPS client 9231 not registered; GPU termination unconfirmed"
+    },
+    {
+      "event": "gpu_termination_unconfirmed",
+      "monotonic_ns": 825597132107,
+      "name": "kv-owner",
+      "pid": 9231
+    },
+    {
+      "event": "fault",
+      "monotonic_ns": 825597135654,
+      "reason": "forced process exit: kv-owner"
+    },
+    {
+      "event": "forced_exit",
+      "monotonic_ns": 825661129215,
+      "name": "kv-owner",
+      "pid": 9231
+    },
+    {
+      "event": "shutdown_phase",
+      "monotonic_ns": 825661166395,
+      "phase": "complete"
+    }
+  ],
+  "graceful": false,
+  "mps_recovery_required": true,
+  "owned_mps_daemon_stopped": true
+}

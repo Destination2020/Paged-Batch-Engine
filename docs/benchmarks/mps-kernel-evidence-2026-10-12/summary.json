@@ -1,0 +1,236 @@
+{
+  "method": "Nsight Systems CUDA software GPU kernel activity; cross-PID interval intersection",
+  "limitations": [
+    "Kernel interval overlap alone does not exclude context time slicing; see SM activity on/off control.",
+    "No SM occupancy percentage or throughput speedup is inferred.",
+    "Profiled timings include tracing overhead.",
+    "Models share capacity, not KV values or model weights."
+  ],
+  "probe": {
+    "kernel_count": 2,
+    "cross_process_overlapping_pairs": 1,
+    "cross_process_interval_union_ns": 250601386,
+    "any_kernel_union_ns": 253624898,
+    "longest_pair": {
+      "overlap_ns": 250601386,
+      "start_ns": 6859312070,
+      "end_ns": 7109913456,
+      "kernels": [
+        {
+          "start_ns": 6857799306,
+          "end_ns": 7109913456,
+          "pid": 14207,
+          "device": 0,
+          "context": 1,
+          "stream": 13,
+          "kernel": "<unnamed>::probe(unsigned long long *, unsigned long long)",
+          "grid_x": 1,
+          "grid_y": 1,
+          "grid_z": 1,
+          "block_x": 32,
+          "block_y": 1,
+          "block_z": 1
+        },
+        {
+          "start_ns": 6859312070,
+          "end_ns": 7111424204,
+          "pid": 14206,
+          "device": 0,
+          "context": 1,
+          "stream": 13,
+          "kernel": "<unnamed>::probe(unsigned long long *, unsigned long long)",
+          "grid_x": 1,
+          "grid_y": 1,
+          "grid_z": 1,
+          "block_x": 32,
+          "block_y": 1,
+          "block_z": 1
+        }
+      ]
+    },
+    "kernel_counts_by_pid": {
+      "14206": 1,
+      "14207": 1
+    },
+    "figure_window": {
+      "start_ns": 6807074327,
+      "end_ns": 7162149183,
+      "selection": "window around longest cross-PID overlap pair",
+      "csv": "probe-timeline.csv"
+    }
+  },
+  "models": {
+    "kernel_count": 140170,
+    "cross_process_overlapping_pairs": 25381,
+    "cross_process_interval_union_ns": 108839570,
+    "any_kernel_union_ns": 775191499,
+    "longest_pair": {
+      "overlap_ns": 353151,
+      "start_ns": 14837180401,
+      "end_ns": 14837533552,
+      "kernels": [
+        {
+          "start_ns": 14837086577,
+          "end_ns": 14837576368,
+          "pid": 14583,
+          "device": 0,
+          "context": 1,
+          "stream": 13,
+          "kernel": "std::enable_if<!T7, void>::type internal::gemvx::kernel<int, int, __nv_bfloat16, __nv_bfloat16, __nv_bfloat16, float, (bool)0, (bool)1, (bool)1, (bool)0, (int)6, (bool)0, cublasGemvParamsEx<int, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<__nv_bfloat16>, float>>(T13)",
+          "grid_x": 37984,
+          "grid_y": 1,
+          "grid_z": 1,
+          "block_x": 16,
+          "block_y": 4,
+          "block_z": 1
+        },
+        {
+          "start_ns": 14837180401,
+          "end_ns": 14837533552,
+          "pid": 14550,
+          "device": 0,
+          "context": 1,
+          "stream": 13,
+          "kernel": "std::enable_if<!T7, void>::type internal::gemvx::kernel<int, int, __nv_bfloat16, __nv_bfloat16, __nv_bfloat16, float, (bool)0, (bool)1, (bool)1, (bool)0, (int)6, (bool)0, cublasGemvParamsEx<int, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<__nv_bfloat16>, float>>(T13)",
+          "grid_x": 18992,
+          "grid_y": 1,
+          "grid_z": 1,
+          "block_x": 8,
+          "block_y": 8,
+          "block_z": 1
+        }
+      ]
+    },
+    "kernel_counts_by_pid": {
+      "14550": 97975,
+      "14583": 42195
+    },
+    "figure_window": {
+      "start_ns": 14836988619,
+      "end_ns": 14837674326,
+      "selection": "window around longest cross-PID overlap pair",
+      "csv": "models-timeline.csv"
+    }
+  },
+  "kv": {
+    "audit": {
+      "acquires": 30,
+      "releases": 30,
+      "peak_leased_bytes": 13500416,
+      "live_leases_at_end": 0,
+      "live_intervals_never_overlap": true,
+      "acquire_events_reusing_other_models_bytes": 21,
+      "examples": [
+        {
+          "previous_model": "qwen25-0.5b",
+          "next_model": "qwen25-1.5b",
+          "released_lease": 1,
+          "new_lease": 2,
+          "offset": 0,
+          "overlapping_bytes": 2162688
+        },
+        {
+          "previous_model": "qwen25-1.5b",
+          "next_model": "qwen25-0.5b",
+          "released_lease": 2,
+          "new_lease": 4,
+          "offset": 0,
+          "overlapping_bytes": 2162688
+        },
+        {
+          "previous_model": "qwen25-1.5b",
+          "next_model": "qwen25-0.5b",
+          "released_lease": 2,
+          "new_lease": 6,
+          "offset": 0,
+          "overlapping_bytes": 2162688
+        },
+        {
+          "previous_model": "qwen25-1.5b",
+          "next_model": "qwen25-0.5b",
+          "released_lease": 2,
+          "new_lease": 11,
+          "offset": 0,
+          "overlapping_bytes": 2162688
+        },
+        {
+          "previous_model": "qwen25-0.5b",
+          "next_model": "qwen25-1.5b",
+          "released_lease": 11,
+          "new_lease": 13,
+          "offset": 0,
+          "overlapping_bytes": 2162688
+        },
+        {
+          "previous_model": "qwen25-1.5b",
+          "next_model": "qwen25-0.5b",
+          "released_lease": 13,
+          "new_lease": 14,
+          "offset": 0,
+          "overlapping_bytes": 2162688
+        },
+        {
+          "previous_model": "qwen25-1.5b",
+          "next_model": "qwen25-0.5b",
+          "released_lease": 13,
+          "new_lease": 15,
+          "offset": 0,
+          "overlapping_bytes": 2162688
+        },
+        {
+          "previous_model": "qwen25-1.5b",
+          "next_model": "qwen25-0.5b",
+          "released_lease": 13,
+          "new_lease": 17,
+          "offset": 0,
+          "overlapping_bytes": 2162688
+        }
+      ]
+    },
+    "layouts": {
+      "qwen25-0.5b": {
+        "layout": "page-major-gqa-v1:24:4096",
+        "layers": 24,
+        "single_layer_k_or_v_bytes": 4096,
+        "all_layer_page_bytes": 196608,
+        "observed_chunk_bytes": 2162688,
+        "pages_per_chunk": 11
+      },
+      "qwen25-1.5b": {
+        "layout": "page-major-gqa-v1:28:8192",
+        "layers": 28,
+        "single_layer_k_or_v_bytes": 8192,
+        "all_layer_page_bytes": 458752,
+        "observed_chunk_bytes": 2293760,
+        "pages_per_chunk": 5
+      }
+    }
+  },
+  "inputs": [
+    {
+      "name": "mps-sw-timeline.sqlite",
+      "bytes": 397312,
+      "sha256": "6f13c4f633f5f1a1b2b3cb0cfd028fcd4a3d5bfb404883531a164f61bd1d875f"
+    },
+    {
+      "name": "probe.json",
+      "bytes": 1249,
+      "sha256": "e087cdf828a369d43b4869dc7be323465ece40ec19c3a071986fe4d7c6969098"
+    },
+    {
+      "name": "models-sw-timeline.sqlite",
+      "bytes": 28090368,
+      "sha256": "39547aadadee9daa2ecf7b6c5d63a8dc7ff48617448f0d89e3c798cfd0d86bbc"
+    },
+    {
+      "name": "models-registry.json",
+      "bytes": 1045,
+      "sha256": "be50f9f92035b2f45601299164d494bd1dbb0b52ddb5f4b34c08ee3219a5a127"
+    },
+    {
+      "name": "kv-owner.log",
+      "bytes": 9962,
+      "sha256": "deeb01b9ce97052c3fd4e2757617a3fb9cec84b4a8fc5e30cca08b1b1e5f78dc"
+    }
+  ]
+}

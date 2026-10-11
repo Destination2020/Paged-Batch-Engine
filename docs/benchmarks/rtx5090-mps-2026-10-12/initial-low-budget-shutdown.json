@@ -1,0 +1,61 @@
+{
+  "backend": "mps_process",
+  "events": [
+    {
+      "event": "fault",
+      "monotonic_ns": 4380131379492418,
+      "reason": "qwen25-0.5b exited (-6); see /workspace/pbe-validation/two-models/domain/qwen25-0.5b.log"
+    },
+    {
+      "event": "fault",
+      "monotonic_ns": 4380131379510016,
+      "reason": "qwen25-0.5b exited unexpectedly (-6)"
+    },
+    {
+      "event": "shutdown_phase",
+      "monotonic_ns": 4380131379523473,
+      "phase": "api"
+    },
+    {
+      "event": "shutdown_phase",
+      "monotonic_ns": 4380131379527790,
+      "phase": "workers"
+    },
+    {
+      "event": "fault",
+      "monotonic_ns": 4380131379531839,
+      "reason": "qwen25-0.5b exited before shutdown acknowledgement (-6)"
+    },
+    {
+      "event": "shutdown_phase",
+      "monotonic_ns": 4380131379535558,
+      "phase": "auxiliary"
+    },
+    {
+      "event": "shutdown_phase",
+      "monotonic_ns": 4380131379541960,
+      "phase": "owner"
+    },
+    {
+      "event": "arena_before_exit",
+      "monotonic_ns": 4380131381979761,
+      "free_bytes": 536870912,
+      "arena_bytes": 536870912,
+      "lease_count": 0
+    },
+    {
+      "event": "owner_stopped",
+      "monotonic_ns": 4380131498582337,
+      "pid": 12177,
+      "arena_freed": true
+    },
+    {
+      "event": "shutdown_phase",
+      "monotonic_ns": 4380131498633823,
+      "phase": "complete"
+    }
+  ],
+  "graceful": false,
+  "mps_recovery_required": true,
+  "owned_mps_daemon_stopped": true
+}

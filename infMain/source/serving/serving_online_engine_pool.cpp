@@ -67,7 +67,7 @@ nlohmann::json SingleOnlineEnginePool::metrics_json() const {
   nlohmann::json body = engine_->metrics_json();
   body["engine_pool"]["type"] =
       body.contains("pd") ? body["pd"].value("mode", "dual-gpu") : "single";
-  body["engine_pool"]["engine_count"] = body.contains("pd") ? 2 : 1;
+  body["engine_pool"]["engine_count"] = body.contains("split_pd") ? 3 : (body.contains("pd") ? 2 : 1);
   return body;
 }
 
@@ -168,6 +168,10 @@ ZmqOnlineEnginePool::ZmqOnlineEnginePool(const BenchConfig& config)
     : impl_(std::make_unique<Impl>(config)) {}
 
 ZmqOnlineEnginePool::~ZmqOnlineEnginePool() { stop(); }
+
+std::string ZmqOnlineEnginePool::default_model_id() const {
+  return impl_->config.model_id.empty() ? "paged-batch-engine" : impl_->config.model_id;
+}
 
 void ZmqOnlineEnginePool::start() {
   std::lock_guard<std::mutex> lock(impl_->lifecycle_mu);
@@ -292,7 +296,8 @@ nlohmann::json ZmqOnlineEnginePool::metrics_json() const {
   nlohmann::json metrics = response.value("metrics", nlohmann::json::object());
   metrics["process"]["role"] = kOnlineProcessRoleZmqHttpApi;
   metrics["process"]["engine_zmq_endpoint"] = impl_->rpc.endpoint;
-  metrics["process"]["prefill_zmq_endpoint"] = impl_->config.ipc.prefill_zmq_endpoint;
+  if (!metrics.contains("split_pd"))
+    metrics["process"]["prefill_zmq_endpoint"] = impl_->config.ipc.prefill_zmq_endpoint;
   metrics["engine_pool"]["type"] = "zmq";
   {
     std::lock_guard<std::mutex> lock(impl_->mu);

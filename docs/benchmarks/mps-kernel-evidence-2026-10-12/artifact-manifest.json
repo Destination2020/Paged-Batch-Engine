@@ -1,0 +1,451 @@
+{
+  "base_commit": "a8cc25549617b0376e844c19c73fdc8c8ff17454",
+  "source_state": "base plus working tree files identified by hashes",
+  "date": "2026-10-12 Asia/Shanghai",
+  "remote_artifact_root": "/workspace/pbe-validation",
+  "local_raw_archive": "/home/nowcoder/PagedBatchEngine/docs/data_flow_evidence/mps-kernel-evidence-2026-10-12",
+  "description": "Publication selection and file hashes. Raw data remain local/remote; hashes alone are not correctness validation. This manifest does not attest that GitHub publication has occurred.",
+  "files": [
+    {
+      "path": "docs/benchmarks/mps-kernel-evidence-2026-10-12/README.md",
+      "bytes": 13291,
+      "sha256": "9c3ee1f4be821344e6ad539d38d823b70606ece808e0de931e544d0b8702e9f3",
+      "category": "selected_evidence",
+      "include_in_publication": true
+    },
+    {
+      "path": "docs/benchmarks/mps-kernel-evidence-2026-10-12/kv-events.csv",
+      "bytes": 5098,
+      "sha256": "05e5c6705df37ceb116369d5feeb5c366aa327e5437fef1699fec7146b6f73dd",
+      "category": "selected_evidence",
+      "include_in_publication": true
+    },
+    {
+      "path": "docs/benchmarks/mps-kernel-evidence-2026-10-12/models-registry.json",
+      "bytes": 1045,
+      "sha256": "be50f9f92035b2f45601299164d494bd1dbb0b52ddb5f4b34c08ee3219a5a127",
+      "category": "selected_evidence",
+      "include_in_publication": true
+    },
+    {
+      "path": "docs/benchmarks/mps-kernel-evidence-2026-10-12/models-shutdown.json",
+      "bytes": 1587,
+      "sha256": "5dbb53ba05474f7873a680cdcbb46870930e29d1155c92d0eda4c92ea17f0b83",
+      "category": "selected_evidence",
+      "include_in_publication": true
+    },
+    {
+      "path": "docs/benchmarks/mps-kernel-evidence-2026-10-12/models-timeline.csv",
+      "bytes": 10477,
+      "sha256": "0c32970e94a9f6072c51c077f862c86a5adb9ee025986e36547dbccf5d6c57ff",
+      "category": "selected_evidence",
+      "include_in_publication": true
+    },
+    {
+      "path": "docs/benchmarks/mps-kernel-evidence-2026-10-12/models-timeline.svg",
+      "bytes": 18766,
+      "sha256": "e6af0c0af5b14a59edca382cce2fa2cad4ec7d089bd1e63886c34a618f0b7843",
+      "category": "selected_evidence",
+      "include_in_publication": true
+    },
+    {
+      "path": "docs/benchmarks/mps-kernel-evidence-2026-10-12/models-validation.json",
+      "bytes": 2195,
+      "sha256": "ec2b749964cad184ad48f2964356c21ea374541d0617ad2e569efb8b62141aae",
+      "category": "selected_evidence",
+      "include_in_publication": true
+    },
+    {
+      "path": "docs/benchmarks/mps-kernel-evidence-2026-10-12/probe-shutdown.json",
+      "bytes": 995,
+      "sha256": "e269721ba016ac5809b1969bdda96dfbdb65925ea9ea7f6e3244ae18fa3fcc97",
+      "category": "selected_evidence",
+      "include_in_publication": true
+    },
+    {
+      "path": "docs/benchmarks/mps-kernel-evidence-2026-10-12/probe-timeline.csv",
+      "bytes": 315,
+      "sha256": "26cd011fb0d0c5c2f63fcd12918066c437fba002c29923e809d63c5160648fdf",
+      "category": "selected_evidence",
+      "include_in_publication": true
+    },
+    {
+      "path": "docs/benchmarks/mps-kernel-evidence-2026-10-12/probe-timeline.svg",
+      "bytes": 13281,
+      "sha256": "0eae9174a016a913fb4a12c9c014991469ad2adc0afd044c1903a2e28c540957",
+      "category": "selected_evidence",
+      "include_in_publication": true
+    },
+    {
+      "path": "docs/benchmarks/mps-kernel-evidence-2026-10-12/probe.json",
+      "bytes": 1249,
+      "sha256": "e087cdf828a369d43b4869dc7be323465ece40ec19c3a071986fe4d7c6969098",
+      "category": "selected_evidence",
+      "include_in_publication": true
+    },
+    {
+      "path": "docs/benchmarks/mps-kernel-evidence-2026-10-12/process-interval-control.json",
+      "bytes": 1447,
+      "sha256": "747494bb15957b61e8b92dcf492945b1e50cb33305de79ff50d578ddbda20ee6",
+      "category": "selected_evidence",
+      "include_in_publication": true
+    },
+    {
+      "path": "docs/benchmarks/mps-kernel-evidence-2026-10-12/shared-kv.svg",
+      "bytes": 28810,
+      "sha256": "59e2b9276c0e3939f2391a073140a67843fe4c4dead8703948178cc9b0adda9e",
+      "category": "selected_evidence",
+      "include_in_publication": true
+    },
+    {
+      "path": "docs/benchmarks/mps-kernel-evidence-2026-10-12/sm-activity.json",
+      "bytes": 26589,
+      "sha256": "da3a96fce150e518e11ef779df92512511f035cd38b0ea833f6127ead0e0c3f8",
+      "category": "selected_evidence",
+      "include_in_publication": true
+    },
+    {
+      "path": "docs/benchmarks/mps-kernel-evidence-2026-10-12/sm-activity.svg",
+      "bytes": 263793,
+      "sha256": "6f819ac3516ddfea5cc35d129111e1be12324b3c21a6c204c4d7f13989aff320",
+      "category": "selected_evidence",
+      "include_in_publication": true
+    },
+    {
+      "path": "docs/benchmarks/mps-kernel-evidence-2026-10-12/sm-mps_process-0.csv",
+      "bytes": 18824,
+      "sha256": "e10f411b60ef10b0526c83ed514d5cbc3df13b8bc33a8755b56123669d496a54",
+      "category": "selected_evidence",
+      "include_in_publication": true
+    },
+    {
+      "path": "docs/benchmarks/mps-kernel-evidence-2026-10-12/sm-mps_process-1.csv",
+      "bytes": 17832,
+      "sha256": "4cbd540d5096fddc77b5c14c7c9860d335a2a039aee864cac4de82d6e809f7d1",
+      "category": "selected_evidence",
+      "include_in_publication": true
+    },
+    {
+      "path": "docs/benchmarks/mps-kernel-evidence-2026-10-12/sm-mps_process-2.csv",
+      "bytes": 17112,
+      "sha256": "72f4d5d17f679331229bcfcf6b91a7991acaad67a60d81eb8b1e85ecc32e9428",
+      "category": "selected_evidence",
+      "include_in_publication": true
+    },
+    {
+      "path": "docs/benchmarks/mps-kernel-evidence-2026-10-12/sm-process-0.csv",
+      "bytes": 33956,
+      "sha256": "e9e1fe100edb9ef46bb3d041e5daca31e43563f66f5290981934925427cd250a",
+      "category": "selected_evidence",
+      "include_in_publication": true
+    },
+    {
+      "path": "docs/benchmarks/mps-kernel-evidence-2026-10-12/sm-process-1.csv",
+      "bytes": 33910,
+      "sha256": "6bf45174a1173b4a2ec91779e4762b624998066f38cea824e5b9791459e2413f",
+      "category": "selected_evidence",
+      "include_in_publication": true
+    },
+    {
+      "path": "docs/benchmarks/mps-kernel-evidence-2026-10-12/sm-process-2.csv",
+      "bytes": 33910,
+      "sha256": "32a7023ff743a42c89b3f86662b0e7d46a7c268adfe49d6337afe36672de118b",
+      "category": "selected_evidence",
+      "include_in_publication": true
+    },
+    {
+      "path": "docs/benchmarks/mps-kernel-evidence-2026-10-12/summary.json",
+      "bytes": 7196,
+      "sha256": "7b309337fb3efbcd0155ef0a6950a60358005875cf9811a9eebb3df900d6191e",
+      "category": "selected_evidence",
+      "include_in_publication": true
+    },
+    {
+      "path": "docs/benchmarks/mps-kernel-evidence-2026-10-12/verification.json",
+      "bytes": 410,
+      "sha256": "897b08ded573208bca82d8151e659e7705303d797fb783f9329ec5e4eae9be01",
+      "category": "selected_evidence",
+      "include_in_publication": true
+    },
+    {
+      "path": "docs/data_flow_evidence/mps-kernel-evidence-2026-10-12/evidence-build.log",
+      "bytes": 901,
+      "sha256": "86e47697ea9b76f6395714f1a3da319281d912a084fc898e5ef2401d9cfd3636",
+      "category": "raw_evidence",
+      "include_in_publication": false
+    },
+    {
+      "path": "docs/data_flow_evidence/mps-kernel-evidence-2026-10-12/evidence-ctest.log",
+      "bytes": 1522,
+      "sha256": "91e6604725cbf25c73c6025ca14c79447e12a97e42584d9ef20bf0d390dbbd25",
+      "category": "raw_evidence",
+      "include_in_publication": false
+    },
+    {
+      "path": "docs/data_flow_evidence/mps-kernel-evidence-2026-10-12/kv-owner.log",
+      "bytes": 9962,
+      "sha256": "deeb01b9ce97052c3fd4e2757617a3fb9cec84b4a8fc5e30cca08b1b1e5f78dc",
+      "category": "raw_evidence",
+      "include_in_publication": false
+    },
+    {
+      "path": "docs/data_flow_evidence/mps-kernel-evidence-2026-10-12/models-sw-timeline.nsys-rep",
+      "bytes": 9580545,
+      "sha256": "1cc88fbaf8d0527c288b637e1bdaf8f6df945bb42276bda8cacd14996a88e1c5",
+      "category": "raw_evidence",
+      "include_in_publication": false
+    },
+    {
+      "path": "docs/data_flow_evidence/mps-kernel-evidence-2026-10-12/models-sw-timeline.sqlite",
+      "bytes": 28090368,
+      "sha256": "39547aadadee9daa2ecf7b6c5d63a8dc7ff48617448f0d89e3c798cfd0d86bbc",
+      "category": "raw_evidence",
+      "include_in_publication": false
+    },
+    {
+      "path": "docs/data_flow_evidence/mps-kernel-evidence-2026-10-12/mps-sw-timeline.nsys-rep",
+      "bytes": 72438,
+      "sha256": "44d73c939ce6c2a1316fe25a93a742f068a32f96ed8d864c65ac7873649100a8",
+      "category": "raw_evidence",
+      "include_in_publication": false
+    },
+    {
+      "path": "docs/data_flow_evidence/mps-kernel-evidence-2026-10-12/mps-sw-timeline.sqlite",
+      "bytes": 397312,
+      "sha256": "6f13c4f633f5f1a1b2b3cb0cfd028fcd4a3d5bfb404883531a164f61bd1d875f",
+      "category": "raw_evidence",
+      "include_in_publication": false
+    },
+    {
+      "path": "docs/data_flow_evidence/mps-kernel-evidence-2026-10-12/process-probe.json",
+      "bytes": 1245,
+      "sha256": "d1a5032aaf74d7f8b53c4cc049f2dec1e7ae68233858ffc57b5d09079fc1e51d",
+      "category": "raw_evidence",
+      "include_in_publication": false
+    },
+    {
+      "path": "docs/data_flow_evidence/mps-kernel-evidence-2026-10-12/process-sw-timeline.nsys-rep",
+      "bytes": 69215,
+      "sha256": "ac2a4f34f957daad0287409c1cb765a6ade650a4c27c504a3cd6b9fe94034625",
+      "category": "raw_evidence",
+      "include_in_publication": false
+    },
+    {
+      "path": "docs/data_flow_evidence/mps-kernel-evidence-2026-10-12/process-sw-timeline.sqlite",
+      "bytes": 393216,
+      "sha256": "1b87bc3a026f024cb980a8eec1c861af3ace9cd9306db6823ec9739e1f0ac252",
+      "category": "raw_evidence",
+      "include_in_publication": false
+    },
+    {
+      "path": "docs/data_flow_evidence/mps-kernel-evidence-2026-10-12/sm-activity/mps_process-0/activity-bins.csv",
+      "bytes": 18824,
+      "sha256": "e10f411b60ef10b0526c83ed514d5cbc3df13b8bc33a8755b56123669d496a54",
+      "category": "raw_evidence",
+      "include_in_publication": false
+    },
+    {
+      "path": "docs/data_flow_evidence/mps-kernel-evidence-2026-10-12/sm-activity/mps_process-0/client-0.bin",
+      "bytes": 16000000,
+      "sha256": "1fbf253780ed49f31a732c96a4518a20636a4e1766b1c402aca95fc8a0985ec3",
+      "category": "raw_evidence",
+      "include_in_publication": false
+    },
+    {
+      "path": "docs/data_flow_evidence/mps-kernel-evidence-2026-10-12/sm-activity/mps_process-0/client-1.bin",
+      "bytes": 16000000,
+      "sha256": "1c6e4ca51ea189df7e52fef1fdfbf6ab5ccb45d5f53cc61d17a0a2ed732864e1",
+      "category": "raw_evidence",
+      "include_in_publication": false
+    },
+    {
+      "path": "docs/data_flow_evidence/mps-kernel-evidence-2026-10-12/sm-activity/mps_process-1/activity-bins.csv",
+      "bytes": 17832,
+      "sha256": "4cbd540d5096fddc77b5c14c7c9860d335a2a039aee864cac4de82d6e809f7d1",
+      "category": "raw_evidence",
+      "include_in_publication": false
+    },
+    {
+      "path": "docs/data_flow_evidence/mps-kernel-evidence-2026-10-12/sm-activity/mps_process-1/client-0.bin",
+      "bytes": 16000000,
+      "sha256": "ef4c7293d896ff9b7621189f510fcd0d6e3115121aff29343eec4b4a2ccb8fb2",
+      "category": "raw_evidence",
+      "include_in_publication": false
+    },
+    {
+      "path": "docs/data_flow_evidence/mps-kernel-evidence-2026-10-12/sm-activity/mps_process-1/client-1.bin",
+      "bytes": 16000000,
+      "sha256": "853692b1b97d8212a81aa961042040cdfe578db8cee3ac398e7b7ba53a7715b1",
+      "category": "raw_evidence",
+      "include_in_publication": false
+    },
+    {
+      "path": "docs/data_flow_evidence/mps-kernel-evidence-2026-10-12/sm-activity/mps_process-2/activity-bins.csv",
+      "bytes": 17112,
+      "sha256": "72f4d5d17f679331229bcfcf6b91a7991acaad67a60d81eb8b1e85ecc32e9428",
+      "category": "raw_evidence",
+      "include_in_publication": false
+    },
+    {
+      "path": "docs/data_flow_evidence/mps-kernel-evidence-2026-10-12/sm-activity/mps_process-2/client-0.bin",
+      "bytes": 16000000,
+      "sha256": "a62dbc311b67568806aff677f031b6b60ec75a200dce848cad8e4692ac1f99ca",
+      "category": "raw_evidence",
+      "include_in_publication": false
+    },
+    {
+      "path": "docs/data_flow_evidence/mps-kernel-evidence-2026-10-12/sm-activity/mps_process-2/client-1.bin",
+      "bytes": 16000000,
+      "sha256": "f6771b7b37c373660c93f1067dc3674e3fe6714dbaf173238d4d4d97952c119d",
+      "category": "raw_evidence",
+      "include_in_publication": false
+    },
+    {
+      "path": "docs/data_flow_evidence/mps-kernel-evidence-2026-10-12/sm-activity/process-0/activity-bins.csv",
+      "bytes": 33956,
+      "sha256": "e9e1fe100edb9ef46bb3d041e5daca31e43563f66f5290981934925427cd250a",
+      "category": "raw_evidence",
+      "include_in_publication": false
+    },
+    {
+      "path": "docs/data_flow_evidence/mps-kernel-evidence-2026-10-12/sm-activity/process-0/client-0.bin",
+      "bytes": 16000000,
+      "sha256": "0b0251ae9a710c26d4628d6c11acf9e56ad702ea2e2369bb0e14cd123b7e2a89",
+      "category": "raw_evidence",
+      "include_in_publication": false
+    },
+    {
+      "path": "docs/data_flow_evidence/mps-kernel-evidence-2026-10-12/sm-activity/process-0/client-1.bin",
+      "bytes": 16000000,
+      "sha256": "f7f8fefb7f255ad757ee370940e743a16a91a22ad2c2c0614bd91f9a5e6bbbb6",
+      "category": "raw_evidence",
+      "include_in_publication": false
+    },
+    {
+      "path": "docs/data_flow_evidence/mps-kernel-evidence-2026-10-12/sm-activity/process-1/activity-bins.csv",
+      "bytes": 33910,
+      "sha256": "6bf45174a1173b4a2ec91779e4762b624998066f38cea824e5b9791459e2413f",
+      "category": "raw_evidence",
+      "include_in_publication": false
+    },
+    {
+      "path": "docs/data_flow_evidence/mps-kernel-evidence-2026-10-12/sm-activity/process-1/client-0.bin",
+      "bytes": 16000000,
+      "sha256": "6f370a08d1f1c11d250c198be27c09ff0da6c4d49578fc57aa1aec8c60fd9edd",
+      "category": "raw_evidence",
+      "include_in_publication": false
+    },
+    {
+      "path": "docs/data_flow_evidence/mps-kernel-evidence-2026-10-12/sm-activity/process-1/client-1.bin",
+      "bytes": 16000000,
+      "sha256": "0ace9e05c7044f9512e89f730f66b9c0c2983ff47e3de2266c7124b8020e599e",
+      "category": "raw_evidence",
+      "include_in_publication": false
+    },
+    {
+      "path": "docs/data_flow_evidence/mps-kernel-evidence-2026-10-12/sm-activity/process-2/activity-bins.csv",
+      "bytes": 33910,
+      "sha256": "32a7023ff743a42c89b3f86662b0e7d46a7c268adfe49d6337afe36672de118b",
+      "category": "raw_evidence",
+      "include_in_publication": false
+    },
+    {
+      "path": "docs/data_flow_evidence/mps-kernel-evidence-2026-10-12/sm-activity/process-2/client-0.bin",
+      "bytes": 16000000,
+      "sha256": "1d5e3e7671712548184e11fd5dcc6c4dd6ef0ade2d785c2ee21abdf0823b7896",
+      "category": "raw_evidence",
+      "include_in_publication": false
+    },
+    {
+      "path": "docs/data_flow_evidence/mps-kernel-evidence-2026-10-12/sm-activity/process-2/client-1.bin",
+      "bytes": 16000000,
+      "sha256": "39460fdbd327a92701f854df293fb4b064c6aadee6fa563763373c03a1ff8608",
+      "category": "raw_evidence",
+      "include_in_publication": false
+    },
+    {
+      "path": "docs/data_flow_evidence/mps-kernel-evidence-2026-10-12/sm-activity-raw.tar.gz",
+      "bytes": 31856203,
+      "sha256": "e56b88e49607d7f46701e0f94834e2bc03d221eee0147ed2d7032446bdcc0249",
+      "category": "raw_evidence",
+      "include_in_publication": false
+    },
+    {
+      "path": "demo/mps_sm_activity_probe.cu",
+      "bytes": 3357,
+      "sha256": "3e0105d372cda7189caab82db1e4541010e7f1ed2c2be26a4441cbb574890ad4",
+      "category": "source_or_configuration",
+      "include_in_publication": true
+    },
+    {
+      "path": "demo/CMakeLists.txt",
+      "bytes": 4191,
+      "sha256": "c39748e64e46ab232c9e5eb30dd773166f7791d8657ad797aafd68228549016a",
+      "category": "source_or_configuration",
+      "include_in_publication": true
+    },
+    {
+      "path": "tools/serving/validate_mps_sm_activity.py",
+      "bytes": 7751,
+      "sha256": "2e3173f09e4c93285924ddac6276684c10ea8c7351de75c43acfcfdd0324dc3b",
+      "category": "source_or_configuration",
+      "include_in_publication": true
+    },
+    {
+      "path": "tools/serving/summarize_mps_evidence.py",
+      "bytes": 13832,
+      "sha256": "931ada18ba33e2a962237c063179004789ea8b7ffaddc10938dbacf312bfb380",
+      "category": "source_or_configuration",
+      "include_in_publication": true
+    },
+    {
+      "path": "tools/serving/test_mps_evidence.py",
+      "bytes": 1564,
+      "sha256": "049fd2fb5314b735807f337c00c55410792d02a06d96296fd5427a53cfd45da1",
+      "category": "source_or_configuration",
+      "include_in_publication": true
+    },
+    {
+      "path": "test/CMakeLists.txt",
+      "bytes": 6440,
+      "sha256": "4ae5420f56b18a7c3b73fb4e2c0abf1e21a343d1b24bfbdabd98bda8f1108f44",
+      "category": "source_or_configuration",
+      "include_in_publication": true
+    },
+    {
+      "path": "CMakeLists.txt",
+      "bytes": 14673,
+      "sha256": "221b56b4d99ff17006bbc59bbbe9d70407b9d018c04176d8124abaeba80b9ac2",
+      "category": "source_or_configuration",
+      "include_in_publication": true
+    },
+    {
+      "path": "infMain/source/op/encode.cpp",
+      "bytes": 6938,
+      "sha256": "242f1fd81bda57cbe41d6c66d8452e2f8865d5d8f4e5018e075f5e29ba42bcf2",
+      "category": "source_or_configuration",
+      "include_in_publication": true
+    },
+    {
+      "path": "readme.md",
+      "bytes": 29059,
+      "sha256": "cdf300b349a1e96172c36d8db571d0a266ef881e504dd6b79c6a26fd68784286",
+      "category": "source_or_configuration",
+      "include_in_publication": true
+    },
+    {
+      "path": "docs/benchmarks/rtx5090-mps-2026-10-12/deployment-config.json",
+      "bytes": 1141,
+      "sha256": "07939d16abcaed9eb2d5661138e5aeae62fe82a2f7f45319b6169d49cdbd6493",
+      "category": "source_or_configuration",
+      "include_in_publication": true
+    },
+    {
+      "path": "docs/benchmarks/rtx5090-mps-2026-10-12/model-hashes.json",
+      "bytes": 658,
+      "sha256": "4bffda1a8d3a5d95822af20d47a9ccbaa3691272fca1d3144a6fb7e50fac3310",
+      "category": "source_or_configuration",
+      "include_in_publication": true
+    }
+  ]
+}

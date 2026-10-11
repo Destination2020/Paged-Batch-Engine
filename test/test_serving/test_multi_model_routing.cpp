@@ -5,6 +5,14 @@
 #include "serving/serving_online_engine_pool.h"
 #include "serving/serving_zmq_rpc.h"
 
+TEST(MultiModelRouting, SingleRemoteModelIsTheHTTPDefault) {
+  serving::BenchConfig config;
+  config.model_id = "qwen25-1.5b";
+  serving::ZmqOnlineEnginePool pool(config);
+  EXPECT_EQ(pool.default_model_id(), config.model_id);
+  EXPECT_EQ(pool.models_json().at("data").at(0).at("id"), config.model_id);
+}
+
 TEST(MultiModelRouting, IdentitySurvivesRPCSerialization) {
   serving::OnlineGenerateRequest request;
   request.model_id = "qwen25-1.5b";

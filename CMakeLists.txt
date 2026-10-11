@@ -176,7 +176,13 @@ if(NOT TARGET nlohmann_json::nlohmann_json)
 endif()
 if (LLAMA3_SUPPORT OR QWEN2_SUPPORT OR QWEN3_SUPPORT OR QWEN_MOE_SUPPORT)
   find_package(absl REQUIRED)
-  find_package(re2 REQUIRED)
+  find_package(re2 QUIET CONFIG)
+  if(NOT TARGET re2::re2)
+    # Ubuntu 22.04 ships RE2's pkg-config metadata without a CMake config.
+    find_package(PkgConfig REQUIRED)
+    pkg_check_modules(RE2 REQUIRED IMPORTED_TARGET re2)
+    add_library(re2::re2 ALIAS PkgConfig::RE2)
+  endif()
   # Header-only JSON must not inject an unrelated package prefix (e.g. Conda's
   # absl headers) ahead of the headers matching the linked re2/absl libraries.
   get_target_property(_json_includes nlohmann_json::nlohmann_json INTERFACE_INCLUDE_DIRECTORIES)

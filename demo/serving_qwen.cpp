@@ -56,7 +56,7 @@ class QwenServingBenchmarkApp final : public serving::ServingBenchmarkApp {
                         const serving::BenchConfig& bench_config) override {
     CHECK_GE(bench_config.kv.private_memory_budget_mib, 0);
     if (bench_config.kv.private_memory_budget_mib > 0) {
-      CHECK_EQ(bench_config.pd.pd_mode, "off");
+      CHECK(bench_config.pd.pd_mode == "off" || bench_config.pd.pd_mode == "split-prefill-ipc");
       base::CUDADeviceAllocatorFactory::get_instance()->set_byte_limit(
           bench_config.device_id, static_cast<size_t>(bench_config.kv.private_memory_budget_mib) << 20);
     }
@@ -85,7 +85,7 @@ class QwenServingBenchmarkApp final : public serving::ServingBenchmarkApp {
           << "Choose either the V4 external KV pool or the shared Chunk arena";
       CHECK_EQ(bench_config.kv.kv_cache_blocks_per_layer, 0)
           << "Shared Chunk capacity is controlled by model byte quotas";
-      CHECK_EQ(bench_config.pd.pd_mode, "off") << "Shared arena V1 uses one mixed worker per model";
+      CHECK(bench_config.pd.pd_mode == "off" || bench_config.pd.pd_mode == "split-prefill-ipc");
       CHECK_GT(bench_config.kv.shared_kv_hard_limit_mib, 0);
       CHECK_GT(bench_config.kv.shared_kv_chunk_mib, 0);
       CHECK(!fp8_kv_cache_enabled()) << "Shared arena requires BF16 KV";

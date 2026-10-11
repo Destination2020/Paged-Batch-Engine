@@ -14,6 +14,7 @@
 #include <mutex>
 #include <thread>
 #include <unordered_map>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 #include <cuda_runtime_api.h>
@@ -98,6 +99,15 @@ class RemotePrefillBatchWorker {
     if (worker_.joinable()) {
       worker_.join();
     }
+    std::lock_guard<std::mutex> execution(exec_mu_);
+    std::lock_guard<std::mutex> lock(mu_);
+    for (const auto& item : requests_) {
+      if (!item.second->ready) free_source_request_unlocked(*item.second);
+    }
+    requests_.clear();
+    schedule_order_.clear();
+    for (auto handoff : retained_) pd_executor_.release_remote_prefill(HandoffId{handoff});
+    retained_.clear();
   }
 
   int64_t submit(std::vector<int32_t> prompt_tokens,
@@ -110,6 +120,17 @@ class RemotePrefillBatchWorker {
         *error = "empty_prompt";
       }
       return -1;
+    }
+    if (config_.max_prompt_tokens > 0 && prompt_tokens.size() > static_cast<size_t>(config_.max_prompt_tokens)) {
+      if (error) *error = "prompt_too_long";
+      return -1;
+    }
+    {
+      std::lock_guard<std::mutex> lock(mu_);
+      if (requests_.size() >= static_cast<size_t>(config_.max_queue_size)) {
+        if (error) *error = "prefill_queue_full";
+        return -1;
+      }
     }
     generation_config.normalize();
     const int64_t prefill_request_id = next_request_id_.fetch_add(1);
@@ -194,6 +215,23 @@ class RemotePrefillBatchWorker {
                                   base::nvtx::kColorProcess);
     std::lock_guard<std::mutex> lock(exec_mu_);
     pd_executor_.release_remote_prefill(handoff_id);
+    retained_.erase(handoff_id.value);
+  }
+
+  void cancel(int64_t id) {
+    std::lock_guard<std::mutex> execution(exec_mu_);
+    std::lock_guard<std::mutex> lock(mu_);
+    auto it = requests_.find(id);
+    if (it == requests_.end()) return;
+    auto& request = *it->second;
+    if (request.ready && !request.result.failed) {
+      pd_executor_.release_remote_prefill(request.handoff_id);
+      retained_.erase(request.handoff_id.value);
+    } else if (!request.ready) {
+      free_source_request_unlocked(request);
+    }
+    requests_.erase(it);
+    schedule_order_.erase(std::remove(schedule_order_.begin(), schedule_order_.end(), id), schedule_order_.end());
   }
 
   nlohmann::json metrics_json() const {
@@ -277,6 +315,9 @@ class RemotePrefillBatchWorker {
           base::nvtx::ScopedRange range("prefill_sample",
                                         base::nvtx::kColorSample);
           sampled = app_->pd_batch_sample_prefill(batch, output);
+          if (config_.pd.pd_mode == "split-prefill-ipc" &&
+              cudaStreamSynchronize(static_cast<cudaStream_t>(app_->model_stream())) != cudaSuccess)
+            LOG(FATAL) << "Prefill CUDA completion unknown; discard the complete IPC domain";
         }
         {
           base::nvtx::ScopedRange range("prefill_finish_step",
@@ -412,6 +453,7 @@ class RemotePrefillBatchWorker {
       } else {
         pd_executor_.retain_remote_prefill(request->handoff_id,
                                    request->seq.request_id);
+        retained_.insert(request->handoff_id.value);
         ++completed_requests_;
       }
       request->ready = true;
@@ -433,6 +475,7 @@ class RemotePrefillBatchWorker {
   RemotePrefillResult make_success_result(const RequestState& request,
                                           int32_t first_token) const {
     RemotePrefillResult result;
+    result.shared_arena_epoch = app_->kv_cache_manager()->allocator(0).shared_arena_epoch();
     result.client_request_id = request.client_request_id;
     result.handoff_id = request.handoff_id;
     result.prompt_tokens = request.prompt_tokens;
@@ -476,6 +519,7 @@ class RemotePrefillBatchWorker {
   std::thread worker_;
   mutable std::mutex mu_;
   mutable std::mutex exec_mu_;
+  std::unordered_set<uint64_t> retained_; // protected by exec_mu_; source survives until D acknowledgement
   std::condition_variable cv_;
   std::deque<int64_t> schedule_order_;
   std::unordered_map<int64_t, std::shared_ptr<RequestState>> requests_;
@@ -502,136 +546,136 @@ base::Status run_zmq_prefill_engine_core_server(ServingRuntime* app,
 
   RemotePrefillBatchWorker prefill_worker(app, config);
   prefill_worker.start();
+  ScopedServingStopSignals stop_signals;
+  socket->set_timeouts(200);
 
-  while (true) {
+  while (!serving_stop_requested) {
     nlohmann::json request;
     status = socket->recv_json(&request);
     if (!status) {
-      LOG(ERROR) << status.get_err_msg();
+      if (status == base::StatusCode::kInvalidArgument)
+        socket->send_json(make_error_response("invalid_request_json"));
       continue;
     }
 
     nlohmann::json response;
-    const auto type = zmq_rpc_message_type_from_string(
-        request.value("type", std::string()));
-    if (type == ZmqRpcMessageType::kHealth) {
-      response = make_ok_response();
-      response["status"] = "ok";
-      response["model_id"] = config.model_id;
-      response["private_allocator_reserved_bytes"] =
-          base::CUDADeviceAllocatorFactory::get_instance()->reserved_bytes(config.device_id);
-    } else if (type == ZmqRpcMessageType::kMetrics) {
-      response = make_ok_response();
-      response["metrics"]["engine"]["mode"] = "prefill";
-      response["metrics"]["prefill_worker"] = prefill_worker.metrics_json();
-      response["metrics"]["process"]["role"] =
-          kOnlineProcessRoleZmqPrefillEngineCore;
-      response["metrics"]["process"]["zmq_endpoint"] = rpc_config.endpoint;
-      response["metrics"]["pd"]["mode"] = config.pd.pd_mode;
-      response["metrics"]["pd"]["transfer_backend"] =
-          pd_transfer_backend(config.pd.pd_mode);
-    } else if (type == ZmqRpcMessageType::kPrefill) {
-      std::vector<int32_t> prompt_tokens;
-      if (request.contains("prompt_tokens")) {
-        prompt_tokens = request.at("prompt_tokens").get<std::vector<int32_t>>();
-      } else if (request.contains("request")) {
-        auto generate_request =
-            online_generate_request_from_json(request.at("request"));
-        prompt_tokens = app->encode_prompt(generate_request.prompt);
+    try {
+      if (request.value("type", std::string()) == "shutdown") {
+        prefill_worker.stop();
+        const bool synced = cudaDeviceSynchronize() == cudaSuccess;
+        socket->set_linger(1000);
+        socket->send_json({{"ok", synced}, {"gpu_synchronized", synced}});
+        return synced ? base::error::Success()
+                      : base::error::InternalError("prefill shutdown sync failed");
       }
-      GenerationConfig generation_config;
-      if (request.contains("generation_config")) {
-        generation_config =
-            generation_config_from_json(request.at("generation_config"));
-      } else if (request.contains("request") &&
-                 request.at("request").contains("generation_config")) {
-        generation_config = generation_config_from_json(
-            request.at("request").at("generation_config"));
-      }
-      RemotePrefillResult result =
-          prefill_worker.run_prefill(std::move(prompt_tokens),
-                                             generation_config);
-      response = make_ok_response();
-      response["type"] =
-          zmq_rpc_message_type_name(ZmqRpcMessageType::kPrefillResult);
-      response["prefill_result"] = remote_prefill_result_to_json(result);
-    } else if (type == ZmqRpcMessageType::kPrefillSubmit) {
-      base::nvtx::ScopedRange range("prefill_core_handle_submit",
-                                    base::nvtx::kColorProcess);
-      std::vector<int32_t> prompt_tokens;
-      if (request.contains("prompt_tokens")) {
-        prompt_tokens = request.at("prompt_tokens").get<std::vector<int32_t>>();
-      } else if (request.contains("request")) {
-        auto generate_request =
-            online_generate_request_from_json(request.at("request"));
-        prompt_tokens = app->encode_prompt(generate_request.prompt);
-      }
-      GenerationConfig generation_config;
-      if (request.contains("generation_config")) {
-        generation_config =
-            generation_config_from_json(request.at("generation_config"));
-      } else if (request.contains("request") &&
-                 request.at("request").contains("generation_config")) {
-        generation_config = generation_config_from_json(
-            request.at("request").at("generation_config"));
-      }
-      std::string error;
-      const int64_t prefill_request_id =
-          prefill_worker.submit(std::move(prompt_tokens), generation_config,
-                                &error);
-      if (prefill_request_id < 0) {
-        response = make_error_response(error);
-      } else {
+      const auto type = zmq_rpc_message_type_from_string(request.value("type", std::string()));
+      if (type == ZmqRpcMessageType::kHealth) {
         response = make_ok_response();
-        response["prefill_request_id"] = prefill_request_id;
-      }
-    } else if (type == ZmqRpcMessageType::kPrefillPoll) {
-      base::nvtx::ScopedRange range("prefill_core_handle_poll",
-                                    base::nvtx::kColorProcess);
-      const int64_t prefill_request_id =
-          request.value("prefill_request_id", int64_t{-1});
-      RemotePrefillResult result;
-      bool ready = false;
-      std::string error;
-      if (!prefill_worker.poll(prefill_request_id, &result, &ready, &error)) {
-        response = make_error_response(error);
-      } else {
+        response["status"] = "ok";
+        response["model_id"] = config.model_id;
+        response["private_allocator_reserved_bytes"] =
+            base::CUDADeviceAllocatorFactory::get_instance()->reserved_bytes(config.device_id);
+      } else if (type == ZmqRpcMessageType::kMetrics) {
         response = make_ok_response();
-        response["ready"] = ready;
-        if (ready) {
-          response["type"] =
-              zmq_rpc_message_type_name(ZmqRpcMessageType::kPrefillResult);
-          response["prefill_result"] = remote_prefill_result_to_json(result);
+        response["metrics"]["engine"]["mode"] = "prefill";
+        response["metrics"]["prefill_worker"] = prefill_worker.metrics_json();
+        response["metrics"]["process"]["role"] = kOnlineProcessRoleZmqPrefillEngineCore;
+        response["metrics"]["process"]["zmq_endpoint"] = rpc_config.endpoint;
+        response["metrics"]["pd"]["mode"] = config.pd.pd_mode;
+        response["metrics"]["pd"]["transfer_backend"] = pd_transfer_backend(config.pd.pd_mode);
+      } else if (type == ZmqRpcMessageType::kPrefill) {
+        std::vector<int32_t> prompt_tokens;
+        if (request.contains("prompt_tokens")) {
+          prompt_tokens = request.at("prompt_tokens").get<std::vector<int32_t>>();
+        } else if (request.contains("request")) {
+          auto generate_request = online_generate_request_from_json(request.at("request"));
+          prompt_tokens = app->encode_prompt(generate_request.prompt);
         }
-      }
-    } else if (type == ZmqRpcMessageType::kKvTransfer) {
-      base::nvtx::ScopedRange range("prefill_core_handle_kv_transfer",
-                                    base::nvtx::kColorMemcpy);
-      if (request.value("backend", std::string()) != "nccl") {
-        response = make_error_response("unsupported_kv_transfer_backend");
-      } else {
-        KVBlockManifest manifest =
-            kv_block_manifest_from_json(request.at("manifest"));
-        const std::string nccl_unique_id =
-            hex_json_to_binary(request.value("nccl_unique_id", std::string()));
-        status = prefill_worker.send_kv(manifest, nccl_unique_id);
-        if (status) {
-          response = make_ok_response();
-          response["type"] =
-              zmq_rpc_message_type_name(ZmqRpcMessageType::kKvTransferResult);
+        GenerationConfig generation_config;
+        if (request.contains("generation_config")) {
+          generation_config = generation_config_from_json(request.at("generation_config"));
+        } else if (request.contains("request") &&
+                   request.at("request").contains("generation_config")) {
+          generation_config =
+              generation_config_from_json(request.at("request").at("generation_config"));
+        }
+        RemotePrefillResult result =
+            prefill_worker.run_prefill(std::move(prompt_tokens), generation_config);
+        response = make_ok_response();
+        response["type"] = zmq_rpc_message_type_name(ZmqRpcMessageType::kPrefillResult);
+        response["prefill_result"] = remote_prefill_result_to_json(result);
+      } else if (type == ZmqRpcMessageType::kPrefillSubmit) {
+        base::nvtx::ScopedRange range("prefill_core_handle_submit", base::nvtx::kColorProcess);
+        std::vector<int32_t> prompt_tokens;
+        if (request.contains("prompt_tokens")) {
+          prompt_tokens = request.at("prompt_tokens").get<std::vector<int32_t>>();
+        } else if (request.contains("request")) {
+          auto generate_request = online_generate_request_from_json(request.at("request"));
+          prompt_tokens = app->encode_prompt(generate_request.prompt);
+        }
+        GenerationConfig generation_config;
+        if (request.contains("generation_config")) {
+          generation_config = generation_config_from_json(request.at("generation_config"));
+        } else if (request.contains("request") &&
+                   request.at("request").contains("generation_config")) {
+          generation_config =
+              generation_config_from_json(request.at("request").at("generation_config"));
+        }
+        std::string error;
+        const int64_t prefill_request_id =
+            prefill_worker.submit(std::move(prompt_tokens), generation_config, &error);
+        if (prefill_request_id < 0) {
+          response = make_error_response(error);
         } else {
-          response = make_error_response(status.get_err_msg());
+          response = make_ok_response();
+          response["prefill_request_id"] = prefill_request_id;
         }
+      } else if (type == ZmqRpcMessageType::kPrefillPoll) {
+        base::nvtx::ScopedRange range("prefill_core_handle_poll", base::nvtx::kColorProcess);
+        const int64_t prefill_request_id = request.value("prefill_request_id", int64_t{-1});
+        RemotePrefillResult result;
+        bool ready = false;
+        std::string error;
+        if (!prefill_worker.poll(prefill_request_id, &result, &ready, &error)) {
+          response = make_error_response(error);
+        } else {
+          response = make_ok_response();
+          response["ready"] = ready;
+          if (ready) {
+            response["type"] = zmq_rpc_message_type_name(ZmqRpcMessageType::kPrefillResult);
+            response["prefill_result"] = remote_prefill_result_to_json(result);
+          }
+        }
+      } else if (type == ZmqRpcMessageType::kCancel) {
+        prefill_worker.cancel(request.at("prefill_request_id").get<int64_t>());
+        response = make_ok_response();
+      } else if (type == ZmqRpcMessageType::kKvTransfer) {
+        base::nvtx::ScopedRange range("prefill_core_handle_kv_transfer", base::nvtx::kColorMemcpy);
+        if (request.value("backend", std::string()) != "nccl") {
+          response = make_error_response("unsupported_kv_transfer_backend");
+        } else {
+          KVBlockManifest manifest = kv_block_manifest_from_json(request.at("manifest"));
+          const std::string nccl_unique_id =
+              hex_json_to_binary(request.value("nccl_unique_id", std::string()));
+          status = prefill_worker.send_kv(manifest, nccl_unique_id);
+          if (status) {
+            response = make_ok_response();
+            response["type"] = zmq_rpc_message_type_name(ZmqRpcMessageType::kKvTransferResult);
+          } else {
+            response = make_error_response(status.get_err_msg());
+          }
+        }
+      } else if (type == ZmqRpcMessageType::kKvRelease) {
+        base::nvtx::ScopedRange range("prefill_core_handle_kv_release", base::nvtx::kColorProcess);
+        HandoffId handoff_id;
+        handoff_id.value = request.value("handoff_id", uint64_t{0});
+        prefill_worker.release(handoff_id);
+        response = make_ok_response();
+      } else {
+        response = make_error_response("unknown_message_type_for_prefill_core");
       }
-    } else if (type == ZmqRpcMessageType::kKvRelease) {
-      base::nvtx::ScopedRange range("prefill_core_handle_kv_release",
-                                    base::nvtx::kColorProcess);
-      HandoffId handoff_id;
-      handoff_id.value = request.value("handoff_id", uint64_t{0});
-      prefill_worker.release(handoff_id);
-      response = make_ok_response();
-    } else {
-      response = make_error_response("unknown_message_type_for_prefill_core");
+    } catch (const std::exception& error) {
+      response = make_error_response(std::string("invalid_prefill_request: ") + error.what());
     }
 
     status = socket->send_json(response);
@@ -639,12 +683,15 @@ base::Status run_zmq_prefill_engine_core_server(ServingRuntime* app,
       LOG(ERROR) << status.get_err_msg();
     }
   }
+  prefill_worker.stop();
+  return cudaDeviceSynchronize() == cudaSuccess
+             ? base::error::Success()
+             : base::error::InternalError("prefill shutdown sync failed");
 }
 
 }  // namespace
 
-base::Status run_zmq_engine_core_server(ServingRuntime* app,
-                                        const BenchConfig& config) {
+base::Status run_zmq_engine_core_server(ServingRuntime* app, const BenchConfig& config) {
   CHECK_NE(app, nullptr);
   if (config.ipc.online_process_role == kOnlineProcessRoleZmqPrefillEngineCore) {
     return run_zmq_prefill_engine_core_server(app, config);

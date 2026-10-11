@@ -1,0 +1,46 @@
+{
+  "backend": "mps_process",
+  "events": [
+    {
+      "event": "shutdown_phase",
+      "monotonic_ns": 4379314931507457,
+      "phase": "api"
+    },
+    {
+      "event": "shutdown_phase",
+      "monotonic_ns": 4379314931511002,
+      "phase": "workers"
+    },
+    {
+      "event": "shutdown_phase",
+      "monotonic_ns": 4379314931513483,
+      "phase": "auxiliary"
+    },
+    {
+      "event": "shutdown_phase",
+      "monotonic_ns": 4379314931516603,
+      "phase": "owner"
+    },
+    {
+      "event": "arena_before_exit",
+      "monotonic_ns": 4379314933430380,
+      "free_bytes": 33554432,
+      "arena_bytes": 33554432,
+      "lease_count": 0
+    },
+    {
+      "event": "owner_stopped",
+      "monotonic_ns": 4379315053142414,
+      "pid": 8650,
+      "arena_freed": true
+    },
+    {
+      "event": "shutdown_phase",
+      "monotonic_ns": 4379315053173942,
+      "phase": "complete"
+    }
+  ],
+  "graceful": true,
+  "mps_recovery_required": false,
+  "owned_mps_daemon_stopped": true
+}

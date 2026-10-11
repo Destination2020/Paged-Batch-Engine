@@ -1,0 +1,32 @@
+{
+  "models": [
+    {
+      "id": "qwen25-0.5b",
+      "endpoint": "ipc:///workspace/pbe-validation/two-models-sized/domain/qwen25-0.5b.sock",
+      "worker_pid": 12443,
+      "visible_sm_count": 84,
+      "max_batched_tokens_effective": 128,
+      "mps_active_thread_percentage": 50,
+      "mps_device_limit_mib": 4608,
+      "private_allocator_reserved_bytes": 1337288324,
+      "private_gpu_delta_bytes": 1764425728,
+      "private_gpu_delta_is_estimate": true
+    },
+    {
+      "id": "qwen25-1.5b",
+      "endpoint": "ipc:///workspace/pbe-validation/two-models-sized/domain/qwen25-1.5b.sock",
+      "worker_pid": 12466,
+      "visible_sm_count": 84,
+      "max_batched_tokens_effective": 128,
+      "mps_active_thread_percentage": 50,
+      "mps_device_limit_mib": 6656,
+      "private_allocator_reserved_bytes": 3661374340,
+      "private_gpu_delta_bytes": 4207673344,
+      "private_gpu_delta_is_estimate": true
+    }
+  ],
+  "arena_owner_pid": 12420,
+  "backend": "mps_process",
+  "mps_server": 12424,
+  "default_model": "qwen25-0.5b"
+}

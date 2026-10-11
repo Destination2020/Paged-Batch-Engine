@@ -1,0 +1,79 @@
+{
+  "backend": "mps_process",
+  "events": [
+    {
+      "event": "shutdown_phase",
+      "monotonic_ns": 4382707841924670,
+      "phase": "api"
+    },
+    {
+      "event": "api_drain_requested",
+      "monotonic_ns": 4382707841930867,
+      "pid": 27901
+    },
+    {
+      "event": "api_drained",
+      "monotonic_ns": 4382707873659219,
+      "pid": 27901
+    },
+    {
+      "event": "shutdown_phase",
+      "monotonic_ns": 4382707873683211,
+      "phase": "workers"
+    },
+    {
+      "event": "worker_stopped",
+      "monotonic_ns": 4382708141230060,
+      "name": "decode",
+      "pid": 27876,
+      "mode": "drain",
+      "gpu_synchronized": true
+    },
+    {
+      "event": "worker_stopped",
+      "monotonic_ns": 4382708358686484,
+      "name": "prefill-short",
+      "pid": 27838,
+      "mode": "drain",
+      "gpu_synchronized": true
+    },
+    {
+      "event": "worker_stopped",
+      "monotonic_ns": 4382708525640139,
+      "name": "prefill-long",
+      "pid": 27857,
+      "mode": "drain",
+      "gpu_synchronized": true
+    },
+    {
+      "event": "shutdown_phase",
+      "monotonic_ns": 4382708525675444,
+      "phase": "auxiliary"
+    },
+    {
+      "event": "shutdown_phase",
+      "monotonic_ns": 4382708525705339,
+      "phase": "owner"
+    },
+    {
+      "event": "arena_before_exit",
+      "monotonic_ns": 4382708529769832,
+      "free_bytes": 2214592512,
+      "arena_bytes": 2214592512,
+      "lease_count": 0
+    },
+    {
+      "event": "owner_stopped",
+      "monotonic_ns": 4382708649061669,
+      "pid": 27823,
+      "arena_freed": true
+    },
+    {
+      "event": "shutdown_phase",
+      "monotonic_ns": 4382708649106479,
+      "phase": "complete"
+    }
+  ],
+  "graceful": true,
+  "mps_recovery_required": false
+}

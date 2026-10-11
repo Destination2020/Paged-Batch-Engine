@@ -1,0 +1,89 @@
+{
+  "base_commit": "a8cc25549617b0376e844c19c73fdc8c8ff17454",
+  "local_patches": [
+    "RE2 pkg-config fallback",
+    "JSON items() iteration compatibility"
+  ],
+  "gpu": "NVIDIA GeForce RTX 5090",
+  "driver": "610.57.04",
+  "cuda_compiler": "12.8.61",
+  "cuda_architecture": 120,
+  "remote_repository": "/workspace/Paged-Batch-Engine",
+  "remote_evidence": "/workspace/pbe-validation",
+  "dependencies": {
+    "sentencepiece": "0.2.0",
+    "abseil": "20240722.0",
+    "nlohmann_json": "3.10.5",
+    "gtest": "1.11.0"
+  },
+  "ctest": {
+    "groups_passed": 8,
+    "groups_failed": 0,
+    "main_cpp_passed": 210,
+    "main_cpp_skipped": 12,
+    "legacy_cpp_passed": 43,
+    "additional_model_checkpoint_test_passed": 1
+  },
+  "mps_probe": {
+    "same_server_registration": true,
+    "ipc_memory_event": true,
+    "kv_payload": true,
+    "deferred_retirement": true,
+    "arena_fully_reclaimed": true,
+    "graceful_shutdown": true
+  },
+  "limitations": {
+    "nsight_kernel_concurrency": "Not verified. Profiling caused IPC probe timeout; generated report contains no CUDA kernel data.",
+    "nccl": "Built OFF; only one GPU is available."
+  },
+  "real_two_models": {
+    "backend": "mps_process",
+    "model_ids": [
+      "qwen25-0.5b",
+      "qwen25-1.5b"
+    ],
+    "different_weight_paths": true,
+    "baseline_matches": true,
+    "utf8_streaming": true,
+    "cancellation_route": true,
+    "cancelled_request_records_reclaimed": true,
+    "malformed_rpc_rejected": true,
+    "unknown_model_rejected": true,
+    "arena_fully_reclaimed": true,
+    "alternating_requests": 10,
+    "arena_bytes": 536870912
+  },
+  "resource_adjustment": {
+    "initial_private_mib": [
+      1536,
+      3584
+    ],
+    "initial_result": "First MPS worker failed with out of memory; full domain stopped.",
+    "validated_private_mib": [
+      4096,
+      6144
+    ],
+    "mps_device_limits_mib": [
+      4608,
+      6656
+    ],
+    "note": "Budgets include headroom and are not measured minimums. CUDA context and shared-arena mappings also count towards MPS limits."
+  },
+  "lifecycle": {
+    "drain": {
+      "all_gpu_processes_exited": true,
+      "graceful": true,
+      "mps_recovery_required": false
+    },
+    "cancel": {
+      "all_gpu_processes_exited": true,
+      "graceful": false,
+      "mps_recovery_required": true
+    },
+    "owner-failure": {
+      "all_gpu_processes_exited": true,
+      "graceful": false,
+      "mps_recovery_required": true
+    }
+  }
+}

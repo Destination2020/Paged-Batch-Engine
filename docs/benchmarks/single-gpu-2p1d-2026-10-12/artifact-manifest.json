@@ -1,0 +1,70 @@
+{
+  "published": [
+    {
+      "path": "docs/benchmarks/single-gpu-2p1d-2026-10-12/README.md",
+      "bytes": 4303,
+      "sha256": "68e3c744f53f0b72b37217d4a042910fce1fe71f2546ddef21c84d31ad9e3766"
+    },
+    {
+      "path": "docs/benchmarks/single-gpu-2p1d-2026-10-12/request-timeline.svg",
+      "bytes": 71268,
+      "sha256": "006e6ce0cfffe5d0ed95b77081eb5290ff4b0a557682014364419f145c559988"
+    },
+    {
+      "path": "docs/benchmarks/single-gpu-2p1d-2026-10-12/rpc-validation.json",
+      "bytes": 735,
+      "sha256": "cdd26f02d7157675e4eedffdc8f476645814f8247f3d56585c156eb2809fae68"
+    },
+    {
+      "path": "docs/benchmarks/single-gpu-2p1d-2026-10-12/shutdown.json",
+      "bytes": 1740,
+      "sha256": "5445d89e4d7878b0a79e2bc0a03bc3e060cf6e434614c7ef00e94c3a13735c2b"
+    },
+    {
+      "path": "docs/benchmarks/single-gpu-2p1d-2026-10-12/source-hashes.json",
+      "bytes": 1483,
+      "sha256": "80511a1485a2d0bb20c3acbe39d8771199b27ee9af88dfc798af306cf8cd2d86"
+    },
+    {
+      "path": "docs/benchmarks/single-gpu-2p1d-2026-10-12/validation.json",
+      "bytes": 13266,
+      "sha256": "c7aea094bbbbfee69e2a254ec851f972c3c239d83e45ce83c8038fe271b04416"
+    },
+    {
+      "path": "docs/benchmarks/single-gpu-2p1d-2026-10-12/verification.json",
+      "bytes": 982,
+      "sha256": "0dbf197b2fd6067212d5a768476751e5d5e091f2da13b43c5f233e6d13ea46ce"
+    }
+  ],
+  "excluded_raw": [
+    {
+      "path": "docs/data_flow_evidence/single-gpu-2p1d-2026-10-12/check_rpc.py",
+      "bytes": 1275,
+      "sha256": "e9434bc844f6840c0bb0decc5d5e2ff097df263fa03a75d3eb192431d1eca94b"
+    },
+    {
+      "path": "docs/data_flow_evidence/single-gpu-2p1d-2026-10-12/ctest.log",
+      "bytes": 1685,
+      "sha256": "666899591d24263611f831e9bece43e813b9690d666c403a40b67d4c6415442c"
+    },
+    {
+      "path": "docs/data_flow_evidence/single-gpu-2p1d-2026-10-12/raw.tar.gz",
+      "bytes": 51308,
+      "sha256": "43b26a689f769c21eacb608d5d8042a9c9923ab4cd9e7834186f25e5cc429f79"
+    },
+    {
+      "path": "docs/data_flow_evidence/single-gpu-2p1d-2026-10-12/shutdown.json",
+      "bytes": 1740,
+      "sha256": "5445d89e4d7878b0a79e2bc0a03bc3e060cf6e434614c7ef00e94c3a13735c2b"
+    },
+    {
+      "path": "docs/data_flow_evidence/single-gpu-2p1d-2026-10-12/validation.json",
+      "bytes": 13878,
+      "sha256": "78f2554c9b89c159a28e5f4923bde6d5f092d153621868a74ff7cc0a44199407"
+    }
+  ],
+  "remote_binaries": {
+    "build-mps/demo/serving_qwen": "5440592e9a32bd366b4322f80ad74fc1ac5670058c0e4164fb12ed8f7b95fb6c",
+    "build-mps/lib/libllama.so": "b69823a5f5391d96056e0ff559b8941aa369402f02a07a3c7b6a9aaf0d146a60"
+  }
+}

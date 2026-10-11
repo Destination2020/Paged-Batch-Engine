@@ -1,0 +1,32 @@
+{
+  "mps_server": 27827,
+  "client_list": "27823\n27876\n27857\n27838\n",
+  "prefill_rpc_checks": [
+    {
+      "role": "prefill-short",
+      "malformed_json_response": {
+        "error": "invalid_request_json",
+        "ok": false
+      },
+      "next_health": {
+        "model_id": "prefill-short",
+        "ok": true,
+        "private_allocator_reserved_bytes": 3661374340,
+        "status": "ok"
+      }
+    },
+    {
+      "role": "prefill-long",
+      "malformed_json_response": {
+        "error": "invalid_request_json",
+        "ok": false
+      },
+      "next_health": {
+        "model_id": "prefill-long",
+        "ok": true,
+        "private_allocator_reserved_bytes": 3661417508,
+        "status": "ok"
+      }
+    }
+  ]
+}

@@ -180,6 +180,13 @@ size_t BlockAllocator::shared_leased_bytes() const {
   return 0;
 #endif
 }
+uint64_t BlockAllocator::shared_arena_epoch() const {
+#ifndef KUIPER_CPU_ONLY
+  return shared_group_ ? shared_group_->arena_epoch() : 0;
+#else
+  return 0;
+#endif
+}
 size_t BlockAllocator::shared_arena_bytes() const {
 #ifndef KUIPER_CPU_ONLY
   return shared_group_ ? shared_group_->arena_bytes() : 0;

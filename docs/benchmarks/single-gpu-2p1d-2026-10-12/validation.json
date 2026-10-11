@@ -1,0 +1,478 @@
+{
+  "backend": "mps_process",
+  "model": "qwen25-1.5b",
+  "topology": "2P1D",
+  "private_baseline_matches": true,
+  "outputs": [
+    "中国的首都北京。",
+    "Certainly! Here's a simple Python function to add two numbers:\n\n```python\ndef add_numbers(a, b):\n   ",
+    "会议讨论了共享显存和并发推理的议题。"
+  ],
+  "registry": {
+    "topology": "2P1D",
+    "backend": "mps_process",
+    "workers": [
+      {
+        "role": "prefill-short",
+        "pid": 27838,
+        "endpoint": "ipc:///workspace/pbe-validation/split-pd-final/domain/prefill-short.sock",
+        "mps_active_thread_percentage": 25,
+        "health": {
+          "model_id": "prefill-short",
+          "ok": true,
+          "private_allocator_reserved_bytes": 3661374340,
+          "status": "ok"
+        }
+      },
+      {
+        "role": "prefill-long",
+        "pid": 27857,
+        "endpoint": "ipc:///workspace/pbe-validation/split-pd-final/domain/prefill-long.sock",
+        "mps_active_thread_percentage": 25,
+        "health": {
+          "model_id": "prefill-long",
+          "ok": true,
+          "private_allocator_reserved_bytes": 3661374340,
+          "status": "ok"
+        }
+      },
+      {
+        "role": "decode",
+        "pid": 27876,
+        "endpoint": "ipc:///workspace/pbe-validation/split-pd-final/domain/decode.sock",
+        "mps_active_thread_percentage": 50,
+        "health": {
+          "max_batched_tokens_effective": 128,
+          "model_id": "qwen25-1.5b",
+          "ok": true,
+          "private_allocator_reserved_bytes": 3661374084,
+          "status": "ok",
+          "visible_sm_count": 84
+        }
+      }
+    ],
+    "mps_server": 27827,
+    "arena_owner_pid": 27823,
+    "arena_epoch": 4382442310301878,
+    "arena_bytes": 2214592512,
+    "model_id": "qwen25-1.5b"
+  },
+  "after_correctness": {
+    "bytes": 2214592512,
+    "epoch": 4382442310301878,
+    "free_bytes": 2214592512,
+    "gpu_free_bytes": 18528862208,
+    "gpu_total_bytes": 33711521792,
+    "gpu_uuid": "c34a78e974707560d633a093794b3fe6",
+    "lease_count": 0,
+    "ok": true
+  },
+  "mixed_load": {
+    "short": [
+      {
+        "text": "中国的首都北京。",
+        "start_s": 4382457.927698161,
+        "end_s": 4382458.011381198,
+        "first_text_ms": 25.153113529086113,
+        "total_ms": 83.68303626775742,
+        "requested_output_tokens": 24
+      },
+      {
+        "text": "Certainly! Here's a simple Python function to add two numbers:\n\n```python\ndef add_numbers(a, b):\n   ",
+        "start_s": 4382457.928132881,
+        "end_s": 4382458.303501482,
+        "first_text_ms": 70.26769872754812,
+        "total_ms": 375.36860071122646,
+        "requested_output_tokens": 24
+      },
+      {
+        "text": "中国的首都北京。",
+        "start_s": 4382457.928719351,
+        "end_s": 4382458.093295612,
+        "first_text_ms": 114.59633056074381,
+        "total_ms": 164.5762613043189,
+        "requested_output_tokens": 24
+      }
+    ],
+    "extreme": [
+      {
+        "start_s": 4382449.743505897,
+        "end_s": 4382705.039629935,
+        "first_text_ms": 24991.36482272297,
+        "total_ms": 255296.1240382865,
+        "requested_output_tokens": 8192
+      },
+      {
+        "start_s": 4382449.744828605,
+        "end_s": 4382680.903051052,
+        "first_text_ms": 8110.390513204038,
+        "total_ms": 231158.22244714946,
+        "requested_output_tokens": 8192
+      },
+      {
+        "start_s": 4382449.746225004,
+        "end_s": 4382634.532189841,
+        "first_text_ms": 39.91132229566574,
+        "total_ms": 184785.9648372978,
+        "requested_output_tokens": 8192
+      }
+    ],
+    "short_completed_before_extreme": true
+  },
+  "after_mixed_load": {
+    "bytes": 2214592512,
+    "epoch": 4382442310301878,
+    "free_bytes": 2214592512,
+    "gpu_free_bytes": 18528862208,
+    "gpu_total_bytes": 33711521792,
+    "gpu_uuid": "c34a78e974707560d633a093794b3fe6",
+    "lease_count": 0,
+    "ok": true
+  },
+  "mixed_metrics": {
+    "engine": {
+      "active_requests": 0,
+      "completed_requests": 9,
+      "failed_requests": 0,
+      "generated_tokens": 24652,
+      "mode": "split-prefill-ipc",
+      "queued_requests": 0
+    },
+    "engine_pool": {
+      "engine_count": 3,
+      "type": "split-prefill-ipc"
+    },
+    "kv_memory": {
+      "global_arena_bytes": 2214592512,
+      "model_capacity_bytes": 1476263936,
+      "model_leased_chunk_bytes": 0,
+      "shared_arena": true
+    },
+    "model_id": "qwen25-1.5b",
+    "pd": {
+      "decode_device_id": 0,
+      "mode": "split-prefill-ipc",
+      "prefill_device_id": 0,
+      "transfer_backend": "shared-arena-device-copy"
+    },
+    "process": {
+      "role": "zmq-decode-engine-core",
+      "zmq_endpoint": "ipc:///workspace/pbe-validation/split-pd-final/domain/decode.sock"
+    },
+    "remote_requests": 0,
+    "split_pd": {
+      "decode_steps": 11002,
+      "kv_device_copy_bytes": 411041792,
+      "kv_host_copy_bytes": 0,
+      "long": {
+        "active": 0,
+        "cancelled": 0,
+        "completed": 3,
+        "generated_tokens": 16397,
+        "prefill_dispatched": 3,
+        "reserved_tokens": 0
+      },
+      "long_prefill_endpoint": "ipc:///workspace/pbe-validation/split-pd-final/domain/prefill-long.sock",
+      "long_queued": 0,
+      "max_decode_batch": 4,
+      "recent_requests": [
+        {
+          "failed": false,
+          "generated_tokens": 5,
+          "lane": "short",
+          "prompt_tokens": 36,
+          "reason": "",
+          "request_id": 0,
+          "requested_output_tokens": 24
+        },
+        {
+          "failed": false,
+          "generated_tokens": 24,
+          "lane": "short",
+          "prompt_tokens": 39,
+          "reason": "",
+          "request_id": 1,
+          "requested_output_tokens": 24
+        },
+        {
+          "failed": false,
+          "generated_tokens": 13,
+          "lane": "long",
+          "prompt_tokens": 1954,
+          "reason": "",
+          "request_id": 2,
+          "requested_output_tokens": 24
+        },
+        {
+          "failed": false,
+          "generated_tokens": 5,
+          "lane": "short",
+          "prompt_tokens": 36,
+          "reason": "",
+          "request_id": 6,
+          "requested_output_tokens": 24
+        },
+        {
+          "failed": false,
+          "generated_tokens": 5,
+          "lane": "short",
+          "prompt_tokens": 36,
+          "reason": "",
+          "request_id": 8,
+          "requested_output_tokens": 24
+        },
+        {
+          "failed": false,
+          "generated_tokens": 24,
+          "lane": "short",
+          "prompt_tokens": 39,
+          "reason": "",
+          "request_id": 7,
+          "requested_output_tokens": 24
+        },
+        {
+          "failed": false,
+          "generated_tokens": 8192,
+          "lane": "short",
+          "prompt_tokens": 41,
+          "reason": "",
+          "request_id": 4,
+          "requested_output_tokens": 8192
+        },
+        {
+          "failed": false,
+          "generated_tokens": 8192,
+          "lane": "long",
+          "prompt_tokens": 5040,
+          "reason": "",
+          "request_id": 3,
+          "requested_output_tokens": 8192
+        },
+        {
+          "failed": false,
+          "generated_tokens": 8192,
+          "lane": "long",
+          "prompt_tokens": 7040,
+          "reason": "",
+          "request_id": 5,
+          "requested_output_tokens": 8192
+        }
+      ],
+      "short": {
+        "active": 0,
+        "cancelled": 0,
+        "completed": 6,
+        "generated_tokens": 8255,
+        "prefill_dispatched": 6,
+        "reserved_tokens": 0
+      },
+      "short_prefill_endpoint": "ipc:///workspace/pbe-validation/split-pd-final/domain/prefill-short.sock",
+      "short_prompt_tokens": 512,
+      "short_queued": 0
+    }
+  },
+  "after_cancel": {
+    "bytes": 2214592512,
+    "epoch": 4382442310301878,
+    "free_bytes": 2214592512,
+    "gpu_free_bytes": 18528862208,
+    "gpu_total_bytes": 33711521792,
+    "gpu_uuid": "c34a78e974707560d633a093794b3fe6",
+    "lease_count": 0,
+    "ok": true
+  },
+  "queue_and_cancel": {
+    "long_accepted": 33,
+    "long_rejected": 5,
+    "short_completed_while_long_queue_full": true,
+    "short_first_text_ms": 22.453056648373604
+  },
+  "after_decode_cancel": {
+    "bytes": 2214592512,
+    "epoch": 4382442310301878,
+    "free_bytes": 2214592512,
+    "gpu_free_bytes": 18528862208,
+    "gpu_total_bytes": 33711521792,
+    "gpu_uuid": "c34a78e974707560d633a093794b3fe6",
+    "lease_count": 0,
+    "ok": true
+  },
+  "final_metrics": {
+    "engine": {
+      "active_requests": 0,
+      "completed_requests": 12,
+      "failed_requests": 0,
+      "generated_tokens": 24677,
+      "mode": "split-prefill-ipc",
+      "queued_requests": 0
+    },
+    "engine_pool": {
+      "engine_count": 3,
+      "type": "split-prefill-ipc"
+    },
+    "kv_memory": {
+      "global_arena_bytes": 2214592512,
+      "model_capacity_bytes": 1476263936,
+      "model_leased_chunk_bytes": 0,
+      "shared_arena": true
+    },
+    "model_id": "qwen25-1.5b",
+    "pd": {
+      "decode_device_id": 0,
+      "mode": "split-prefill-ipc",
+      "prefill_device_id": 0,
+      "transfer_backend": "shared-arena-device-copy"
+    },
+    "process": {
+      "role": "zmq-decode-engine-core",
+      "zmq_endpoint": "ipc:///workspace/pbe-validation/split-pd-final/domain/decode.sock"
+    },
+    "remote_requests": 0,
+    "split_pd": {
+      "decode_steps": 11025,
+      "kv_device_copy_bytes": 468844544,
+      "kv_host_copy_bytes": 0,
+      "long": {
+        "active": 0,
+        "cancelled": 34,
+        "completed": 3,
+        "generated_tokens": 16417,
+        "prefill_dispatched": 5,
+        "reserved_tokens": 0
+      },
+      "long_prefill_endpoint": "ipc:///workspace/pbe-validation/split-pd-final/domain/prefill-long.sock",
+      "long_queued": 0,
+      "max_decode_batch": 4,
+      "recent_requests": [
+        {
+          "failed": false,
+          "generated_tokens": 5,
+          "lane": "short",
+          "prompt_tokens": 36,
+          "reason": "",
+          "request_id": 0,
+          "requested_output_tokens": 24
+        },
+        {
+          "failed": false,
+          "generated_tokens": 24,
+          "lane": "short",
+          "prompt_tokens": 39,
+          "reason": "",
+          "request_id": 1,
+          "requested_output_tokens": 24
+        },
+        {
+          "failed": false,
+          "generated_tokens": 13,
+          "lane": "long",
+          "prompt_tokens": 1954,
+          "reason": "",
+          "request_id": 2,
+          "requested_output_tokens": 24
+        },
+        {
+          "failed": false,
+          "generated_tokens": 5,
+          "lane": "short",
+          "prompt_tokens": 36,
+          "reason": "",
+          "request_id": 6,
+          "requested_output_tokens": 24
+        },
+        {
+          "failed": false,
+          "generated_tokens": 5,
+          "lane": "short",
+          "prompt_tokens": 36,
+          "reason": "",
+          "request_id": 8,
+          "requested_output_tokens": 24
+        },
+        {
+          "failed": false,
+          "generated_tokens": 24,
+          "lane": "short",
+          "prompt_tokens": 39,
+          "reason": "",
+          "request_id": 7,
+          "requested_output_tokens": 24
+        },
+        {
+          "failed": false,
+          "generated_tokens": 8192,
+          "lane": "short",
+          "prompt_tokens": 41,
+          "reason": "",
+          "request_id": 4,
+          "requested_output_tokens": 8192
+        },
+        {
+          "failed": false,
+          "generated_tokens": 8192,
+          "lane": "long",
+          "prompt_tokens": 5040,
+          "reason": "",
+          "request_id": 3,
+          "requested_output_tokens": 8192
+        },
+        {
+          "failed": false,
+          "generated_tokens": 8192,
+          "lane": "long",
+          "prompt_tokens": 7040,
+          "reason": "",
+          "request_id": 5,
+          "requested_output_tokens": 8192
+        },
+        {
+          "failed": false,
+          "generated_tokens": 5,
+          "lane": "short",
+          "prompt_tokens": 36,
+          "reason": "",
+          "request_id": 42,
+          "requested_output_tokens": 24
+        },
+        {
+          "failed": false,
+          "generated_tokens": 0,
+          "lane": "long",
+          "prompt_tokens": 1954,
+          "reason": "cancelled",
+          "request_id": 9,
+          "requested_output_tokens": 8192
+        },
+        {
+          "failed": false,
+          "generated_tokens": 20,
+          "lane": "long",
+          "prompt_tokens": 1954,
+          "reason": "cancelled",
+          "request_id": 43,
+          "requested_output_tokens": 8192
+        }
+      ],
+      "short": {
+        "active": 0,
+        "cancelled": 0,
+        "completed": 7,
+        "generated_tokens": 8260,
+        "prefill_dispatched": 7,
+        "reserved_tokens": 0
+      },
+      "short_prefill_endpoint": "ipc:///workspace/pbe-validation/split-pd-final/domain/prefill-short.sock",
+      "short_prompt_tokens": 512,
+      "short_queued": 0
+    }
+  },
+  "decode_cancel": {
+    "failed": false,
+    "generated_tokens": 20,
+    "lane": "long",
+    "prompt_tokens": 1954,
+    "reason": "cancelled",
+    "request_id": 43,
+    "requested_output_tokens": 8192
+  }
+}

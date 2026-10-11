@@ -168,6 +168,7 @@ class BlockAllocator {
   bool uses_shared_arena() const { return shared_group_ != nullptr; }
   size_t shared_leased_bytes() const;
   size_t shared_arena_bytes() const;
+  uint64_t shared_arena_epoch() const;
 
   // Get the underlying pool tensors (for passing to kernels)
   tensor::Tensor& key_pool() { return key_pool_; }

@@ -1,0 +1,14 @@
+{
+  "2": {
+    "exit_code": 1,
+    "stdout": "Using log directory: /tmp/pbe-mps615-protocol2-9n43usa0/log[2026-10-12 00:45:56.486 Control ERROR 15185] Failed to initialize CUDA: 801\n",
+    "stderr": "",
+    "logs": {}
+  },
+  "3": {
+    "exit_code": 1,
+    "stdout": "Starting MPS V3 Control Daemon\n[2026-10-12 00:45:56.492 Control INFO 15187] Starting MPS V3 control daemon using socket /tmp/pbe-mps615-protocol3-1juwgtbw/pipe/control\n[2026-10-12 00:45:56.492 Control INFO 15187] CUDA MPS Control binary version: 13040\n[2026-10-12 00:45:56.492 Control INFO 15187] To connect CUDA applications to this daemon, set CUDA_MPS_PIPE_DIRECTORY=/tmp/pbe-mps615-protocol3-1juwgtbw/pipe\n[2026-10-12 00:45:56.515 Control ERROR 15187] Failed to initialize device query: 801\n",
+    "stderr": "",
+    "logs": {}
+  }
+}

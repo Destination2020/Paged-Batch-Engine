@@ -224,7 +224,9 @@ std::shared_ptr<OnlineRequestHandle> OnlineServingEngine::submit(
       *error = "server_stopping";
       return nullptr;
     }
-    if (pending_submissions_ >= config_.max_queue_size) {
+    const bool split = config_.pd.pd_mode == "split-prefill-ipc";
+    const int lane = prompt_tokens.size() <= static_cast<size_t>(config_.pd.short_prompt_tokens) ? 0 : 1;
+    if ((split ? static_cast<int>(split_submissions_[lane].size()) : pending_submissions_) >= config_.max_queue_size) {
       *error = "queue_full";
       return nullptr;
     }
@@ -237,7 +239,8 @@ std::shared_ptr<OnlineRequestHandle> OnlineServingEngine::submit(
     if (is_pd_mode(config_.pd.pd_mode)) {
       handle->set_request_id(next_pd_request_id_++);
     }
-    submissions_.push_back(std::move(submission));
+    if (split) split_submissions_[lane].push_back(std::move(submission));
+    else submissions_.push_back(std::move(submission));
     ++pending_submissions_;
   }
   cv_.notify_all();
@@ -263,10 +266,17 @@ nlohmann::json OnlineServingEngine::metrics_json() const {
     body["engine"]["failed_requests"] = pd_failed_requests_;
     body["engine"]["generated_tokens"] = pd_generated_tokens_;
     body["pd"]["mode"] = config_.pd.pd_mode;
+    if (config_.pd.pd_mode == "split-prefill-ipc") {
+      body["split_pd"] = split_pd_metrics_;
+      body["split_pd"]["short_queued"] = split_submissions_[0].size();
+      body["split_pd"]["long_queued"] = split_submissions_[1].size();
+      body["split_pd"]["short_prefill_endpoint"] = config_.pd.short_prefill_endpoint;
+      body["split_pd"]["long_prefill_endpoint"] = config_.pd.long_prefill_endpoint;
+    }
     body["pd"]["transfer_backend"] = pd_transfer_backend(config_.pd.pd_mode);
     body["pd"]["prefill_device_id"] = config_.pd.prefill_device_id;
     body["pd"]["decode_device_id"] = config_.pd.decode_device_id;
-    if (is_remote_pd_mode(config_.pd.pd_mode)) {
+    if (is_remote_pd_mode(config_.pd.pd_mode) && config_.pd.pd_mode != "split-prefill-ipc") {
       body["pd"]["prefill_zmq_endpoint"] = config_.ipc.prefill_zmq_endpoint;
     }
     return body;
@@ -325,6 +335,10 @@ void OnlineServingEngine::run_loop() {
 
 void OnlineServingEngine::run_pd_loop() {
   set_online_worker_device_or_die(config_);
+  if (config_.pd.pd_mode == "split-prefill-ipc") {
+    run_split_pd_loop();
+    return;
+  }
   if (is_remote_pd_mode(config_.pd.pd_mode) &&
       (config_.pd.pd_mode == "remote-zmq-nccl" ||
        config_.pd.pd_mode == "remote-zmq-nccl-layer")) {

@@ -22,6 +22,7 @@ class SharedKVArenaClient {
   void release(const ChunkLease& lease); // caller has completed every GPU access
   void* data() const;
   uint64_t bytes() const;
+  uint64_t epoch() const;
   uint64_t hard_limit() const;
   // Opt-in diagnostics; disabled in serving to avoid clock reads on the hot path.
   void enable_rpc_timing();
@@ -45,6 +46,7 @@ class SharedKVPageGroup {
   int capacity() const;
   uint64_t leased_bytes() const;
   uint64_t arena_bytes() const;
+  uint64_t arena_epoch() const;
   int addressable_blocks() const;
   void* key_base(int layer) const;
   void* value_base(int layer) const;

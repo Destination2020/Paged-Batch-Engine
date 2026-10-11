@@ -1,0 +1,53 @@
+{
+  "ctest_passed": 10,
+  "ctest_failed": 0,
+  "groups": [
+    {
+      "name": "pbe.http_protocol",
+      "seconds": 0.04
+    },
+    {
+      "name": "pbe.bundle_fixture",
+      "seconds": 0.06
+    },
+    {
+      "name": "pbe.unit",
+      "seconds": 1.47
+    },
+    {
+      "name": "pbe.split_pd_config",
+      "seconds": 0.12
+    },
+    {
+      "name": "pbe.mps_evidence_analysis",
+      "seconds": 0.11
+    },
+    {
+      "name": "pbe.data_client_transport",
+      "seconds": 0.22
+    },
+    {
+      "name": "pbe.http_integration",
+      "seconds": 1.45
+    },
+    {
+      "name": "pbe.deployment",
+      "seconds": 0.14
+    },
+    {
+      "name": "pbe.shared_kv_reuse",
+      "seconds": 2.08
+    },
+    {
+      "name": "pbe.legacy",
+      "seconds": 1.01
+    }
+  ],
+  "model": "Qwen2.5-1.5B-Instruct BF16",
+  "gpu": "RTX 5090",
+  "driver": "610.57.04",
+  "build_cuda": "12.8",
+  "nccl_enabled": false,
+  "runtime_sources_match_local_snapshot": true,
+  "shutdown_graceful": true
+}

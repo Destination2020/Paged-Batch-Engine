@@ -1,0 +1,11 @@
+{
+  "windows_driver": "616.92",
+  "wsl": "3.0.1.0",
+  "kernel": "6.18.40.1-microsoft-standard-WSL2",
+  "cuda_driver_api": 13040,
+  "driver_library": "/usr/lib/wsl/drivers/nvltsi.inf_amd64_f0bf3af178442601/libcuda.so.1.1",
+  "driver_library_sha256": "eb503fe74063556aa96bde5a11fdce6c288e84b1f8791a8e8b50fe6e5b641205",
+  "mps_entry_elf_offset": "0x438800",
+  "mps_entry_result": 801,
+  "error_name": "CUDA_ERROR_NOT_SUPPORTED"
+}

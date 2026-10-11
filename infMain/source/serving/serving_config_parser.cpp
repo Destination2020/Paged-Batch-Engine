@@ -184,6 +184,11 @@ BenchConfig parse_bench_config(int argc, char* argv[], int prompt_start_index) {
         read_int("--shared-kv-hard-limit-mib=", config.kv.shared_kv_hard_limit_mib) ||
         read_int("--shared-kv-chunk-mib=", config.kv.shared_kv_chunk_mib) ||
         read_int("--max-output-tokens=", config.max_output_tokens) ||
+        read_int("--pd-short-prompt-tokens=", config.pd.short_prompt_tokens) ||
+        read_int("--pd-short-decode-slots=", config.pd.short_decode_slots) ||
+        read_int("--pd-long-decode-slots=", config.pd.long_decode_slots) ||
+        read_int("--pd-short-kv-tokens=", config.pd.short_kv_tokens) ||
+        read_int("--pd-long-kv-tokens=", config.pd.long_kv_tokens) ||
         read_int("--max-active-requests=", config.max_active_requests) ||
         read_int("--device-id=", config.device_id) ||
         read_int("--prefill-device-id=", config.pd.prefill_device_id) ||
@@ -197,6 +202,8 @@ BenchConfig parse_bench_config(int argc, char* argv[], int prompt_start_index) {
       return true;
     };
     if (read_string("--model-id=", config.model_id) ||
+        read_string("--pd-short-prefill-endpoint=", config.pd.short_prefill_endpoint) ||
+        read_string("--pd-long-prefill-endpoint=", config.pd.long_prefill_endpoint) ||
         read_string("--model-registry=", config.model_registry_path) ||
         read_string("--shared-kv-endpoint=", config.kv.shared_kv_endpoint)) continue;
     const std::string_view online_process_role_prefix = "--online-process-role=";
@@ -289,6 +296,18 @@ BenchConfig parse_bench_config(int argc, char* argv[], int prompt_start_index) {
   if (config.pd.pd_mode == "off") {
     config.pd.prefill_device_id = config.device_id;
     config.pd.decode_device_id = config.device_id;
+  }
+  if (config.pd.pd_mode == "split-prefill-ipc") {
+    if (config.kv.shared_kv_endpoint.empty() || config.kv.radix_cache_enabled ||
+        config.pd.prefill_device_id != config.pd.decode_device_id ||
+        config.pd.short_prompt_tokens <= 0 || config.pd.short_decode_slots <= 0 ||
+        config.pd.long_decode_slots <= 0 || config.pd.short_kv_tokens <= 0 ||
+        config.pd.long_kv_tokens <= 0)
+      throw std::invalid_argument("split-prefill-ipc requires same GPU, shared arena, radix off and positive lane limits");
+    if (config.ipc.online_process_role != kOnlineProcessRoleZmqPrefillEngineCore &&
+        (config.pd.short_prefill_endpoint.empty() || config.pd.long_prefill_endpoint.empty() ||
+         config.pd.short_prefill_endpoint == config.pd.long_prefill_endpoint))
+      throw std::invalid_argument("split-prefill-ipc requires two distinct Prefill endpoints");
   }
   return config;
 }

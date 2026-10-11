@@ -68,6 +68,14 @@ set_tests_properties(pbe.unit PROPERTIES WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
 
 find_package(Python3 COMPONENTS Interpreter QUIET)
 if(Python3_Interpreter_FOUND)
+  add_test(NAME pbe.split_pd_config
+    COMMAND ${Python3_EXECUTABLE} -m unittest discover
+      -s ${CMAKE_SOURCE_DIR}/tools/serving -p test_split_pd.py)
+  set_tests_properties(pbe.split_pd_config PROPERTIES LABELS "cpu;deployment" TIMEOUT 30)
+  add_test(NAME pbe.mps_evidence_analysis
+    COMMAND ${Python3_EXECUTABLE} -m unittest discover
+      -s ${CMAKE_SOURCE_DIR}/tools/serving -p test_mps_evidence.py)
+  set_tests_properties(pbe.mps_evidence_analysis PROPERTIES LABELS "cpu;deployment" TIMEOUT 30)
   add_test(NAME pbe.data_client_transport
     COMMAND ${Python3_EXECUTABLE} -m unittest discover
       -s ${CMAKE_SOURCE_DIR}/test/data_core -p test_client_transport.py)

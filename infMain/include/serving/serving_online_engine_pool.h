@@ -82,6 +82,7 @@ class ZmqOnlineEnginePool final : public OnlineEnginePool {
               const std::string& reason) override;
   int32_t default_timeout_ms() const override;
   nlohmann::json metrics_json() const override;
+  std::string default_model_id() const override;
 
  private:
   struct Impl;

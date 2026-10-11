@@ -1,0 +1,18 @@
+{
+  "remote_ctest": {
+    "groups": 9,
+    "passed": 9,
+    "failed": 0
+  },
+  "local_analysis_unit_tests": 4,
+  "raw_sm_sample_replay": {
+    "runs": 6,
+    "all_match": true
+  },
+  "sqlite_integrity": "ok",
+  "remote_cleanup": {
+    "compute_processes": [],
+    "gpu_memory_used_mib": 2
+  },
+  "limitations": "GPU/fixture skips from the broader suite remain; this run is not NCCL or multi-GPU acceptance."
+}

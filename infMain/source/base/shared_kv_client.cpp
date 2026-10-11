@@ -92,6 +92,7 @@ SharedKVArenaClient::~SharedKVArenaClient() {
 }
 void* SharedKVArenaClient::data() const { return impl_->data; }
 uint64_t SharedKVArenaClient::bytes() const { return impl_->bytes; }
+uint64_t SharedKVArenaClient::epoch() const { return impl_->epoch; }
 uint64_t SharedKVArenaClient::hard_limit() const { return impl_->hard_limit; }
 void SharedKVArenaClient::enable_rpc_timing() { impl_->measure = true; }
 SharedKVRpcTiming SharedKVArenaClient::rpc_timing() const {

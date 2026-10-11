@@ -1,0 +1,57 @@
+{
+  "kernel_count": 2,
+  "cross_process_overlapping_pairs": 1,
+  "cross_process_interval_union_ns": 249766956,
+  "any_kernel_union_ns": 256456702,
+  "longest_pair": {
+    "overlap_ns": 249766956,
+    "start_ns": 5061580370,
+    "end_ns": 5311347326,
+    "kernels": [
+      {
+        "start_ns": 5057167579,
+        "end_ns": 5311347326,
+        "pid": 15377,
+        "device": 0,
+        "context": 1,
+        "stream": 13,
+        "kernel": "<unnamed>::probe(unsigned long long *, unsigned long long)",
+        "grid_x": 1,
+        "grid_y": 1,
+        "grid_z": 1,
+        "block_x": 32,
+        "block_y": 1,
+        "block_z": 1
+      },
+      {
+        "start_ns": 5061580370,
+        "end_ns": 5313624281,
+        "pid": 15378,
+        "device": 0,
+        "context": 1,
+        "stream": 13,
+        "kernel": "<unnamed>::probe(unsigned long long *, unsigned long long)",
+        "grid_x": 1,
+        "grid_y": 1,
+        "grid_z": 1,
+        "block_x": 32,
+        "block_y": 1,
+        "block_z": 1
+      }
+    ]
+  },
+  "kernel_counts_by_pid": {
+    "15377": 1,
+    "15378": 1
+  },
+  "backend": "process",
+  "mps_clients_registered": false,
+  "interpretation": "Negative control: kernel lifetime overlap does not prove simultaneous instruction execution",
+  "inputs": [
+    {
+      "name": "process-sw-timeline.sqlite",
+      "bytes": 393216,
+      "sha256": "1b87bc3a026f024cb980a8eec1c861af3ace9cd9306db6823ec9739e1f0ac252"
+    }
+  ]
+}

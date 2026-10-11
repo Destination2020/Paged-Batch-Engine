@@ -213,6 +213,7 @@ uint64_t SharedKVPageGroup::leased_bytes() const {
   return impl_->leased();
 }
 uint64_t SharedKVPageGroup::arena_bytes() const { return impl_->arena->bytes(); }
+uint64_t SharedKVPageGroup::arena_epoch() const { return impl_->arena->epoch(); }
 int SharedKVPageGroup::capacity() const {
   return static_cast<int>(std::min<uint64_t>(INT32_MAX, impl_->arena->hard_limit() / impl_->page_bytes));
 }

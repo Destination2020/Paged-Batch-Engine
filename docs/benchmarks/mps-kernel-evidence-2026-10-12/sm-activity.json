@@ -1,0 +1,1078 @@
+{
+  "rounds": 3,
+  "runs": [
+    {
+      "clients": [
+        {
+          "pid": 15919,
+          "blocks": 4,
+          "threads_per_block": 32,
+          "samples_per_block": 250000,
+          "arithmetic_verified": true
+        },
+        {
+          "pid": 15920,
+          "blocks": 4,
+          "threads_per_block": 32,
+          "samples_per_block": 250000,
+          "arithmetic_verified": true
+        }
+      ],
+      "raw_samples": [
+        {
+          "file": "client-0.bin",
+          "bytes": 16000000,
+          "sha256": "0b0251ae9a710c26d4628d6c11acf9e56ad702ea2e2369bb0e14cd123b7e2a89"
+        },
+        {
+          "file": "client-1.bin",
+          "bytes": 16000000,
+          "sha256": "f7f8fefb7f255ad757ee370940e743a16a91a22ad2c2c0614bd91f9a5e6bbbb6"
+        }
+      ],
+      "sample_format": "little endian: globaltimer uint64, smid uint32, accumulator bits uint32",
+      "same_tick_count": 0,
+      "same_tick_different_sm_count": 0,
+      "witnesses": [],
+      "histogram_bin_ns": 20000,
+      "histogram_both_processes_nonempty": 0,
+      "observed_timestamp_delta_gcd_ns": [
+        32,
+        32
+      ],
+      "sampled_sm_ids": [
+        [
+          0,
+          1,
+          2,
+          3
+        ],
+        [
+          0,
+          1,
+          2,
+          3
+        ]
+      ],
+      "first_sample_ns": 1791741753424675552,
+      "last_sample_ns": 1791741753439082592,
+      "interpretation": "Coincident device clock readings on different SMs; resolution is hardware dependent. Not an occupancy percentage.",
+      "backend": "process",
+      "mps_server": null,
+      "gpu": {
+        "uuid": "GPU-c34a78e9-7470-7560-d633-a093794b3fe6",
+        "free_mib": 32149,
+        "total_mib": 32607,
+        "name": "NVIDIA GeForce RTX 5090",
+        "driver": "610.57.04"
+      }
+    },
+    {
+      "clients": [
+        {
+          "pid": 15938,
+          "blocks": 4,
+          "threads_per_block": 32,
+          "samples_per_block": 250000,
+          "arithmetic_verified": true
+        },
+        {
+          "pid": 15939,
+          "blocks": 4,
+          "threads_per_block": 32,
+          "samples_per_block": 250000,
+          "arithmetic_verified": true
+        }
+      ],
+      "raw_samples": [
+        {
+          "file": "client-0.bin",
+          "bytes": 16000000,
+          "sha256": "1fbf253780ed49f31a732c96a4518a20636a4e1766b1c402aca95fc8a0985ec3"
+        },
+        {
+          "file": "client-1.bin",
+          "bytes": 16000000,
+          "sha256": "1c6e4ca51ea189df7e52fef1fdfbf6ab5ccb45d5f53cc61d17a0a2ed732864e1"
+        }
+      ],
+      "sample_format": "little endian: globaltimer uint64, smid uint32, accumulator bits uint32",
+      "same_tick_count": 184452,
+      "same_tick_different_sm_count": 28489,
+      "witnesses": [
+        {
+          "globaltimer_ns": 1791741754962222304,
+          "pid_a": 15938,
+          "sm_a": 2,
+          "pid_b": 15939,
+          "sm_b": 0
+        },
+        {
+          "globaltimer_ns": 1791741754962222400,
+          "pid_a": 15938,
+          "sm_a": 0,
+          "pid_b": 15939,
+          "sm_b": 2
+        },
+        {
+          "globaltimer_ns": 1791741754962222528,
+          "pid_a": 15938,
+          "sm_a": 2,
+          "pid_b": 15939,
+          "sm_b": 0
+        },
+        {
+          "globaltimer_ns": 1791741754962222624,
+          "pid_a": 15938,
+          "sm_a": 0,
+          "pid_b": 15939,
+          "sm_b": 2
+        },
+        {
+          "globaltimer_ns": 1791741754962222752,
+          "pid_a": 15938,
+          "sm_a": 2,
+          "pid_b": 15939,
+          "sm_b": 0
+        },
+        {
+          "globaltimer_ns": 1791741754962222848,
+          "pid_a": 15938,
+          "sm_a": 0,
+          "pid_b": 15939,
+          "sm_b": 2
+        },
+        {
+          "globaltimer_ns": 1791741754962223744,
+          "pid_a": 15938,
+          "sm_a": 2,
+          "pid_b": 15939,
+          "sm_b": 0
+        },
+        {
+          "globaltimer_ns": 1791741754962223968,
+          "pid_a": 15938,
+          "sm_a": 2,
+          "pid_b": 15939,
+          "sm_b": 0
+        },
+        {
+          "globaltimer_ns": 1791741754962224736,
+          "pid_a": 15938,
+          "sm_a": 1,
+          "pid_b": 15939,
+          "sm_b": 0
+        },
+        {
+          "globaltimer_ns": 1791741754962224832,
+          "pid_a": 15938,
+          "sm_a": 0,
+          "pid_b": 15939,
+          "sm_b": 2
+        },
+        {
+          "globaltimer_ns": 1791741754962224960,
+          "pid_a": 15938,
+          "sm_a": 1,
+          "pid_b": 15939,
+          "sm_b": 0
+        },
+        {
+          "globaltimer_ns": 1791741754962225056,
+          "pid_a": 15938,
+          "sm_a": 0,
+          "pid_b": 15939,
+          "sm_b": 2
+        },
+        {
+          "globaltimer_ns": 1791741754962225184,
+          "pid_a": 15938,
+          "sm_a": 2,
+          "pid_b": 15939,
+          "sm_b": 0
+        },
+        {
+          "globaltimer_ns": 1791741754962225280,
+          "pid_a": 15938,
+          "sm_a": 0,
+          "pid_b": 15939,
+          "sm_b": 2
+        },
+        {
+          "globaltimer_ns": 1791741754962225408,
+          "pid_a": 15938,
+          "sm_a": 2,
+          "pid_b": 15939,
+          "sm_b": 0
+        },
+        {
+          "globaltimer_ns": 1791741754962225632,
+          "pid_a": 15938,
+          "sm_a": 2,
+          "pid_b": 15939,
+          "sm_b": 0
+        },
+        {
+          "globaltimer_ns": 1791741754962225952,
+          "pid_a": 15938,
+          "sm_a": 2,
+          "pid_b": 15939,
+          "sm_b": 0
+        },
+        {
+          "globaltimer_ns": 1791741754962226176,
+          "pid_a": 15938,
+          "sm_a": 2,
+          "pid_b": 15939,
+          "sm_b": 0
+        },
+        {
+          "globaltimer_ns": 1791741754962226272,
+          "pid_a": 15938,
+          "sm_a": 0,
+          "pid_b": 15939,
+          "sm_b": 1
+        },
+        {
+          "globaltimer_ns": 1791741754962226400,
+          "pid_a": 15938,
+          "sm_a": 2,
+          "pid_b": 15939,
+          "sm_b": 0
+        },
+        {
+          "globaltimer_ns": 1791741754962226496,
+          "pid_a": 15938,
+          "sm_a": 0,
+          "pid_b": 15939,
+          "sm_b": 2
+        },
+        {
+          "globaltimer_ns": 1791741754962226624,
+          "pid_a": 15938,
+          "sm_a": 2,
+          "pid_b": 15939,
+          "sm_b": 0
+        },
+        {
+          "globaltimer_ns": 1791741754962226720,
+          "pid_a": 15938,
+          "sm_a": 0,
+          "pid_b": 15939,
+          "sm_b": 2
+        },
+        {
+          "globaltimer_ns": 1791741754962226848,
+          "pid_a": 15938,
+          "sm_a": 2,
+          "pid_b": 15939,
+          "sm_b": 0
+        },
+        {
+          "globaltimer_ns": 1791741754962227840,
+          "pid_a": 15938,
+          "sm_a": 2,
+          "pid_b": 15939,
+          "sm_b": 0
+        },
+        {
+          "globaltimer_ns": 1791741754962228064,
+          "pid_a": 15938,
+          "sm_a": 2,
+          "pid_b": 15939,
+          "sm_b": 0
+        },
+        {
+          "globaltimer_ns": 1791741754962228288,
+          "pid_a": 15938,
+          "sm_a": 2,
+          "pid_b": 15939,
+          "sm_b": 0
+        },
+        {
+          "globaltimer_ns": 1791741754962228480,
+          "pid_a": 15938,
+          "sm_a": 0,
+          "pid_b": 15939,
+          "sm_b": 2
+        },
+        {
+          "globaltimer_ns": 1791741754962228704,
+          "pid_a": 15938,
+          "sm_a": 0,
+          "pid_b": 15939,
+          "sm_b": 2
+        },
+        {
+          "globaltimer_ns": 1791741754962228832,
+          "pid_a": 15938,
+          "sm_a": 2,
+          "pid_b": 15939,
+          "sm_b": 0
+        },
+        {
+          "globaltimer_ns": 1791741754962228928,
+          "pid_a": 15938,
+          "sm_a": 0,
+          "pid_b": 15939,
+          "sm_b": 2
+        },
+        {
+          "globaltimer_ns": 1791741754962229056,
+          "pid_a": 15938,
+          "sm_a": 2,
+          "pid_b": 15939,
+          "sm_b": 0
+        }
+      ],
+      "histogram_bin_ns": 20000,
+      "histogram_both_processes_nonempty": 309,
+      "observed_timestamp_delta_gcd_ns": [
+        32,
+        32
+      ],
+      "sampled_sm_ids": [
+        [
+          0,
+          1,
+          2,
+          3
+        ],
+        [
+          0,
+          1,
+          2,
+          3
+        ]
+      ],
+      "first_sample_ns": 1791741754961449568,
+      "last_sample_ns": 1791741754969137280,
+      "interpretation": "Coincident device clock readings on different SMs; resolution is hardware dependent. Not an occupancy percentage.",
+      "backend": "mps_process",
+      "mps_server": 15941,
+      "gpu": {
+        "uuid": "GPU-c34a78e9-7470-7560-d633-a093794b3fe6",
+        "free_mib": 32149,
+        "total_mib": 32607,
+        "name": "NVIDIA GeForce RTX 5090",
+        "driver": "610.57.04"
+      }
+    },
+    {
+      "clients": [
+        {
+          "pid": 15964,
+          "blocks": 4,
+          "threads_per_block": 32,
+          "samples_per_block": 250000,
+          "arithmetic_verified": true
+        },
+        {
+          "pid": 15965,
+          "blocks": 4,
+          "threads_per_block": 32,
+          "samples_per_block": 250000,
+          "arithmetic_verified": true
+        }
+      ],
+      "raw_samples": [
+        {
+          "file": "client-0.bin",
+          "bytes": 16000000,
+          "sha256": "6f370a08d1f1c11d250c198be27c09ff0da6c4d49578fc57aa1aec8c60fd9edd"
+        },
+        {
+          "file": "client-1.bin",
+          "bytes": 16000000,
+          "sha256": "0ace9e05c7044f9512e89f730f66b9c0c2983ff47e3de2266c7124b8020e599e"
+        }
+      ],
+      "sample_format": "little endian: globaltimer uint64, smid uint32, accumulator bits uint32",
+      "same_tick_count": 0,
+      "same_tick_different_sm_count": 0,
+      "witnesses": [],
+      "histogram_bin_ns": 20000,
+      "histogram_both_processes_nonempty": 0,
+      "observed_timestamp_delta_gcd_ns": [
+        32,
+        32
+      ],
+      "sampled_sm_ids": [
+        [
+          0,
+          1,
+          2,
+          3
+        ],
+        [
+          0,
+          1,
+          2,
+          3
+        ]
+      ],
+      "first_sample_ns": 1791741756027583360,
+      "last_sample_ns": 1791741756041979328,
+      "interpretation": "Coincident device clock readings on different SMs; resolution is hardware dependent. Not an occupancy percentage.",
+      "backend": "process",
+      "mps_server": null,
+      "gpu": {
+        "uuid": "GPU-c34a78e9-7470-7560-d633-a093794b3fe6",
+        "free_mib": 32149,
+        "total_mib": 32607,
+        "name": "NVIDIA GeForce RTX 5090",
+        "driver": "610.57.04"
+      }
+    },
+    {
+      "clients": [
+        {
+          "pid": 15981,
+          "blocks": 4,
+          "threads_per_block": 32,
+          "samples_per_block": 250000,
+          "arithmetic_verified": true
+        },
+        {
+          "pid": 15982,
+          "blocks": 4,
+          "threads_per_block": 32,
+          "samples_per_block": 250000,
+          "arithmetic_verified": true
+        }
+      ],
+      "raw_samples": [
+        {
+          "file": "client-0.bin",
+          "bytes": 16000000,
+          "sha256": "ef4c7293d896ff9b7621189f510fcd0d6e3115121aff29343eec4b4a2ccb8fb2"
+        },
+        {
+          "file": "client-1.bin",
+          "bytes": 16000000,
+          "sha256": "853692b1b97d8212a81aa961042040cdfe578db8cee3ac398e7b7ba53a7715b1"
+        }
+      ],
+      "sample_format": "little endian: globaltimer uint64, smid uint32, accumulator bits uint32",
+      "same_tick_count": 198011,
+      "same_tick_different_sm_count": 26892,
+      "witnesses": [
+        {
+          "globaltimer_ns": 1791741757069889632,
+          "pid_a": 15981,
+          "sm_a": 2,
+          "pid_b": 15982,
+          "sm_b": 0
+        },
+        {
+          "globaltimer_ns": 1791741757069889856,
+          "pid_a": 15981,
+          "sm_a": 2,
+          "pid_b": 15982,
+          "sm_b": 0
+        },
+        {
+          "globaltimer_ns": 1791741757069890528,
+          "pid_a": 15981,
+          "sm_a": 0,
+          "pid_b": 15982,
+          "sm_b": 2
+        },
+        {
+          "globaltimer_ns": 1791741757069890624,
+          "pid_a": 15981,
+          "sm_a": 2,
+          "pid_b": 15982,
+          "sm_b": 0
+        },
+        {
+          "globaltimer_ns": 1791741757069890752,
+          "pid_a": 15981,
+          "sm_a": 0,
+          "pid_b": 15982,
+          "sm_b": 2
+        },
+        {
+          "globaltimer_ns": 1791741757069890848,
+          "pid_a": 15981,
+          "sm_a": 2,
+          "pid_b": 15982,
+          "sm_b": 0
+        },
+        {
+          "globaltimer_ns": 1791741757069890976,
+          "pid_a": 15981,
+          "sm_a": 0,
+          "pid_b": 15982,
+          "sm_b": 3
+        },
+        {
+          "globaltimer_ns": 1791741757069891072,
+          "pid_a": 15981,
+          "sm_a": 2,
+          "pid_b": 15982,
+          "sm_b": 0
+        },
+        {
+          "globaltimer_ns": 1791741757069891296,
+          "pid_a": 15981,
+          "sm_a": 2,
+          "pid_b": 15982,
+          "sm_b": 0
+        },
+        {
+          "globaltimer_ns": 1791741757069891520,
+          "pid_a": 15981,
+          "sm_a": 2,
+          "pid_b": 15982,
+          "sm_b": 0
+        },
+        {
+          "globaltimer_ns": 1791741757069891968,
+          "pid_a": 15981,
+          "sm_a": 0,
+          "pid_b": 15982,
+          "sm_b": 2
+        },
+        {
+          "globaltimer_ns": 1791741757069892064,
+          "pid_a": 15981,
+          "sm_a": 2,
+          "pid_b": 15982,
+          "sm_b": 0
+        },
+        {
+          "globaltimer_ns": 1791741757069892192,
+          "pid_a": 15981,
+          "sm_a": 0,
+          "pid_b": 15982,
+          "sm_b": 2
+        },
+        {
+          "globaltimer_ns": 1791741757069892288,
+          "pid_a": 15981,
+          "sm_a": 2,
+          "pid_b": 15982,
+          "sm_b": 0
+        },
+        {
+          "globaltimer_ns": 1791741757069892512,
+          "pid_a": 15981,
+          "sm_a": 2,
+          "pid_b": 15982,
+          "sm_b": 0
+        },
+        {
+          "globaltimer_ns": 1791741757069893504,
+          "pid_a": 15981,
+          "sm_a": 1,
+          "pid_b": 15982,
+          "sm_b": 0
+        },
+        {
+          "globaltimer_ns": 1791741757069893728,
+          "pid_a": 15981,
+          "sm_a": 2,
+          "pid_b": 15982,
+          "sm_b": 0
+        },
+        {
+          "globaltimer_ns": 1791741757069893952,
+          "pid_a": 15981,
+          "sm_a": 2,
+          "pid_b": 15982,
+          "sm_b": 1
+        },
+        {
+          "globaltimer_ns": 1791741757069894400,
+          "pid_a": 15981,
+          "sm_a": 0,
+          "pid_b": 15982,
+          "sm_b": 2
+        },
+        {
+          "globaltimer_ns": 1791741757069894624,
+          "pid_a": 15981,
+          "sm_a": 0,
+          "pid_b": 15982,
+          "sm_b": 2
+        },
+        {
+          "globaltimer_ns": 1791741757069894848,
+          "pid_a": 15981,
+          "sm_a": 0,
+          "pid_b": 15982,
+          "sm_b": 3
+        },
+        {
+          "globaltimer_ns": 1791741757069894944,
+          "pid_a": 15981,
+          "sm_a": 2,
+          "pid_b": 15982,
+          "sm_b": 0
+        },
+        {
+          "globaltimer_ns": 1791741757069895168,
+          "pid_a": 15981,
+          "sm_a": 2,
+          "pid_b": 15982,
+          "sm_b": 0
+        },
+        {
+          "globaltimer_ns": 1791741757069895712,
+          "pid_a": 15981,
+          "sm_a": 2,
+          "pid_b": 15982,
+          "sm_b": 0
+        },
+        {
+          "globaltimer_ns": 1791741757069895840,
+          "pid_a": 15981,
+          "sm_a": 0,
+          "pid_b": 15982,
+          "sm_b": 1
+        },
+        {
+          "globaltimer_ns": 1791741757069895936,
+          "pid_a": 15981,
+          "sm_a": 2,
+          "pid_b": 15982,
+          "sm_b": 0
+        },
+        {
+          "globaltimer_ns": 1791741757069896160,
+          "pid_a": 15981,
+          "sm_a": 2,
+          "pid_b": 15982,
+          "sm_b": 0
+        },
+        {
+          "globaltimer_ns": 1791741757069896480,
+          "pid_a": 15981,
+          "sm_a": 2,
+          "pid_b": 15982,
+          "sm_b": 0
+        },
+        {
+          "globaltimer_ns": 1791741757069896704,
+          "pid_a": 15981,
+          "sm_a": 2,
+          "pid_b": 15982,
+          "sm_b": 0
+        },
+        {
+          "globaltimer_ns": 1791741757069896832,
+          "pid_a": 15981,
+          "sm_a": 0,
+          "pid_b": 15982,
+          "sm_b": 2
+        },
+        {
+          "globaltimer_ns": 1791741757069896928,
+          "pid_a": 15981,
+          "sm_a": 2,
+          "pid_b": 15982,
+          "sm_b": 0
+        },
+        {
+          "globaltimer_ns": 1791741757069897152,
+          "pid_a": 15981,
+          "sm_a": 2,
+          "pid_b": 15982,
+          "sm_b": 0
+        }
+      ],
+      "histogram_bin_ns": 20000,
+      "histogram_both_processes_nonempty": 330,
+      "observed_timestamp_delta_gcd_ns": [
+        32,
+        32
+      ],
+      "sampled_sm_ids": [
+        [
+          0,
+          1,
+          2,
+          3
+        ],
+        [
+          0,
+          1,
+          2,
+          3
+        ]
+      ],
+      "first_sample_ns": 1791741757069545888,
+      "last_sample_ns": 1791741757076803264,
+      "interpretation": "Coincident device clock readings on different SMs; resolution is hardware dependent. Not an occupancy percentage.",
+      "backend": "mps_process",
+      "mps_server": 15984,
+      "gpu": {
+        "uuid": "GPU-c34a78e9-7470-7560-d633-a093794b3fe6",
+        "free_mib": 32149,
+        "total_mib": 32607,
+        "name": "NVIDIA GeForce RTX 5090",
+        "driver": "610.57.04"
+      }
+    },
+    {
+      "clients": [
+        {
+          "pid": 16007,
+          "blocks": 4,
+          "threads_per_block": 32,
+          "samples_per_block": 250000,
+          "arithmetic_verified": true
+        },
+        {
+          "pid": 16008,
+          "blocks": 4,
+          "threads_per_block": 32,
+          "samples_per_block": 250000,
+          "arithmetic_verified": true
+        }
+      ],
+      "raw_samples": [
+        {
+          "file": "client-0.bin",
+          "bytes": 16000000,
+          "sha256": "1d5e3e7671712548184e11fd5dcc6c4dd6ef0ade2d785c2ee21abdf0823b7896"
+        },
+        {
+          "file": "client-1.bin",
+          "bytes": 16000000,
+          "sha256": "39460fdbd327a92701f854df293fb4b064c6aadee6fa563763373c03a1ff8608"
+        }
+      ],
+      "sample_format": "little endian: globaltimer uint64, smid uint32, accumulator bits uint32",
+      "same_tick_count": 0,
+      "same_tick_different_sm_count": 0,
+      "witnesses": [],
+      "histogram_bin_ns": 20000,
+      "histogram_both_processes_nonempty": 0,
+      "observed_timestamp_delta_gcd_ns": [
+        32,
+        32
+      ],
+      "sampled_sm_ids": [
+        [
+          0,
+          1,
+          2,
+          3
+        ],
+        [
+          0,
+          1,
+          2,
+          3
+        ]
+      ],
+      "first_sample_ns": 1791741758062846656,
+      "last_sample_ns": 1791741758077243328,
+      "interpretation": "Coincident device clock readings on different SMs; resolution is hardware dependent. Not an occupancy percentage.",
+      "backend": "process",
+      "mps_server": null,
+      "gpu": {
+        "uuid": "GPU-c34a78e9-7470-7560-d633-a093794b3fe6",
+        "free_mib": 32149,
+        "total_mib": 32607,
+        "name": "NVIDIA GeForce RTX 5090",
+        "driver": "610.57.04"
+      }
+    },
+    {
+      "clients": [
+        {
+          "pid": 16026,
+          "blocks": 4,
+          "threads_per_block": 32,
+          "samples_per_block": 250000,
+          "arithmetic_verified": true
+        },
+        {
+          "pid": 16027,
+          "blocks": 4,
+          "threads_per_block": 32,
+          "samples_per_block": 250000,
+          "arithmetic_verified": true
+        }
+      ],
+      "raw_samples": [
+        {
+          "file": "client-0.bin",
+          "bytes": 16000000,
+          "sha256": "a62dbc311b67568806aff677f031b6b60ec75a200dce848cad8e4692ac1f99ca"
+        },
+        {
+          "file": "client-1.bin",
+          "bytes": 16000000,
+          "sha256": "f6771b7b37c373660c93f1067dc3674e3fe6714dbaf173238d4d4d97952c119d"
+        }
+      ],
+      "sample_format": "little endian: globaltimer uint64, smid uint32, accumulator bits uint32",
+      "same_tick_count": 213501,
+      "same_tick_different_sm_count": 26630,
+      "witnesses": [
+        {
+          "globaltimer_ns": 1791741759162758656,
+          "pid_a": 16026,
+          "sm_a": 2,
+          "pid_b": 16027,
+          "sm_b": 0
+        },
+        {
+          "globaltimer_ns": 1791741759162758944,
+          "pid_a": 16026,
+          "sm_a": 0,
+          "pid_b": 16027,
+          "sm_b": 1
+        },
+        {
+          "globaltimer_ns": 1791741759162759072,
+          "pid_a": 16026,
+          "sm_a": 0,
+          "pid_b": 16027,
+          "sm_b": 2
+        },
+        {
+          "globaltimer_ns": 1791741759162759424,
+          "pid_a": 16026,
+          "sm_a": 2,
+          "pid_b": 16027,
+          "sm_b": 0
+        },
+        {
+          "globaltimer_ns": 1791741759162759584,
+          "pid_a": 16026,
+          "sm_a": 0,
+          "pid_b": 16027,
+          "sm_b": 2
+        },
+        {
+          "globaltimer_ns": 1791741759162759712,
+          "pid_a": 16026,
+          "sm_a": 0,
+          "pid_b": 16027,
+          "sm_b": 2
+        },
+        {
+          "globaltimer_ns": 1791741759162759808,
+          "pid_a": 16026,
+          "sm_a": 2,
+          "pid_b": 16027,
+          "sm_b": 0
+        },
+        {
+          "globaltimer_ns": 1791741759162759936,
+          "pid_a": 16026,
+          "sm_a": 2,
+          "pid_b": 16027,
+          "sm_b": 0
+        },
+        {
+          "globaltimer_ns": 1791741759162760064,
+          "pid_a": 16026,
+          "sm_a": 2,
+          "pid_b": 16027,
+          "sm_b": 0
+        },
+        {
+          "globaltimer_ns": 1791741759162760096,
+          "pid_a": 16026,
+          "sm_a": 0,
+          "pid_b": 16027,
+          "sm_b": 2
+        },
+        {
+          "globaltimer_ns": 1791741759162760192,
+          "pid_a": 16026,
+          "sm_a": 2,
+          "pid_b": 16027,
+          "sm_b": 0
+        },
+        {
+          "globaltimer_ns": 1791741759162760224,
+          "pid_a": 16026,
+          "sm_a": 0,
+          "pid_b": 16027,
+          "sm_b": 2
+        },
+        {
+          "globaltimer_ns": 1791741759162760320,
+          "pid_a": 16026,
+          "sm_a": 2,
+          "pid_b": 16027,
+          "sm_b": 0
+        },
+        {
+          "globaltimer_ns": 1791741759162760352,
+          "pid_a": 16026,
+          "sm_a": 0,
+          "pid_b": 16027,
+          "sm_b": 2
+        },
+        {
+          "globaltimer_ns": 1791741759162760448,
+          "pid_a": 16026,
+          "sm_a": 2,
+          "pid_b": 16027,
+          "sm_b": 0
+        },
+        {
+          "globaltimer_ns": 1791741759162760480,
+          "pid_a": 16026,
+          "sm_a": 0,
+          "pid_b": 16027,
+          "sm_b": 2
+        },
+        {
+          "globaltimer_ns": 1791741759162760576,
+          "pid_a": 16026,
+          "sm_a": 2,
+          "pid_b": 16027,
+          "sm_b": 0
+        },
+        {
+          "globaltimer_ns": 1791741759162760608,
+          "pid_a": 16026,
+          "sm_a": 0,
+          "pid_b": 16027,
+          "sm_b": 2
+        },
+        {
+          "globaltimer_ns": 1791741759162760704,
+          "pid_a": 16026,
+          "sm_a": 3,
+          "pid_b": 16027,
+          "sm_b": 0
+        },
+        {
+          "globaltimer_ns": 1791741759162760736,
+          "pid_a": 16026,
+          "sm_a": 0,
+          "pid_b": 16027,
+          "sm_b": 2
+        },
+        {
+          "globaltimer_ns": 1791741759162760960,
+          "pid_a": 16026,
+          "sm_a": 2,
+          "pid_b": 16027,
+          "sm_b": 0
+        },
+        {
+          "globaltimer_ns": 1791741759162760992,
+          "pid_a": 16026,
+          "sm_a": 0,
+          "pid_b": 16027,
+          "sm_b": 2
+        },
+        {
+          "globaltimer_ns": 1791741759162761120,
+          "pid_a": 16026,
+          "sm_a": 0,
+          "pid_b": 16027,
+          "sm_b": 2
+        },
+        {
+          "globaltimer_ns": 1791741759162761952,
+          "pid_a": 16026,
+          "sm_a": 2,
+          "pid_b": 16027,
+          "sm_b": 0
+        },
+        {
+          "globaltimer_ns": 1791741759162762112,
+          "pid_a": 16026,
+          "sm_a": 0,
+          "pid_b": 16027,
+          "sm_b": 2
+        },
+        {
+          "globaltimer_ns": 1791741759162762208,
+          "pid_a": 16026,
+          "sm_a": 2,
+          "pid_b": 16027,
+          "sm_b": 0
+        },
+        {
+          "globaltimer_ns": 1791741759162762240,
+          "pid_a": 16026,
+          "sm_a": 0,
+          "pid_b": 16027,
+          "sm_b": 2
+        },
+        {
+          "globaltimer_ns": 1791741759162762336,
+          "pid_a": 16026,
+          "sm_a": 2,
+          "pid_b": 16027,
+          "sm_b": 0
+        },
+        {
+          "globaltimer_ns": 1791741759162762368,
+          "pid_a": 16026,
+          "sm_a": 0,
+          "pid_b": 16027,
+          "sm_b": 2
+        },
+        {
+          "globaltimer_ns": 1791741759162762464,
+          "pid_a": 16026,
+          "sm_a": 2,
+          "pid_b": 16027,
+          "sm_b": 0
+        },
+        {
+          "globaltimer_ns": 1791741759162762496,
+          "pid_a": 16026,
+          "sm_a": 0,
+          "pid_b": 16027,
+          "sm_b": 2
+        },
+        {
+          "globaltimer_ns": 1791741759162762720,
+          "pid_a": 16026,
+          "sm_a": 2,
+          "pid_b": 16027,
+          "sm_b": 0
+        }
+      ],
+      "histogram_bin_ns": 20000,
+      "histogram_both_processes_nonempty": 346,
+      "observed_timestamp_delta_gcd_ns": [
+        32,
+        32
+      ],
+      "sampled_sm_ids": [
+        [
+          0,
+          1,
+          2,
+          3
+        ],
+        [
+          0,
+          1,
+          2,
+          3
+        ]
+      ],
+      "first_sample_ns": 1791741759162751264,
+      "last_sample_ns": 1791741759169673984,
+      "interpretation": "Coincident device clock readings on different SMs; resolution is hardware dependent. Not an occupancy percentage.",
+      "backend": "mps_process",
+      "mps_server": 16030,
+      "gpu": {
+        "uuid": "GPU-c34a78e9-7470-7560-d633-a093794b3fe6",
+        "free_mib": 32149,
+        "total_mib": 32607,
+        "name": "NVIDIA GeForce RTX 5090",
+        "driver": "610.57.04"
+      }
+    }
+  ],
+  "mps_all_rounds_have_witnesses": true,
+  "control_all_rounds_have_no_witnesses": true
+}

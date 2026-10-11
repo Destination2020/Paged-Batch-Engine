@@ -1,0 +1,18 @@
+[
+  {
+    "file": "/workspace/pbe-models/Qwen2.5-0.5B-Instruct/model.bf16.bin",
+    "sha256": "b4b27553d89ddd7ea01d6c07cf04acf2c1e903019aac79f3a29aa6cc09c65aca"
+  },
+  {
+    "file": "/workspace/pbe-models/Qwen2.5-0.5B-Instruct/tokenizer.json",
+    "sha256": "c0382117ea329cdf097041132f6d735924b697924d6f6fc3945713e96ce87539"
+  },
+  {
+    "file": "/workspace/pbe-models/Qwen2.5-1.5B-Instruct/model.bf16.bin",
+    "sha256": "cb0020a3dd67ea0e7945f8f62a977dfa96cca6881a5a10260a84b8e1d8b2f0ab"
+  },
+  {
+    "file": "/workspace/pbe-models/Qwen2.5-1.5B-Instruct/tokenizer.json",
+    "sha256": "c0382117ea329cdf097041132f6d735924b697924d6f6fc3945713e96ce87539"
+  }
+]

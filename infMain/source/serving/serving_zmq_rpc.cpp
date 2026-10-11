@@ -221,6 +221,7 @@ LayerKVTransferRequest layer_kv_transfer_request_from_json(
 
 nlohmann::json remote_prefill_result_to_json(const RemotePrefillResult& result) {
   nlohmann::json json;
+  json["shared_arena_epoch"] = result.shared_arena_epoch;
   json["client_request_id"] = result.client_request_id.value;
   json["handoff_id"] = result.handoff_id.value;
   json["prompt_tokens"] = result.prompt_tokens;
@@ -253,6 +254,7 @@ nlohmann::json remote_prefill_result_to_json(const RemotePrefillResult& result) 
 
 RemotePrefillResult remote_prefill_result_from_json(const nlohmann::json& json) {
   RemotePrefillResult result;
+  result.shared_arena_epoch = json.value("shared_arena_epoch", uint64_t{0});
   result.client_request_id.value =
       json.value("client_request_id", std::string());
   result.handoff_id.value = json.value("handoff_id", uint64_t{0});

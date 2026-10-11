@@ -1,0 +1,41 @@
+{
+  "backend": "mps_process",
+  "mps_clients_registered": true,
+  "mps_server": 8625,
+  "cuda_ipc_memory": true,
+  "cuda_ipc_memory_event": true,
+  "ipc_event_pending_on_import": true,
+  "deferred_retirement_verified": true,
+  "kv_payload_verified": true,
+  "gpu_interval_overlap_ns": 248417504,
+  "kernel_lifetime_overlap": true,
+  "mps_kernel_overlap_verified": false,
+  "overlap_evidence": "globaltimer intervals; confirm concurrent execution with Nsight Systems",
+  "arena_fully_reclaimed": true,
+  "clients": [
+    {
+      "chunks_reclaimed": true,
+      "cuda_ipc_memory": true,
+      "deferred_retirement_verified": true,
+      "gpu_end_ns": 1791740330284500352,
+      "gpu_start_ns": 1791740330032366496,
+      "kv_bytes_verified": true,
+      "page_major_layers": 24,
+      "pid": 8661,
+      "v4_compute_io_leases": true,
+      "v4_stale_handles_rejected": true
+    },
+    {
+      "chunks_reclaimed": true,
+      "cuda_ipc_memory": true,
+      "deferred_retirement_verified": true,
+      "gpu_end_ns": 1791740330280784000,
+      "gpu_start_ns": 1791740330028653056,
+      "kv_bytes_verified": true,
+      "page_major_layers": 28,
+      "pid": 8662,
+      "v4_compute_io_leases": true,
+      "v4_stale_handles_rejected": true
+    }
+  ]
+}
