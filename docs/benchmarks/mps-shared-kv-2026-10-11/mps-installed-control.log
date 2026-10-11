@@ -1,0 +1,15 @@
+[2026-10-11 11:05:15.485 Control 23959] Starting control daemon using socket /tmp/pbe-mps-installed-probe-20261011/mps-pipe/control
+[2026-10-11 11:05:15.485 Control 23959] To connect CUDA applications to this daemon, set env CUDA_MPS_PIPE_DIRECTORY=/tmp/pbe-mps-installed-probe-20261011/mps-pipe
+[2026-10-11 11:05:15.496 Control 23959] CUDA MPS Control binary version: 12070
+[2026-10-11 11:05:15.500 Control 23959] Accepting connection...
+[2026-10-11 11:05:15.500 Control 23959] NEW UI
+[2026-10-11 11:05:15.500 Control 23959] Cmd:get_server_list
+[2026-10-11 11:05:15.500 Control 23959] UI closed
+[2026-10-11 11:05:18.359 Control 23959] Accepting connection...
+[2026-10-11 11:05:18.359 Control 23959] NEW UI
+[2026-10-11 11:05:18.360 Control 23959] Cmd:get_server_list
+[2026-10-11 11:05:18.360 Control 23959] UI closed
+[2026-10-11 11:05:18.542 Control 23959] Accepting connection...
+[2026-10-11 11:05:18.542 Control 23959] NEW UI
+[2026-10-11 11:05:18.542 Control 23959] Cmd:quit
+[2026-10-11 11:05:18.542 Control 23959] Exit with status 0

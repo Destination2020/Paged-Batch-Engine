@@ -1,0 +1,9 @@
+Function "cuGetExportTable" not defined.
+Breakpoint 1 (cuGetExportTable) pending.
+Function "cuInit" not defined.
+Breakpoint 2 (cuInit) pending.
+[Thread debugging using libthread_db enabled]
+Using host libthread_db library "/lib/x86_64-linux-gnu/libthread_db.so.1".
+MPS_DIAG {"function": "cuGetExportTable", "pc": "0x7ffff7820e30", "library": "/usr/lib/wsl/lib/libcuda.so.1", "uuid_bytes": "a392d3871cf47f4d84b1719b17aeac8f", "return_code": 0, "table_pointer": "0x7ffff753e7a0", "table_first_64_bytes": "2800000000000000501c52f6ff7f0000f09150f6ff7f0000b0a950f6ff7f0000901b52f6ff7f0000000000000000000000000000000000000000000000000000"}
+MPS_DIAG {"function": "cuGetExportTable", "pc": "0x7ffff6409330", "library": "/usr/lib/wsl/drivers/nvlt.inf_amd64_3ab002af0a386850/libcuda.so.1.1", "uuid_bytes": "a392d3871cf47f4d84b1719b17aeac8f", "return_code": 0, "table_pointer": "0x7ffff753e7a0", "table_first_64_bytes": "2800000000000000501c52f6ff7f0000f09150f6ff7f0000b0a950f6ff7f0000901b52f6ff7f0000000000000000000000000000000000000000000000000000"}
+[Inferior 1 (process 32434) exited with code 01]

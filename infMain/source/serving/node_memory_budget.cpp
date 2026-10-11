@@ -1,4 +1,5 @@
 #include "serving/node_memory_budget.h"
+#include <exception>
 
 #include <algorithm>
 #include <limits>

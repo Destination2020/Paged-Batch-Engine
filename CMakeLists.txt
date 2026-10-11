@@ -177,6 +177,17 @@ endif()
 if (LLAMA3_SUPPORT OR QWEN2_SUPPORT OR QWEN3_SUPPORT OR QWEN_MOE_SUPPORT)
   find_package(absl REQUIRED)
   find_package(re2 REQUIRED)
+  # Header-only JSON must not inject an unrelated package prefix (e.g. Conda's
+  # absl headers) ahead of the headers matching the linked re2/absl libraries.
+  get_target_property(_json_includes nlohmann_json::nlohmann_json INTERFACE_INCLUDE_DIRECTORIES)
+  foreach(_json_include IN LISTS _json_includes)
+    if(EXISTS "${_json_include}/nlohmann/json.hpp")
+      file(COPY "${_json_include}/nlohmann" DESTINATION "${CMAKE_BINARY_DIR}/header-only")
+      set_property(TARGET nlohmann_json::nlohmann_json PROPERTY
+                   INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_BINARY_DIR}/header-only")
+      break()
+    endif()
+  endforeach()
 endif()
 
 if(KUIPER_BUILD_TESTS)
@@ -318,13 +329,24 @@ endif()
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 
 add_library(llama SHARED ${DIR_TENSOR} ${DIR_BASE} ${DIR_CACHE} ${DIR_DATA} ${DIR_OP} ${DIR_KERNEL} ${DIR_MODEL} ${DIR_KERNEL_CPU} ${DIR_KERNEL_CUDA} ${DIR_KERNEL} ${DIR_SAMPLE} ${DIR_SERVING})
+# V4 uses the driver API for IPC/VMM. WSL exposes libcuda outside the standard
+# linker directories, so resolve the library rather than emitting bare -lcuda.
+find_library(KUIPER_CUDA_DRIVER_LIBRARY NAMES cuda
+             HINTS /usr/lib/wsl/lib ${CUDAToolkit_LIBRARY_DIR})
+if(NOT KUIPER_CUDA_DRIVER_LIBRARY)
+  if(TARGET CUDA::cuda_driver)
+    set(KUIPER_CUDA_DRIVER_LIBRARY CUDA::cuda_driver)
+  else()
+    message(FATAL_ERROR "CUDA driver library not found")
+  endif()
+endif()
 target_link_libraries(llama
   PUBLIC
     sentencepiece
     glog::glog
     pthread
     OpenSSL::Crypto
-    cuda
+    ${KUIPER_CUDA_DRIVER_LIBRARY}
     cudart
     cublas
     cublasLt

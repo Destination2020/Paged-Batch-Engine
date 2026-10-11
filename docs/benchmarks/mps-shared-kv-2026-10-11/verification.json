@@ -1,0 +1,32 @@
+{
+  "date": "2026-10-11",
+  "gpu": "RTX 4060 Laptop 8GiB",
+  "environment": "WSL2, CUDA 12.6, driver 566.26",
+  "build": "build-mps Release SM89 QWEN2_SUPPORT=ON NCCL=OFF",
+  "cpp_tests": {
+    "total": 53,
+    "passed": 50,
+    "skipped": 3,
+    "skipped_reason": "Two GPU P2P / NCCL unavailable",
+    "filter": "GlobalChunkAllocator.*:MultiModelRouting.*:ServingMemoryBudget.*:PDHandoffTest.*:PDEngineTest.*:PDWorkerTest.*:*KVCacheManager*:*SequenceKVManager*:*SchedulerRadix*:PagedAttentionTest.*:PagedAttentionFastTest.*:SplitKVAttentionTest.*"
+  },
+  "python_deployment_tests": {
+    "total": 4,
+    "passed": 4
+  },
+  "distinct_qwen25_weights": true,
+  "backend_validated": "process",
+  "mps_control_available": false,
+  "mps_server_registration_verified": false,
+  "mps_kernel_concurrency_verified": false,
+  "transformers_text_matches": {
+    "matched": 1,
+    "total": 6,
+    "diagnostic_exit_code": 2
+  },
+  "private_allocator_reserved_bytes": {
+    "qwen25-0.5b": 1337288324,
+    "qwen25-1.5b": 3661374340
+  },
+  "worker_failure_stops_gpu_domain": true
+}

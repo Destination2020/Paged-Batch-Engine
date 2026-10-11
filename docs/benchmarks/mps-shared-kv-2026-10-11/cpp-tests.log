@@ -1,0 +1,229 @@
+I20261011 02:17:13.499218 134409745321984 test_main.cpp:14] Start Test...
+Note: Google Test filter = GlobalChunkAllocator.*:MultiModelRouting.*:ServingMemoryBudget.*:PDHandoffTest.*:PDEngineTest.*:PDWorkerTest.*:*KVCacheManager*:*SequenceKVManager*:*SchedulerRadix*:PagedAttentionTest.*:PagedAttentionFastTest.*:SplitKVAttentionTest.*
+[==========] Running 53 tests from 12 test suites.
+[----------] Global test environment set-up.
+[----------] 4 tests from GlobalChunkAllocator
+[ RUN      ] GlobalChunkAllocator.SharesReturnedBytesAcrossDifferentLayouts
+[       OK ] GlobalChunkAllocator.SharesReturnedBytesAcrossDifferentLayouts (0 ms)
+[ RUN      ] GlobalChunkAllocator.RejectsWrongEpochIdentityAndDuplicateRelease
+[       OK ] GlobalChunkAllocator.RejectsWrongEpochIdentityAndDuplicateRelease (0 ms)
+[ RUN      ] GlobalChunkAllocator.AlignmentFragmentationAndQuotaAreAtomic
+[       OK ] GlobalChunkAllocator.AlignmentFragmentationAndQuotaAreAtomic (0 ms)
+[ RUN      ] GlobalChunkAllocator.RandomizedAccountingAndDisjointIntervals
+[       OK ] GlobalChunkAllocator.RandomizedAccountingAndDisjointIntervals (8 ms)
+[----------] 4 tests from GlobalChunkAllocator (9 ms total)
+
+[----------] 9 tests from KVCacheManagerTest
+[ RUN      ] KVCacheManagerTest.ReusesFreedSlotWithFreshGeneration
+I20261011 02:17:13.509314 134409745321984 block_allocator.cpp:63] BlockAllocator initialized: 8 blocks, block_size=4, storage_mode=plain, total_memory=0.00195312 MB
+I20261011 02:17:13.509364 134409745321984 block_allocator.cpp:63] BlockAllocator initialized: 8 blocks, block_size=4, storage_mode=plain, total_memory=0.00195312 MB
+[       OK ] KVCacheManagerTest.ReusesFreedSlotWithFreshGeneration (0 ms)
+[ RUN      ] KVCacheManagerTest.InvalidatesStaleAndMalformedHandles
+I20261011 02:17:13.509418 134409745321984 block_allocator.cpp:63] BlockAllocator initialized: 8 blocks, block_size=4, storage_mode=plain, total_memory=0.00195312 MB
+I20261011 02:17:13.509424 134409745321984 block_allocator.cpp:63] BlockAllocator initialized: 8 blocks, block_size=4, storage_mode=plain, total_memory=0.00195312 MB
+[       OK ] KVCacheManagerTest.InvalidatesStaleAndMalformedHandles (0 ms)
+[ RUN      ] KVCacheManagerTest.AppendFailsWhenAllocatorCapacityIsExhausted
+I20261011 02:17:13.509436 134409745321984 block_allocator.cpp:63] BlockAllocator initialized: 3 blocks, block_size=4, storage_mode=plain, total_memory=0.000732422 MB
+I20261011 02:17:13.509441 134409745321984 block_allocator.cpp:63] BlockAllocator initialized: 3 blocks, block_size=4, storage_mode=plain, total_memory=0.000732422 MB
+W20261011 02:17:13.509449 134409745321984 sequence_kv_manager.cpp:199] Failed to allocate 1 KV blocks for layer 0: no free blocks available
+[       OK ] KVCacheManagerTest.AppendFailsWhenAllocatorCapacityIsExhausted (0 ms)
+[ RUN      ] KVCacheManagerTest.RadixCacheReusesLongestPrefixWithSeedTail
+I20261011 02:17:13.509464 134409745321984 block_allocator.cpp:63] BlockAllocator initialized: 10 blocks, block_size=2, storage_mode=plain, total_memory=0.0012207 MB
+I20261011 02:17:13.509468 134409745321984 block_allocator.cpp:63] BlockAllocator initialized: 10 blocks, block_size=2, storage_mode=plain, total_memory=0.0012207 MB
+[       OK ] KVCacheManagerTest.RadixCacheReusesLongestPrefixWithSeedTail (0 ms)
+[ RUN      ] KVCacheManagerTest.RadixCachePartialHitSplitsCompressedNode
+I20261011 02:17:13.509502 134409745321984 block_allocator.cpp:63] BlockAllocator initialized: 12 blocks, block_size=2, storage_mode=plain, total_memory=0.00146484 MB
+[       OK ] KVCacheManagerTest.RadixCachePartialHitSplitsCompressedNode (0 ms)
+[ RUN      ] KVCacheManagerTest.RadixCachePublishKeepsBlocksResidentAfterRequestFree
+I20261011 02:17:13.509520 134409745321984 block_allocator.cpp:63] BlockAllocator initialized: 6 blocks, block_size=2, storage_mode=plain, total_memory=0.000732422 MB
+I20261011 02:17:13.509525 134409745321984 block_allocator.cpp:63] BlockAllocator initialized: 6 blocks, block_size=2, storage_mode=plain, total_memory=0.000732422 MB
+[       OK ] KVCacheManagerTest.RadixCachePublishKeepsBlocksResidentAfterRequestFree (0 ms)
+[ RUN      ] KVCacheManagerTest.RadixCacheCanBeDisabledExplicitly
+I20261011 02:17:13.509553 134409745321984 block_allocator.cpp:63] BlockAllocator initialized: 8 blocks, block_size=2, storage_mode=plain, total_memory=0.000976562 MB
+[       OK ] KVCacheManagerTest.RadixCacheCanBeDisabledExplicitly (0 ms)
+[ RUN      ] KVCacheManagerTest.RadixCacheDoesNotEvictActivePinnedPath
+I20261011 02:17:13.509567 134409745321984 block_allocator.cpp:63] BlockAllocator initialized: 4 blocks, block_size=2, storage_mode=plain, total_memory=0.000488281 MB
+W20261011 02:17:13.509574 134409745321984 sequence_kv_manager.cpp:199] Failed to allocate 3 KV blocks for layer 0: no free blocks available
+[       OK ] KVCacheManagerTest.RadixCacheDoesNotEvictActivePinnedPath (0 ms)
+[ RUN      ] KVCacheManagerTest.AppendUnderPressureEvictsColdRadixCache
+I20261011 02:17:13.509592 134409745321984 block_allocator.cpp:63] BlockAllocator initialized: 4 blocks, block_size=2, storage_mode=plain, total_memory=0.000488281 MB
+W20261011 02:17:13.509598 134409745321984 sequence_kv_manager.cpp:199] Failed to allocate 2 KV blocks for layer 0: no free blocks available
+[       OK ] KVCacheManagerTest.AppendUnderPressureEvictsColdRadixCache (0 ms)
+[----------] 9 tests from KVCacheManagerTest (0 ms total)
+
+[----------] 1 test from PagedAttentionTest
+[ RUN      ] PagedAttentionTest.SingleSequenceDecodeCorrectness
+I20261011 02:17:13.885484 134409745321984 block_allocator.cpp:63] BlockAllocator initialized: 128 blocks, block_size=16, storage_mode=plain, total_memory=2 MB
+I20261011 02:17:13.886054 134409745321984 block_allocator.cpp:63] BlockAllocator initialized: 128 blocks, block_size=16, storage_mode=plain, total_memory=2 MB
+Max difference: 5.96046e-08
+[       OK ] PagedAttentionTest.SingleSequenceDecodeCorrectness (389 ms)
+[----------] 1 test from PagedAttentionTest (389 ms total)
+
+[----------] 5 tests from PagedAttentionFastTest
+[ RUN      ] PagedAttentionFastTest.ReturnsFalseForFp32
+[       OK ] PagedAttentionFastTest.ReturnsFalseForFp32 (0 ms)
+[ RUN      ] PagedAttentionFastTest.FallsBackShortBucket
+[       OK ] PagedAttentionFastTest.FallsBackShortBucket (0 ms)
+[ RUN      ] PagedAttentionFastTest.FallsBackMidBucket
+[       OK ] PagedAttentionFastTest.FallsBackMidBucket (1 ms)
+[ RUN      ] PagedAttentionFastTest.MatchesLegacyLongBucket
+[       OK ] PagedAttentionFastTest.MatchesLegacyLongBucket (4 ms)
+[ RUN      ] PagedAttentionFastTest.EmptySequenceProducesZeroOutput
+[       OK ] PagedAttentionFastTest.EmptySequenceProducesZeroOutput (2 ms)
+[----------] 5 tests from PagedAttentionFastTest (8 ms total)
+
+[----------] 1 test from SchedulerRadixCacheTest
+[ RUN      ] SchedulerRadixCacheTest.PartialHitBuildsCorrectPrefillMetadataAcrossChunks
+I20261011 02:17:13.907971 134409745321984 block_allocator.cpp:63] BlockAllocator initialized: 16 blocks, block_size=2, storage_mode=plain, total_memory=0.00195312 MB
+[       OK ] SchedulerRadixCacheTest.PartialHitBuildsCorrectPrefillMetadataAcrossChunks (6 ms)
+[----------] 1 test from SchedulerRadixCacheTest (6 ms total)
+
+[----------] 4 tests from SequenceKVManagerTest
+[ RUN      ] SequenceKVManagerTest.AppendTokensBulkCommitAcrossBlockBoundary
+I20261011 02:17:13.914181 134409745321984 block_allocator.cpp:63] BlockAllocator initialized: 4 blocks, block_size=4, storage_mode=plain, total_memory=0.000976562 MB
+I20261011 02:17:13.914199 134409745321984 block_allocator.cpp:63] BlockAllocator initialized: 4 blocks, block_size=4, storage_mode=plain, total_memory=0.000976562 MB
+[       OK ] SequenceKVManagerTest.AppendTokensBulkCommitAcrossBlockBoundary (0 ms)
+[ RUN      ] SequenceKVManagerTest.AppendTokensFailureRollsBackWithoutMutation
+I20261011 02:17:13.914214 134409745321984 block_allocator.cpp:63] BlockAllocator initialized: 2 blocks, block_size=4, storage_mode=plain, total_memory=0.000488281 MB
+I20261011 02:17:13.914219 134409745321984 block_allocator.cpp:63] BlockAllocator initialized: 2 blocks, block_size=4, storage_mode=plain, total_memory=0.000488281 MB
+W20261011 02:17:13.914224 134409745321984 sequence_kv_manager.cpp:199] Failed to allocate 2 KV blocks for layer 0: no free blocks available
+[       OK ] SequenceKVManagerTest.AppendTokensFailureRollsBackWithoutMutation (0 ms)
+[ RUN      ] SequenceKVManagerTest.TruncateToShrinksLogicalLengthAndReleasesTailBlocks
+I20261011 02:17:13.914248 134409745321984 block_allocator.cpp:63] BlockAllocator initialized: 4 blocks, block_size=4, storage_mode=plain, total_memory=0.000976562 MB
+I20261011 02:17:13.914252 134409745321984 block_allocator.cpp:63] BlockAllocator initialized: 4 blocks, block_size=4, storage_mode=plain, total_memory=0.000976562 MB
+[       OK ] SequenceKVManagerTest.TruncateToShrinksLogicalLengthAndReleasesTailBlocks (0 ms)
+[ RUN      ] SequenceKVManagerTest.TruncateWithSharedPrefixKeepsSharedBlocksPinned
+I20261011 02:17:13.914263 134409745321984 block_allocator.cpp:63] BlockAllocator initialized: 6 blocks, block_size=4, storage_mode=plain, total_memory=0.00146484 MB
+I20261011 02:17:13.914268 134409745321984 block_allocator.cpp:63] BlockAllocator initialized: 6 blocks, block_size=4, storage_mode=plain, total_memory=0.00146484 MB
+[       OK ] SequenceKVManagerTest.TruncateWithSharedPrefixKeepsSharedBlocksPinned (4051 ms)
+[----------] 4 tests from SequenceKVManagerTest (4051 ms total)
+
+[----------] 3 tests from ServingMemoryBudget
+[ RUN      ] ServingMemoryBudget.AbsoluteBudgetDoesNotScaleWithDeviceFreeMemory
+[       OK ] ServingMemoryBudget.AbsoluteBudgetDoesNotScaleWithDeviceFreeMemory (0 ms)
+[ RUN      ] ServingMemoryBudget.CUDAAllocatorChargesCachedPhysicalBytesAndRejectsGrowth
+E20261011 02:17:17.966035 134409745321984 alloc_cu.cpp:64] Private CUDA allocation budget exhausted: reserved=4096 requested=6144 limit=8192
+[       OK ] ServingMemoryBudget.CUDAAllocatorChargesCachedPhysicalBytesAndRejectsGrowth (0 ms)
+[ RUN      ] ServingMemoryBudget.CUDAAllocatorReusesLargeBufferBeforeAnySmallAllocation
+[       OK ] ServingMemoryBudget.CUDAAllocatorReusesLargeBufferBeforeAnySmallAllocation (0 ms)
+[----------] 3 tests from ServingMemoryBudget (1 ms total)
+
+[----------] 2 tests from SplitKVAttentionTest
+[ RUN      ] SplitKVAttentionTest.SingleSequenceMatchesBaseline
+I20261011 02:17:17.967035 134409745321984 block_allocator.cpp:63] BlockAllocator initialized: 128 blocks, block_size=16, storage_mode=plain, total_memory=2 MB
+I20261011 02:17:17.967064 134409745321984 block_allocator.cpp:63] BlockAllocator initialized: 128 blocks, block_size=16, storage_mode=plain, total_memory=2 MB
+[SplitKV vs Baseline] context_len=256 max_diff=6.70552e-08
+[       OK ] SplitKVAttentionTest.SingleSequenceMatchesBaseline (147 ms)
+[ RUN      ] SplitKVAttentionTest.ShortContextSinglePartition
+I20261011 02:17:18.114642 134409745321984 block_allocator.cpp:63] BlockAllocator initialized: 32 blocks, block_size=16, storage_mode=plain, total_memory=0.5 MB
+[SplitKV short] context_len=5 max_diff=0
+[       OK ] SplitKVAttentionTest.ShortContextSinglePartition (1 ms)
+[----------] 2 tests from SplitKVAttentionTest (148 ms total)
+
+[----------] 4 tests from MultiModelRouting
+[ RUN      ] MultiModelRouting.IdentitySurvivesRPCSerialization
+[       OK ] MultiModelRouting.IdentitySurvivesRPCSerialization (0 ms)
+[ RUN      ] MultiModelRouting.ListsModelsAndRejectsUnknownWithoutSendingRPC
+[       OK ] MultiModelRouting.ListsModelsAndRejectsUnknownWithoutSendingRPC (0 ms)
+[ RUN      ] MultiModelRouting.RejectsDuplicateModelOrWorkerEndpoint
+[       OK ] MultiModelRouting.RejectsDuplicateModelOrWorkerEndpoint (0 ms)
+[ RUN      ] MultiModelRouting.SplitChineseCodePointIsBufferedUntilComplete
+[       OK ] MultiModelRouting.SplitChineseCodePointIsBufferedUntilComplete (1 ms)
+[----------] 4 tests from MultiModelRouting (2 ms total)
+
+[----------] 5 tests from PDEngineTest
+[ RUN      ] PDEngineTest.PrefillAndDecodeEnginesExposeIndependentSchedulersAndKvManagers
+I20261011 02:17:18.118606 134409745321984 block_allocator.cpp:63] BlockAllocator initialized: 16 blocks, block_size=4, storage_mode=plain, total_memory=0.00390625 MB
+I20261011 02:17:18.118625 134409745321984 block_allocator.cpp:63] BlockAllocator initialized: 16 blocks, block_size=4, storage_mode=plain, total_memory=0.00390625 MB
+I20261011 02:17:18.118646 134409745321984 block_allocator.cpp:63] BlockAllocator initialized: 16 blocks, block_size=4, storage_mode=plain, total_memory=0.00390625 MB
+I20261011 02:17:18.118659 134409745321984 block_allocator.cpp:63] BlockAllocator initialized: 16 blocks, block_size=4, storage_mode=plain, total_memory=0.00390625 MB
+[       OK ] PDEngineTest.PrefillAndDecodeEnginesExposeIndependentSchedulersAndKvManagers (8 ms)
+[ RUN      ] PDEngineTest.PrefillEngineOwnsPrefillSchedulerAdmission
+I20261011 02:17:18.126845 134409745321984 block_allocator.cpp:63] BlockAllocator initialized: 16 blocks, block_size=4, storage_mode=plain, total_memory=0.00390625 MB
+I20261011 02:17:18.126883 134409745321984 block_allocator.cpp:63] BlockAllocator initialized: 16 blocks, block_size=4, storage_mode=plain, total_memory=0.00390625 MB
+[       OK ] PDEngineTest.PrefillEngineOwnsPrefillSchedulerAdmission (8 ms)
+[ RUN      ] PDEngineTest.DecodeEngineRejectsNonDecodeOnlyExecutionAtWorkerBoundary
+I20261011 02:17:18.134972 134409745321984 block_allocator.cpp:63] BlockAllocator initialized: 16 blocks, block_size=4, storage_mode=plain, total_memory=0.00390625 MB
+I20261011 02:17:18.134994 134409745321984 block_allocator.cpp:63] BlockAllocator initialized: 16 blocks, block_size=4, storage_mode=plain, total_memory=0.00390625 MB
+[       OK ] PDEngineTest.DecodeEngineRejectsNonDecodeOnlyExecutionAtWorkerBoundary (7 ms)
+[ RUN      ] PDEngineTest.DecodeEngineInjectsReservationAsDecodeReadyRequest
+I20261011 02:17:18.142347 134409745321984 block_allocator.cpp:63] BlockAllocator initialized: 16 blocks, block_size=4, storage_mode=plain, total_memory=0.00390625 MB
+I20261011 02:17:18.142367 134409745321984 block_allocator.cpp:63] BlockAllocator initialized: 16 blocks, block_size=4, storage_mode=plain, total_memory=0.00390625 MB
+[       OK ] PDEngineTest.DecodeEngineInjectsReservationAsDecodeReadyRequest (8 ms)
+[ RUN      ] PDEngineTest.InProcPrefillCopyDecodeEnginePipelineSchedulesDecodeOnly
+I20261011 02:17:18.150528 134409745321984 block_allocator.cpp:63] BlockAllocator initialized: 16 blocks, block_size=4, storage_mode=plain, total_memory=0.00390625 MB
+I20261011 02:17:18.150553 134409745321984 block_allocator.cpp:63] BlockAllocator initialized: 16 blocks, block_size=4, storage_mode=plain, total_memory=0.00390625 MB
+I20261011 02:17:18.150565 134409745321984 block_allocator.cpp:63] BlockAllocator initialized: 16 blocks, block_size=4, storage_mode=plain, total_memory=0.00390625 MB
+I20261011 02:17:18.150577 134409745321984 block_allocator.cpp:63] BlockAllocator initialized: 16 blocks, block_size=4, storage_mode=plain, total_memory=0.00390625 MB
+[       OK ] PDEngineTest.InProcPrefillCopyDecodeEnginePipelineSchedulesDecodeOnly (6 ms)
+[----------] 5 tests from PDEngineTest (38 ms total)
+
+[----------] 14 tests from PDHandoffTest
+[ RUN      ] PDHandoffTest.ValidManifestPassesValidation
+[       OK ] PDHandoffTest.ValidManifestPassesValidation (0 ms)
+[ RUN      ] PDHandoffTest.IncompatiblePoolsFailValidation
+[       OK ] PDHandoffTest.IncompatiblePoolsFailValidation (0 ms)
+[ RUN      ] PDHandoffTest.NoCopyConnectorCompletesImmediately
+[       OK ] PDHandoffTest.NoCopyConnectorCompletesImmediately (0 ms)
+[ RUN      ] PDHandoffTest.CoordinatorMarksNoCopyTransferDecodeReady
+[       OK ] PDHandoffTest.CoordinatorMarksNoCopyTransferDecodeReady (0 ms)
+[ RUN      ] PDHandoffTest.CoordinatorReportsInvalidManifestFailure
+[       OK ] PDHandoffTest.CoordinatorReportsInvalidManifestFailure (0 ms)
+[ RUN      ] PDHandoffTest.CoordinatorCancelBeforeCompletion
+[       OK ] PDHandoffTest.CoordinatorCancelBeforeCompletion (0 ms)
+[ RUN      ] PDHandoffTest.DecodeReservationBuildsDstBlockManifest
+I20261011 02:17:18.157187 134409745321984 block_allocator.cpp:63] BlockAllocator initialized: 8 blocks, block_size=16, storage_mode=plain, total_memory=0.0625 MB
+I20261011 02:17:18.157214 134409745321984 block_allocator.cpp:63] BlockAllocator initialized: 8 blocks, block_size=16, storage_mode=plain, total_memory=0.0625 MB
+[       OK ] PDHandoffTest.DecodeReservationBuildsDstBlockManifest (0 ms)
+[ RUN      ] PDHandoffTest.DecodeReservationFailsWhenDstBlocksInsufficient
+I20261011 02:17:18.157248 134409745321984 block_allocator.cpp:63] BlockAllocator initialized: 1 blocks, block_size=16, storage_mode=plain, total_memory=0.0078125 MB
+I20261011 02:17:18.157254 134409745321984 block_allocator.cpp:63] BlockAllocator initialized: 1 blocks, block_size=16, storage_mode=plain, total_memory=0.0078125 MB
+W20261011 02:17:18.157259 134409745321984 sequence_kv_manager.cpp:199] Failed to allocate 2 KV blocks for layer 0: no free blocks available
+[       OK ] PDHandoffTest.DecodeReservationFailsWhenDstBlocksInsufficient (0 ms)
+[ RUN      ] PDHandoffTest.InProcKVBlockCopyConnectorCopiesPlainBlocks
+I20261011 02:17:18.157273 134409745321984 block_allocator.cpp:63] BlockAllocator initialized: 8 blocks, block_size=16, storage_mode=plain, total_memory=0.0625 MB
+I20261011 02:17:18.157278 134409745321984 block_allocator.cpp:63] BlockAllocator initialized: 8 blocks, block_size=16, storage_mode=plain, total_memory=0.0625 MB
+I20261011 02:17:18.157288 134409745321984 block_allocator.cpp:63] BlockAllocator initialized: 8 blocks, block_size=16, storage_mode=plain, total_memory=0.0625 MB
+I20261011 02:17:18.157297 134409745321984 block_allocator.cpp:63] BlockAllocator initialized: 8 blocks, block_size=16, storage_mode=plain, total_memory=0.0625 MB
+[       OK ] PDHandoffTest.InProcKVBlockCopyConnectorCopiesPlainBlocks (0 ms)
+[ RUN      ] PDHandoffTest.CoordinatorRunsReservationCopyDecodeReadyPipeline
+I20261011 02:17:18.157424 134409745321984 block_allocator.cpp:63] BlockAllocator initialized: 8 blocks, block_size=16, storage_mode=plain, total_memory=0.0625 MB
+I20261011 02:17:18.157431 134409745321984 block_allocator.cpp:63] BlockAllocator initialized: 8 blocks, block_size=16, storage_mode=plain, total_memory=0.0625 MB
+I20261011 02:17:18.157436 134409745321984 block_allocator.cpp:63] BlockAllocator initialized: 8 blocks, block_size=16, storage_mode=plain, total_memory=0.0625 MB
+I20261011 02:17:18.157441 134409745321984 block_allocator.cpp:63] BlockAllocator initialized: 8 blocks, block_size=16, storage_mode=plain, total_memory=0.0625 MB
+[       OK ] PDHandoffTest.CoordinatorRunsReservationCopyDecodeReadyPipeline (0 ms)
+[ RUN      ] PDHandoffTest.CudaFp8ConnectorCopiesKeyValueAndScaleBlocks
+I20261011 02:17:18.157499 134409745321984 block_allocator.cpp:63] BlockAllocator initialized: 8 blocks, block_size=16, storage_mode=fp8_e4m3_per_token_head, total_memory=0.03125 MB
+I20261011 02:17:18.157505 134409745321984 block_allocator.cpp:63] BlockAllocator initialized: 8 blocks, block_size=16, storage_mode=fp8_e4m3_per_token_head, total_memory=0.03125 MB
+I20261011 02:17:18.157511 134409745321984 block_allocator.cpp:63] BlockAllocator initialized: 8 blocks, block_size=16, storage_mode=fp8_e4m3_per_token_head, total_memory=0.03125 MB
+I20261011 02:17:18.157538 134409745321984 block_allocator.cpp:63] BlockAllocator initialized: 8 blocks, block_size=16, storage_mode=fp8_e4m3_per_token_head, total_memory=0.03125 MB
+[       OK ] PDHandoffTest.CudaFp8ConnectorCopiesKeyValueAndScaleBlocks (2 ms)
+[ RUN      ] PDHandoffTest.CudaP2PConnectorCopiesPlainBlocksAcrossDevices
+/home/nowcoder/PagedBatchEngine/test/test_serving/test_pd_handoff.cpp:559: Skipped
+At least two CUDA devices are required
+
+[  SKIPPED ] PDHandoffTest.CudaP2PConnectorCopiesPlainBlocksAcrossDevices (0 ms)
+[ RUN      ] PDHandoffTest.NcclConnectorCopiesPlainBlocksAcrossDevices
+/home/nowcoder/PagedBatchEngine/test/test_serving/test_pd_handoff.cpp:612: Skipped
+At least two CUDA devices are required
+
+[  SKIPPED ] PDHandoffTest.NcclConnectorCopiesPlainBlocksAcrossDevices (0 ms)
+[ RUN      ] PDHandoffTest.NcclLayerConnectorCopiesPlainBlocksAcrossDevices
+/home/nowcoder/PagedBatchEngine/test/test_serving/test_pd_handoff.cpp:667: Skipped
+At least two CUDA devices are required
+
+[  SKIPPED ] PDHandoffTest.NcclLayerConnectorCopiesPlainBlocksAcrossDevices (0 ms)
+[----------] 14 tests from PDHandoffTest (3 ms total)
+
+[----------] 1 test from PDWorkerTest
+[ RUN      ] PDWorkerTest.ClassifiesEmptyDecodePrefillAndMixedSteps
+[       OK ] PDWorkerTest.ClassifiesEmptyDecodePrefillAndMixedSteps (0 ms)
+[----------] 1 test from PDWorkerTest (0 ms total)
+
+[----------] Global test environment tear-down
+[==========] 53 tests from 12 test suites ran. (4660 ms total)
+[  PASSED  ] 50 tests.
+[  SKIPPED ] 3 tests, listed below:
+[  SKIPPED ] PDHandoffTest.CudaP2PConnectorCopiesPlainBlocksAcrossDevices
+[  SKIPPED ] PDHandoffTest.NcclConnectorCopiesPlainBlocksAcrossDevices
+[  SKIPPED ] PDHandoffTest.NcclLayerConnectorCopiesPlainBlocksAcrossDevices

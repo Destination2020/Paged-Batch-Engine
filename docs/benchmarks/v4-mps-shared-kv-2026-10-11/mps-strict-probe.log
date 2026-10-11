@@ -1,0 +1,2 @@
+Runtime logs: /tmp/pbe-v4-mps-strict-probe
+DEPLOYMENT_ERROR: Both clients are not registered with the same MPS server

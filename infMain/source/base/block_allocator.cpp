@@ -6,6 +6,9 @@
 #include <limits>
 #include <utility>
 #include "base/alloc.h"
+#ifndef KUIPER_CPU_ONLY
+#include "base/shared_kv_arena.h"
+#endif
 
 namespace base {
 
@@ -132,7 +135,79 @@ BlockAllocator::~BlockAllocator() {
   // Tensors will auto-release memory
 }
 
+#ifndef KUIPER_CPU_ONLY
+BlockAllocator::BlockAllocator(int32_t block_size, int32_t num_kv_heads,
+    int32_t head_size, std::shared_ptr<SharedKVPageGroup> group, int32_t layer)
+    : num_blocks_(group->addressable_blocks()), block_size_(block_size),
+      num_kv_heads_(num_kv_heads), head_size_(head_size), device_(DeviceType::kDeviceCUDA),
+      storage_spec_(MakeKVCacheStorageSpec(DataType::kDataTypeBf16, BlockStorageMode::kPlain)),
+      shared_group_(std::move(group)), shared_layer_(layer) {
+  CHECK_GT(num_blocks_, 0);
+  CHECK_LE(static_cast<int64_t>(num_blocks_) * block_size_, INT32_MAX)
+      << "Shared arena exceeds int32 slot mapping range";
+  const int32_t row = block_size_ * num_kv_heads_ * head_size_;
+  key_pool_ = tensor::Tensor(DataType::kDataTypeBf16, num_blocks_, row,
+                            false, nullptr, shared_group_->key_base(layer));
+  value_pool_ = tensor::Tensor(DataType::kDataTypeBf16, num_blocks_, row,
+                              false, nullptr, shared_group_->value_base(layer));
+  key_pool_.set_device_type(device_);
+  value_pool_.set_device_type(device_);
+  // Chunk-backed views participate in V4 handles and compute/I/O leases too.
+  static std::atomic<uint64_t> next_shared_pool_id{uint64_t{1} << 62};
+  pool_id_ = next_shared_pool_id.fetch_add(1);
+  CHECK_LT(pool_id_, uint64_t{1} << 63);
+  generations_.resize(num_blocks_, 0);
+  compute_pins_.resize(num_blocks_, 0);
+  io_pins_.resize(num_blocks_, 0);
+  allocatable_.resize(num_blocks_, 0);  // Only the owner grants these pages.
+  ref_counts_.resize(num_blocks_, 0);
+}
+#endif
+
+int32_t BlockAllocator::num_free_blocks() const {
+#ifndef KUIPER_CPU_ONLY
+  if (shared_group_) {
+    shared_group_->collect();
+    return shared_group_->free_blocks(shared_layer_);
+  }
+#endif
+  return static_cast<int32_t>(free_queue_.size());
+}
+size_t BlockAllocator::shared_leased_bytes() const {
+#ifndef KUIPER_CPU_ONLY
+  return shared_group_ ? shared_group_->leased_bytes() : 0;
+#else
+  return 0;
+#endif
+}
+size_t BlockAllocator::shared_arena_bytes() const {
+#ifndef KUIPER_CPU_ONLY
+  return shared_group_ ? shared_group_->arena_bytes() : 0;
+#else
+  return 0;
+#endif
+}
+int32_t BlockAllocator::num_total_blocks() const {
+#ifndef KUIPER_CPU_ONLY
+  return shared_group_ ? shared_group_->capacity() : num_blocks_;
+#else
+  return num_blocks_;
+#endif
+}
+
 int32_t BlockAllocator::allocate() {
+#ifndef KUIPER_CPU_ONLY
+  if (shared_group_) {
+    const int32_t id = shared_group_->allocate(shared_layer_);
+    if (id < 0) return -1;
+    CHECK_LT(id, num_blocks_);
+    CHECK_EQ(ref_counts_[id], 0);
+    CHECK_LT(generations_[id], std::numeric_limits<uint64_t>::max());
+    ++generations_[id];
+    ref_counts_[id] = 1;
+    return id;
+  }
+#endif
   if (free_queue_.empty()) {
     return -1;  // No free blocks
   }
@@ -185,9 +260,17 @@ void BlockAllocator::free(int32_t block_id) {
   CHECK_GT(ref_counts_[block_id], 0) << "Double free of block " << block_id;
 
   --ref_counts_[block_id];
-  if (ref_counts_[block_id] == 0 && allocatable_[block_id] &&
-      generations_[block_id] != std::numeric_limits<uint64_t>::max()) {
-    free_queue_.push(block_id);
+  if (ref_counts_[block_id] == 0) {
+#ifndef KUIPER_CPU_ONLY
+    if (shared_group_) {
+      shared_group_->retire(shared_layer_, block_id);
+      return;
+    }
+#endif
+    if (allocatable_[block_id] &&
+               generations_[block_id] != std::numeric_limits<uint64_t>::max()) {
+      free_queue_.push(block_id);
+    }
   }
 }
 

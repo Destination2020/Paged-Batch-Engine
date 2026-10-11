@@ -1,0 +1,48 @@
+{
+  "v4_base": "40afd32553d356816525c2f9b05696b923d6ba64",
+  "ported_from": "67faf2cd68ca80da651b53711d35eefa2b5357ad",
+  "cpp": {
+    "tests": 212,
+    "passed": 199,
+    "skipped": 13,
+    "failures": 0,
+    "filter": "*-test_*.*",
+    "skipped_tests": [
+      "PDHandoffTest.CudaP2PConnectorCopiesPlainBlocksAcrossDevices",
+      "PDHandoffTest.SharedSchedulerMergesAndIndependentlyCancelsCudaP2PWaiters",
+      "PDHandoffTest.NcclConnectorCopiesPlainBlocksAcrossDevices",
+      "PDHandoffTest.NcclLayerConnectorCopiesPlainBlocksAcrossDevices",
+      "Qwen25VLChunkedTest.FourFixturesCrossMediaSpansAtTwoChunkCaps",
+      "Qwen25VLModelTest.OneImageMatchesReferenceLogitsAndGreedyDecode",
+      "Qwen25VLModelTest.TextResolutionTwoImageAndMixedPrefillMatchReference",
+      "Qwen2DeviceInitTest.TwoInstancesCanLoadOnDistinctDevicesWithFixtureModel",
+      "Qwen2DeviceInitTest.DualGpuP2PMatchesSingleModelGreedyTokens",
+      "Qwen2DeviceInitTest.CheckpointResumeMatchesUninterruptedSampledTokens",
+      "Qwen2DeviceInitTest.DualGpuNcclMatchesSingleModelGreedyTokens",
+      "Qwen2DeviceInitTest.DualGpuNcclLayerMatchesSingleModelGreedyTokens",
+      "TensorBundleCrossLanguageTest.DecodesPythonGoldenWhenProvided"
+    ]
+  },
+  "checkpoint_with_real_qwen25_05b": "passed (one of the 13 initially skipped tests)",
+  "distinct_cpp_results": {
+    "passed": 200,
+    "still_skipped": 12
+  },
+  "python_deployment_tests": 4,
+  "python_v4_data_tests": 5,
+  "dual_model_backend": "process",
+  "six_outputs_match_v4_private_kv_baselines": true,
+  "v4_external_kv": {
+    "completed_requests": 2,
+    "failed_requests": 0,
+    "free_slots": 64,
+    "total_slots": 64,
+    "active_grants": 0,
+    "leases": 0
+  },
+  "validation_reserve_mib": 512,
+  "default_config_reserve_mib": 768,
+  "mps_kernel_concurrency_verified": false,
+  "full_v4_multimodal_two_gpu_acceptance_rerun": false,
+  "standalone_cache_core_build": "Not verified: inherited standalone target omits CUDA headers, DataChecksum, RecoveryDependencyGraph and PrefixBuilder link dependencies. The full test_llm target covers these CPU tests successfully."
+}

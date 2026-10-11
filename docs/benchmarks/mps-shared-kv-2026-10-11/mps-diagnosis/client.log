@@ -1,0 +1,12 @@
+{
+  "pid": 4066,
+  "pipe_directory": "/tmp/pbe-mps-diagnosis-20261011/controlled/pipe",
+  "active_thread_percentage": "50",
+  "cuInit": 0,
+  "cuCtxCreate_v2": 0,
+  "cuMemAlloc_v2": 0,
+  "cuDeviceGetAttribute": 0,
+  "multiprocessor_count": 24,
+  "cuMemFree_v2": 0,
+  "cuCtxDestroy_v2": 0
+}

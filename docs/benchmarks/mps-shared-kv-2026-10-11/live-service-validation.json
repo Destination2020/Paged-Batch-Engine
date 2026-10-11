@@ -1,0 +1,153 @@
+{
+  "base_url": "http://127.0.0.1:8080",
+  "backend": "process",
+  "mps_verified": false,
+  "supervisor_pid": 8997,
+  "runtime_directory": "/tmp/pbe-live-qwen25-wu4u70jy",
+  "model_ids": [
+    "qwen25-0.5b",
+    "qwen25-1.5b"
+  ],
+  "private_kv_reference": "docs/benchmarks/mps-shared-kv-2026-10-11/validation.json",
+  "concurrent_requests": 6,
+  "baseline_matches": true,
+  "parallel_request_wall_seconds": 2.1692276539979503,
+  "utf8_streaming": true,
+  "stream_chunk_counts": {
+    "qwen25-0.5b": 23,
+    "qwen25-1.5b": 4
+  },
+  "default_model_routing": true,
+  "chat_endpoint": true,
+  "cancellation_route": true,
+  "invalid_requests": {
+    "unknown_model": {
+      "status": 400,
+      "body": "{\"error\":\"unknown_model\"}"
+    },
+    "output_limit": {
+      "status": 400,
+      "body": "{\"error\":\"output_too_long\"}"
+    },
+    "prompt_limit": {
+      "status": 400,
+      "body": "{\"error\":\"prompt_too_long\"}"
+    }
+  },
+  "arena_bytes": 536870912,
+  "peak_observed_leases": 6,
+  "peak_observed_kv_bytes": 13500416,
+  "arena_fully_reclaimed": true,
+  "final_lease_count": 0,
+  "service_left_running": true,
+  "worker_health": {
+    "qwen25-0.5b": {
+      "model_id": "qwen25-0.5b",
+      "ok": true,
+      "private_allocator_reserved_bytes": 1337288324,
+      "status": "ok"
+    },
+    "qwen25-1.5b": {
+      "model_id": "qwen25-1.5b",
+      "ok": true,
+      "private_allocator_reserved_bytes": 3661374340,
+      "status": "ok"
+    }
+  },
+  "outputs": {
+    "qwen25-0.5b": [
+      "中国的首都北京，是中国的政治、经济、文化、交通和国际交往中心，也是世界上最大的城市之一。",
+      "Certainly! Below is a simple Python function that adds two numbers:\n\n```python\ndef add_numbers(a, b):",
+      "很抱歉，我无法从您提供的信息中提取出具体会议讨论的内容。这段话似乎是一段混乱的"
+    ],
+    "qwen25-1.5b": [
+      "中国的首都北京。",
+      "Certainly! Here's a simple Python function to add two numbers:\n\n```python\ndef add_numbers(a, b):",
+      "今天的会议主要讨论了共享显存和并发推理。"
+    ]
+  },
+  "chat_outputs": {
+    "qwen25-0.5b": "北京，古都，历史文化名城，国际交往中心，国际美食之都。",
+    "qwen25-1.5b": "北京是中国的首都，有着丰富的历史文化和现代化的城市风貌。"
+  },
+  "metrics": {
+    "engine_pool": {
+      "engine_count": 2,
+      "type": "multi-model-process"
+    },
+    "models": {
+      "qwen25-0.5b": {
+        "engine": {
+          "mode": "single"
+        },
+        "engine_pool": {
+          "engine_count": 1,
+          "type": "zmq"
+        },
+        "kv_memory": {
+          "global_arena_bytes": 536870912,
+          "model_capacity_bytes": 536739840,
+          "model_leased_chunk_bytes": 0,
+          "shared_arena": true
+        },
+        "model_id": "qwen25-0.5b",
+        "process": {
+          "engine_zmq_endpoint": "ipc:///tmp/pbe-live-qwen25-wu4u70jy/domain/qwen25-0.5b.sock",
+          "prefill_zmq_endpoint": "tcp://127.0.0.1:19091",
+          "role": "zmq-http-api",
+          "zmq_endpoint": "ipc:///tmp/pbe-live-qwen25-wu4u70jy/domain/qwen25-0.5b.sock"
+        },
+        "scheduler": {
+          "batched_tokens": 633,
+          "decode_kv_preemptions": 0,
+          "decode_tokens": 136,
+          "max_running_queue": 1,
+          "max_waiting_queue": 2,
+          "no_progress_steps": 1,
+          "preemptions": 0,
+          "prefill_tokens": 497,
+          "priority_preemptions": 0,
+          "stalled_prefill_failures": 0,
+          "steps": 146,
+          "waiting_rejections": 0
+        }
+      },
+      "qwen25-1.5b": {
+        "engine": {
+          "mode": "single"
+        },
+        "engine_pool": {
+          "engine_count": 1,
+          "type": "zmq"
+        },
+        "kv_memory": {
+          "global_arena_bytes": 536870912,
+          "model_capacity_bytes": 536739840,
+          "model_leased_chunk_bytes": 0,
+          "shared_arena": true
+        },
+        "model_id": "qwen25-1.5b",
+        "process": {
+          "engine_zmq_endpoint": "ipc:///tmp/pbe-live-qwen25-wu4u70jy/domain/qwen25-1.5b.sock",
+          "prefill_zmq_endpoint": "tcp://127.0.0.1:19091",
+          "role": "zmq-http-api",
+          "zmq_endpoint": "ipc:///tmp/pbe-live-qwen25-wu4u70jy/domain/qwen25-1.5b.sock"
+        },
+        "scheduler": {
+          "batched_tokens": 518,
+          "decode_kv_preemptions": 0,
+          "decode_tokens": 60,
+          "max_running_queue": 1,
+          "max_waiting_queue": 2,
+          "no_progress_steps": 0,
+          "preemptions": 0,
+          "prefill_tokens": 458,
+          "priority_preemptions": 0,
+          "stalled_prefill_failures": 0,
+          "steps": 68,
+          "waiting_rejections": 0
+        }
+      }
+    }
+  }
+}

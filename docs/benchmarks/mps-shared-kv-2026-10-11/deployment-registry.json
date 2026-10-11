@@ -1,0 +1,22 @@
+{
+  "models": [
+    {
+      "id": "qwen25-0.5b",
+      "endpoint": "ipc:///tmp/pbe-qwen25-pair-validation-final-20261011/domain/qwen25-0.5b.sock",
+      "worker_pid": 4174,
+      "private_allocator_reserved_bytes": 1337288324,
+      "private_gpu_delta_bytes": 0,
+      "private_gpu_delta_is_estimate": true
+    },
+    {
+      "id": "qwen25-1.5b",
+      "endpoint": "ipc:///tmp/pbe-qwen25-pair-validation-final-20261011/domain/qwen25-1.5b.sock",
+      "worker_pid": 4228,
+      "private_allocator_reserved_bytes": 3661374340,
+      "private_gpu_delta_bytes": 3068448772,
+      "private_gpu_delta_is_estimate": true
+    }
+  ],
+  "arena_owner_pid": 4133,
+  "default_model": "qwen25-0.5b"
+}

@@ -73,7 +73,7 @@ Status initialize_cuda_config(std::shared_ptr<kernel::CudaConfig>* config,
 
   auto local_config = std::make_shared<kernel::CudaConfig>();
 
-  const cudaError_t stream_status = cudaStreamCreate(&local_config->stream);
+  const cudaError_t stream_status = cudaStreamCreateWithFlags(&local_config->stream, cudaStreamNonBlocking);
   if (stream_status != cudaSuccess) {
     return cuda_runtime_error("cudaStreamCreate", stream_status);
   }

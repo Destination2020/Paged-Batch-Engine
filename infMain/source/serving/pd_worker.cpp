@@ -1,6 +1,7 @@
 #include "serving/pd_worker.h"
 
 #include <glog/logging.h>
+#include <cuda_runtime_api.h>
 
 #include "serving/serving_benchmark_app.h"
 
@@ -54,7 +55,19 @@ base::Status InProcPrefillWorker::execute_prefill_step(
     return status;
   }
   const SampledTokenView sampled = app_->batch_sample(step_output->batch, output);
-  step_output->sampled_tokens.assign(sampled.tokens, sampled.tokens + sampled.size());
+  if (sampled.empty()) {
+    // An intermediate prefill chunk has no sampler D2H event to wait on.
+    // Both the batch builder and model reuse pinned host staging buffers next
+    // step. Keep them alive and immutable until this worker's queued work ends.
+    // This is stream-local; other processes/streams continue independently.
+    if (app_->kv_cache_manager()->allocator(0).device_type() == base::DeviceType::kDeviceCUDA) {
+      const auto code = cudaStreamSynchronize(static_cast<cudaStream_t>(stream));
+      if (code != cudaSuccess)
+        return base::error::InternalError(std::string("prefill stream completion failed: ") + cudaGetErrorString(code));
+    }
+  } else {
+    step_output->sampled_tokens.assign(sampled.tokens, sampled.tokens + sampled.size());
+  }
   return base::error::Success();
 }
 

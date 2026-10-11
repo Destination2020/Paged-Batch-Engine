@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites tests="1" failures="0" disabled="0" errors="0" time="1.559" timestamp="2026-10-11T14:49:45.850" name="AllTests">
+  <testsuite name="Qwen2DeviceInitTest" tests="1" failures="0" disabled="0" skipped="0" errors="0" time="1.559" timestamp="2026-10-11T14:49:45.850">
+    <testcase name="CheckpointResumeMatchesUninterruptedSampledTokens" file="/home/nowcoder/PagedBatchEngine-v4-mps/test/test_model/test_qwen2_device_init.cpp" line="313" status="run" result="completed" time="1.559" timestamp="2026-10-11T14:49:45.850" classname="Qwen2DeviceInitTest" />
+  </testsuite>
+</testsuites>

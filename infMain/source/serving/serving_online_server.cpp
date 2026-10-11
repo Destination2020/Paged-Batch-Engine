@@ -191,6 +191,7 @@ std::string build_chat_prompt_from_messages(const nlohmann::json& messages) {
 
 OnlineGenerateRequest parse_online_generate_request(const nlohmann::json& payload) {
   OnlineGenerateRequest request;
+  request.model_id = payload.value("model", "");
   request.prompt = payload.contains("messages")
       ? build_chat_prompt_from_messages(payload.at("messages"))
       : payload.value("prompt", "");
@@ -219,11 +220,11 @@ OnlineGenerateRequest parse_online_generate_request(const nlohmann::json& payloa
   return request;
 }
 
-nlohmann::json make_completion_response(const std::string& text, bool chat) {
+nlohmann::json make_completion_response(const std::string& text, bool chat, const std::string& model) {
   nlohmann::json response;
   response["id"] = "cmpl-paged-batch-engine";
   response["object"] = chat ? "chat.completion" : "text_completion";
-  response["model"] = "paged-batch-engine";
+  response["model"] = model;
   response["choices"] = nlohmann::json::array();
   nlohmann::json choice;
   choice["index"] = 0;
@@ -258,10 +259,11 @@ void handle_generate_request(int client_fd,
     return;
   }
 
+  if (generate_request.model_id.empty()) generate_request.model_id = engine_pool->default_model_id();
   std::string error;
   auto handle = engine_pool->submit(generate_request, &error);
   if (!handle) {
-    const int status = error == "queue_full" ? 429 : (error == "prompt_too_long" ? 400 : 500);
+    const int status = error == "queue_full" ? 429 : ((error == "prompt_too_long" || error == "unknown_model" || error == "output_too_long") ? 400 : 500);
     send_http_response(client_fd, status, "application/json", json_error(error));
     return;
   }
@@ -284,7 +286,7 @@ void handle_generate_request(int client_fd,
     }
     if (openai_completion) {
       send_http_response(client_fd, 200, "application/json",
-                         make_completion_response(text, chat_completion).dump());
+                         make_completion_response(text, chat_completion, generate_request.model_id).dump());
     } else {
       nlohmann::json response;
       response["text"] = text;
@@ -315,7 +317,7 @@ void handle_generate_request(int client_fd,
       if (openai_completion) {
         event["id"] = "cmpl-paged-batch-engine";
         event["object"] = chat_completion ? "chat.completion.chunk" : "text_completion";
-        event["model"] = "paged-batch-engine";
+        event["model"] = generate_request.model_id;
         event["choices"] = nlohmann::json::array();
         nlohmann::json delta;
         delta["index"] = 0;
@@ -361,6 +363,10 @@ void handle_http_client(int client_fd, OnlineEnginePool* engine_pool) {
     send_http_response(client_fd, 200, "application/json", "{\"status\":\"ok\"}");
     return;
   }
+  if (method == "GET" && path == "/v1/models") {
+    send_http_response(client_fd, 200, "application/json", engine_pool->models_json().dump());
+    return;
+  }
   if (method == "GET" && path == "/metrics") {
     send_http_response(client_fd, 200, "application/json", engine_pool->metrics_json().dump());
     return;
@@ -389,7 +395,8 @@ int run_online_server(ServingBenchmarkApp* app) {
 int run_online_server(ServingBenchmarkApp* app, const BenchConfig& config) {
   std::unique_ptr<OnlineEnginePool> engine_pool;
   if (config.online_process_role == kOnlineProcessRoleZmqHttpApi) {
-    engine_pool = std::make_unique<ZmqOnlineEnginePool>(config);
+    if (!config.model_registry_path.empty()) engine_pool = std::make_unique<MultiModelOnlineEnginePool>(config);
+    else engine_pool = std::make_unique<ZmqOnlineEnginePool>(config);
   } else {
     CHECK_NE(app, nullptr);
     engine_pool = std::make_unique<SingleOnlineEnginePool>(app, config);

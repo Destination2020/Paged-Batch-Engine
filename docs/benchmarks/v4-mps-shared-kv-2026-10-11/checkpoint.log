@@ -1,0 +1,40 @@
+I20261011 14:49:45.849771 127957776969728 test_main.cpp:14] Start Test...
+Note: Google Test filter = Qwen2DeviceInitTest.CheckpointResumeMatchesUninterruptedSampledTokens
+[==========] Running 1 test from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 1 test from Qwen2DeviceInitTest
+[ RUN      ] Qwen2DeviceInitTest.CheckpointResumeMatchesUninterruptedSampledTokens
+I20261011 14:49:46.683975 127957776969728 qwen2.cpp:532] Qwen2 init weight dtype: Bf16, runtime dtype: Bf16
+I20261011 14:49:46.975453 127957776969728 qwen2.cpp:1009] Serving workspace preallocation: token_capacity=16, reserved_bytes=7274496
+I20261011 14:49:46.980267 127957776969728 serving_memory_planner.cpp:96] Dynamic KV cache sizing: free_bytes=6001000448, total_bytes=8585216000, kv_cache_memory_utilization=0.2, requested_kv_bytes=1200200089, safety_reserve=300050023, kv_budget_bytes=1200200089, bytes_per_block_per_layer=8192, num_layers=24, blocks_per_layer=6104
+I20261011 14:49:46.981304 127957776969728 block_allocator.cpp:79] BlockAllocator initialized: 6104 blocks, block_size=16, storage_mode=plain, total_memory=47.6875 MB
+I20261011 14:49:46.982290 127957776969728 block_allocator.cpp:79] BlockAllocator initialized: 6104 blocks, block_size=16, storage_mode=plain, total_memory=47.6875 MB
+I20261011 14:49:46.983093 127957776969728 block_allocator.cpp:79] BlockAllocator initialized: 6104 blocks, block_size=16, storage_mode=plain, total_memory=47.6875 MB
+I20261011 14:49:46.984293 127957776969728 block_allocator.cpp:79] BlockAllocator initialized: 6104 blocks, block_size=16, storage_mode=plain, total_memory=47.6875 MB
+I20261011 14:49:46.985232 127957776969728 block_allocator.cpp:79] BlockAllocator initialized: 6104 blocks, block_size=16, storage_mode=plain, total_memory=47.6875 MB
+I20261011 14:49:46.986080 127957776969728 block_allocator.cpp:79] BlockAllocator initialized: 6104 blocks, block_size=16, storage_mode=plain, total_memory=47.6875 MB
+I20261011 14:49:46.986928 127957776969728 block_allocator.cpp:79] BlockAllocator initialized: 6104 blocks, block_size=16, storage_mode=plain, total_memory=47.6875 MB
+I20261011 14:49:46.987703 127957776969728 block_allocator.cpp:79] BlockAllocator initialized: 6104 blocks, block_size=16, storage_mode=plain, total_memory=47.6875 MB
+I20261011 14:49:46.988490 127957776969728 block_allocator.cpp:79] BlockAllocator initialized: 6104 blocks, block_size=16, storage_mode=plain, total_memory=47.6875 MB
+I20261011 14:49:46.989432 127957776969728 block_allocator.cpp:79] BlockAllocator initialized: 6104 blocks, block_size=16, storage_mode=plain, total_memory=47.6875 MB
+I20261011 14:49:46.990558 127957776969728 block_allocator.cpp:79] BlockAllocator initialized: 6104 blocks, block_size=16, storage_mode=plain, total_memory=47.6875 MB
+I20261011 14:49:46.991596 127957776969728 block_allocator.cpp:79] BlockAllocator initialized: 6104 blocks, block_size=16, storage_mode=plain, total_memory=47.6875 MB
+I20261011 14:49:46.992353 127957776969728 block_allocator.cpp:79] BlockAllocator initialized: 6104 blocks, block_size=16, storage_mode=plain, total_memory=47.6875 MB
+I20261011 14:49:46.993184 127957776969728 block_allocator.cpp:79] BlockAllocator initialized: 6104 blocks, block_size=16, storage_mode=plain, total_memory=47.6875 MB
+I20261011 14:49:46.994040 127957776969728 block_allocator.cpp:79] BlockAllocator initialized: 6104 blocks, block_size=16, storage_mode=plain, total_memory=47.6875 MB
+I20261011 14:49:46.995079 127957776969728 block_allocator.cpp:79] BlockAllocator initialized: 6104 blocks, block_size=16, storage_mode=plain, total_memory=47.6875 MB
+I20261011 14:49:46.996007 127957776969728 block_allocator.cpp:79] BlockAllocator initialized: 6104 blocks, block_size=16, storage_mode=plain, total_memory=47.6875 MB
+I20261011 14:49:46.997037 127957776969728 block_allocator.cpp:79] BlockAllocator initialized: 6104 blocks, block_size=16, storage_mode=plain, total_memory=47.6875 MB
+I20261011 14:49:46.998046 127957776969728 block_allocator.cpp:79] BlockAllocator initialized: 6104 blocks, block_size=16, storage_mode=plain, total_memory=47.6875 MB
+I20261011 14:49:46.999140 127957776969728 block_allocator.cpp:79] BlockAllocator initialized: 6104 blocks, block_size=16, storage_mode=plain, total_memory=47.6875 MB
+I20261011 14:49:46.999947 127957776969728 block_allocator.cpp:79] BlockAllocator initialized: 6104 blocks, block_size=16, storage_mode=plain, total_memory=47.6875 MB
+I20261011 14:49:47.000865 127957776969728 block_allocator.cpp:79] BlockAllocator initialized: 6104 blocks, block_size=16, storage_mode=plain, total_memory=47.6875 MB
+I20261011 14:49:47.001889 127957776969728 block_allocator.cpp:79] BlockAllocator initialized: 6104 blocks, block_size=16, storage_mode=plain, total_memory=47.6875 MB
+I20261011 14:49:47.002674 127957776969728 block_allocator.cpp:79] BlockAllocator initialized: 6104 blocks, block_size=16, storage_mode=plain, total_memory=47.6875 MB
+P5_CHECKPOINT baseline_ms=274.994 resumed_ms=64.247 checkpoint_ms=7.64995 checkpoints=2 output_tokens=6
+[       OK ] Qwen2DeviceInitTest.CheckpointResumeMatchesUninterruptedSampledTokens (1559 ms)
+[----------] 1 test from Qwen2DeviceInitTest (1559 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test suite ran. (1559 ms total)
+[  PASSED  ] 1 test.

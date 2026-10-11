@@ -137,6 +137,7 @@ GenerationConfig generation_config_from_json(const nlohmann::json& json) {
 nlohmann::json online_generate_request_to_json(
     const OnlineGenerateRequest& request) {
   nlohmann::json json;
+  json["model_id"] = request.model_id;
   json["prompt"] = request.prompt;
   json["generation_config"] = generation_config_to_json(request.generation_config);
   json["stream"] = request.stream;
@@ -147,6 +148,7 @@ nlohmann::json online_generate_request_to_json(
 OnlineGenerateRequest online_generate_request_from_json(
     const nlohmann::json& json) {
   OnlineGenerateRequest request;
+  request.model_id = json.value("model_id", "");
   request.prompt = json.value("prompt", "");
   if (json.contains("generation_config")) {
     request.generation_config =
@@ -491,7 +493,11 @@ base::Status ZmqSocket::connect(const std::string& endpoint) {
 base::Status ZmqSocket::send_json(const nlohmann::json& message, int flags) {
 #if defined(KUIPER_ENABLE_ZMQ)
   if (!valid()) return zmq_unavailable_status();
-  const std::string serialized = message.dump();
+  std::string serialized;
+  try { serialized = message.dump(); }
+  catch (const nlohmann::json::exception& e) {
+    return base::error::InvalidArgument(std::string("Invalid JSON payload: ") + e.what());
+  }
   const int rc = zmq_send(socket_, serialized.data(), serialized.size(), flags);
   if (rc < 0) {
     return zmq_error_status("zmq_send");

@@ -1,0 +1,34 @@
+{
+  "start_server": {
+    "returncode": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  "server_list_after_explicit_start": {
+    "returncode": 0,
+    "stdout": "4023\n",
+    "stderr": ""
+  },
+  "client": {
+    "pid": 4066,
+    "pipe_directory": "/tmp/pbe-mps-diagnosis-20261011/controlled/pipe",
+    "active_thread_percentage": "50",
+    "cuInit": 0,
+    "cuCtxCreate_v2": 0,
+    "cuMemAlloc_v2": 0,
+    "cuDeviceGetAttribute": 0,
+    "multiprocessor_count": 24
+  },
+  "server_list_while_cuda_context_alive": {
+    "returncode": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  "client_exit_code": 0,
+  "quit": {
+    "returncode": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  "client_mps_socket_syscalls": []
+}

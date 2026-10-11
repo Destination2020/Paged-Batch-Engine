@@ -1,0 +1,33 @@
+[  0%] Building CXX object CMakeFiles/llama.dir/infMain/source/model/qwen2.cpp.o
+[  1%] Building CXX object CMakeFiles/llama.dir/infMain/source/serving/serving_benchmark_app.cpp.o
+[  1%] Linking CUDA device code CMakeFiles/llama.dir/cmake_device_link.o
+[  3%] Linking CXX shared library lib/libllama.so
+[ 98%] Built target llama
+[100%] Linking CXX executable serving_qwen
+[100%] Built target serving_qwen
+Consolidate compiler generated dependencies of target llama
+[ 98%] Built target llama
+Consolidate compiler generated dependencies of target shared_kv_owner
+[100%] Linking CXX executable shared_kv_owner
+[100%] Built target shared_kv_owner
+[ 98%] Built target llama
+Consolidate compiler generated dependencies of target mps_kv_probe
+[100%] Linking CUDA executable mps_kv_probe
+[100%] Built target mps_kv_probe
+[ 98%] Built target llama
+Consolidate compiler generated dependencies of target cuda_ipc_event_probe
+[100%] Linking CUDA executable cuda_ipc_event_probe
+[100%] Built target cuda_ipc_event_probe
+[ 98%] Built target llama
+Consolidate compiler generated dependencies of target pbe_data_service
+[100%] Linking CXX executable pbe_data_service
+[100%] Built target pbe_data_service
+[ 98%] Built target llama
+Consolidate compiler generated dependencies of target pbe_vlm_language_role
+[100%] Linking CXX executable pbe_vlm_language_role
+[100%] Built target pbe_vlm_language_role
+[ 61%] Built target llama
+Consolidate compiler generated dependencies of target test_llm
+[ 63%] Linking CUDA device code CMakeFiles/test_llm.dir/cmake_device_link.o
+[ 64%] Linking CXX executable test_llm
+[100%] Built target test_llm

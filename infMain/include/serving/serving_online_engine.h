@@ -23,6 +23,7 @@ namespace serving {
 class ServingBenchmarkApp;
 
 struct OnlineGenerateRequest {
+  std::string model_id;
   std::string prompt;
   GenerationConfig generation_config;
   bool stream = false;
@@ -31,6 +32,7 @@ struct OnlineGenerateRequest {
 
 class OnlineRequestHandle {
  public:
+  std::string model_id; // assigned before publication; used to route cancellation
   void set_request_id(int64_t request_id);
   int64_t request_id() const;
   void mark_cancelled();
@@ -48,6 +50,7 @@ class OnlineRequestHandle {
   mutable std::mutex mu_;
   std::condition_variable cv_;
   std::vector<std::string> token_texts_;
+  std::string pending_utf8_;
   size_t next_idx_ = 0;
   int64_t request_id_ = -1;
   std::string full_text_;

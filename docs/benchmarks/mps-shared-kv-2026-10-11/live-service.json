@@ -1,0 +1,18 @@
+{
+  "supervisor_pid": 8997,
+  "runtime_directory": "/tmp/pbe-live-qwen25-wu4u70jy",
+  "base_url": "http://127.0.0.1:8080",
+  "backend": "process",
+  "command": [
+    "/usr/bin/python3",
+    "/home/nowcoder/PagedBatchEngine/tools/serving/deploy_multi_model.py",
+    "--config",
+    "/home/nowcoder/PagedBatchEngine/configs/qwen25-dual-mps.json",
+    "--backend",
+    "process",
+    "--runtime-dir",
+    "/tmp/pbe-live-qwen25-wu4u70jy/domain"
+  ],
+  "status": "stopped",
+  "service_left_running": false
+}

@@ -1,0 +1,21 @@
+Breakpoint 1 at 0x40185a
+Breakpoint 2 at 0x40185d
+[Thread debugging using libthread_db enabled]
+Using host libthread_db library "/lib/x86_64-linux-gnu/libthread_db.so.1".
+MPS_ENTRY: table=0x7ffff753e7a0 target=0x7ffff6521b90
+   0x7ffff6521b90:	push   %rbp
+   0x7ffff6521b91:	mov    %rsp,%rbp
+   0x7ffff6521b94:	push   %r12
+   0x7ffff6521b96:	push   %rbx
+   0x7ffff6521b97:	sub    $0x10,%rsp
+   0x7ffff6521b9b:	call   0x7ffff639cdf0
+   0x7ffff6521ba0:	call   0x7ffff633b370 <getpid@plt>
+   0x7ffff6521ba5:	mov    %eax,%ebx
+   0x7ffff6521ba7:	xchg   %eax,0x11a020b(%rip)        # 0x7ffff76c1db8
+   0x7ffff6521bad:	cmp    %ebx,%eax
+   0x7ffff6521baf:	jne    0x7ffff6521bf0
+   0x7ffff6521bb1:	mov    0x11a0205(%rip),%eax        # 0x7ffff76c1dbc
+0x7fffffffd244:	0x0000000c	0x00000000	0x00002f26	0x0000a499
+0x7fffffffd254:	0x00000000
+MPS_ENTRY_RETURN: 999
+[Inferior 1 (process 2352) exited with code 01]

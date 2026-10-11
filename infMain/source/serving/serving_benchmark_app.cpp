@@ -249,12 +249,26 @@ BenchConfig parse_bench_config(int argc, char* argv[], int prompt_start_index) {
         read_int("--max-queue-size=", config.max_queue_size) ||
         read_int("--request-timeout-ms=", config.request_timeout_ms) ||
         read_int("--max-prompt-tokens=", config.max_prompt_tokens) ||
+        read_int("--kv-cache-budget-mib=", config.kv_cache_budget_mib) ||
+        read_int("--private-memory-budget-mib=", config.private_memory_budget_mib) ||
+        read_int("--shared-kv-hard-limit-mib=", config.shared_kv_hard_limit_mib) ||
+        read_int("--shared-kv-chunk-mib=", config.shared_kv_chunk_mib) ||
+        read_int("--max-output-tokens=", config.max_output_tokens) ||
+        read_int("--max-active-requests=", config.max_active_requests) ||
         read_int("--device-id=", config.device_id) ||
         read_int("--prefill-device-id=", config.prefill_device_id) ||
         read_int("--decode-device-id=", config.decode_device_id) ||
         read_int("--engine-zmq-timeout-ms=", config.engine_zmq_timeout_ms)) {
       continue;
     }
+    auto read_string = [&](std::string_view prefix, std::string& value) {
+      if (!starts_with(arg, prefix)) return false;
+      value = std::string(arg.substr(prefix.size()));
+      return true;
+    };
+    if (read_string("--model-id=", config.model_id) ||
+        read_string("--model-registry=", config.model_registry_path) ||
+        read_string("--shared-kv-endpoint=", config.shared_kv_endpoint)) continue;
     const std::string_view online_process_role_prefix = "--online-process-role=";
     if (starts_with(arg, online_process_role_prefix)) {
       config.online_process_role =
@@ -2142,6 +2156,13 @@ void ServingBenchmarkApp::prepare_benchmark_config() {
         bench_config_.max_num_batched_tokens,
         std::max(1, bench_config_.capacity_info.max_batch_size *
                         bench_config_.prefill_chunk_cap));
+  }
+  // Explicit CLI values are ceilings too: another resident model can cause
+  // init_mem to allocate a smaller workspace than the requested batch size.
+  if (bench_config_.capacity_info.serving_workspace_token_capacity > 0) {
+    bench_config_.max_num_batched_tokens = std::min(
+        bench_config_.max_num_batched_tokens,
+        bench_config_.capacity_info.serving_workspace_token_capacity);
   }
   if (bench_config_.auto_prefill_chunk_cap) {
     bench_config_.prefill_chunk_cap =

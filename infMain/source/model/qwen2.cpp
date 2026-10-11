@@ -1,5 +1,6 @@
 // Updated on March 31, 2026
 #include "model/qwen2.h"
+#include "base/shared_kv_arena.h"
 #include <algorithm>
 #include <cstdlib>
 #include <cstring>
@@ -988,7 +989,9 @@ void Qwen2Model::init_mem() {
   workspace_sizing_config.requested_token_capacity =
       serving_workspace_token_capacity_;
   workspace_sizing_config.min_token_capacity = model_max_batch_size;
-  workspace_sizing_config.min_dynamic_kv_blocks = kMinDynamicKVBlocks;
+  // IPC-backed KV is already physically allocated by the external owner.
+  workspace_sizing_config.min_dynamic_kv_blocks =
+      (!shared_kv_endpoint_.empty() || external_kv_pool_.valid()) ? 0 : kMinDynamicKVBlocks;
   base::DeviceMemoryInfo memory_info_before_workspace{};
   if (device_type_ != base::DeviceType::kDeviceCPU) {
     CHECK(device_context_ != nullptr && device_context_->runtime != nullptr);
@@ -1110,6 +1113,31 @@ void Qwen2Model::init_mem() {
   // fraction of the remaining free device memory with a safety reserve and retry
   // fallback for oversized requests.
   int32_t total_blocks = model_num_blocks * model_max_batch_size;
+  if (!shared_kv_endpoint_.empty()) {
+    CHECK(!external_kv_pool_.valid())
+        << "External KV pool and shared Chunk arena cannot own the same model KV";
+    CHECK_EQ(kv_cache_blocks_per_layer_, 0);
+    CHECK(!host_cache_config_.enabled)
+        << "Shared Chunk arena host migration is not enabled";
+    CHECK_EQ(device_type_, base::DeviceType::kDeviceCUDA);
+    CHECK_EQ(runtime_data_type_, base::DataType::kDataTypeBf16);
+    CHECK(!kv_storage_spec.has_scales()) << "Shared KV V1 requires plain BF16";
+    auto arena = std::make_shared<base::SharedKVArenaClient>(
+        shared_kv_endpoint_, shared_kv_model_id_, shared_kv_hard_limit_, device_context_->device_id);
+    const uint64_t half_bytes = static_cast<uint64_t>(model_block_size) *
+        config_->kv_head_num_ * config_->head_size_ * 2;
+    auto group = std::make_shared<base::SharedKVPageGroup>(arena, config_->layer_num_,
+        half_bytes, shared_kv_chunk_target_, static_cast<cudaStream_t>(device_context_->compute_queue));
+    std::vector<std::unique_ptr<base::BlockAllocator>> allocators;
+    for (int i = 0; i < config_->layer_num_; ++i)
+      allocators.emplace_back(std::make_unique<base::BlockAllocator>(
+          model_block_size, config_->kv_head_num_, config_->head_size_, group, i));
+    kv_cache_manager_ = std::make_unique<base::KVCacheManager>(
+        model_block_size, config_->layer_num_, std::move(allocators));
+    kv_cache_manager_->set_radix_cache_enabled(false);
+    single_seq_request_id_ = kv_cache_manager_->register_request();
+    return;
+  }
   if (device_type_ != base::DeviceType::kDeviceCPU &&
       kv_cache_blocks_per_layer_ > 0) {
     total_blocks = kv_cache_blocks_per_layer_;
@@ -1123,6 +1151,7 @@ void Qwen2Model::init_mem() {
     kv_sizing_config.head_size = config_->head_size_;
     kv_sizing_config.min_dynamic_kv_blocks = kMinDynamicKVBlocks;
     kv_sizing_config.kv_cache_memory_utilization = kv_cache_memory_utilization_;
+    kv_sizing_config.absolute_kv_budget_bytes = kv_cache_budget_bytes_;
     base::DeviceMemoryInfo memory_info_before_kv{};
     CHECK(device_context_ != nullptr && device_context_->runtime != nullptr);
     auto memory_status = device_context_->runtime->query_memory(&memory_info_before_kv);
@@ -1191,6 +1220,15 @@ void Qwen2Model::init_mem() {
   single_seq_request_id_ = kv_cache_manager_->register_request();
 }
 
+void Qwen2Model::set_shared_kv_arena(std::string endpoint, std::string model_id,
+    uint64_t limit, uint64_t chunk_target) {
+  CHECK(kv_cache_manager_ == nullptr) << "Configure shared arena before init";
+  shared_kv_endpoint_ = std::move(endpoint);
+  shared_kv_model_id_ = std::move(model_id);
+  shared_kv_hard_limit_ = limit;
+  shared_kv_chunk_target_ = chunk_target;
+}
+
 serving::ServingCapacityInfo Qwen2Model::serving_capacity_info() const {
   serving::ServingCapacityInfo info;
   CHECK(config_ != nullptr);
@@ -1228,6 +1266,9 @@ serving::ServingCapacityInfo Qwen2Model::serving_capacity_info() const {
   info.total_kv_pool_bytes = static_cast<size_t>(info.total_kv_blocks) *
                              static_cast<size_t>(info.layer_num) *
                              info.kv_bytes_per_block_per_layer;
+  info.shared_kv_arena = kv_cache_manager_->allocator(0).uses_shared_arena();
+  info.shared_arena_bytes = kv_cache_manager_->allocator(0).shared_arena_bytes();
+  info.kv_leased_chunk_bytes = kv_cache_manager_->allocator(0).shared_leased_bytes();
   const base::DataType act_dtype =
       device_type_ == base::DeviceType::kDeviceCPU ? base::DataType::kDataTypeFp32
                                                    : runtime_data_type_;

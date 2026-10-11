@@ -22,6 +22,7 @@ struct DynamicKVCacheSizingConfig {
   int32_t head_size = 0;
   int32_t min_dynamic_kv_blocks = 1;
   double kv_cache_memory_utilization = 0.80;
+  size_t absolute_kv_budget_bytes = 0; // zero keeps the legacy single-model policy
 };
 
 struct ServingWorkspaceProfile {
