@@ -139,5 +139,5 @@ TEST(PagedAttentionTest, SingleSequenceDecodeCorrectness) {
   std::cout << "Max difference: " << max_diff << std::endl;
   EXPECT_LT(max_diff, 1e-4f) << "Paged and contiguous outputs differ too much";
 
-  cudaStreamDestroy(cuda_config.stream);
+  // CudaConfig owns and destroys its stream.
 }

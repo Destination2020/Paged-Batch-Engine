@@ -176,6 +176,17 @@ if (LLAMA3_SUPPORT OR QWEN2_SUPPORT OR QWEN3_SUPPORT OR QWEN_MOE_SUPPORT)
   find_package(absl REQUIRED)
   find_package(re2 REQUIRED)
   find_package(nlohmann_json CONFIG REQUIRED)
+  # Header-only JSON must not inject an unrelated package prefix (e.g. Conda's
+  # absl headers) ahead of the headers matching the linked re2/absl libraries.
+  get_target_property(_json_includes nlohmann_json::nlohmann_json INTERFACE_INCLUDE_DIRECTORIES)
+  foreach(_json_include IN LISTS _json_includes)
+    if(EXISTS "${_json_include}/nlohmann/json.hpp")
+      file(COPY "${_json_include}/nlohmann" DESTINATION "${CMAKE_BINARY_DIR}/header-only")
+      set_property(TARGET nlohmann_json::nlohmann_json PROPERTY
+                   INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_BINARY_DIR}/header-only")
+      break()
+    endif()
+  endforeach()
 endif()
 
 if(KUIPER_BUILD_TESTS)

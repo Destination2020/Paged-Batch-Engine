@@ -1,4 +1,5 @@
 #include "serving/serving_online_engine.h"
+#include "base/utf8_stream.h"
 
 #include <glog/logging.h>
 #include <algorithm>
@@ -39,7 +40,8 @@ void set_online_worker_device_or_die(const BenchConfig& config) {
 SchedulerConfig make_online_scheduler_config(const ServingBenchmarkApp* app,
                                              const BenchConfig& config) {
   SchedulerConfig sched_config;
-  sched_config.max_num_seqs = app->max_model_batch_size();
+  sched_config.max_num_seqs = config.max_active_requests > 0
+      ? std::min(config.max_active_requests, app->max_model_batch_size()) : app->max_model_batch_size();
   sched_config.max_num_batched_tokens = config.max_num_batched_tokens;
   sched_config.prefill_chunk_cap = config.prefill_chunk_cap;
   sched_config.policy = config.scheduling_policy;
@@ -74,13 +76,17 @@ bool OnlineRequestHandle::cancelled() const {
 
 void OnlineRequestHandle::push_token(const std::string& token_text) {
   std::lock_guard<std::mutex> lock(mu_);
-  token_texts_.push_back(token_text);
+  pending_utf8_ += token_text;
+  auto complete = base::drain_utf8(&pending_utf8_);
+  if (!complete.empty()) token_texts_.push_back(std::move(complete));
   cv_.notify_all();
 }
 
 void OnlineRequestHandle::finish(std::string full_text, bool failed, std::string error) {
   std::lock_guard<std::mutex> lock(mu_);
-  full_text_ = std::move(full_text);
+  auto tail = base::drain_utf8(&pending_utf8_, true);
+  if (!tail.empty()) token_texts_.push_back(std::move(tail));
+  full_text_ = base::drain_utf8(&full_text, true);
   failed_ = failed;
   error_ = std::move(error);
   finished_ = true;
@@ -163,7 +169,8 @@ void OnlineServingEngine::start() {
   }
 
   SchedulerConfig sched_config;
-  sched_config.max_num_seqs = app_->max_model_batch_size();
+  sched_config.max_num_seqs = config_.max_active_requests > 0
+      ? std::min(config_.max_active_requests, app_->max_model_batch_size()) : app_->max_model_batch_size();
   sched_config.max_num_batched_tokens = config_.max_num_batched_tokens;
   sched_config.prefill_chunk_cap = config_.prefill_chunk_cap;
   sched_config.policy = config_.scheduling_policy;
@@ -188,7 +195,16 @@ void OnlineServingEngine::stop() {
 
 std::shared_ptr<OnlineRequestHandle> OnlineServingEngine::submit(
     const OnlineGenerateRequest& request, std::string* error) {
+  if (!config_.model_id.empty() && !request.model_id.empty() && request.model_id != config_.model_id) {
+    if (error) *error = "unknown_model";
+    return nullptr;
+  }
+  if (config_.max_output_tokens > 0 && request.generation_config.max_new_tokens > config_.max_output_tokens) {
+    if (error) *error = "output_too_long";
+    return nullptr;
+  }
   auto handle = std::make_shared<OnlineRequestHandle>();
+  handle->model_id = config_.model_id;
   auto prompt_tokens = app_->encode_prompt(request.prompt);
   if (config_.max_prompt_tokens > 0 &&
       static_cast<int32_t>(prompt_tokens.size()) > config_.max_prompt_tokens) {
@@ -225,6 +241,12 @@ int32_t OnlineServingEngine::default_timeout_ms() const { return config_.request
 
 nlohmann::json OnlineServingEngine::metrics_json() const {
   nlohmann::json body;
+  body["model_id"] = config_.model_id;
+  const auto capacity = app_->serving_capacity_info();
+  body["kv_memory"] = {{"shared_arena", capacity.shared_kv_arena},
+                        {"global_arena_bytes", capacity.shared_arena_bytes},
+                        {"model_leased_chunk_bytes", capacity.kv_leased_chunk_bytes},
+                        {"model_capacity_bytes", capacity.total_kv_pool_bytes}};
   if (is_pd_mode(config_.pd_mode)) {
     std::lock_guard<std::mutex> lock(mu_);
     body["engine"]["mode"] = config_.pd_mode;
@@ -923,6 +945,7 @@ void OnlineServingEngine::flush_cancellations() {
 }
 
 void OnlineServingEngine::run_step(void* stream) {
+  base::nvtx::ScopedRange model_range(std::string("model:") + config_.model_id, base::nvtx::kColorProcess);
   flush_cancellations();
   SchedulerOutput sched_out = scheduler_->schedule_step();
   if (sched_out.total_tokens == 0) {

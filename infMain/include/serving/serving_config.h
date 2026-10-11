@@ -74,6 +74,15 @@ struct BenchConfig {
   int32_t request_timeout_ms = 0;  // 0 disables request timeout
   int32_t max_prompt_tokens = 0;   // 0 disables prompt length check
   int32_t device_id = 0;
+  std::string model_id;
+  std::string model_registry_path;
+  std::string shared_kv_endpoint;
+  int32_t kv_cache_budget_mib = 0;
+  int32_t private_memory_budget_mib = 0;
+  int32_t shared_kv_hard_limit_mib = 0;
+  int32_t shared_kv_chunk_mib = 2;
+  int32_t max_output_tokens = 0;
+  int32_t max_active_requests = 0; // zero preserves the model batch limit
   std::string pd_mode = "off";
   int32_t prefill_device_id = 0;
   int32_t decode_device_id = 1;

@@ -1,0 +1,25 @@
+{
+  "cuInit": 0,
+  "cuDriverGetVersion_result": 0,
+  "driver_api_version": 12070,
+  "cuDeviceGetCount_result": 0,
+  "device_count": 1,
+  "error999_name": "CUDA_ERROR_UNKNOWN",
+  "error999_description": "unknown error",
+  "compute_capability_major": {
+    "return_code": 0,
+    "value": 8
+  },
+  "compute_capability_minor": {
+    "return_code": 0,
+    "value": 9
+  },
+  "unified_addressing": {
+    "return_code": 0,
+    "value": 1
+  },
+  "compute_mode": {
+    "return_code": 0,
+    "value": 0
+  }
+}

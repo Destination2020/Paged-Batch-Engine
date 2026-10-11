@@ -1,0 +1,52 @@
+{
+  "date": "2026-10-11",
+  "environment": {
+    "os": "Ubuntu 22.04.5 / WSL2",
+    "kernel": "6.6.87.2-microsoft-standard-WSL2",
+    "windows_driver": "566.26",
+    "reported_nvidia_smi": "565.75",
+    "driver_cuda_api": 12070,
+    "gpu": "RTX 4060 Laptop",
+    "sm": "8.9",
+    "uva": true
+  },
+  "driver_path": "/usr/lib/wsl/drivers/nvlt.inf_amd64_3ab002af0a386850/libcuda.so.1.1",
+  "driver_sha256": "095cf4a5b782e2bddb0f7d7ffbd801124fc108916ba3c6981b7a764a413622f8",
+  "server_sha256": "6407893bc20eede75e4183a9dff7ec81c4832caf5d5483bd9d6077f67e1ef27e",
+  "export_table_uuid_bytes": "a392d3871cf47f4d84b1719b17aeac8f",
+  "export_table_result": 0,
+  "server_entry_table_byte_offset": 32,
+  "server_entry_driver_elf_offset": "0x321b90",
+  "server_entry_return": 999,
+  "cuda_error_name": "CUDA_ERROR_UNKNOWN",
+  "server_process_exit_code": 1,
+  "tested_server_versions": [
+    {
+      "package": "565.57.01",
+      "interface_version": 12070,
+      "result": 999
+    },
+    {
+      "package": "560.35.05",
+      "interface_version": 12060,
+      "result": 999
+    }
+  ],
+  "plain_cuda_initialization": true,
+  "plain_cuda_context_creation": true,
+  "plain_cuda_memory_allocation": true,
+  "client_context_sm_count": 24,
+  "client_active_thread_percentage": 50,
+  "client_mps_socket_access_observed": false,
+  "client_registered": false,
+  "conclusion": "The currently loaded WSL libcuda MPS server entry has a fixed return value of 999 after local bookkeeping; both tested MPS server versions fail at that entry. This blocks MPS independently of PBE.",
+  "limitations": [
+    "No claim that all future WSL driver versions behave identically.",
+    "Export-table entry has no public symbol; identification follows the real MPS server callsite.",
+    "A transient server-list PID under GDB is the debugger wrapper before it exits, not an ACTIVE MPS server."
+  ],
+  "private_driver_libraries_replaced": false,
+  "model_service_restarted": false,
+  "all_diagnostic_processes_stopped": true,
+  "documented_reproduction_verified": true
+}

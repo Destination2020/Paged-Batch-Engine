@@ -1,0 +1,11 @@
+Function "cuGetExportTable" not defined.
+Breakpoint 1 (cuGetExportTable) pending.
+[Thread debugging using libthread_db enabled]
+Using host libthread_db library "/lib/x86_64-linux-gnu/libthread_db.so.1".
+EXPORT_TABLE_RESULT=0 UUID=a392d3871cf47f4d84b1719b17aeac8f
+EXPORT_TABLE_RESULT=0 UUID=a392d3871cf47f4d84b1719b17aeac8f
+MPS_SERVER_ENTRY=0x7ffff6521b90
+0x7fffffffdb54:	0x0000000c	0x00000000	0x00002f26
+
+MPS_SERVER_ENTRY_RETURN=999
+[Inferior 1 (process 4057) exited with code 01]

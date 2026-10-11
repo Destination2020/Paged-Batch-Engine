@@ -6,6 +6,7 @@
 #include <string>
 #include <vector>
 #include "base/base.h"
+#include "base/alloc.h"
 #include "model/qwen2.h"
 #include "serving/serving_benchmark_app.h"
 #include "serving/serving_zmq_rpc.h"
@@ -46,6 +47,12 @@ class QwenServingBenchmarkApp final : public serving::ServingBenchmarkApp {
   bool initialize_model(const std::string& model_path,
                         const std::string& tokenizer_path,
                         const serving::BenchConfig& bench_config) override {
+    CHECK_GE(bench_config.private_memory_budget_mib, 0);
+    if (bench_config.private_memory_budget_mib > 0) {
+      CHECK_EQ(bench_config.pd_mode, "off");
+      base::CUDADeviceAllocatorFactory::get_instance()->set_byte_limit(
+          bench_config.device_id, static_cast<size_t>(bench_config.private_memory_budget_mib) << 20);
+    }
     const bool remote_prefill_core =
         bench_config.online_process_role ==
         serving::kOnlineProcessRoleZmqPrefillEngineCore;
@@ -62,6 +69,19 @@ class QwenServingBenchmarkApp final : public serving::ServingBenchmarkApp {
             ? std::min(bench_config.kv_cache_memory_utilization, 0.45)
             : bench_config.kv_cache_memory_utilization;
     model_->set_kv_cache_memory_utilization(per_model_kv_utilization);
+    CHECK_GE(bench_config.kv_cache_budget_mib, 0);
+    model_->set_kv_cache_budget_bytes(static_cast<size_t>(bench_config.kv_cache_budget_mib) << 20);
+    if (!bench_config.shared_kv_endpoint.empty()) {
+      CHECK_EQ(bench_config.pd_mode, "off") << "Shared arena V1 uses one mixed worker per model";
+      CHECK_GT(bench_config.shared_kv_hard_limit_mib, 0);
+      CHECK_GT(bench_config.shared_kv_chunk_mib, 0);
+      CHECK(!fp8_kv_cache_enabled()) << "Shared arena requires BF16 KV";
+      CHECK(!bench_config.model_id.empty());
+      model_->set_runtime_data_type(base::DataType::kDataTypeBf16);
+      model_->set_shared_kv_arena(bench_config.shared_kv_endpoint, bench_config.model_id,
+          static_cast<uint64_t>(bench_config.shared_kv_hard_limit_mib) << 20,
+          static_cast<uint64_t>(bench_config.shared_kv_chunk_mib) << 20);
+    }
     model_->set_serving_workspace_token_capacity(bench_config.max_num_batched_tokens);
     if (bench_config.radix_cache_config_explicit) {
       model_->set_radix_cache_enabled(bench_config.radix_cache_enabled);

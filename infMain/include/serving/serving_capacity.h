@@ -27,6 +27,9 @@ struct ServingCapacityInfo {
   size_t kv_bytes_per_token = 0;
   size_t kv_bytes_per_block_per_layer = 0;
   size_t total_kv_pool_bytes = 0;
+  bool shared_kv_arena = false;
+  size_t shared_arena_bytes = 0; // global allocation, count once per GPU domain
+  size_t kv_leased_chunk_bytes = 0; // model charge, including retired/reserved pages
   size_t workspace_bytes_per_token = 0;
   int32_t serving_workspace_token_capacity = 0;
   size_t serving_workspace_reserved_bytes = 0;

@@ -1,0 +1,9 @@
+test_arena_is_counted_once_not_for_each_importer (test_deployment.DeploymentContractTests) ... ok
+test_duplicate_identity_and_invalid_quota (test_deployment.DeploymentContractTests) ... ok
+test_mps_requires_all_clients_on_one_server (test_deployment.DeploymentContractTests) ... ok
+test_weight_shape_preflight_rejects_wrong_dtype_context_and_kv_quota (test_deployment.DeploymentContractTests) ... ok
+
+----------------------------------------------------------------------
+Ran 4 tests in 0.005s
+
+OK

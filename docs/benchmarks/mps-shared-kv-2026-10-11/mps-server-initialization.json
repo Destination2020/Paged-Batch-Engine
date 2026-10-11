@@ -1,0 +1,46 @@
+{
+  "runtime_directory": "/tmp/pbe-mps-server-check-es62ckvl",
+  "commands": [
+    {
+      "args": [
+        "/usr/local/bin/nvidia-cuda-mps-control",
+        "-d"
+      ],
+      "input": null,
+      "returncode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/usr/local/bin/nvidia-cuda-mps-control"
+      ],
+      "input": "start_server -uid 0\n",
+      "returncode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/usr/local/bin/nvidia-cuda-mps-control"
+      ],
+      "input": "get_server_list\n",
+      "returncode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/usr/local/bin/nvidia-cuda-mps-control"
+      ],
+      "input": "quit\n",
+      "returncode": 0,
+      "stdout": "",
+      "stderr": ""
+    }
+  ],
+  "logs": {
+    "control.log": "[2026-10-11 11:05:39.764 Control 24377] Starting control daemon using socket /tmp/pbe-mps-server-check-es62ckvl/pipe/control\n[2026-10-11 11:05:39.764 Control 24377] To connect CUDA applications to this daemon, set env CUDA_MPS_PIPE_DIRECTORY=/tmp/pbe-mps-server-check-es62ckvl/pipe\n[2026-10-11 11:05:39.782 Control 24377] CUDA MPS Control binary version: 12070\n[2026-10-11 11:05:39.784 Control 24377] Accepting connection...\n[2026-10-11 11:05:39.784 Control 24377] NEW UI\n[2026-10-11 11:05:39.784 Control 24377] Cmd:start_server -uid 0\n[2026-10-11 11:05:39.785 Control 24377] UI closed\n[2026-10-11 11:05:39.785 Control 24381] Starting new server 24381 for user 0\n[2026-10-11 11:05:39.810 Control 24377] Server 24381 exited with status 1\n[2026-10-11 11:05:40.788 Control 24377] Accepting connection...\n[2026-10-11 11:05:40.788 Control 24377] NEW UI\n[2026-10-11 11:05:40.788 Control 24377] Cmd:get_server_list\n[2026-10-11 11:05:40.788 Control 24377] UI closed\n[2026-10-11 11:05:40.790 Control 24377] Accepting connection...\n[2026-10-11 11:05:40.790 Control 24377] NEW UI\n[2026-10-11 11:05:40.790 Control 24377] Cmd:quit\n[2026-10-11 11:05:40.790 Control 24377] Exit with status 1\n",
+    "server.log": ""
+  }
+}

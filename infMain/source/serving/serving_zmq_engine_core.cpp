@@ -1,4 +1,5 @@
 #include "serving/serving_zmq_engine_core.h"
+#include "base/alloc.h"
 
 #include <glog/logging.h>
 #include <algorithm>
@@ -509,6 +510,9 @@ base::Status run_zmq_prefill_engine_core_server(ServingBenchmarkApp* app,
     if (type == ZmqRpcMessageType::kHealth) {
       response = make_ok_response();
       response["status"] = "ok";
+      response["model_id"] = config.model_id;
+      response["private_allocator_reserved_bytes"] =
+          base::CUDADeviceAllocatorFactory::get_instance()->reserved_bytes(config.device_id);
     } else if (type == ZmqRpcMessageType::kMetrics) {
       response = make_ok_response();
       response["metrics"]["engine"]["mode"] = "prefill";
@@ -725,6 +729,9 @@ base::Status run_zmq_engine_core_server(ServingBenchmarkApp* app,
     if (type == ZmqRpcMessageType::kHealth) {
       response = make_ok_response();
       response["status"] = "ok";
+      response["model_id"] = config.model_id;
+      response["private_allocator_reserved_bytes"] =
+          base::CUDADeviceAllocatorFactory::get_instance()->reserved_bytes(config.device_id);
     } else if (type == ZmqRpcMessageType::kMetrics) {
       response = make_ok_response();
       response["metrics"] = engine_pool.metrics_json();

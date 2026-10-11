@@ -1,0 +1,36 @@
+{
+  "qwen25-0.5b": {
+    "hf_outputs": [
+      "中国北京是中国的首都，位于华北平原北部，是中华人民共和国的政治、文化、经济和国际交往中心。",
+      "Certainly! Below is a simple Python function that adds two numbers:\n\n```python\ndef add_numbers(a, b):",
+      "很抱歉，我无法从您提供的信息中提取出具体的内容。您的问题似乎包含了一些不完整或错误"
+    ],
+    "pbe_outputs": [
+      "中国的首都北京，是中国的政治、经济、文化、交通和国际交往中心，也是世界上最大的城市之一。",
+      "Certainly! Below is a simple Python function that adds two numbers:\n\n```python\ndef add_numbers(a, b):",
+      "很抱歉，我无法从您提供的信息中提取出具体会议讨论的内容。这段话似乎是一段混乱的"
+    ],
+    "text_match": [
+      false,
+      true,
+      false
+    ]
+  },
+  "qwen25-1.5b": {
+    "hf_outputs": [
+      "中国首都北京。",
+      "Certainly! Here's a simple Python function that adds two numbers:\n\n```python\ndef add_two_numbers(a, b):",
+      "今天的所有会议都集中在讨论“共享显存和并发推理”这一主题上。"
+    ],
+    "pbe_outputs": [
+      "中国的首都北京。",
+      "Certainly! Here's a simple Python function to add two numbers:\n\n```python\ndef add_numbers(a, b):",
+      "今天的会议主要讨论了共享显存和并发推理。"
+    ],
+    "text_match": [
+      false,
+      false,
+      false
+    ]
+  }
+}

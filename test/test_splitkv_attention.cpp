@@ -150,7 +150,7 @@ TEST(SplitKVAttentionTest, SingleSequenceMatchesBaseline) {
             << " max_diff=" << max_diff << std::endl;
   EXPECT_LT(max_diff, 1e-4f) << "Split-KV and baseline outputs differ too much";
 
-  cudaStreamDestroy(cuda_config.stream);
+  // CudaConfig owns and destroys its stream.
 }
 
 // Test: Split-KV with short context (num_kv_blocks=1, single partition)
@@ -254,5 +254,5 @@ TEST(SplitKVAttentionTest, ShortContextSinglePartition) {
             << " max_diff=" << max_diff << std::endl;
   EXPECT_LT(max_diff, 1e-4f);
 
-  cudaStreamDestroy(cuda_config.stream);
+  // CudaConfig owns and destroys its stream.
 }

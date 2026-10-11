@@ -1,0 +1,4 @@
+execve("/usr/local/bin/nvidia-cuda-mps-server", ["nvidia-cuda-mps-server"], 0x7ffe8004a5f0 /* 66 vars */) = 0
+openat(AT_FDCWD, "/usr/lib/wsl/lib/libcuda.so.1", O_RDONLY|O_CLOEXEC) = 4
+openat(AT_FDCWD, "/usr/lib/wsl/drivers/nvlt.inf_amd64_3ab002af0a386850/libcuda.so.1.1", O_RDONLY|O_CLOEXEC) = 5
+exit_group(1)                           = ?

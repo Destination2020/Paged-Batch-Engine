@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <cmath>
 #include <limits>
+#include <stdexcept>
 #include <glog/logging.h>
 
 namespace model {
@@ -52,6 +53,15 @@ int32_t estimate_dynamic_kv_blocks_per_layer(const base::KVCacheStorageSpec& sto
                                          config.num_kv_heads, config.head_size);
   CHECK_GT(bytes_per_block_per_layer, 0);
   CHECK_GT(config.layer_num, 0);
+
+  if (config.absolute_kv_budget_bytes != 0) {
+    const size_t page_bytes = bytes_per_block_per_layer * static_cast<size_t>(config.layer_num);
+    const size_t blocks = config.absolute_kv_budget_bytes / page_bytes;
+    if (blocks < static_cast<size_t>(config.min_dynamic_kv_blocks) ||
+        config.absolute_kv_budget_bytes > memory_info.free_bytes || blocks > INT32_MAX)
+      throw std::invalid_argument("absolute KV budget cannot fit minimum blocks/device memory");
+    return static_cast<int32_t>(blocks);
+  }
 
   const size_t free_bytes = memory_info.free_bytes;
   const size_t total_bytes = memory_info.total_bytes;

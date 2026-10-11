@@ -1,0 +1,24 @@
+{
+  "source": "https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/nvidia-compute-utils-565_565.57.01-0ubuntu1_amd64.deb",
+  "package": "nvidia-compute-utils-565_565.57.01-0ubuntu1_amd64.deb",
+  "sha256": "f1b6b380b800bee1533f4fe3fa75ee8a9f05794a85306306550415e5ee3673be",
+  "version": "565.57.01",
+  "prefix": "/opt/pbe-mps/565.57.01",
+  "method": "standalone official binaries extracted without package dependencies",
+  "linux_driver_libraries_installed": false,
+  "control_help_works": true,
+  "control_daemon_starts": true,
+  "mps_server_initialization_succeeded": false,
+  "cuda_clients_registered": false,
+  "mps_probe_exit_code": 1,
+  "mps_probe_error": "Both clients are not registered with the same MPS server",
+  "linux_packages_unchanged": true,
+  "test_daemons_stopped": true,
+  "model_service_restarted": false,
+  "probe_directory": "/tmp/pbe-mps-installed-probe-20261011",
+  "server_initialization_report": "mps-server-initialization.json",
+  "loaded_driver_libraries": [
+    "/usr/lib/wsl/lib/libcuda.so.1",
+    "/usr/lib/wsl/drivers/nvlt.inf_amd64_3ab002af0a386850/libcuda.so.1.1"
+  ]
+}

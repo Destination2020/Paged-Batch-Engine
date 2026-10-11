@@ -1,0 +1,22 @@
+[2026-10-11 11:18:23.978 Control  4019] Starting control daemon using socket /tmp/pbe-mps-diagnosis-20261011/controlled/pipe/control
+[2026-10-11 11:18:23.978 Control  4019] To connect CUDA applications to this daemon, set env CUDA_MPS_PIPE_DIRECTORY=/tmp/pbe-mps-diagnosis-20261011/controlled/pipe
+[2026-10-11 11:18:23.989 Control  4019] CUDA MPS Control binary version: 12070
+[2026-10-11 11:18:24.007 Control  4019] Accepting connection...
+[2026-10-11 11:18:24.007 Control  4019] NEW UI
+[2026-10-11 11:18:24.008 Control  4019] Cmd:start_server -uid 0
+[2026-10-11 11:18:24.008 Control  4019] UI closed
+[2026-10-11 11:18:24.008 Control  4023] Starting new server 4023 for user 0
+[2026-10-11 11:18:24.361 Control  4019] Accepting connection...
+[2026-10-11 11:18:24.361 Control  4019] NEW UI
+[2026-10-11 11:18:24.362 Control  4019] Cmd:get_server_list
+[2026-10-11 11:18:24.362 Control  4019] 4023
+[2026-10-11 11:18:24.362 Control  4019] UI closed
+[2026-10-11 11:18:24.367 Control  4019] Server 4023 exited with status 1
+[2026-10-11 11:18:24.817 Control  4019] Accepting connection...
+[2026-10-11 11:18:24.817 Control  4019] NEW UI
+[2026-10-11 11:18:24.817 Control  4019] Cmd:get_server_list
+[2026-10-11 11:18:24.817 Control  4019] UI closed
+[2026-10-11 11:18:24.984 Control  4019] Accepting connection...
+[2026-10-11 11:18:24.985 Control  4019] NEW UI
+[2026-10-11 11:18:24.985 Control  4019] Cmd:quit
+[2026-10-11 11:18:24.985 Control  4019] Exit with status 1

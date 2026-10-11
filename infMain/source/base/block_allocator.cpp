@@ -2,6 +2,8 @@
 #include "base/block_allocator.h"
 #include <glog/logging.h>
 #include "base/alloc.h"
+#include "base/shared_kv_arena.h"
+#include <limits>
 
 namespace base {
 
@@ -76,7 +78,51 @@ BlockAllocator::~BlockAllocator() {
   // Tensors will auto-release memory
 }
 
+BlockAllocator::BlockAllocator(int32_t block_size, int32_t num_kv_heads,
+    int32_t head_size, std::shared_ptr<SharedKVPageGroup> group, int32_t layer)
+    : num_blocks_(group->addressable_blocks()), block_size_(block_size),
+      num_kv_heads_(num_kv_heads), head_size_(head_size), device_(DeviceType::kDeviceCUDA),
+      storage_spec_(MakeKVCacheStorageSpec(DataType::kDataTypeBf16, BlockStorageMode::kPlain)),
+      shared_group_(std::move(group)), shared_layer_(layer) {
+  CHECK_GT(num_blocks_, 0);
+  CHECK_LE(static_cast<int64_t>(num_blocks_) * block_size_, INT32_MAX)
+      << "Shared arena exceeds int32 slot mapping range";
+  const int32_t row = block_size_ * num_kv_heads_ * head_size_;
+  key_pool_ = tensor::Tensor(DataType::kDataTypeBf16, num_blocks_, row,
+                            false, nullptr, shared_group_->key_base(layer));
+  value_pool_ = tensor::Tensor(DataType::kDataTypeBf16, num_blocks_, row,
+                              false, nullptr, shared_group_->value_base(layer));
+  key_pool_.set_device_type(device_);
+  value_pool_.set_device_type(device_);
+  ref_counts_.resize(num_blocks_, 0);
+}
+
+int32_t BlockAllocator::num_free_blocks() const {
+  if (shared_group_) {
+    shared_group_->collect();
+    return shared_group_->free_blocks(shared_layer_);
+  }
+  return static_cast<int32_t>(free_queue_.size());
+}
+size_t BlockAllocator::shared_leased_bytes() const {
+  return shared_group_ ? shared_group_->leased_bytes() : 0;
+}
+size_t BlockAllocator::shared_arena_bytes() const {
+  return shared_group_ ? shared_group_->arena_bytes() : 0;
+}
+int32_t BlockAllocator::num_total_blocks() const {
+  return shared_group_ ? shared_group_->capacity() : num_blocks_;
+}
+
 int32_t BlockAllocator::allocate() {
+  if (shared_group_) {
+    const int32_t id = shared_group_->allocate(shared_layer_);
+    if (id < 0) return -1;
+    CHECK_LT(id, num_blocks_);
+    CHECK_EQ(ref_counts_[id], 0);
+    ref_counts_[id] = 1;
+    return id;
+  }
   if (free_queue_.empty()) {
     return -1;  // No free blocks
   }
@@ -103,7 +149,8 @@ void BlockAllocator::free(int32_t block_id) {
 
   --ref_counts_[block_id];
   if (ref_counts_[block_id] == 0) {
-    free_queue_.push(block_id);
+    if (shared_group_) shared_group_->retire(shared_layer_, block_id);
+    else free_queue_.push(block_id);
   }
 }
 

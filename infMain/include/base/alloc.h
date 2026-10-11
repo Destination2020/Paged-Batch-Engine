@@ -3,6 +3,7 @@
 #define KUIPER_INCLUDE_BASE_ALLOC_H_
 #include <map>
 #include <memory>
+#include <mutex>
 #include "base.h"
 namespace base {
 enum class MemcpyKind {
@@ -68,12 +69,16 @@ class CUDADeviceAllocator : public DeviceAllocator {
   void* allocate(size_t byte_size) const override;
 
   void release(void* ptr) const override;
+  void set_byte_limit(int device, size_t bytes);
+  size_t reserved_bytes(int device) const;
 
  private:
   mutable std::map<int, size_t> no_busy_cnt_;
   mutable std::map<int, std::vector<CudaMemoryBuffer>> big_buffers_map_;
   mutable std::map<int, std::vector<CudaMemoryBuffer>> cuda_buffers_map_;
   mutable std::map<int, size_t> reserved_bytes_map_;
+  std::map<int, size_t> byte_limits_;
+  mutable std::mutex mutex_;
 };
 
 class CPUDeviceAllocatorFactory {

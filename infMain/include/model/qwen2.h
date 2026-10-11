@@ -137,6 +137,9 @@ class Qwen2Model : public Model {
   void set_kv_cache_memory_utilization(double utilization);
   void set_kv_cache_gpu_memory_utilization(double utilization);
   void set_serving_workspace_token_capacity(int32_t token_capacity);
+  void set_shared_kv_arena(std::string endpoint, std::string model_id,
+                           uint64_t hard_limit_bytes, uint64_t chunk_target_bytes);
+  void set_kv_cache_budget_bytes(size_t bytes) { kv_cache_budget_bytes_ = bytes; }
 
   // Unified batch entry. Current implementation still executes decode rows only.
   base::Status forward_mixed_batch(const serving::MixedBatchMetadata& batch) const;
@@ -167,6 +170,9 @@ class Qwen2Model : public Model {
 
  private:
   void init_mem() override;
+  std::string shared_kv_endpoint_, shared_kv_model_id_;
+  uint64_t shared_kv_hard_limit_ = 0, shared_kv_chunk_target_ = 2ull * 1024 * 1024;
+  size_t kv_cache_budget_bytes_ = 0;
 
   base::Status create_layers() override;
 

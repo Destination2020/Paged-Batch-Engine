@@ -6,6 +6,7 @@ namespace base {
 CUDADeviceAllocator::CUDADeviceAllocator() : DeviceAllocator(DeviceType::kDeviceCUDA) {}
 
 void* CUDADeviceAllocator::allocate(size_t byte_size) const {
+  std::lock_guard<std::mutex> lock(mutex_);
   int id = -1;
   cudaError_t state = cudaGetDevice(&id);
   CHECK(state == cudaSuccess);
@@ -25,6 +26,14 @@ void* CUDADeviceAllocator::allocate(size_t byte_size) const {
       return big_buffers[sel_id].data;
     }
 
+    const auto limit = byte_limits_.find(id);
+    if (limit != byte_limits_.end() &&
+        byte_size > limit->second - reserved_bytes_map_[id]) {
+      LOG(ERROR) << "Private CUDA allocation budget exhausted: reserved="
+                 << reserved_bytes_map_[id] << " requested=" << byte_size
+                 << " limit=" << limit->second;
+      return nullptr;
+    }
     void* ptr = nullptr;
     state = cudaMalloc(&ptr, byte_size);
     if (cudaSuccess != state) {
@@ -49,6 +58,14 @@ void* CUDADeviceAllocator::allocate(size_t byte_size) const {
       return cuda_buffers[i].data;
     }
   }
+  const auto limit = byte_limits_.find(id);
+  if (limit != byte_limits_.end() &&
+      byte_size > limit->second - reserved_bytes_map_[id]) {
+    LOG(ERROR) << "Private CUDA allocation budget exhausted: reserved="
+               << reserved_bytes_map_[id] << " requested=" << byte_size
+               << " limit=" << limit->second;
+    return nullptr;
+  }
   void* ptr = nullptr;
   state = cudaMalloc(&ptr, byte_size);
   if (cudaSuccess != state) {
@@ -66,10 +83,8 @@ void* CUDADeviceAllocator::allocate(size_t byte_size) const {
 }
 
 void CUDADeviceAllocator::release(void* ptr) const {
+  std::lock_guard<std::mutex> lock(mutex_);
   if (!ptr) {
-    return;
-  }
-  if (cuda_buffers_map_.empty()) {
     return;
   }
   cudaError_t state = cudaSuccess;
@@ -103,7 +118,12 @@ void CUDADeviceAllocator::release(void* ptr) const {
         return;
       }
     }
-    auto& big_buffers = big_buffers_map_[it.first];
+  }
+  // Large allocations can exist before the first small allocation. Search
+  // their own device map so returning a cached buffer never frees it behind
+  // the allocator's accounting or prevents its later reuse.
+  for (auto& it : big_buffers_map_) {
+    auto& big_buffers = it.second;
     for (int i = 0; i < big_buffers.size(); i++) {
       if (big_buffers[i].data == ptr) {
         big_buffers[i].busy = false;
@@ -113,6 +133,18 @@ void CUDADeviceAllocator::release(void* ptr) const {
   }
   state = cudaFree(ptr);
   CHECK(state == cudaSuccess) << "Error: CUDA error when release memory on device";
+}
+
+void CUDADeviceAllocator::set_byte_limit(int device, size_t bytes) {
+  std::lock_guard<std::mutex> lock(mutex_);
+  if (!bytes) { byte_limits_.erase(device); return; }
+  CHECK_LE(reserved_bytes_map_[device], bytes) << "Already allocated beyond private CUDA budget";
+  byte_limits_[device] = bytes;
+}
+size_t CUDADeviceAllocator::reserved_bytes(int device) const {
+  std::lock_guard<std::mutex> lock(mutex_);
+  const auto it = reserved_bytes_map_.find(device);
+  return it == reserved_bytes_map_.end() ? 0 : it->second;
 }
 std::shared_ptr<CUDADeviceAllocator> CUDADeviceAllocatorFactory::instance = nullptr;
 
