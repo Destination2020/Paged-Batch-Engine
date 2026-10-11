@@ -1,4 +1,6 @@
 #include "serving/serving_http_server.h"
+#include "serving/serving_stop_signal.h"
+#include "serving/serving_http_protocol.h"
 
 #include <glog/logging.h>
 #include <arpa/inet.h>
@@ -53,6 +55,7 @@ EpollHttpServer::EpollHttpServer(HttpServerConfig config, ClientHandler handler,
 EpollHttpServer::~EpollHttpServer() { stop(); }
 
 int EpollHttpServer::run() {
+  ScopedServingStopSignals stop_signals;
   CHECK(handler_ != nullptr);
   if (!create_and_bind()) {
     return -1;
@@ -69,7 +72,7 @@ int EpollHttpServer::run() {
 
   constexpr int kMaxEvents = 64;
   epoll_event events[kMaxEvents];
-  while (!stopping_.load()) {
+  while (!stopping_.load() && !serving_stop_requested) {
     const int n = ::epoll_wait(epoll_fd_, events, kMaxEvents, 1000);
     if (n < 0) {
       if (errno == EINTR) {
@@ -84,7 +87,8 @@ int EpollHttpServer::run() {
       }
     }
   }
-  stop();
+  stop(); // close admission, then join handlers for already accepted requests
+  std::cout << "HTTP_SERVER_STOPPED drained=1" << std::endl;
   return 0;
 }
 
@@ -140,7 +144,14 @@ void EpollHttpServer::worker_loop() {
       client_fd = client_fds_.front();
       client_fds_.pop_front();
     }
-    handler_(client_fd);
+    configure_http_io(config_.io_timeout_ms);
+    try {
+      handler_(client_fd);
+    } catch (const std::exception& error) {
+      LOG(ERROR) << "HTTP handler failed: " << error.what();
+    } catch (...) {
+      LOG(ERROR) << "HTTP handler failed with unknown exception";
+    }
     close_fd(client_fd);
   }
 }
@@ -148,9 +159,17 @@ void EpollHttpServer::worker_loop() {
 void EpollHttpServer::enqueue_client(int client_fd) {
   {
     std::lock_guard<std::mutex> lock(queue_mu_);
-    client_fds_.push_back(client_fd);
+    if (!stopping_.load() && client_fds_.size() <
+        static_cast<size_t>(std::max(1, config_.max_pending_connections))) {
+      client_fds_.push_back(client_fd);
+      queue_cv_.notify_one();
+      return;
+    }
   }
-  queue_cv_.notify_one();
+  // Never block admission on an overloaded client's receive window.
+  static constexpr char response[] = "HTTP/1.1 503 Service Unavailable\r\nContent-Length: 0\r\nConnection: close\r\n\r\n";
+  ::send(client_fd, response, sizeof(response) - 1, MSG_NOSIGNAL | MSG_DONTWAIT);
+  close_fd(client_fd);
 }
 
 bool EpollHttpServer::create_and_bind() {
@@ -204,7 +223,7 @@ bool EpollHttpServer::create_epoll() {
 }
 
 void EpollHttpServer::accept_ready_clients() {
-  while (!stopping_.load()) {
+  while (!stopping_.load() && !serving_stop_requested) {
     sockaddr_in client_addr{};
     socklen_t client_len = sizeof(client_addr);
     const int client_fd = ::accept4(listen_fd_, reinterpret_cast<sockaddr*>(&client_addr),

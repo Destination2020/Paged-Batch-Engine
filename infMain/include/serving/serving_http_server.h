@@ -17,6 +17,8 @@ struct HttpServerConfig {
   std::string host = "127.0.0.1";
   int32_t port = 8080;
   int32_t listen_backlog = 1024;
+  int32_t io_timeout_ms = 5000;
+  int32_t max_pending_connections = 128;
   int32_t worker_threads = 0;  // 0 = auto
 };
 

@@ -1,0 +1,16 @@
+Internal ctest changing into directory: /home/nowcoder/PagedBatchEngine/build-mps
+Test project /home/nowcoder/PagedBatchEngine/build-mps
+    Start 2: pbe.unit
+1/2 Test #2: pbe.unit .........................   Passed    4.95 sec
+    Start 6: pbe.shared_kv_reuse
+2/2 Test #6: pbe.shared_kv_reuse ..............   Passed    2.15 sec
+
+100% tests passed, 0 tests failed out of 2
+
+Label Time Summary:
+gpu            =   7.11 sec*proc (2 tests)
+integration    =   2.15 sec*proc (1 test)
+kv             =   2.15 sec*proc (1 test)
+unit           =   4.95 sec*proc (1 test)
+
+Total Test time (real) =   7.11 sec

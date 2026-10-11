@@ -1,0 +1,3 @@
+HTTP_WORKER_POOL_READY workers=32 listen_backlog=1024
+ONLINE_SERVER_READY host=127.0.0.1 port=18083 role=zmq-http-api engine_zmq_endpoint=tcp://127.0.0.1:19090 prefill_zmq_endpoint=tcp://127.0.0.1:19091
+HTTP_SERVER_STOPPED drained=1

@@ -19,7 +19,7 @@
 #include "serving/decode_kv_reservation.h"
 #include "serving/pd_handoff.h"
 #include "serving/scheduler.h"
-#include "serving/serving_benchmark_app.h"
+#include "serving/serving_runtime.h"
 #include "serving/serving_config.h"
 #include "serving/serving_zmq_rpc.h"
 
@@ -38,7 +38,7 @@ void set_online_worker_device_or_die(const BenchConfig& config) {
       << ") failed in online worker thread: " << cudaGetErrorString(status);
 }
 
-SchedulerConfig make_online_scheduler_config(const ServingBenchmarkApp* app,
+SchedulerConfig make_online_scheduler_config(const ServingRuntime* app,
                                              const BenchConfig& config) {
   SchedulerConfig sched_config;
   sched_config.max_num_seqs = config.max_active_requests > 0
@@ -78,6 +78,7 @@ bool OnlineRequestHandle::cancelled() const {
 
 void OnlineRequestHandle::push_token(const std::string& token_text) {
   std::lock_guard<std::mutex> lock(mu_);
+  if (finished_ || cancelled_) return;
   pending_utf8_ += token_text;
   auto complete = base::drain_utf8(&pending_utf8_);
   if (!complete.empty()) token_texts_.push_back(std::move(complete));
@@ -86,6 +87,7 @@ void OnlineRequestHandle::push_token(const std::string& token_text) {
 
 void OnlineRequestHandle::finish(std::string full_text, bool failed, std::string error) {
   std::lock_guard<std::mutex> lock(mu_);
+  if (finished_) return;
   auto tail = base::drain_utf8(&pending_utf8_, true);
   if (!tail.empty()) token_texts_.push_back(std::move(tail));
   full_text_ = base::drain_utf8(&full_text, true);
@@ -119,7 +121,7 @@ bool OnlineRequestHandle::wait_next_token_for(int32_t timeout_ms,
                                               std::string* error) {
   std::unique_lock<std::mutex> lock(mu_);
   const bool ready = cv_.wait_for(
-      lock, std::chrono::milliseconds(std::max(1, timeout_ms)),
+      lock, std::chrono::milliseconds(std::max(0, timeout_ms)),
       [&]() { return next_idx_ < token_texts_.size() || finished_; });
   if (!ready) {
     *finished = false;
@@ -155,7 +157,7 @@ bool OnlineRequestHandle::wait_full_text(int32_t timeout_ms, std::string* text,
   return true;
 }
 
-OnlineServingEngine::OnlineServingEngine(ServingBenchmarkApp* app, const BenchConfig& config)
+OnlineServingEngine::OnlineServingEngine(ServingRuntime* app, const BenchConfig& config)
     : app_(app), config_(config) {}
 
 OnlineServingEngine::~OnlineServingEngine() { stop(); }

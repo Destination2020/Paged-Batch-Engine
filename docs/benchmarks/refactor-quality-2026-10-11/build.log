@@ -1,0 +1,49 @@
+[  1%] Built target test_http_protocol
+Consolidate compiler generated dependencies of target llama
+[  2%] Building CXX object CMakeFiles/llama.dir/infMain/source/base/shared_kv_owner.cpp.o
+[  3%] Building CXX object CMakeFiles/llama.dir/infMain/source/serving/serving_zmq_engine_core.cpp.o
+[  4%] Linking CUDA device code CMakeFiles/llama.dir/cmake_device_link.o
+[  4%] Linking CXX shared library lib/libllama.so
+[ 53%] Built target llama
+[ 53%] Linking CXX executable paged_attention_fast_bench
+[ 53%] Linking CXX executable paged_attention_fp8_bench
+[ 53%] Linking CXX executable llama_infer
+[ 54%] Building CXX object test/CMakeFiles/test_llm.dir/test_serving/test_pd_engine.cpp.o
+[ 55%] Built target llama_infer
+[ 57%] Built target paged_attention_fp8_bench
+[ 57%] Built target paged_attention_fast_bench
+[ 58%] Linking CXX executable pbe_data_service
+[ 58%] Building CXX object test/CMakeFiles/test_llm.dir/test_model/test_qwen2_device_init.cpp.o
+[ 59%] Linking CXX executable pbe_ipc_pool_probe
+[ 59%] Built target pbe_data_service
+[ 59%] Built target pbe_ipc_pool_probe
+[ 60%] Linking CXX executable pbe_lane_cuda_benchmark
+[ 60%] Linking CXX executable qwen_infer
+[ 60%] Built target pbe_lane_cuda_benchmark
+[ 60%] Built target qwen_infer
+[ 60%] Linking CXX executable qwen_instruct_infer
+[ 60%] Linking CXX executable qwen_instruct_chat
+[ 62%] Built target qwen_instruct_infer
+[ 62%] Built target qwen_instruct_chat
+[ 63%] Linking CXX executable pbe_multi_role_vlm
+[ 64%] Linking CXX executable pbe_multi_role_text
+[ 64%] Built target pbe_multi_role_vlm
+[ 64%] Built target pbe_multi_role_text
+[ 65%] Linking CXX executable pbe_vlm_language_role
+[ 66%] Building CXX object demo/CMakeFiles/serving_qwen.dir/serving_qwen.cpp.o
+[ 66%] Built target pbe_vlm_language_role
+[ 66%] Linking CXX executable shared_kv_owner
+[ 67%] Built target shared_kv_owner
+[ 67%] Linking CXX executable shared_kv_reuse_probe
+[ 68%] Built target shared_kv_reuse_probe
+[ 68%] Linking CXX executable shared_kv_bench
+[ 69%] Built target shared_kv_bench
+[ 69%] Linking CUDA executable mps_kv_probe
+[ 70%] Built target mps_kv_probe
+[ 70%] Linking CUDA executable cuda_ipc_event_probe
+[ 70%] Built target cuda_ipc_event_probe
+[ 70%] Linking CUDA device code CMakeFiles/test_llm.dir/cmake_device_link.o
+[ 71%] Linking CXX executable test_llm
+[100%] Built target test_llm
+[100%] Linking CXX executable serving_qwen
+[100%] Built target serving_qwen

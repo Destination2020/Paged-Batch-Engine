@@ -1,0 +1,8 @@
+{
+  "before": {
+    "library_sha256": "b1edb2ef247f027bce298c8e3042f0ac338fa1d987bb1a888483cc1b07d220c7"
+  },
+  "after": {
+    "library_sha256": "46b1219cf901d37af7803fe7c67ac5dffb362313f3495abc90fab10b2529b613"
+  }
+}

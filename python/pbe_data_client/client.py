@@ -1,6 +1,6 @@
 """Dependency-free PBE data-service protocol client."""
 from __future__ import annotations
-import enum, os, socket, struct, time
+import enum, math, os, socket, struct, time
 from dataclasses import dataclass
 
 MAGIC=0x53534250; VERSION=3; HEADER=struct.Struct("<IHHHHQQI")
@@ -26,24 +26,54 @@ def checksum256(value:bytes)->bytes:
     return struct.pack("<QQQQ",*h)
 
 class DataClient:
-    def __init__(self,endpoint:str): self.endpoint=endpoint; self._seq=0; self.client_incarnation=(os.getpid()<<32)^time.monotonic_ns()
-    def _call(self,op:int,payload:bytes=b"")->bytes:
-        self._seq+=1; rid=(self.client_incarnation+self._seq)&((1<<64)-1)
-        with socket.socket(socket.AF_UNIX,socket.SOCK_STREAM) as s:
-            s.connect(self.endpoint); s.sendall(HEADER.pack(MAGIC,VERSION,op,0,0,rid,len(payload),0)+payload)
-            header=b""
-            while len(header)<HEADER.size:
-                part=s.recv(HEADER.size-len(header));
-                if not part: raise ConnectionError("short response header")
-                header+=part
-            magic,version,rop,error,_,rrid,size,pad=HEADER.unpack(header)
-            if (magic,version,rop,rrid,pad)!=(MAGIC,VERSION,op,rid,0): raise ValueError("invalid response header")
-            result=b""
-            while len(result)<size:
-                part=s.recv(size-len(result));
-                if not part: raise ConnectionError("short response payload")
-                result+=part
-            if error: raise RuntimeError(DataError(error))
+    def __init__(self, endpoint: str, timeout_s: float = 30.0,
+                 max_payload_bytes: int = 1 << 30):
+        if not math.isfinite(timeout_s) or timeout_s <= 0 or max_payload_bytes <= 0:
+            raise ValueError("positive finite timeout and payload limit required")
+        self.endpoint = endpoint
+        self.timeout_s = timeout_s
+        self.max_payload_bytes = max_payload_bytes
+        self._seq = 0
+        self.client_incarnation = (os.getpid() << 32) ^ time.monotonic_ns()
+
+    def _call(self, op: int, payload: bytes = b"") -> bytes:
+        if len(payload) > self.max_payload_bytes:
+            raise ValueError("request payload too large")
+        self._seq += 1
+        rid = (self.client_incarnation + self._seq) & ((1 << 64) - 1)
+        deadline = time.monotonic() + self.timeout_s
+        with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as connection:
+            def remaining():
+                duration = deadline - time.monotonic()
+                if duration <= 0:
+                    raise TimeoutError("data service deadline exceeded")
+                connection.settimeout(duration)
+
+            def receive(size):
+                result = bytearray()
+                while len(result) < size:
+                    remaining()
+                    part = connection.recv(min(size - len(result), 1 << 20))
+                    if not part:
+                        raise ConnectionError("short data service response")
+                    result.extend(part)
+                return bytes(result)
+
+            remaining()
+            connection.connect(self.endpoint)
+            remaining()
+            connection.sendall(HEADER.pack(MAGIC, VERSION, op, 0, 0, rid, len(payload), 0))
+            if payload:
+                remaining()
+                connection.sendall(payload)
+            magic, version, rop, error, reserved, rrid, size, pad = HEADER.unpack(receive(HEADER.size))
+            if (magic, version, rop, reserved, rrid, pad) != (MAGIC, VERSION, op, 0, rid, 0):
+                raise ValueError("invalid response header")
+            if size > self.max_payload_bytes:
+                raise ValueError("response payload too large")
+            result = receive(size)
+            if error:
+                raise RuntimeError(DataError(error))
             return result
     def ping(self)->int: return struct.unpack("<Q",self._call(1))[0]
     def reserve(self,kind:DataKind,content:bytes,representation:bytes,size:int,operation:int|None=None)->tuple[int,int,int]:

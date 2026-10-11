@@ -4,11 +4,11 @@
 
 namespace serving {
 
-class ServingBenchmarkApp;
+class ServingRuntime;
 struct BenchConfig;
 
-int run_online_server(ServingBenchmarkApp* app);
-int run_online_server(ServingBenchmarkApp* app, const BenchConfig& config);
+int run_online_server(ServingRuntime* app);
+int run_online_server(ServingRuntime* app, const BenchConfig& config);
 
 }  // namespace serving
 

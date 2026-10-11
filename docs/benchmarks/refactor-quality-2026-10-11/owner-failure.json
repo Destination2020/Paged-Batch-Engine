@@ -1,0 +1,81 @@
+{
+  "scenario": "owner-failure",
+  "owner_refuses_live_leases": true,
+  "epoch": 76401405476915,
+  "supervisor_exit": 1,
+  "shutdown": {
+    "backend": "process",
+    "events": [
+      {
+        "event": "fault",
+        "monotonic_ns": 76406143487875,
+        "reason": "kv-owner exited (-9); see /tmp/pbe-quality-final-owner-failure/domain/kv-owner.log"
+      },
+      {
+        "event": "fault",
+        "monotonic_ns": 76406143510838,
+        "reason": "kv-owner exited unexpectedly (-9)"
+      },
+      {
+        "event": "shutdown_phase",
+        "monotonic_ns": 76406143521508,
+        "phase": "api"
+      },
+      {
+        "event": "fault",
+        "monotonic_ns": 76406143526327,
+        "reason": "forced process exit: api"
+      },
+      {
+        "event": "forced_exit",
+        "monotonic_ns": 76406159403668,
+        "name": "api",
+        "pid": 31775
+      },
+      {
+        "event": "shutdown_phase",
+        "monotonic_ns": 76406159418987,
+        "phase": "workers"
+      },
+      {
+        "event": "worker_stopped",
+        "monotonic_ns": 76406375556181,
+        "name": "qwen25-0.5b",
+        "pid": 31649,
+        "mode": "cancel",
+        "gpu_synchronized": true
+      },
+      {
+        "event": "worker_stopped",
+        "monotonic_ns": 76406741701592,
+        "name": "qwen25-1.5b",
+        "pid": 31703,
+        "mode": "cancel",
+        "gpu_synchronized": true
+      },
+      {
+        "event": "shutdown_phase",
+        "monotonic_ns": 76406741718504,
+        "phase": "auxiliary"
+      },
+      {
+        "event": "shutdown_phase",
+        "monotonic_ns": 76406741729224,
+        "phase": "owner"
+      },
+      {
+        "event": "fault",
+        "monotonic_ns": 76406741741758,
+        "reason": "owner exited before importer cleanup (-9)"
+      },
+      {
+        "event": "shutdown_phase",
+        "monotonic_ns": 76406741747429,
+        "phase": "complete"
+      }
+    ],
+    "graceful": false,
+    "mps_recovery_required": false
+  },
+  "all_gpu_processes_exited": true
+}

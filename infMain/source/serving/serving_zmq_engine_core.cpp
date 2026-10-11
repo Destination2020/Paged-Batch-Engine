@@ -1,4 +1,5 @@
 #include "serving/serving_zmq_engine_core.h"
+#include "serving/serving_stop_signal.h"
 #include "base/alloc.h"
 
 #include <glog/logging.h>
@@ -19,7 +20,7 @@
 
 #include "base/nvtx_utils.h"
 #include "serving/serving_online_engine_pool.h"
-#include "serving/serving_benchmark_app.h"
+#include "serving/serving_runtime.h"
 #include "serving/serving_zmq_rpc.h"
 
 namespace serving {
@@ -27,10 +28,8 @@ namespace {
 
 struct ActiveRequest {
   std::shared_ptr<OnlineRequestHandle> handle;
-  std::thread token_thread;
-  std::deque<nlohmann::json> events;
-  bool final_delivered = false;
-  std::atomic<bool> cancelled{false};
+  std::chrono::steady_clock::time_point deadline = std::chrono::steady_clock::time_point::max();
+  std::chrono::steady_clock::time_point last_poll = std::chrono::steady_clock::now();
 };
 
 nlohmann::json make_error_response(const std::string& error) {
@@ -46,7 +45,7 @@ nlohmann::json make_ok_response() {
   };
 }
 
-SchedulerConfig make_scheduler_config(const ServingBenchmarkApp* app,
+SchedulerConfig make_scheduler_config(const ServingRuntime* app,
                                       const BenchConfig& config) {
   SchedulerConfig sched_config;
   sched_config.max_num_seqs = app->max_model_batch_size();
@@ -80,7 +79,7 @@ int32_t additional_blocks_needed_for_tokens(int32_t current_tokens,
 
 class RemotePrefillBatchWorker {
  public:
-  RemotePrefillBatchWorker(ServingBenchmarkApp* app, BenchConfig config)
+  RemotePrefillBatchWorker(ServingRuntime* app, BenchConfig config)
       : app_(app), config_(std::move(config)) {
     CHECK_NE(app_, nullptr);
   }
@@ -465,7 +464,7 @@ class RemotePrefillBatchWorker {
     }
   }
 
-  ServingBenchmarkApp* app_ = nullptr;
+  ServingRuntime* app_ = nullptr;
   BenchConfig config_;
   std::thread worker_;
   mutable std::mutex mu_;
@@ -480,7 +479,7 @@ class RemotePrefillBatchWorker {
   std::atomic<int64_t> prefill_tokens_{0};
 };
 
-base::Status run_zmq_prefill_engine_core_server(ServingBenchmarkApp* app,
+base::Status run_zmq_prefill_engine_core_server(ServingRuntime* app,
                                                 const BenchConfig& config) {
   CHECK_NE(app, nullptr);
   ZmqRpcConfig rpc_config = make_prefill_zmq_rpc_config(config);
@@ -635,68 +634,15 @@ base::Status run_zmq_prefill_engine_core_server(ServingBenchmarkApp* app,
   }
 }
 
-void append_event(std::mutex* mu,
-                  std::condition_variable* cv,
-                  std::shared_ptr<ActiveRequest> active,
-                  nlohmann::json event) {
-  {
-    std::lock_guard<std::mutex> lock(*mu);
-    active->events.push_back(std::move(event));
-  }
-  cv->notify_all();
-}
-
-void stream_handle_events(std::mutex* mu,
-                          std::condition_variable* cv,
-                          int64_t request_id,
-                          std::shared_ptr<ActiveRequest> active) {
-  base::nvtx::ScopedRange thread_range("zmq_stream_handle_events",
-                                       base::nvtx::kColorProcess);
-  while (true) {
-    if (active->cancelled.load() || active->handle->cancelled()) {
-      return;
-    }
-    std::string token_text;
-    bool finished = false;
-    bool failed = false;
-    std::string error;
-    const bool has_token = active->handle->wait_next_token_for(
-        100, &token_text, &finished, &failed, &error);
-    if (has_token) {
-      base::nvtx::ScopedRange range("zmq_stream_append_token",
-                                    base::nvtx::kColorProcess);
-      append_event(mu, cv, active,
-                   {{"type", zmq_rpc_message_type_name(ZmqRpcMessageType::kToken)},
-                    {"request_id", request_id},
-                    {"text", token_text}});
-      continue;
-    }
-    if (finished) {
-      base::nvtx::ScopedRange range("zmq_stream_append_final",
-                                    base::nvtx::kColorProcess);
-      bool full_failed = failed;
-      std::string full_error = error;
-      std::string full_text;
-      active->handle->wait_full_text(0, &full_text, &full_failed, &full_error);
-      append_event(mu, cv, active,
-                   {{"type", zmq_rpc_message_type_name(ZmqRpcMessageType::kFinal)},
-                    {"request_id", request_id},
-                    {"failed", full_failed},
-                    {"error", full_error},
-                    {"text", full_text}});
-      return;
-    }
-  }
-}
-
 }  // namespace
 
-base::Status run_zmq_engine_core_server(ServingBenchmarkApp* app,
+base::Status run_zmq_engine_core_server(ServingRuntime* app,
                                         const BenchConfig& config) {
   CHECK_NE(app, nullptr);
   if (config.online_process_role == kOnlineProcessRoleZmqPrefillEngineCore) {
     return run_zmq_prefill_engine_core_server(app, config);
   }
+  ScopedServingStopSignals stop_signals;
   ZmqRpcConfig rpc_config = make_zmq_rpc_config(config);
   std::unique_ptr<ZmqSocket> socket;
   auto status = make_zmq_rep_socket(rpc_config, &socket);
@@ -704,11 +650,12 @@ base::Status run_zmq_engine_core_server(ServingBenchmarkApp* app,
     return status;
   }
 
+  status = socket->set_timeouts(200);
+  if (!status) return status;
+
   SingleOnlineEnginePool engine_pool(app, config);
   engine_pool.start();
 
-  std::mutex mu;
-  std::condition_variable cv;
   std::unordered_map<int64_t, std::shared_ptr<ActiveRequest>> active_requests;
   std::atomic<int64_t> next_request_id{1};
 
@@ -716,118 +663,143 @@ base::Status run_zmq_engine_core_server(ServingBenchmarkApp* app,
   std::cout << "ZMQ_ENGINE_CORE_READY endpoint=" << rpc_config.endpoint
             << " role=" << config.online_process_role << std::endl;
 
-  while (true) {
+  bool shutdown_reply = false;
+  bool cancel_on_stop = false;
+  while (!serving_stop_requested) {
+    const auto now = std::chrono::steady_clock::now();
+    for (auto it = active_requests.begin(); it != active_requests.end();) {
+      const auto& active = *it->second;
+      if (now >= active.deadline || now - active.last_poll > std::chrono::seconds(30)) {
+        engine_pool.cancel(active.handle, now >= active.deadline ? "request_timeout" : "consumer_expired");
+        it = active_requests.erase(it);
+      } else ++it;
+    }
     nlohmann::json request;
     status = socket->recv_json(&request);
     if (!status) {
-      LOG(ERROR) << status.get_err_msg();
+      if (status == base::StatusCode::kInvalidArgument)
+        socket->send_json(make_error_response("invalid_request_json"));
       continue;
     }
 
-    nlohmann::json response;
-    const auto type = zmq_rpc_message_type_from_string(
-        request.value("type", std::string()));
-    if (type == ZmqRpcMessageType::kHealth) {
-      response = make_ok_response();
-      response["status"] = "ok";
-      response["model_id"] = config.model_id;
-      response["private_allocator_reserved_bytes"] =
-          base::CUDADeviceAllocatorFactory::get_instance()->reserved_bytes(config.device_id);
-    } else if (type == ZmqRpcMessageType::kMetrics) {
-      response = make_ok_response();
-      response["metrics"] = engine_pool.metrics_json();
-      response["metrics"]["process"]["role"] = config.online_process_role;
-      response["metrics"]["process"]["zmq_endpoint"] = rpc_config.endpoint;
-    } else if (type == ZmqRpcMessageType::kGenerate) {
-      OnlineGenerateRequest generate_request =
-          online_generate_request_from_json(request.at("request"));
-      generate_request.stream = true;
-      const int64_t request_id = next_request_id.fetch_add(1);
-      std::string error;
-      auto handle = engine_pool.submit(generate_request, &error);
-      if (!handle) {
-        response = make_error_response(error);
-      } else {
-        auto active = std::make_shared<ActiveRequest>();
-        active->handle = handle;
-        {
-          std::lock_guard<std::mutex> lock(mu);
-          active_requests[request_id] = active;
+    try {
+      if (request.value("type", std::string()) == "shutdown") {
+        const auto mode = request.value("mode", std::string("drain"));
+        if (mode != "drain" && mode != "cancel") {
+          socket->send_json(make_error_response("invalid_shutdown_mode"));
+          continue;
         }
-        active->token_thread = std::thread([&mu, &cv, request_id, active]() {
-          stream_handle_events(&mu, &cv, request_id, active);
-        });
+        shutdown_reply = true;
+        cancel_on_stop = mode == "cancel";
+        break; // No subsequent generate request can enter the engine.
+      }
+
+      nlohmann::json response;
+      const auto type = zmq_rpc_message_type_from_string(
+          request.value("type", std::string()));
+      if (type == ZmqRpcMessageType::kHealth) {
         response = make_ok_response();
-        response["request_id"] = request_id;
-      }
-    } else if (type == ZmqRpcMessageType::kToken) {
-      const int64_t request_id = request.value("request_id", int64_t{-1});
-      std::shared_ptr<ActiveRequest> active;
-      {
-        std::unique_lock<std::mutex> lock(mu);
-        auto it = active_requests.find(request_id);
-        if (it != active_requests.end()) {
-          active = it->second;
-        }
-        if (active == nullptr) {
-          response = make_error_response("request_not_found");
-        } else if (active->events.empty()) {
-          response = make_ok_response();
-          response["event"] = {{"type", "none"}, {"request_id", request_id}};
+        response["status"] = "ok";
+        response["model_id"] = config.model_id;
+        cudaDeviceProp properties{};
+        const auto device_status = cudaGetDeviceProperties(&properties, config.device_id);
+        if (device_status == cudaSuccess) response["visible_sm_count"] = properties.multiProcessorCount;
+        response["max_batched_tokens_effective"] = config.max_num_batched_tokens;
+        response["private_allocator_reserved_bytes"] =
+            base::CUDADeviceAllocatorFactory::get_instance()->reserved_bytes(config.device_id);
+      } else if (type == ZmqRpcMessageType::kMetrics) {
+        response = make_ok_response();
+        response["metrics"] = engine_pool.metrics_json();
+        response["metrics"]["remote_requests"] = active_requests.size();
+        response["metrics"]["process"]["role"] = config.online_process_role;
+        response["metrics"]["process"]["zmq_endpoint"] = rpc_config.endpoint;
+      } else if (type == ZmqRpcMessageType::kGenerate) {
+        OnlineGenerateRequest generate_request =
+            online_generate_request_from_json(request.at("request"));
+        generate_request.stream = true;
+        const int64_t request_id = next_request_id.fetch_add(1);
+        std::string error;
+        auto handle = engine_pool.submit(generate_request, &error);
+        if (!handle) {
+          response = make_error_response(error);
         } else {
+          auto active = std::make_shared<ActiveRequest>();
+          active->handle = handle;
+          const int timeout = generate_request.timeout_ms > 0 ? generate_request.timeout_ms : config.request_timeout_ms;
+          if (timeout > 0) active->deadline = std::chrono::steady_clock::now() + std::chrono::milliseconds(timeout);
+          active_requests[request_id] = active;
           response = make_ok_response();
-          response["event"] = std::move(active->events.front());
-          active->events.pop_front();
-          if (zmq_rpc_message_type_from_string(
-                  response["event"].value("type", std::string())) ==
-              ZmqRpcMessageType::kFinal) {
-            active->final_delivered = true;
-          }
+          response["request_id"] = request_id;
         }
-      }
-
-      if (active != nullptr && active->final_delivered) {
-        if (active->token_thread.joinable() &&
-            active->token_thread.get_id() != std::this_thread::get_id()) {
-          active->token_thread.join();
-        }
-        std::lock_guard<std::mutex> lock(mu);
-        active_requests.erase(request_id);
-      }
-    } else if (type == ZmqRpcMessageType::kCancel) {
-      const int64_t request_id = request.value("request_id", int64_t{-1});
-      const std::string reason = request.value("reason", "cancelled");
-      std::shared_ptr<ActiveRequest> active;
-      {
-        std::lock_guard<std::mutex> lock(mu);
+      } else if (type == ZmqRpcMessageType::kToken) {
+        const int64_t request_id = request.value("request_id", int64_t{-1});
         auto it = active_requests.find(request_id);
+        if (it == active_requests.end()) {
+          response = make_error_response("request_not_found");
+        } else {
+          auto& active = *it->second;
+          active.last_poll = std::chrono::steady_clock::now();
+          const int count = std::clamp(request.value("max_events", 1), 1, 32);
+          auto events = nlohmann::json::array();
+          bool terminal = false;
+          for (int i = 0; i < count; ++i) {
+            std::string text, error;
+            bool finished = false, failed = false;
+            if (active.handle->wait_next_token_for(0, &text, &finished, &failed, &error)) {
+              events.push_back({{"type", "token"}, {"request_id", request_id}, {"text", text}});
+            } else if (finished) {
+              active.handle->wait_full_text(0, &text, &failed, &error);
+              events.push_back({{"type", "final"}, {"request_id", request_id},
+                               {"text", text}, {"failed", failed}, {"error", error}});
+              terminal = true;
+              break;
+            } else break;
+          }
+          if (events.empty()) events.push_back({{"type", "none"}, {"request_id", request_id}});
+          response = make_ok_response();
+          if (request.contains("max_events")) response["events"] = std::move(events);
+          else response["event"] = std::move(events.front());
+          if (terminal) active_requests.erase(it);
+        }
+      } else if (type == ZmqRpcMessageType::kCancel) {
+        const auto it = active_requests.find(request.value("request_id", int64_t{-1}));
         if (it != active_requests.end()) {
-          active = it->second;
+          engine_pool.cancel(it->second->handle, request.value("reason", "cancelled"));
+          active_requests.erase(it); // cancellation never depends on a subsequent poll
         }
+        response = make_ok_response();
+      } else {
+        response = make_error_response("unknown_message_type");
       }
-      if (active != nullptr) {
-        active->cancelled.store(true);
-        engine_pool.cancel(active->handle, reason);
-        append_event(&mu, &cv, active,
-                     {{"type", zmq_rpc_message_type_name(ZmqRpcMessageType::kFinal)},
-                      {"request_id", request_id},
-                      {"failed", true},
-                      {"error", reason},
-                      {"text", ""}});
-        if (active->token_thread.joinable()) {
-          active->token_thread.detach();
-        }
-      }
-      response = make_ok_response();
-    } else {
-      response = make_error_response("unknown_message_type");
-    }
 
-    status = socket->send_json(response);
-    if (!status) {
-      LOG(ERROR) << status.get_err_msg();
+      status = socket->send_json(response);
+      if (!status) LOG(ERROR) << status.get_err_msg();
+    } catch (const nlohmann::json::exception& error) {
+      socket->send_json(make_error_response(std::string("invalid_request: ") + error.what()));
     }
   }
+  if (cancel_on_stop) {
+    for (auto& item : active_requests) engine_pool.cancel(item.second->handle, "server_shutdown");
+  }
+  engine_pool.stop(); // joins the scheduler thread after submitted work is drained
+  active_requests.clear();
+  auto cuda_status = cudaSetDevice(config.device_id);
+  if (cuda_status == cudaSuccess) cuda_status = cudaDeviceSynchronize();
+  if (cuda_status != cudaSuccess) {
+    if (shutdown_reply) socket->send_json(make_error_response(cudaGetErrorString(cuda_status)));
+    return base::error::InternalError("GPU shutdown synchronization failed");
+  }
+  // Collect completed shared-page fences while the exporter is still alive.
+  for (int layer = 0; layer < app->kv_cache_manager()->num_layers(); ++layer)
+    app->kv_cache_manager()->num_free_blocks(layer);
+  if (shutdown_reply) {
+    socket->set_linger(1000); // allow the final acknowledgement to reach the supervisor
+    status = socket->send_json({{"ok", true}, {"gpu_synchronized", true},
+                               {"mode", cancel_on_stop ? "cancel" : "drain"}});
+    if (!status) return status;
+  }
+  std::cout << "ZMQ_ENGINE_CORE_STOPPED gpu_synchronized=1" << std::endl;
+  return {};
 }
 
 }  // namespace serving

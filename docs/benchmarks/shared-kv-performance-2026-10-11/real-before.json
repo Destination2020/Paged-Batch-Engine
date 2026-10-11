@@ -1,0 +1,449 @@
+{
+  "backend": "process",
+  "model_ids": [
+    "qwen25-0.5b",
+    "qwen25-1.5b"
+  ],
+  "different_weight_paths": true,
+  "max_active_requests_per_model": 1,
+  "baseline_matches": true,
+  "utf8_streaming": true,
+  "cancellation_route": true,
+  "unknown_model_rejected": true,
+  "arena_fully_reclaimed": true,
+  "outputs": {
+    "qwen25-0.5b": [
+      "中国的首都北京，是中国的政治、经济、文化、交通和国际交往中心，也是世界上最大的城市之一。",
+      "Certainly! Below is a simple Python function that adds two numbers:\n\n```python\ndef add_numbers(a, b):",
+      "很抱歉，我无法从您提供的信息中提取出具体会议讨论的内容。这段话似乎是一段混乱的"
+    ],
+    "qwen25-1.5b": [
+      "中国的首都是中国北京。",
+      "Certainly! Here's a simple Python function to add two numbers:\n\n```python\ndef add_numbers(a, b):",
+      "今天的会议主要讨论了共享显存和并发推理。"
+    ]
+  },
+  "alternating_reuse_requests": [],
+  "timings": [
+    {
+      "model": "qwen25-0.5b",
+      "mode": "private",
+      "first_text_ms": 26.159761000599246,
+      "total_ms": 210.6403660000069,
+      "text_events": 24
+    },
+    {
+      "model": "qwen25-0.5b",
+      "mode": "private",
+      "first_text_ms": 27.38387700082967,
+      "total_ms": 206.2385120007093,
+      "text_events": 24
+    },
+    {
+      "model": "qwen25-0.5b",
+      "mode": "private",
+      "first_text_ms": 26.47709700249834,
+      "total_ms": 205.13746500364505,
+      "text_events": 24
+    },
+    {
+      "model": "qwen25-0.5b",
+      "mode": "private",
+      "first_text_ms": 25.77685099822702,
+      "total_ms": 206.01564899698133,
+      "text_events": 24
+    },
+    {
+      "model": "qwen25-0.5b",
+      "mode": "private",
+      "first_text_ms": 26.907832005235832,
+      "total_ms": 208.88836900121532,
+      "text_events": 24
+    },
+    {
+      "model": "qwen25-0.5b",
+      "mode": "private",
+      "first_text_ms": 25.645943002018612,
+      "total_ms": 209.54963999975007,
+      "text_events": 24
+    },
+    {
+      "model": "qwen25-0.5b",
+      "mode": "private",
+      "first_text_ms": 27.97270200244384,
+      "total_ms": 206.89951500389725,
+      "text_events": 24
+    },
+    {
+      "model": "qwen25-0.5b",
+      "mode": "private",
+      "first_text_ms": 28.198400999826845,
+      "total_ms": 203.81718899443513,
+      "text_events": 24
+    },
+    {
+      "model": "qwen25-0.5b",
+      "mode": "private",
+      "first_text_ms": 26.556782999250572,
+      "total_ms": 215.05561500089243,
+      "text_events": 24
+    },
+    {
+      "model": "qwen25-0.5b",
+      "mode": "private",
+      "first_text_ms": 29.52049099985743,
+      "total_ms": 226.27719300362514,
+      "text_events": 24
+    },
+    {
+      "model": "qwen25-1.5b",
+      "mode": "private",
+      "first_text_ms": 66.37737699929858,
+      "total_ms": 524.2027260028408,
+      "text_events": 24
+    },
+    {
+      "model": "qwen25-1.5b",
+      "mode": "private",
+      "first_text_ms": 66.17024500155821,
+      "total_ms": 508.5029710025992,
+      "text_events": 24
+    },
+    {
+      "model": "qwen25-1.5b",
+      "mode": "private",
+      "first_text_ms": 65.14440099999774,
+      "total_ms": 530.2406609989703,
+      "text_events": 24
+    },
+    {
+      "model": "qwen25-1.5b",
+      "mode": "private",
+      "first_text_ms": 69.69892299821367,
+      "total_ms": 542.3871780003537,
+      "text_events": 24
+    },
+    {
+      "model": "qwen25-1.5b",
+      "mode": "private",
+      "first_text_ms": 67.00319199444493,
+      "total_ms": 595.8275809971383,
+      "text_events": 24
+    },
+    {
+      "model": "qwen25-1.5b",
+      "mode": "private",
+      "first_text_ms": 70.98396200308343,
+      "total_ms": 556.8355620052898,
+      "text_events": 24
+    },
+    {
+      "model": "qwen25-1.5b",
+      "mode": "private",
+      "first_text_ms": 70.5402210005559,
+      "total_ms": 574.1964519984322,
+      "text_events": 24
+    },
+    {
+      "model": "qwen25-1.5b",
+      "mode": "private",
+      "first_text_ms": 83.6215470044408,
+      "total_ms": 561.4391380004236,
+      "text_events": 24
+    },
+    {
+      "model": "qwen25-1.5b",
+      "mode": "private",
+      "first_text_ms": 67.45760299963877,
+      "total_ms": 539.220357000886,
+      "text_events": 24
+    },
+    {
+      "model": "qwen25-1.5b",
+      "mode": "private",
+      "first_text_ms": 67.40722699760227,
+      "total_ms": 541.0428629984381,
+      "text_events": 24
+    },
+    {
+      "model": "qwen25-0.5b",
+      "mode": "shared_empty",
+      "first_text_ms": 40.44589899422135,
+      "total_ms": 280.15958800096996,
+      "text_events": 24
+    },
+    {
+      "model": "qwen25-0.5b",
+      "mode": "shared_empty",
+      "first_text_ms": 30.76287399744615,
+      "total_ms": 237.80426099983742,
+      "text_events": 24
+    },
+    {
+      "model": "qwen25-0.5b",
+      "mode": "shared_empty",
+      "first_text_ms": 39.41989199665841,
+      "total_ms": 272.77173200127436,
+      "text_events": 24
+    },
+    {
+      "model": "qwen25-0.5b",
+      "mode": "shared_empty",
+      "first_text_ms": 31.97345599619439,
+      "total_ms": 246.18023599759908,
+      "text_events": 24
+    },
+    {
+      "model": "qwen25-0.5b",
+      "mode": "shared_empty",
+      "first_text_ms": 80.21404299506685,
+      "total_ms": 367.2495579958195,
+      "text_events": 24
+    },
+    {
+      "model": "qwen25-0.5b",
+      "mode": "shared_empty",
+      "first_text_ms": 51.58247600047616,
+      "total_ms": 258.91215100273257,
+      "text_events": 24
+    },
+    {
+      "model": "qwen25-0.5b",
+      "mode": "shared_empty",
+      "first_text_ms": 38.45555299631087,
+      "total_ms": 245.7732760012732,
+      "text_events": 24
+    },
+    {
+      "model": "qwen25-0.5b",
+      "mode": "shared_empty",
+      "first_text_ms": 33.94500000285916,
+      "total_ms": 242.264137006714,
+      "text_events": 24
+    },
+    {
+      "model": "qwen25-0.5b",
+      "mode": "shared_empty",
+      "first_text_ms": 33.80213200580329,
+      "total_ms": 241.88431200309424,
+      "text_events": 24
+    },
+    {
+      "model": "qwen25-0.5b",
+      "mode": "shared_empty",
+      "first_text_ms": 36.568168994563166,
+      "total_ms": 243.91516399919055,
+      "text_events": 24
+    },
+    {
+      "model": "qwen25-1.5b",
+      "mode": "shared_empty",
+      "first_text_ms": 92.2114459972363,
+      "total_ms": 562.2765049993177,
+      "text_events": 24
+    },
+    {
+      "model": "qwen25-1.5b",
+      "mode": "shared_empty",
+      "first_text_ms": 79.13765300327213,
+      "total_ms": 570.6581089980318,
+      "text_events": 24
+    },
+    {
+      "model": "qwen25-1.5b",
+      "mode": "shared_empty",
+      "first_text_ms": 72.47037699562497,
+      "total_ms": 556.6999629954807,
+      "text_events": 24
+    },
+    {
+      "model": "qwen25-1.5b",
+      "mode": "shared_empty",
+      "first_text_ms": 78.90890000271611,
+      "total_ms": 512.4338250025176,
+      "text_events": 24
+    },
+    {
+      "model": "qwen25-1.5b",
+      "mode": "shared_empty",
+      "first_text_ms": 63.1717549986206,
+      "total_ms": 487.3058540033526,
+      "text_events": 24
+    },
+    {
+      "model": "qwen25-1.5b",
+      "mode": "shared_empty",
+      "first_text_ms": 64.64732799940975,
+      "total_ms": 497.8326999989804,
+      "text_events": 24
+    },
+    {
+      "model": "qwen25-1.5b",
+      "mode": "shared_empty",
+      "first_text_ms": 69.14070500351954,
+      "total_ms": 495.55169099767227,
+      "text_events": 24
+    },
+    {
+      "model": "qwen25-1.5b",
+      "mode": "shared_empty",
+      "first_text_ms": 68.57127999683144,
+      "total_ms": 509.2104189970996,
+      "text_events": 24
+    },
+    {
+      "model": "qwen25-1.5b",
+      "mode": "shared_empty",
+      "first_text_ms": 71.41974499973003,
+      "total_ms": 501.0844700009329,
+      "text_events": 24
+    },
+    {
+      "model": "qwen25-1.5b",
+      "mode": "shared_empty",
+      "first_text_ms": 69.66260700573912,
+      "total_ms": 498.51388100069016,
+      "text_events": 24
+    },
+    {
+      "model": "qwen25-0.5b",
+      "mode": "shared_93.75_percent_held",
+      "first_text_ms": 41.326840000692755,
+      "total_ms": 261.016942000424,
+      "text_events": 24
+    },
+    {
+      "model": "qwen25-0.5b",
+      "mode": "shared_93.75_percent_held",
+      "first_text_ms": 42.63790400000289,
+      "total_ms": 237.52809599682223,
+      "text_events": 24
+    },
+    {
+      "model": "qwen25-0.5b",
+      "mode": "shared_93.75_percent_held",
+      "first_text_ms": 37.486957997316495,
+      "total_ms": 247.94313199527096,
+      "text_events": 24
+    },
+    {
+      "model": "qwen25-0.5b",
+      "mode": "shared_93.75_percent_held",
+      "first_text_ms": 36.1924419994466,
+      "total_ms": 247.41845900280168,
+      "text_events": 24
+    },
+    {
+      "model": "qwen25-0.5b",
+      "mode": "shared_93.75_percent_held",
+      "first_text_ms": 39.19889099779539,
+      "total_ms": 246.90256099711405,
+      "text_events": 24
+    },
+    {
+      "model": "qwen25-0.5b",
+      "mode": "shared_93.75_percent_held",
+      "first_text_ms": 32.15658300177893,
+      "total_ms": 244.62391599809052,
+      "text_events": 24
+    },
+    {
+      "model": "qwen25-0.5b",
+      "mode": "shared_93.75_percent_held",
+      "first_text_ms": 31.976862999727018,
+      "total_ms": 239.94113200024003,
+      "text_events": 24
+    },
+    {
+      "model": "qwen25-0.5b",
+      "mode": "shared_93.75_percent_held",
+      "first_text_ms": 31.50803099561017,
+      "total_ms": 242.32733200187795,
+      "text_events": 24
+    },
+    {
+      "model": "qwen25-0.5b",
+      "mode": "shared_93.75_percent_held",
+      "first_text_ms": 37.82162200513994,
+      "total_ms": 242.01195900241146,
+      "text_events": 24
+    },
+    {
+      "model": "qwen25-0.5b",
+      "mode": "shared_93.75_percent_held",
+      "first_text_ms": 30.26087200123584,
+      "total_ms": 239.83210000005784,
+      "text_events": 24
+    },
+    {
+      "model": "qwen25-1.5b",
+      "mode": "shared_93.75_percent_held",
+      "first_text_ms": 64.72677899728296,
+      "total_ms": 507.8692949973629,
+      "text_events": 24
+    },
+    {
+      "model": "qwen25-1.5b",
+      "mode": "shared_93.75_percent_held",
+      "first_text_ms": 67.54477600043174,
+      "total_ms": 508.73925300402334,
+      "text_events": 24
+    },
+    {
+      "model": "qwen25-1.5b",
+      "mode": "shared_93.75_percent_held",
+      "first_text_ms": 73.05667599575827,
+      "total_ms": 500.42781099909917,
+      "text_events": 24
+    },
+    {
+      "model": "qwen25-1.5b",
+      "mode": "shared_93.75_percent_held",
+      "first_text_ms": 69.97103599860566,
+      "total_ms": 502.45541099866387,
+      "text_events": 24
+    },
+    {
+      "model": "qwen25-1.5b",
+      "mode": "shared_93.75_percent_held",
+      "first_text_ms": 68.57025900535518,
+      "total_ms": 504.7594960051356,
+      "text_events": 24
+    },
+    {
+      "model": "qwen25-1.5b",
+      "mode": "shared_93.75_percent_held",
+      "first_text_ms": 71.24261900025886,
+      "total_ms": 571.6175609995844,
+      "text_events": 24
+    },
+    {
+      "model": "qwen25-1.5b",
+      "mode": "shared_93.75_percent_held",
+      "first_text_ms": 114.63823800295359,
+      "total_ms": 609.0082459995756,
+      "text_events": 24
+    },
+    {
+      "model": "qwen25-1.5b",
+      "mode": "shared_93.75_percent_held",
+      "first_text_ms": 110.19338200276252,
+      "total_ms": 615.6032069993671,
+      "text_events": 24
+    },
+    {
+      "model": "qwen25-1.5b",
+      "mode": "shared_93.75_percent_held",
+      "first_text_ms": 73.83605100039858,
+      "total_ms": 569.560926000122,
+      "text_events": 24
+    },
+    {
+      "model": "qwen25-1.5b",
+      "mode": "shared_93.75_percent_held",
+      "first_text_ms": 83.60956099932082,
+      "total_ms": 541.6811120012426,
+      "text_events": 24
+    }
+  ]
+}

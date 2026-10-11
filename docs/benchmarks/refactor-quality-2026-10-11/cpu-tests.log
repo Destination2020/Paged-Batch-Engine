@@ -1,0 +1,21 @@
+Internal ctest changing into directory: /home/nowcoder/PagedBatchEngine/build-mps
+Test project /home/nowcoder/PagedBatchEngine/build-mps
+    Start 1: pbe.http_protocol
+1/4 Test #1: pbe.http_protocol ................   Passed    0.04 sec
+    Start 3: pbe.data_client_transport
+2/4 Test #3: pbe.data_client_transport ........   Passed    0.16 sec
+    Start 4: pbe.http_integration
+3/4 Test #4: pbe.http_integration .............   Passed    1.69 sec
+    Start 5: pbe.deployment
+4/4 Test #5: pbe.deployment ...................   Passed    0.13 sec
+
+100% tests passed, 0 tests failed out of 4
+
+Label Time Summary:
+cpu            =   2.02 sec*proc (4 tests)
+data           =   0.16 sec*proc (1 test)
+deployment     =   0.13 sec*proc (1 test)
+integration    =   1.69 sec*proc (1 test)
+serving        =   1.72 sec*proc (2 tests)
+
+Total Test time (real) =   2.03 sec

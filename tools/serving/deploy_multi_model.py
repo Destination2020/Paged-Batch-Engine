@@ -7,6 +7,7 @@ from dead clients based on a timer. MPS kernel overlap is a separate probe resul
 """
 import argparse
 import json
+import math
 import os
 from pathlib import Path
 import re
@@ -79,7 +80,22 @@ def registered_server(binary, pids, env):
     return None
 
 
+def terminate_mps_client(binary, pid, env):
+    # This launcher targets the legacy MPS control interface used by 565/595.
+    # Never interpret a successful shell exit alone as CUDA termination success.
+    server = registered_server(binary, [pid], env)
+    if server is None:
+        raise RuntimeError(f'MPS client {pid} not registered; GPU termination unconfirmed')
+    reply = control(binary, f'terminate_client {server} {pid}', env)
+    if reply.strip() != '0':
+        raise RuntimeError(f'MPS terminate_client failed: {reply}')
+    return server
+
+
 def validate_config(config, require_files=True):
+    timeout = config.get('shutdown_timeout_s', 30)
+    if not isinstance(timeout, (int, float)) or not math.isfinite(timeout) or not 1 <= timeout <= 300:
+        raise ValueError('shutdown_timeout_s must be between 1 and 300 seconds')
     if config.get("backend", "mps_process") not in ("mps_process", "process"):
         raise ValueError("backend must be mps_process or process")
     models = config.get("models", [])
@@ -158,6 +174,13 @@ class Domain:
         self.env = env
         self.children = []
         self.logs = []
+        self.service = None
+        self.stopped = False
+
+    def manage_service(self, config, binary, owner_endpoint):
+        self.service = dict(backend=config.get('backend', 'process'), binary=binary,
+                            timeout=config.get('shutdown_timeout_s', 30),
+                            owner_endpoint=owner_endpoint, workers=[], api=None)
 
     def spawn(self, name, command, env=None):
         log = open(self.directory / f"{name}.log", "w")
@@ -184,6 +207,11 @@ class Domain:
         raise TimeoutError(f"not ready: {endpoint}")
 
     def stop(self):
+        if self.stopped:
+            return
+        self.stopped = True
+        if self.service is not None:
+            return self.stop_service()
         # Stop API, then clients, wait for all client CUDA contexts to disappear,
         # and only then stop the exporter. Never free the owner before importers.
         clients = [(name, p) for name, p in self.children if name not in ("kv-owner", "ipc-event-owner")]
@@ -201,8 +229,16 @@ class Domain:
         for log in self.logs:
             log.close()
 
+    def stop_service(self):
+        if __package__:
+            from .deployment_lifecycle import ShutdownCoordinator
+        else:
+            from deployment_lifecycle import ShutdownCoordinator
+        return ShutdownCoordinator(self, rpc, terminate_mps_client).run()
+
 
 def run_probe(domain, build, backend, binary):
+    domain.manage_service(dict(backend=backend), binary, f'ipc://{domain.directory}/kv.sock')
     event_endpoint = f"ipc://{domain.directory}/event.sock"
     event_owner = domain.spawn("ipc-event-owner", [build / "demo/cuda_ipc_event_probe", "owner", event_endpoint])
     event_client = domain.spawn("ipc-event-client", [build / "demo/cuda_ipc_event_probe", "client", event_endpoint])
@@ -212,7 +248,7 @@ def run_probe(domain, build, backend, binary):
         domain.children.remove((name, process))
     event_result = json.loads((domain.directory / "ipc-event-client.log").read_text().splitlines()[-1])
     endpoint = f"ipc://{domain.directory}/kv.sock"
-    domain.spawn("kv-owner", [build / "demo/shared_kv_owner", endpoint, 32])
+    owner_process = domain.spawn("kv-owner", [build / "demo/shared_kv_owner", endpoint, 32])
     before = domain.ready(endpoint)
     barrier = domain.directory / "go"
     clients = [domain.spawn(name, [build / "demo/mps_kv_probe", endpoint, name, barrier])
@@ -223,7 +259,7 @@ def run_probe(domain, build, backend, binary):
         if time.monotonic() > deadline:
             raise TimeoutError("probe clients not ready")
         time.sleep(0.05)
-    server = registered_server(binary, [client.pid for client in clients], domain.env) if backend == "mps_process" else None
+    server = registered_server(binary, [owner_process.pid] + [client.pid for client in clients], domain.env) if backend == "mps_process" else None
     if backend == "mps_process" and server is None:
         raise RuntimeError("Both clients are not registered with the same MPS server")
     barrier.touch()
@@ -231,6 +267,7 @@ def run_probe(domain, build, backend, binary):
     for name, process in zip(("probe-a", "probe-b"), clients):
         if process.wait(timeout=30):
             raise RuntimeError(f"{name} failed: {domain.directory}/{name}.log")
+        domain.children.remove((name, process))
         lines = (domain.directory / f"{name}.log").read_text().splitlines()
         results.append(next(json.loads(line) for line in reversed(lines) if line.startswith("{")))
     after = rpc(endpoint, {"type": "metrics"})
@@ -256,8 +293,12 @@ def run_probe(domain, build, backend, binary):
 
 def run_service(domain, build, config, binary):
     endpoint = f"ipc://{domain.directory}/kv.sock"
+    domain.manage_service(config, binary, endpoint)
     owner_process = domain.spawn("kv-owner", [build / "demo/shared_kv_owner", endpoint, config.get("arena_mib", 512)])
     owner = domain.ready(endpoint)
+    if config.get('backend') == 'mps_process':
+        if registered_server(binary, [owner_process.pid], domain.env) is None:
+            raise RuntimeError('KV owner did not register with MPS; refusing to load models')
     private_and_reserve = sum(model["private_memory_mib"] for model in config["models"]) + config.get("reserve_mib", 768)
     if private_and_reserve * MIB > owner["gpu_free_bytes"]:
         raise RuntimeError("CUDA free bytes after arena allocation cannot fit private budgets and reserve")
@@ -267,10 +308,12 @@ def run_service(domain, build, config, binary):
         worker_endpoint = f"ipc://{domain.directory}/{model['id']}.sock"
         env = domain.env.copy()
         env["KUIPER_USE_FP8_KV_CACHE"] = "0"
-        env["CUDA_MPS_ACTIVE_THREAD_PERCENTAGE"] = str(model.get("mps_active_thread_percentage", 100))
+        if config.get('backend') == 'mps_process':
+            env["CUDA_MPS_ACTIVE_THREAD_PERCENTAGE"] = str(model.get("mps_active_thread_percentage", 100))
         # Shared imported allocations may contribute to driver accounting; this
         # is a conservative client cap, separate from the global physical budget.
-        env["CUDA_MPS_PINNED_DEVICE_MEM_LIMIT"] = f"0={model['private_memory_mib'] + config.get('arena_mib', 512)}M"
+        if config.get('backend') == 'mps_process':
+            env["CUDA_MPS_PINNED_DEVICE_MEM_LIMIT"] = f"0={model['private_memory_mib'] + config.get('arena_mib', 512)}M"
         command = [build / "demo/serving_qwen", model["weights"], model["tokenizer"],
                    "--online-server=1", "--online-process-role=zmq-engine-core",
                    f"--engine-zmq-endpoint={worker_endpoint}", f"--model-id={model['id']}",
@@ -286,6 +329,7 @@ def run_service(domain, build, config, binary):
                    "--device-id=0", "--final-summary=0"]
         before = rpc(endpoint, {"type": "metrics"})["gpu_free_bytes"]
         worker = domain.spawn(model["id"], command, env)
+        domain.service['workers'].append((model['id'], worker, worker_endpoint))
         health = domain.ready(worker_endpoint)
         if health.get("model_id") != model["id"]:
             raise RuntimeError("Worker model identity mismatch")
@@ -297,20 +341,27 @@ def run_service(domain, build, config, binary):
         if max(private_delta, tracked_private) > model["private_memory_mib"] * MIB:
             raise RuntimeError(f"{model['id']} warmup GPU delta {private_delta / MIB:.1f} MiB exceeds private budget")
         models.append(dict(id=model["id"], endpoint=worker_endpoint, worker_pid=worker.pid,
+                           visible_sm_count=health.get('visible_sm_count'),
+                           max_batched_tokens_effective=health.get('max_batched_tokens_effective'),
+                           mps_active_thread_percentage=model.get('mps_active_thread_percentage', 100)
+                               if config.get('backend') == 'mps_process' else None,
+                           mps_device_limit_mib=model['private_memory_mib'] + config.get('arena_mib', 512)
+                               if config.get('backend') == 'mps_process' else None,
                            private_allocator_reserved_bytes=tracked_private,
                            private_gpu_delta_bytes=private_delta, private_gpu_delta_is_estimate=True))
         workers.append(worker)
     server = None
     if config.get("backend", "mps_process") == "mps_process":
-        server = registered_server(binary, [worker.pid for worker in workers], domain.env)
+        server = registered_server(binary, [owner_process.pid] + [worker.pid for worker in workers], domain.env)
         if server is None:
-            raise RuntimeError("Workers did not register with the same MPS server")
+            raise RuntimeError("Owner and workers did not register with the same MPS server")
     registry = domain.directory / "registry.json"
     registry.write_text(json.dumps(dict(models=models, arena_owner_pid=owner_process.pid,
+                                       backend=config.get('backend'), mps_server=server,
                                        default_model=config.get("default_model", models[0]["id"])), indent=2))
     host = config.get("listen_host", "127.0.0.1")
     port = config.get("listen_port", 8080)
-    domain.spawn("api", [build / "demo/serving_qwen", "unused", "unused",
+    domain.service['api'] = domain.spawn("api", [build / "demo/serving_qwen", "unused", "unused",
                          "--online-server=1", "--online-process-role=zmq-http-api",
                          f"--model-registry={registry}", f"--listen-host={host}", f"--listen-port={port}",
                          "--request-timeout-ms=120000"])
@@ -329,8 +380,14 @@ def run_service(domain, build, config, binary):
     print(json.dumps(dict(status="READY", backend=config.get("backend", "mps_process"),
                           mps_server=server, models=models, arena_epoch=owner["epoch"],
                           arena_bytes=owner["bytes"], runtime_directory=str(domain.directory))), flush=True)
+    next_mps_check = time.monotonic()
     while True:
         domain.alive()
+        if server is not None and time.monotonic() >= next_mps_check:
+            current = registered_server(binary, [owner_process.pid] + [w.pid for w in workers], domain.env)
+            if current != server:
+                raise RuntimeError('MPS domain registration lost or server changed; discard arena epoch')
+            next_mps_check = time.monotonic() + 5
         time.sleep(0.5)
 
 
@@ -380,6 +437,9 @@ def main():
     os.chmod(directory, 0o700)
     env = os.environ.copy()
     env["CUDA_VISIBLE_DEVICES"] = gpu["uuid"]
+    if backend == 'process':
+        env = {key: value for key, value in env.items() if not key.startswith('CUDA_MPS_')}
+        env['CUDA_MPS_PIPE_DIRECTORY'] = str(directory / 'mps-disabled')
     daemon_owned = False
     domain = Domain(directory, env)
     try:
@@ -399,11 +459,34 @@ def main():
         else:
             run_service(domain, args.build_dir.resolve(), config, binary)
         return 0
+    except KeyboardInterrupt:
+        raise
+    except BaseException as error:
+        if domain.service is not None:
+            domain.service['failure'] = str(error)
+        raise
     finally:
-        domain.stop()
-        if daemon_owned:
-            control(binary, "quit", env)
+        # Repeated Ctrl-C must not interrupt CUDA/IPC cleanup halfway through.
+        previous_int = signal.signal(signal.SIGINT, signal.SIG_IGN)
+        previous_term = signal.signal(signal.SIGTERM, signal.SIG_IGN)
+        shutdown = None
+        try:
+            shutdown = domain.stop()
+        finally:
+            try:
+                if daemon_owned and not (shutdown or {}).get('owner_quarantined'):
+                    control(binary, "quit", env)
+                    if shutdown is not None:
+                        shutdown['owned_mps_daemon_stopped'] = True
+                        (directory / 'shutdown.json').write_text(json.dumps(shutdown, indent=2) + '\n')
+            finally:
+                signal.signal(signal.SIGINT, previous_int)
+                signal.signal(signal.SIGTERM, previous_term)
         print(f"Runtime logs: {directory}", flush=True)
+        if shutdown is not None and not shutdown['graceful']:
+            reason = next((event['reason'] for event in shutdown['events'] if event['event'] == 'fault'),
+                          'shutdown incomplete')
+            raise RuntimeError(f'GPU domain stopped after failure: {reason}; inspect shutdown.json')
 
 
 if __name__ == "__main__":

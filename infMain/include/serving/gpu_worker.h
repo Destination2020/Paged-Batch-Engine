@@ -12,7 +12,7 @@
 namespace serving {
 
 class Scheduler;
-class ServingBenchmarkApp;
+class ServingRuntime;
 class InProcPDWorkerPair;
 
 struct WorkerStepOutput {
@@ -35,7 +35,7 @@ class GpuWorker {
 
 class InProcGpuWorker final : public GpuWorker {
  public:
-  InProcGpuWorker(ServingBenchmarkApp* app, Scheduler* scheduler);
+  InProcGpuWorker(ServingRuntime* app, Scheduler* scheduler);
   ~InProcGpuWorker() override;
 
   base::Status execute_step(const SchedulerOutput& sched_out,
@@ -43,7 +43,7 @@ class InProcGpuWorker final : public GpuWorker {
                             WorkerStepOutput* output) override;
 
  private:
-  ServingBenchmarkApp* app_ = nullptr;
+  ServingRuntime* app_ = nullptr;
   Scheduler* scheduler_ = nullptr;
   std::unique_ptr<InProcPDWorkerPair> pd_worker_pair_;
 };

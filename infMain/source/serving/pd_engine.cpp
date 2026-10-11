@@ -4,11 +4,11 @@
 
 #include <utility>
 
-#include "serving/serving_benchmark_app.h"
+#include "serving/serving_runtime.h"
 
 namespace serving {
 
-InProcPrefillEngine::InProcPrefillEngine(ServingBenchmarkApp* app,
+InProcPrefillEngine::InProcPrefillEngine(ServingRuntime* app,
                                          base::KVCacheManager* kv_manager,
                                          InProcPDEngineConfig config)
     : app_(app), kv_manager_(kv_manager), config_(std::move(config)) {
@@ -53,7 +53,7 @@ base::Status InProcPrefillEngine::execute_and_process_step(
   return base::error::Success();
 }
 
-InProcDecodeEngine::InProcDecodeEngine(ServingBenchmarkApp* app,
+InProcDecodeEngine::InProcDecodeEngine(ServingRuntime* app,
                                        base::KVCacheManager* kv_manager,
                                        InProcPDEngineConfig config)
     : app_(app), kv_manager_(kv_manager), config_(std::move(config)) {

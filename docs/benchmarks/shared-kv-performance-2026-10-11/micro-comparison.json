@@ -1,0 +1,142 @@
+[
+  {
+    "case": "24-0-shared",
+    "metric": "allocate_us",
+    "before": {
+      "p50": 753.7815,
+      "p95": 988.973,
+      "samples": 90
+    },
+    "after": {
+      "p50": 190.31150000000002,
+      "p95": 307.283,
+      "samples": 90
+    }
+  },
+  {
+    "case": "24-0-shared",
+    "metric": "release_complete_us",
+    "before": {
+      "p50": 803.076,
+      "p95": 1211.644,
+      "samples": 90
+    },
+    "after": {
+      "p50": 229.28,
+      "p95": 367.013,
+      "samples": 90
+    }
+  },
+  {
+    "case": "24-403-shared",
+    "metric": "allocate_us",
+    "before": {
+      "p50": 473.757,
+      "p95": 532.408,
+      "samples": 90
+    },
+    "after": {
+      "p50": 5.24,
+      "p95": 15.69,
+      "samples": 90
+    }
+  },
+  {
+    "case": "24-403-shared",
+    "metric": "release_complete_us",
+    "before": {
+      "p50": 533.5305000000001,
+      "p95": 619.564,
+      "samples": 90
+    },
+    "after": {
+      "p50": 8.035,
+      "p95": 21.712,
+      "samples": 90
+    }
+  },
+  {
+    "case": "24-448-shared",
+    "metric": "denied_us",
+    "before": {
+      "p50": 1416.783,
+      "p95": 1841.497,
+      "samples": 90
+    },
+    "after": {
+      "p50": 0.03,
+      "p95": 0.05,
+      "samples": 90
+    }
+  },
+  {
+    "case": "28-0-shared",
+    "metric": "allocate_us",
+    "before": {
+      "p50": 686.1195,
+      "p95": 974.691,
+      "samples": 90
+    },
+    "after": {
+      "p50": 194.443,
+      "p95": 359.565,
+      "samples": 90
+    }
+  },
+  {
+    "case": "28-0-shared",
+    "metric": "release_complete_us",
+    "before": {
+      "p50": 776.592,
+      "p95": 1109.09,
+      "samples": 90
+    },
+    "after": {
+      "p50": 233.059,
+      "p95": 375.491,
+      "samples": 90
+    }
+  },
+  {
+    "case": "28-172-shared",
+    "metric": "allocate_us",
+    "before": {
+      "p50": 997.7845,
+      "p95": 1455.056,
+      "samples": 90
+    },
+    "after": {
+      "p50": 172.011,
+      "p95": 333.181,
+      "samples": 90
+    }
+  },
+  {
+    "case": "28-172-shared",
+    "metric": "release_complete_us",
+    "before": {
+      "p50": 1091.9144999999999,
+      "p95": 1391.676,
+      "samples": 90
+    },
+    "after": {
+      "p50": 222.32100000000003,
+      "p95": 379.579,
+      "samples": 90
+    }
+  },
+  {
+    "case": "28-192-shared",
+    "metric": "denied_us",
+    "before": {
+      "p50": 1319.379,
+      "p95": 1713.285,
+      "samples": 90
+    },
+    "after": {
+      "p50": 0.03,
+      "p95": 0.08,
+      "samples": 90
+    }
+  }
+]

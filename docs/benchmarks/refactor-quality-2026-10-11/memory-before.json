@@ -1,0 +1,13 @@
+{
+  "before": {
+    "VmSize": "5205256 kB",
+    "VmRSS": "147712 kB",
+    "Threads": "33"
+  },
+  "after_100": {
+    "VmSize": "6164124 kB",
+    "VmRSS": "169728 kB",
+    "Threads": "33"
+  },
+  "elapsed_s": 0.440972940006759
+}

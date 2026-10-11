@@ -10,20 +10,14 @@
 #include <chrono>
 
 #include "data/protocol.h"
+#include "base/socket_io.h"
+#include <stdexcept>
 #include "data/wire_io.h"
 
 namespace data {
 namespace {
 constexpr size_t kHeaderBytes = 32;
 std::atomic<uint64_t> next_request{1};
-bool WriteAll(int fd, const uint8_t* p, size_t n) {
-  while (n) { ssize_t k = ::send(fd, p, n, MSG_NOSIGNAL); if (k <= 0) return false;
-    p += k; n -= static_cast<size_t>(k); } return true;
-}
-bool ReadAll(int fd, uint8_t* p, size_t n) {
-  while (n) { ssize_t k = ::recv(fd, p, n, 0); if (k <= 0) return false;
-    p += k; n -= static_cast<size_t>(k); } return true;
-}
 void PutIdentity(DataKind kind, const ContentId& c, const RepresentationId& r,
                  std::vector<uint8_t>* out) {
   out->push_back(static_cast<uint8_t>(kind));
@@ -39,7 +33,9 @@ bool GetStats(const std::vector<uint8_t>& v, DataServiceStats* s) {
 }
 }
 
-DataClient::DataClient(std::string endpoint) : endpoint_(std::move(endpoint)) {
+DataClient::DataClient(std::string endpoint, int32_t timeout_ms)
+    : endpoint_(std::move(endpoint)), timeout_ms_(timeout_ms) {
+  if (timeout_ms <= 0) throw std::invalid_argument("data client timeout must be positive");
   consumer_incarnation_ = static_cast<uint64_t>(::getpid()) << 32;
   consumer_incarnation_ ^=
       static_cast<uint64_t>(std::chrono::steady_clock::now().time_since_epoch().count());
@@ -49,13 +45,21 @@ DataClient::DataClient(std::string endpoint) : endpoint_(std::move(endpoint)) {
 DataError DataClient::transact(DataServiceOp op, const std::vector<uint8_t>& request,
                                std::vector<uint8_t>* response) const {
   if (!response || request.size() > kMaxDataServicePayloadBytes) return DataError::kInvalidArgument;
-  int fd = ::socket(AF_UNIX, SOCK_STREAM | SOCK_CLOEXEC, 0);
+  const auto deadline = base::socket_io::Clock::now() + std::chrono::milliseconds(timeout_ms_);
+  int fd = ::socket(AF_UNIX, SOCK_STREAM | SOCK_CLOEXEC | SOCK_NONBLOCK, 0);
   if (fd < 0) return DataError::kNotReady;
   sockaddr_un addr{}; addr.sun_family = AF_UNIX;
   if (endpoint_.size() >= sizeof(addr.sun_path)) { ::close(fd); return DataError::kInvalidArgument; }
   std::memcpy(addr.sun_path, endpoint_.c_str(), endpoint_.size()+1);
   if (::connect(fd, reinterpret_cast<sockaddr*>(&addr), sizeof(addr)) != 0) {
-    ::close(fd); return DataError::kNotReady;
+    if (errno != EINPROGRESS || !base::socket_io::wait(fd, POLLOUT, deadline)) {
+      ::close(fd); return DataError::kNotReady;
+    }
+    int error = 0;
+    socklen_t length = sizeof(error);
+    if (::getsockopt(fd, SOL_SOCKET, SO_ERROR, &error, &length) != 0 || error != 0) {
+      ::close(fd); return DataError::kNotReady;
+    }
   }
   const uint64_t request_id = next_request.fetch_add(1);
   std::vector<uint8_t> h; h.reserve(kHeaderBytes);
@@ -63,11 +67,11 @@ DataError DataClient::transact(DataServiceOp op, const std::vector<uint8_t>& req
   wire::Put<uint16_t>(static_cast<uint16_t>(op),&h); wire::Put<uint16_t>(0,&h);
   wire::Put<uint16_t>(0,&h); wire::Put<uint64_t>(request_id,&h);
   wire::Put<uint64_t>(request.size(),&h); wire::Put<uint32_t>(0,&h);
-  if (!WriteAll(fd,h.data(),h.size()) || (!request.empty() && !WriteAll(fd,request.data(),request.size()))) {
+  if (!base::socket_io::send(fd,h.data(),h.size(),deadline) || (!request.empty() && !base::socket_io::send(fd,request.data(),request.size(),deadline))) {
     ::close(fd); return DataError::kNotReady;
   }
   std::vector<uint8_t> rh(kHeaderBytes);
-  if (!ReadAll(fd,rh.data(),rh.size())) { ::close(fd); return DataError::kNotReady; }
+  if (!base::socket_io::receive(fd,rh.data(),rh.size(),deadline)) { ::close(fd); return DataError::kNotReady; }
   const uint8_t* p=rh.data(); const uint8_t* e=p+rh.size(); uint32_t magic=0,pad=0;
   uint16_t version=0,rop=0,error=0,reserved=0; uint64_t rid=0,size=0;
   bool ok=wire::Get(&p,e,&magic)&&wire::Get(&p,e,&version)&&wire::Get(&p,e,&rop)&&
@@ -78,7 +82,7 @@ DataError DataClient::transact(DataServiceOp op, const std::vector<uint8_t>& req
     ::close(fd); return DataError::kUnsupportedVersion;
   }
   response->resize(static_cast<size_t>(size));
-  if (size && !ReadAll(fd,response->data(),response->size())) { ::close(fd); return DataError::kNotReady; }
+  if (size && !base::socket_io::receive(fd,response->data(),response->size(),deadline)) { ::close(fd); return DataError::kNotReady; }
   ::close(fd); return static_cast<DataError>(error);
 }
 

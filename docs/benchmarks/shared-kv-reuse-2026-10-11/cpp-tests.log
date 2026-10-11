@@ -1,0 +1,840 @@
+I20261011 16:12:40.908112 131991067152384 test_main.cpp:14] Start Test...
+Note: Google Test filter = *-test_*.*
+[==========] Running 212 tests from 52 test suites.
+[----------] Global test environment set-up.
+[----------] 2 tests from BlockLeaseTest
+[ RUN      ] BlockLeaseTest.IOAndComputePreventReuseUntilBothReleased
+I20261011 16:12:40.910315 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 1 blocks, block_size=4, storage_mode=plain, total_memory=0.000244141 MB
+[       OK ] BlockLeaseTest.IOAndComputePreventReuseUntilBothReleased (0 ms)
+[ RUN      ] BlockLeaseTest.RejectsWrongPoolAndMoveAssignmentReleasesOldPin
+I20261011 16:12:40.910500 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 1 blocks, block_size=4, storage_mode=plain, total_memory=0.000244141 MB
+I20261011 16:12:40.910512 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 1 blocks, block_size=4, storage_mode=plain, total_memory=0.000244141 MB
+[       OK ] BlockLeaseTest.RejectsWrongPoolAndMoveAssignmentReleasesOldPin (0 ms)
+[----------] 2 tests from BlockLeaseTest (0 ms total)
+
+[----------] 1 test from PageSchemaTest
+[ RUN      ] PageSchemaTest.RequiresCompleteKvAndScaleCoverage
+[       OK ] PageSchemaTest.RequiresCompleteKvAndScaleCoverage (0 ms)
+[----------] 1 test from PageSchemaTest (0 ms total)
+
+[----------] 7 tests from TransferPlanTest
+[ RUN      ] TransferPlanTest.ShuffledLayoutsAndVirtualBlocksRoundTrip
+[       OK ] TransferPlanTest.ShuffledLayoutsAndVirtualBlocksRoundTrip (1 ms)
+[ RUN      ] TransferPlanTest.MissingComponentFailsBeforeAnyDestinationWrite
+[       OK ] TransferPlanTest.MissingComponentFailsBeforeAnyDestinationWrite (0 ms)
+[ RUN      ] TransferPlanTest.ShapeAndDtypeMismatchFailBeforeAnyDestinationWrite
+[       OK ] TransferPlanTest.ShapeAndDtypeMismatchFailBeforeAnyDestinationWrite (0 ms)
+[ RUN      ] TransferPlanTest.IndependentAllocationsPackAndRestorePlainAndFp8
+[       OK ] TransferPlanTest.IndependentAllocationsPackAndRestorePlainAndFp8 (1 ms)
+[ RUN      ] TransferPlanTest.HeadSplitMergeAndReorderPreserveElementSemantics
+[       OK ] TransferPlanTest.HeadSplitMergeAndReorderPreserveElementSemantics (1 ms)
+[ RUN      ] TransferPlanTest.InvalidCoverageAndRepresentationFailBeforeWrite
+[       OK ] TransferPlanTest.InvalidCoverageAndRepresentationFailBeforeWrite (0 ms)
+[ RUN      ] TransferPlanTest.ImmutableTemplateCacheIgnoresAddressesAndIsBounded
+[       OK ] TransferPlanTest.ImmutableTemplateCacheIgnoresAddressesAndIsBounded (34 ms)
+[----------] 7 tests from TransferPlanTest (40 ms total)
+
+[----------] 1 test from LayoutCodecTest
+[ RUN      ] LayoutCodecTest.RejectsOverlappingOrNonPermutationLayouts
+[       OK ] LayoutCodecTest.RejectsOverlappingOrNonPermutationLayouts (0 ms)
+[----------] 1 test from LayoutCodecTest (0 ms total)
+
+[----------] 15 tests from CompressedRadixCacheTreeTest
+[ RUN      ] CompressedRadixCacheTreeTest.InsertsOneCompressedSegmentForLongPrefix
+[       OK ] CompressedRadixCacheTreeTest.InsertsOneCompressedSegmentForLongPrefix (0 ms)
+[ RUN      ] CompressedRadixCacheTreeTest.MatchInsideSegmentSplitsNodeAtBlockBoundary
+[       OK ] CompressedRadixCacheTreeTest.MatchInsideSegmentSplitsNodeAtBlockBoundary (0 ms)
+[ RUN      ] CompressedRadixCacheTreeTest.InsertDivergentSuffixAfterSplitCreatesSibling
+[       OK ] CompressedRadixCacheTreeTest.InsertDivergentSuffixAfterSplitCreatesSibling (0 ms)
+[ RUN      ] CompressedRadixCacheTreeTest.InsertShorterPrefixSplitsExistingLongLeaf
+[       OK ] CompressedRadixCacheTreeTest.InsertShorterPrefixSplitsExistingLongLeaf (0 ms)
+[ RUN      ] CompressedRadixCacheTreeTest.IgnoresPartialTrailingBlock
+[       OK ] CompressedRadixCacheTreeTest.IgnoresPartialTrailingBlock (0 ms)
+[ RUN      ] CompressedRadixCacheTreeTest.PinAndUnpinOperateOnWholePath
+[       OK ] CompressedRadixCacheTreeTest.PinAndUnpinOperateOnWholePath (0 ms)
+[ RUN      ] CompressedRadixCacheTreeTest.NamespaceCanBeModeledBySeparateTrees
+[       OK ] CompressedRadixCacheTreeTest.NamespaceCanBeModeledBySeparateTrees (0 ms)
+[ RUN      ] CompressedRadixCacheTreeTest.RepeatedMatchesCanSplitCompressedPathMultipleTimes
+[       OK ] CompressedRadixCacheTreeTest.RepeatedMatchesCanSplitCompressedPathMultipleTimes (0 ms)
+[ RUN      ] CompressedRadixCacheTreeTest.SplitPreservesPinnedSuffixPathCounts
+[       OK ] CompressedRadixCacheTreeTest.SplitPreservesPinnedSuffixPathCounts (0 ms)
+[ RUN      ] CompressedRadixCacheTreeTest.SharedPrefixPinCountsAccumulateAcrossBranches
+[       OK ] CompressedRadixCacheTreeTest.SharedPrefixPinCountsAccumulateAcrossBranches (0 ms)
+[ RUN      ] CompressedRadixCacheTreeTest.ComplexMultiBranchTreeMatchesCorrectLeaves
+[       OK ] CompressedRadixCacheTreeTest.ComplexMultiBranchTreeMatchesCorrectLeaves (0 ms)
+[ RUN      ] CompressedRadixCacheTreeTest.InsertExactExistingSequenceIsIdempotentAfterSplits
+[       OK ] CompressedRadixCacheTreeTest.InsertExactExistingSequenceIsIdempotentAfterSplits (0 ms)
+[ RUN      ] CompressedRadixCacheTreeTest.ShorterMatchCanResolveInternalBoundaryForFallback
+[       OK ] CompressedRadixCacheTreeTest.ShorterMatchCanResolveInternalBoundaryForFallback (0 ms)
+[ RUN      ] CompressedRadixCacheTreeTest.EmptyAndPartialOnlyInputsReturnRoot
+[       OK ] CompressedRadixCacheTreeTest.EmptyAndPartialOnlyInputsReturnRoot (0 ms)
+[ RUN      ] CompressedRadixCacheTreeTest.ValidatesConstructionAndInputErrors
+[       OK ] CompressedRadixCacheTreeTest.ValidatesConstructionAndInputErrors (4 ms)
+[----------] 15 tests from CompressedRadixCacheTreeTest (5 ms total)
+
+[----------] 4 tests from GlobalChunkAllocator
+[ RUN      ] GlobalChunkAllocator.SharesReturnedBytesAcrossDifferentLayouts
+[       OK ] GlobalChunkAllocator.SharesReturnedBytesAcrossDifferentLayouts (1 ms)
+[ RUN      ] GlobalChunkAllocator.RejectsWrongEpochIdentityAndDuplicateRelease
+[       OK ] GlobalChunkAllocator.RejectsWrongEpochIdentityAndDuplicateRelease (0 ms)
+[ RUN      ] GlobalChunkAllocator.AlignmentFragmentationAndQuotaAreAtomic
+[       OK ] GlobalChunkAllocator.AlignmentFragmentationAndQuotaAreAtomic (0 ms)
+[ RUN      ] GlobalChunkAllocator.RandomizedAccountingAndDisjointIntervals
+[       OK ] GlobalChunkAllocator.RandomizedAccountingAndDisjointIntervals (11 ms)
+[----------] 4 tests from GlobalChunkAllocator (12 ms total)
+
+[----------] 5 tests from HostStoreTest
+[ RUN      ] HostStoreTest.AdmissionBoundsBytesAndEntriesBeforeAllocation
+[       OK ] HostStoreTest.AdmissionBoundsBytesAndEntriesBeforeAllocation (0 ms)
+[ RUN      ] HostStoreTest.CancelAfterSubmitRetainsBufferUntilPhysicalCompletion
+[       OK ] HostStoreTest.CancelAfterSubmitRetainsBufferUntilPhysicalCompletion (0 ms)
+[ RUN      ] HostStoreTest.ReadyPageRoundTripAndReadPinProtectEviction
+[       OK ] HostStoreTest.ReadyPageRoundTripAndReadPinProtectEviction (0 ms)
+[ RUN      ] HostStoreTest.UnknownCompletionQuarantinesCapacity
+[       OK ] HostStoreTest.UnknownCompletionQuarantinesCapacity (0 ms)
+[ RUN      ] HostStoreTest.AllocationFailureDoesNotConsumeBudget
+[       OK ] HostStoreTest.AllocationFailureDoesNotConsumeBudget (0 ms)
+[----------] 5 tests from HostStoreTest (0 ms total)
+
+[----------] 2 tests from HostStoreCudaTest
+[ RUN      ] HostStoreCudaTest.CancellationDoesNotFreeInFlightSourceOrPinnedDestination
+I20261011 16:12:41.347052 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 1 blocks, block_size=4, storage_mode=plain, total_memory=0.000244141 MB
+[       OK ] HostStoreCudaTest.CancellationDoesNotFreeInFlightSourceOrPinnedDestination (388 ms)
+[ RUN      ] HostStoreCudaTest.BoundScatterPlainAndFp8RoundTripAtDifferentBlockAddresses
+I20261011 16:12:41.358668 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 2 blocks, block_size=4, storage_mode=plain, total_memory=0.000488281 MB
+I20261011 16:12:41.364000 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 2 blocks, block_size=4, storage_mode=fp8_e4m3_per_token_head, total_memory=0.000244141 MB
+[       OK ] HostStoreCudaTest.BoundScatterPlainAndFp8RoundTripAtDifferentBlockAddresses (11 ms)
+[----------] 2 tests from HostStoreCudaTest (399 ms total)
+
+[----------] 30 tests from KVCacheManagerTest
+[ RUN      ] KVCacheManagerTest.ReusesFreedSlotWithFreshGeneration
+I20261011 16:12:41.370769 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 8 blocks, block_size=4, storage_mode=plain, total_memory=0.00195312 MB
+I20261011 16:12:41.370796 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 8 blocks, block_size=4, storage_mode=plain, total_memory=0.00195312 MB
+[       OK ] KVCacheManagerTest.ReusesFreedSlotWithFreshGeneration (0 ms)
+[ RUN      ] KVCacheManagerTest.ReusesOneSlotFor100000Lifetimes
+I20261011 16:12:41.370950 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 2 blocks, block_size=4, storage_mode=plain, total_memory=0.000488281 MB
+[       OK ] KVCacheManagerTest.ReusesOneSlotFor100000Lifetimes (18 ms)
+[ RUN      ] KVCacheManagerTest.RetiresExhaustedSlotWithoutHandleReuse
+I20261011 16:12:41.389806 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 2 blocks, block_size=4, storage_mode=plain, total_memory=0.000488281 MB
+[       OK ] KVCacheManagerTest.RetiresExhaustedSlotWithoutHandleReuse (0 ms)
+[ RUN      ] KVCacheManagerTest.InvalidatesStaleAndMalformedHandles
+I20261011 16:12:41.389858 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 8 blocks, block_size=4, storage_mode=plain, total_memory=0.00195312 MB
+I20261011 16:12:41.389864 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 8 blocks, block_size=4, storage_mode=plain, total_memory=0.00195312 MB
+[       OK ] KVCacheManagerTest.InvalidatesStaleAndMalformedHandles (0 ms)
+[ RUN      ] KVCacheManagerTest.AppendFailsWhenAllocatorCapacityIsExhausted
+I20261011 16:12:41.389894 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 3 blocks, block_size=4, storage_mode=plain, total_memory=0.000732422 MB
+I20261011 16:12:41.389900 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 3 blocks, block_size=4, storage_mode=plain, total_memory=0.000732422 MB
+[       OK ] KVCacheManagerTest.AppendFailsWhenAllocatorCapacityIsExhausted (0 ms)
+[ RUN      ] KVCacheManagerTest.RadixCacheReusesLongestPrefixWithSeedTail
+I20261011 16:12:41.389969 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 10 blocks, block_size=2, storage_mode=plain, total_memory=0.0012207 MB
+I20261011 16:12:41.389977 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 10 blocks, block_size=2, storage_mode=plain, total_memory=0.0012207 MB
+[       OK ] KVCacheManagerTest.RadixCacheReusesLongestPrefixWithSeedTail (1 ms)
+[ RUN      ] KVCacheManagerTest.RadixCachePartialHitSplitsCompressedNode
+I20261011 16:12:41.391091 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 12 blocks, block_size=2, storage_mode=plain, total_memory=0.00146484 MB
+[       OK ] KVCacheManagerTest.RadixCachePartialHitSplitsCompressedNode (0 ms)
+[ RUN      ] KVCacheManagerTest.RadixCachePublishKeepsBlocksResidentAfterRequestFree
+I20261011 16:12:41.391187 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 6 blocks, block_size=2, storage_mode=plain, total_memory=0.000732422 MB
+I20261011 16:12:41.391193 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 6 blocks, block_size=2, storage_mode=plain, total_memory=0.000732422 MB
+[       OK ] KVCacheManagerTest.RadixCachePublishKeepsBlocksResidentAfterRequestFree (0 ms)
+[ RUN      ] KVCacheManagerTest.RadixCacheCanBeDisabledExplicitly
+I20261011 16:12:41.391253 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 8 blocks, block_size=2, storage_mode=plain, total_memory=0.000976562 MB
+[       OK ] KVCacheManagerTest.RadixCacheCanBeDisabledExplicitly (0 ms)
+[ RUN      ] KVCacheManagerTest.RadixCacheDoesNotEvictActivePinnedPath
+I20261011 16:12:41.391284 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 4 blocks, block_size=2, storage_mode=plain, total_memory=0.000488281 MB
+[       OK ] KVCacheManagerTest.RadixCacheDoesNotEvictActivePinnedPath (0 ms)
+[ RUN      ] KVCacheManagerTest.AppendUnderPressureEvictsColdRadixCache
+I20261011 16:12:41.391375 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 4 blocks, block_size=2, storage_mode=plain, total_memory=0.000488281 MB
+[       OK ] KVCacheManagerTest.AppendUnderPressureEvictsColdRadixCache (0 ms)
+[ RUN      ] KVCacheManagerTest.LogicalPagesResolveDifferentLayerBlockIdsAfterSplit
+I20261011 16:12:41.391483 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 8 blocks, block_size=4, storage_mode=plain, total_memory=0.00195312 MB
+I20261011 16:12:41.391492 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 8 blocks, block_size=4, storage_mode=plain, total_memory=0.00195312 MB
+[       OK ] KVCacheManagerTest.LogicalPagesResolveDifferentLayerBlockIdsAfterSplit (0 ms)
+[ RUN      ] KVCacheManagerTest.PublishesOnlyCommittedFullPages
+I20261011 16:12:41.391558 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 8 blocks, block_size=4, storage_mode=plain, total_memory=0.00195312 MB
+[       OK ] KVCacheManagerTest.PublishesOnlyCommittedFullPages (0 ms)
+[ RUN      ] KVCacheManagerTest.ComputeLeaseSurvivesRequestCancellation
+I20261011 16:12:41.391588 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 1 blocks, block_size=4, storage_mode=plain, total_memory=0.000244141 MB
+[       OK ] KVCacheManagerTest.ComputeLeaseSurvivesRequestCancellation (0 ms)
+[ RUN      ] KVCacheManagerTest.SharedExternalPrefixCanServeSequentialDecodeRequests
+I20261011 16:12:41.391617 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 4 blocks, block_size=4, storage_mode=plain, total_memory=0.000976562 MB
+[       OK ] KVCacheManagerTest.SharedExternalPrefixCanServeSequentialDecodeRequests (0 ms)
+[ RUN      ] KVCacheManagerTest.AllocationIntentHasNoSideEffectsAndRejectsStaleProgress
+I20261011 16:12:41.391649 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 2 blocks, block_size=4, storage_mode=plain, total_memory=0.000488281 MB
+[       OK ] KVCacheManagerTest.AllocationIntentHasNoSideEffectsAndRejectsStaleProgress (0 ms)
+[ RUN      ] KVCacheManagerTest.MissingResidencyUsesOnlyContiguousReadyPrefix
+I20261011 16:12:41.391668 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 8 blocks, block_size=4, storage_mode=plain, total_memory=0.00195312 MB
+[       OK ] KVCacheManagerTest.MissingResidencyUsesOnlyContiguousReadyPrefix (0 ms)
+[ RUN      ] KVCacheManagerTest.PartialTailForkSharesThenCopiesOnFirstAppend
+I20261011 16:12:41.391753 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 24 blocks, block_size=4, storage_mode=plain, total_memory=0.00585938 MB
+I20261011 16:12:41.391765 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 24 blocks, block_size=4, storage_mode=plain, total_memory=0.00585938 MB
+[       OK ] KVCacheManagerTest.PartialTailForkSharesThenCopiesOnFirstAppend (0 ms)
+[ RUN      ] KVCacheManagerTest.PageAlignedForkNeedsNoCowAndSamplesIndependently
+I20261011 16:12:41.392351 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 12 blocks, block_size=4, storage_mode=plain, total_memory=0.00292969 MB
+[       OK ] KVCacheManagerTest.PageAlignedForkNeedsNoCowAndSamplesIndependently (0 ms)
+[ RUN      ] KVCacheManagerTest.MultimodalRadixKeyIncludesFullImageIdentity
+I20261011 16:12:41.392425 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 16 blocks, block_size=4, storage_mode=plain, total_memory=0.00390625 MB
+[       OK ] KVCacheManagerTest.MultimodalRadixKeyIncludesFullImageIdentity (0 ms)
+[ RUN      ] KVCacheManagerTest.PrefixBuilderPublishesAfterTemporaryRequestExits
+I20261011 16:12:41.392568 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 12 blocks, block_size=4, storage_mode=plain, total_memory=0.00292969 MB
+[       OK ] KVCacheManagerTest.PrefixBuilderPublishesAfterTemporaryRequestExits (0 ms)
+[ RUN      ] KVCacheManagerTest.HostOnlyPrefixRestoresAllLayersBeforeAdoption
+I20261011 16:12:41.392871 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 8 blocks, block_size=4, storage_mode=plain, total_memory=0.00195312 MB
+I20261011 16:12:41.392882 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 8 blocks, block_size=4, storage_mode=plain, total_memory=0.00195312 MB
+[       OK ] KVCacheManagerTest.HostOnlyPrefixRestoresAllLayersBeforeAdoption (1 ms)
+[ RUN      ] KVCacheManagerTest.SharedRestoreTargetsAreReservedOnceForThirtyTwoRequests
+I20261011 16:12:41.393968 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 4 blocks, block_size=4, storage_mode=plain, total_memory=0.000976562 MB
+[       OK ] KVCacheManagerTest.SharedRestoreTargetsAreReservedOnceForThirtyTwoRequests (0 ms)
+[ RUN      ] KVCacheManagerTest.ReservedRestoreTargetsRejectGrowthWithoutPartialAllocation
+I20261011 16:12:41.394176 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 4 blocks, block_size=4, storage_mode=plain, total_memory=0.000976562 MB
+[       OK ] KVCacheManagerTest.ReservedRestoreTargetsRejectGrowthWithoutPartialAllocation (0 ms)
+[ RUN      ] KVCacheManagerTest.CancelledRestoreDrainsWithoutReusingDestinationEarly
+I20261011 16:12:41.394265 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 2 blocks, block_size=4, storage_mode=plain, total_memory=0.000488281 MB
+[       OK ] KVCacheManagerTest.CancelledRestoreDrainsWithoutReusingDestinationEarly (0 ms)
+[ RUN      ] KVCacheManagerTest.AllocationPressureDemotesWithoutErasingLogicalPrefix
+I20261011 16:12:41.394363 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 2 blocks, block_size=4, storage_mode=plain, total_memory=0.000488281 MB
+[       OK ] KVCacheManagerTest.AllocationPressureDemotesWithoutErasingLogicalPrefix (0 ms)
+[ RUN      ] KVCacheManagerTest.RecoveryGraphProtectsActiveConsumerOnActualDemotionPath
+I20261011 16:12:41.394468 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 4 blocks, block_size=4, storage_mode=plain, total_memory=0.000976562 MB
+[       OK ] KVCacheManagerTest.RecoveryGraphProtectsActiveConsumerOnActualDemotionPath (0 ms)
+[ RUN      ] KVCacheManagerTest.RecoveryGraphKeepsLastReplicaWhenHostIsFull
+I20261011 16:12:41.394531 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 4 blocks, block_size=4, storage_mode=plain, total_memory=0.000976562 MB
+[       OK ] KVCacheManagerTest.RecoveryGraphKeepsLastReplicaWhenHostIsFull (0 ms)
+[ RUN      ] KVCacheManagerTest.RecoveryGraphRejectsVersionInvalidationOnDemotionPath
+I20261011 16:12:41.394578 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 4 blocks, block_size=4, storage_mode=plain, total_memory=0.000976562 MB
+[       OK ] KVCacheManagerTest.RecoveryGraphRejectsVersionInvalidationOnDemotionPath (0 ms)
+[ RUN      ] KVCacheManagerTest.ClearRetiresActualPageRecoveryObjects
+I20261011 16:12:41.394615 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 4 blocks, block_size=4, storage_mode=plain, total_memory=0.000976562 MB
+[       OK ] KVCacheManagerTest.ClearRetiresActualPageRecoveryObjects (0 ms)
+[----------] 30 tests from KVCacheManagerTest (24 ms total)
+
+[----------] 1 test from KVPoolViewTest
+[ RUN      ] KVPoolViewTest.BindsPhysicalPoolWithoutOwningAllocationQueue
+I20261011 16:12:41.394735 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 4 blocks, block_size=16, storage_mode=plain, total_memory=0.0078125 MB
+[       OK ] KVPoolViewTest.BindsPhysicalPoolWithoutOwningAllocationQueue (0 ms)
+[----------] 1 test from KVPoolViewTest (0 ms total)
+
+[----------] 1 test from LogicalRadixProbeTest
+[ RUN      ] LogicalRadixProbeTest.ShortProbePreservesTreeAndWidePageIds
+[       OK ] LogicalRadixProbeTest.ShortProbePreservesTreeAndWidePageIds (0 ms)
+[----------] 1 test from LogicalRadixProbeTest (0 ms total)
+
+[----------] 2 tests from NodeMemoryBudgetTest
+[ RUN      ] NodeMemoryBudgetTest.JointFailureRollsBackEveryPool
+[       OK ] NodeMemoryBudgetTest.JointFailureRollsBackEveryPool (0 ms)
+[ RUN      ] NodeMemoryBudgetTest.TwoGrowersMakeExplicitProgressWithoutHoldAndWait
+[       OK ] NodeMemoryBudgetTest.TwoGrowersMakeExplicitProgressWithoutHoldAndWait (0 ms)
+[----------] 2 tests from NodeMemoryBudgetTest (0 ms total)
+
+[----------] 1 test from P5AblationTest
+[ RUN      ] P5AblationTest.FixedBudgetReportsLayoutTransactionAndSingleFlightCosts
+I20261011 16:12:41.416618 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 16 blocks, block_size=16, storage_mode=plain, total_memory=0.125 MB
+I20261011 16:12:41.416694 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 16 blocks, block_size=16, storage_mode=plain, total_memory=0.125 MB
+I20261011 16:12:41.416752 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 16 blocks, block_size=16, storage_mode=plain, total_memory=0.125 MB
+I20261011 16:12:41.416766 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 16 blocks, block_size=16, storage_mode=plain, total_memory=0.125 MB
+I20261011 16:12:41.416778 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 16 blocks, block_size=16, storage_mode=plain, total_memory=0.125 MB
+I20261011 16:12:41.416789 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 16 blocks, block_size=16, storage_mode=plain, total_memory=0.125 MB
+I20261011 16:12:41.416808 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 16 blocks, block_size=16, storage_mode=plain, total_memory=0.125 MB
+I20261011 16:12:41.416819 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 16 blocks, block_size=16, storage_mode=plain, total_memory=0.125 MB
+I20261011 16:12:41.416831 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 16 blocks, block_size=16, storage_mode=plain, total_memory=0.125 MB
+I20261011 16:12:41.416847 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 16 blocks, block_size=16, storage_mode=plain, total_memory=0.125 MB
+I20261011 16:12:41.416886 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 16 blocks, block_size=16, storage_mode=plain, total_memory=0.125 MB
+I20261011 16:12:41.416896 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 16 blocks, block_size=16, storage_mode=plain, total_memory=0.125 MB
+I20261011 16:12:41.416906 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 16 blocks, block_size=16, storage_mode=plain, total_memory=0.125 MB
+I20261011 16:12:41.416928 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 16 blocks, block_size=16, storage_mode=plain, total_memory=0.125 MB
+I20261011 16:12:41.416941 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 16 blocks, block_size=16, storage_mode=plain, total_memory=0.125 MB
+I20261011 16:12:41.416957 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 16 blocks, block_size=16, storage_mode=plain, total_memory=0.125 MB
+I20261011 16:12:41.416968 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 16 blocks, block_size=16, storage_mode=plain, total_memory=0.125 MB
+I20261011 16:12:41.416985 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 16 blocks, block_size=16, storage_mode=plain, total_memory=0.125 MB
+I20261011 16:12:41.417030 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 16 blocks, block_size=16, storage_mode=plain, total_memory=0.125 MB
+I20261011 16:12:41.417045 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 16 blocks, block_size=16, storage_mode=plain, total_memory=0.125 MB
+I20261011 16:12:41.417060 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 16 blocks, block_size=16, storage_mode=plain, total_memory=0.125 MB
+I20261011 16:12:41.417070 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 16 blocks, block_size=16, storage_mode=plain, total_memory=0.125 MB
+I20261011 16:12:41.417085 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 16 blocks, block_size=16, storage_mode=plain, total_memory=0.125 MB
+I20261011 16:12:41.417102 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 16 blocks, block_size=16, storage_mode=plain, total_memory=0.125 MB
+P5_ABLATION layout_bytes=196608 layout_iterations=2000 direct_ms=8.33394 semantic_ms=11.5089 snapshot_iterations=200 snapshot_ms=5.19949 checkpoint_roundtrip_ms=14.1226 scheduler_iterations=1000 unique_ms=15.0609 shared_ms=5.13979 unique_physical=32000 shared_physical=1000
+[       OK ] P5AblationTest.FixedBudgetReportsLayoutTransactionAndSingleFlightCosts (61 ms)
+[----------] 1 test from P5AblationTest (61 ms total)
+
+[----------] 4 tests from PageDirectoryTest
+[ RUN      ] PageDirectoryTest.EvictionRetainsInFlightPageUntilLeaseCompletion
+I20261011 16:12:41.457118 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 1 blocks, block_size=4, storage_mode=plain, total_memory=0.000244141 MB
+[       OK ] PageDirectoryTest.EvictionRetainsInFlightPageUntilLeaseCompletion (0 ms)
+[ RUN      ] PageDirectoryTest.BoundedPublicationValidatesAllLayersBeforeRetaining
+I20261011 16:12:41.457229 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 1 blocks, block_size=4, storage_mode=plain, total_memory=0.000244141 MB
+I20261011 16:12:41.457240 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 1 blocks, block_size=4, storage_mode=plain, total_memory=0.000244141 MB
+[       OK ] PageDirectoryTest.BoundedPublicationValidatesAllLayersBeforeRetaining (0 ms)
+[ RUN      ] PageDirectoryTest.HostResidencyDemotionRestoreAndDeferredEviction
+I20261011 16:12:41.457296 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 2 blocks, block_size=4, storage_mode=plain, total_memory=0.000488281 MB
+[       OK ] PageDirectoryTest.HostResidencyDemotionRestoreAndDeferredEviction (0 ms)
+[ RUN      ] PageDirectoryTest.HostAttachmentRejectsSchemaVersionAndDuplicateTicket
+I20261011 16:12:41.457383 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 2 blocks, block_size=4, storage_mode=plain, total_memory=0.000488281 MB
+[       OK ] PageDirectoryTest.HostAttachmentRejectsSchemaVersionAndDuplicateTicket (0 ms)
+[----------] 4 tests from PageDirectoryTest (0 ms total)
+
+[----------] 7 tests from PageMigrationTest
+[ RUN      ] PageMigrationTest.CpuRoundTripPublishesOnlyCompletedWholePages
+I20261011 16:12:41.457511 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 2 blocks, block_size=4, storage_mode=plain, total_memory=0.000488281 MB
+[       OK ] PageMigrationTest.CpuRoundTripPublishesOnlyCompletedWholePages (0 ms)
+[ RUN      ] PageMigrationTest.CancelRetainsBothEndsUntilLateCopyAndCompletion
+I20261011 16:12:41.457647 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 2 blocks, block_size=4, storage_mode=plain, total_memory=0.000488281 MB
+[       OK ] PageMigrationTest.CancelRetainsBothEndsUntilLateCopyAndCompletion (0 ms)
+[ RUN      ] PageMigrationTest.UnknownCompletionQuarantinesUntilExplicitDrain
+I20261011 16:12:41.457727 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 2 blocks, block_size=4, storage_mode=plain, total_memory=0.000488281 MB
+[       OK ] PageMigrationTest.UnknownCompletionQuarantinesUntilExplicitDrain (0 ms)
+[ RUN      ] PageMigrationTest.AdmissionAndUnknownPageFailureHaveNoLeaks
+I20261011 16:12:41.457813 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 2 blocks, block_size=4, storage_mode=plain, total_memory=0.000488281 MB
+[       OK ] PageMigrationTest.AdmissionAndUnknownPageFailureHaveNoLeaks (0 ms)
+[ RUN      ] PageMigrationTest.DeletedDestinationRejectsLateH2DCommit
+I20261011 16:12:41.457882 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 2 blocks, block_size=4, storage_mode=plain, total_memory=0.000488281 MB
+[       OK ] PageMigrationTest.DeletedDestinationRejectsLateH2DCommit (0 ms)
+[ RUN      ] PageMigrationTest.LaterLayerAllocationFailureRollsBackOnlyNewBlocks
+I20261011 16:12:41.457976 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 1 blocks, block_size=4, storage_mode=plain, total_memory=0.000244141 MB
+I20261011 16:12:41.457981 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 1 blocks, block_size=4, storage_mode=plain, total_memory=0.000244141 MB
+[       OK ] PageMigrationTest.LaterLayerAllocationFailureRollsBackOnlyNewBlocks (0 ms)
+[ RUN      ] PageMigrationTest.SafeSubmitFailureAndShutdownRollbackOnlyOwnedResources
+I20261011 16:12:41.458135 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 2 blocks, block_size=4, storage_mode=plain, total_memory=0.000488281 MB
+[       OK ] PageMigrationTest.SafeSubmitFailureAndShutdownRollbackOnlyOwnedResources (0 ms)
+[----------] 7 tests from PageMigrationTest (0 ms total)
+
+[----------] 3 tests from PageMigrationCudaTest
+[ RUN      ] PageMigrationCudaTest.GatedTransactionsRetainResourcesAndRestorePlainFp8
+I20261011 16:12:41.458593 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 1 blocks, block_size=4, storage_mode=plain, total_memory=0.00012207 MB
+I20261011 16:12:41.465213 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 1 blocks, block_size=4, storage_mode=plain, total_memory=0.00012207 MB
+I20261011 16:12:41.470513 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 1 blocks, block_size=4, storage_mode=fp8_e4m3_per_token_head, total_memory=6.10352e-05 MB
+I20261011 16:12:41.476240 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 1 blocks, block_size=4, storage_mode=fp8_e4m3_per_token_head, total_memory=6.10352e-05 MB
+[       OK ] PageMigrationCudaTest.GatedTransactionsRetainResourcesAndRestorePlainFp8 (23 ms)
+[ RUN      ] PageMigrationCudaTest.KVManagerRestoresHostOnlyRadixPrefix
+I20261011 16:12:41.482548 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 3 blocks, block_size=4, storage_mode=plain, total_memory=0.000366211 MB
+I20261011 16:12:41.488647 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 3 blocks, block_size=4, storage_mode=fp8_e4m3_per_token_head, total_memory=0.000183105 MB
+[       OK ] PageMigrationCudaTest.KVManagerRestoresHostOnlyRadixPrefix (13 ms)
+[ RUN      ] PageMigrationCudaTest.ThirtyTwoRequestsShareOnePhysicalRestore
+I20261011 16:12:41.495709 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 4 blocks, block_size=4, storage_mode=plain, total_memory=0.000488281 MB
+[       OK ] PageMigrationCudaTest.ThirtyTwoRequestsShareOnePhysicalRestore (5 ms)
+[----------] 3 tests from PageMigrationCudaTest (43 ms total)
+
+[----------] 1 test from PagedAttentionTest
+[ RUN      ] PagedAttentionTest.SingleSequenceDecodeCorrectness
+I20261011 16:12:41.505266 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 128 blocks, block_size=16, storage_mode=plain, total_memory=2 MB
+I20261011 16:12:41.505896 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 128 blocks, block_size=16, storage_mode=plain, total_memory=2 MB
+Max difference: 5.96046e-08
+[       OK ] PagedAttentionTest.SingleSequenceDecodeCorrectness (18 ms)
+[----------] 1 test from PagedAttentionTest (18 ms total)
+
+[----------] 5 tests from PagedAttentionFastTest
+[ RUN      ] PagedAttentionFastTest.ReturnsFalseForFp32
+[       OK ] PagedAttentionFastTest.ReturnsFalseForFp32 (0 ms)
+[ RUN      ] PagedAttentionFastTest.FallsBackShortBucket
+[       OK ] PagedAttentionFastTest.FallsBackShortBucket (1 ms)
+[ RUN      ] PagedAttentionFastTest.FallsBackMidBucket
+[       OK ] PagedAttentionFastTest.FallsBackMidBucket (2 ms)
+[ RUN      ] PagedAttentionFastTest.MatchesLegacyLongBucket
+[       OK ] PagedAttentionFastTest.MatchesLegacyLongBucket (8 ms)
+[ RUN      ] PagedAttentionFastTest.EmptySequenceProducesZeroOutput
+[       OK ] PagedAttentionFastTest.EmptySequenceProducesZeroOutput (3 ms)
+[----------] 5 tests from PagedAttentionFastTest (16 ms total)
+
+[----------] 1 test from Qwen25MRoPETest
+[ RUN      ] Qwen25MRoPETest.SelectsTemporalHeightAndWidthSections
+[       OK ] Qwen25MRoPETest.SelectsTemporalHeightAndWidthSections (2 ms)
+[----------] 1 test from Qwen25MRoPETest (2 ms total)
+
+[----------] 6 tests from RecoveryDependencyTest
+[ RUN      ] RecoveryDependencyTest.ExactFeatureKeepsLastReplicaWithoutProvenRecipe
+[       OK ] RecoveryDependencyTest.ExactFeatureKeepsLastReplicaWithoutProvenRecipe (0 ms)
+[ RUN      ] RecoveryDependencyTest.DemoteCommitsHostBeforeGpuMayDisappear
+[       OK ] RecoveryDependencyTest.DemoteCommitsHostBeforeGpuMayDisappear (0 ms)
+[ RUN      ] RecoveryDependencyTest.RejectsMissingOldAndCyclicDependencies
+[       OK ] RecoveryDependencyTest.RejectsMissingOldAndCyclicDependencies (0 ms)
+[ RUN      ] RecoveryDependencyTest.HostFullDropsOnlyProvenRecomputableObjects
+[       OK ] RecoveryDependencyTest.HostFullDropsOnlyProvenRecomputableObjects (0 ms)
+[ RUN      ] RecoveryDependencyTest.TenThousandAcquireReleaseCyclesReclaimCleanly
+[       OK ] RecoveryDependencyTest.TenThousandAcquireReleaseCyclesReclaimCleanly (0 ms)
+[ RUN      ] RecoveryDependencyTest.WatermarksHaveHysteresis
+[       OK ] RecoveryDependencyTest.WatermarksHaveHysteresis (0 ms)
+[----------] 6 tests from RecoveryDependencyTest (0 ms total)
+
+[----------] 8 tests from RequestCheckpointTest
+[ RUN      ] RequestCheckpointTest.PrepareIsInvisibleAndPageBoundariesRestoreBitwise
+I20261011 16:12:41.540057 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 40 blocks, block_size=4, storage_mode=plain, total_memory=0.00976562 MB
+I20261011 16:12:41.540090 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 40 blocks, block_size=4, storage_mode=plain, total_memory=0.00976562 MB
+I20261011 16:12:41.540163 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 40 blocks, block_size=4, storage_mode=plain, total_memory=0.00976562 MB
+I20261011 16:12:41.540170 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 40 blocks, block_size=4, storage_mode=plain, total_memory=0.00976562 MB
+I20261011 16:12:41.540195 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 40 blocks, block_size=4, storage_mode=plain, total_memory=0.00976562 MB
+I20261011 16:12:41.540202 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 40 blocks, block_size=4, storage_mode=plain, total_memory=0.00976562 MB
+[       OK ] RequestCheckpointTest.PrepareIsInvisibleAndPageBoundariesRestoreBitwise (0 ms)
+[ RUN      ] RequestCheckpointTest.RevisionsCancelStaleRestoreAndRelocateRepeatedly
+I20261011 16:12:41.540239 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 40 blocks, block_size=4, storage_mode=plain, total_memory=0.00976562 MB
+I20261011 16:12:41.540246 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 40 blocks, block_size=4, storage_mode=plain, total_memory=0.00976562 MB
+[       OK ] RequestCheckpointTest.RevisionsCancelStaleRestoreAndRelocateRepeatedly (0 ms)
+[ RUN      ] RequestCheckpointTest.ModelOrSchemaMismatchCannotAllocateDestination
+I20261011 16:12:41.540292 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 40 blocks, block_size=4, storage_mode=plain, total_memory=0.00976562 MB
+I20261011 16:12:41.540298 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 40 blocks, block_size=4, storage_mode=plain, total_memory=0.00976562 MB
+[       OK ] RequestCheckpointTest.ModelOrSchemaMismatchCannotAllocateDestination (0 ms)
+[ RUN      ] RequestCheckpointTest.OlderPrepareCannotReplaceNewerReadyRevision
+I20261011 16:12:41.540326 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 40 blocks, block_size=4, storage_mode=plain, total_memory=0.00976562 MB
+I20261011 16:12:41.540333 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 40 blocks, block_size=4, storage_mode=plain, total_memory=0.00976562 MB
+[       OK ] RequestCheckpointTest.OlderPrepareCannotReplaceNewerReadyRevision (0 ms)
+[ RUN      ] RequestCheckpointTest.CancelRevokesPreparingTicketAndReclaimsMetadata
+I20261011 16:12:41.540362 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 40 blocks, block_size=4, storage_mode=plain, total_memory=0.00976562 MB
+I20261011 16:12:41.540368 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 40 blocks, block_size=4, storage_mode=plain, total_memory=0.00976562 MB
+[       OK ] RequestCheckpointTest.CancelRevokesPreparingTicketAndReclaimsMetadata (0 ms)
+[ RUN      ] RequestCheckpointTest.ByteAndRecordAdmissionPreserveExistingRevision
+I20261011 16:12:41.540394 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 40 blocks, block_size=4, storage_mode=plain, total_memory=0.00976562 MB
+I20261011 16:12:41.540409 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 40 blocks, block_size=4, storage_mode=plain, total_memory=0.00976562 MB
+[       OK ] RequestCheckpointTest.ByteAndRecordAdmissionPreserveExistingRevision (0 ms)
+[ RUN      ] RequestCheckpointTest.LifecycleChurnLeavesRecordsAndMetadataBounded
+I20261011 16:12:41.540436 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 40 blocks, block_size=4, storage_mode=plain, total_memory=0.00976562 MB
+I20261011 16:12:41.540442 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 40 blocks, block_size=4, storage_mode=plain, total_memory=0.00976562 MB
+[       OK ] RequestCheckpointTest.LifecycleChurnLeavesRecordsAndMetadataBounded (19 ms)
+[ RUN      ] RequestCheckpointTest.CudaFp8SnapshotRestoresKvAndScalesAcrossNewBlocks
+I20261011 16:12:41.560392 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 8 blocks, block_size=4, storage_mode=fp8_e4m3_per_token_head, total_memory=0.000976562 MB
+[       OK ] RequestCheckpointTest.CudaFp8SnapshotRestoresKvAndScalesAcrossNewBlocks (2 ms)
+[----------] 8 tests from RequestCheckpointTest (23 ms total)
+
+[----------] 2 tests from RequestSamplingTest
+[ RUN      ] RequestSamplingTest.BatchReorderAndRetryPreserveRandomInputs
+[       OK ] RequestSamplingTest.BatchReorderAndRetryPreserveRandomInputs (0 ms)
+[ RUN      ] RequestSamplingTest.CopyOfProgressResumesRandomStream
+[       OK ] RequestSamplingTest.CopyOfProgressResumesRandomStream (0 ms)
+[----------] 2 tests from RequestSamplingTest (0 ms total)
+
+[----------] 1 test from RequestMetricsTest
+[ RUN      ] RequestMetricsTest.PreservesUnevenTokenGapsSeparatelyFromRequestMean
+[       OK ] RequestMetricsTest.PreservesUnevenTokenGapsSeparatelyFromRequestMean (0 ms)
+[----------] 1 test from RequestMetricsTest (0 ms total)
+
+[----------] 1 test from RequestWireTest
+[ RUN      ] RequestWireTest.PreservesFullWidthSeedAndHandles
+[       OK ] RequestWireTest.PreservesFullWidthSeedAndHandles (0 ms)
+[----------] 1 test from RequestWireTest (0 ms total)
+
+[----------] 5 tests from RolePlacementTest
+[ RUN      ] RolePlacementTest.EmptyRemoteBeatsCachedButLongQueue
+[       OK ] RolePlacementTest.EmptyRemoteBeatsCachedButLongQueue (0 ms)
+[ RUN      ] RolePlacementTest.FreshCacheWinsWhenTransferDominates
+[       OK ] RolePlacementTest.FreshCacheWinsWhenTransferDominates (0 ms)
+[ RUN      ] RolePlacementTest.StaleUnknownQueueIsNotTreatedAsZero
+[       OK ] RolePlacementTest.StaleUnknownQueueIsNotTreatedAsZero (0 ms)
+[ RUN      ] RolePlacementTest.FiltersBudgetIncarnationAndRetriesAnotherRole
+[       OK ] RolePlacementTest.FiltersBudgetIncarnationAndRetriesAnotherRole (0 ms)
+[ RUN      ] RolePlacementTest.HotspotLimitAndHysteresisAreBounded
+[       OK ] RolePlacementTest.HotspotLimitAndHysteresisAreBounded (0 ms)
+[----------] 5 tests from RolePlacementTest (0 ms total)
+
+[----------] 2 tests from SchedulerRadixCacheTest
+[ RUN      ] SchedulerRadixCacheTest.PartialHitBuildsCorrectPrefillMetadataAcrossChunks
+I20261011 16:12:41.564888 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 16 blocks, block_size=2, storage_mode=plain, total_memory=0.00195312 MB
+[       OK ] SchedulerRadixCacheTest.PartialHitBuildsCorrectPrefillMetadataAcrossChunks (8 ms)
+[ RUN      ] SchedulerRadixCacheTest.ServicesHostRestoreBeforeSchedulingColdPrefixTail
+I20261011 16:12:41.573500 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 8 blocks, block_size=4, storage_mode=plain, total_memory=0.00195312 MB
+[       OK ] SchedulerRadixCacheTest.ServicesHostRestoreBeforeSchedulingColdPrefixTail (6 ms)
+[----------] 2 tests from SchedulerRadixCacheTest (15 ms total)
+
+[----------] 2 tests from SchedulerPolicyTest
+[ RUN      ] SchedulerPolicyTest.PriorityPolicyAdmitsHigherPriorityWaitingRequestFirst
+I20261011 16:12:41.579811 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 64 blocks, block_size=4, storage_mode=plain, total_memory=0.015625 MB
+[       OK ] SchedulerPolicyTest.PriorityPolicyAdmitsHigherPriorityWaitingRequestFirst (7 ms)
+[ RUN      ] SchedulerPolicyTest.LongPrefillThresholdCapsChunkSize
+I20261011 16:12:41.587822 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 64 blocks, block_size=4, storage_mode=plain, total_memory=0.015625 MB
+[       OK ] SchedulerPolicyTest.LongPrefillThresholdCapsChunkSize (6 ms)
+[----------] 2 tests from SchedulerPolicyTest (14 ms total)
+
+[----------] 2 tests from SchedulerDecodeReadyTest
+[ RUN      ] SchedulerDecodeReadyTest.AdmissionRespectsMaxNumSeqs
+I20261011 16:12:41.594105 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 64 blocks, block_size=4, storage_mode=plain, total_memory=0.015625 MB
+[       OK ] SchedulerDecodeReadyTest.AdmissionRespectsMaxNumSeqs (7 ms)
+[ RUN      ] SchedulerDecodeReadyTest.AdmissionRespectsEstimatedRemainingBlocks
+I20261011 16:12:41.601336 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 5 blocks, block_size=4, storage_mode=plain, total_memory=0.0012207 MB
+[       OK ] SchedulerDecodeReadyTest.AdmissionRespectsEstimatedRemainingBlocks (6 ms)
+[----------] 2 tests from SchedulerDecodeReadyTest (13 ms total)
+
+[----------] 3 tests from SchedulerCheckpointTest
+[ RUN      ] SchedulerCheckpointTest.SuspendsOnlyAtStepBoundaryAndResumesPendingTokenOnce
+I20261011 16:12:41.608069 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 16 blocks, block_size=4, storage_mode=plain, total_memory=0.00390625 MB
+[       OK ] SchedulerCheckpointTest.SuspendsOnlyAtStepBoundaryAndResumesPendingTokenOnce (7 ms)
+[ RUN      ] SchedulerCheckpointTest.CancelledSuspendedRequestCannotBecomeRunnable
+I20261011 16:12:41.615724 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 8 blocks, block_size=4, storage_mode=plain, total_memory=0.00195312 MB
+[       OK ] SchedulerCheckpointTest.CancelledSuspendedRequestCannotBecomeRunnable (6 ms)
+[ RUN      ] SchedulerCheckpointTest.DecodePressureTriggersCheckpointSaveAndFree
+I20261011 16:12:41.622413 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 2 blocks, block_size=4, storage_mode=plain, total_memory=0.000488281 MB
+W20261011 16:12:41.626208 131991067152384 scheduler.cpp:952] Checkpoint-preempted request 0: decode_kv_exhausted(context_len=4, kv_capacity_tokens=8), revision=1
+[       OK ] SchedulerCheckpointTest.DecodePressureTriggersCheckpointSaveAndFree (5 ms)
+[----------] 3 tests from SchedulerCheckpointTest (20 ms total)
+
+[----------] 4 tests from SequenceKVManagerTest
+[ RUN      ] SequenceKVManagerTest.AppendTokensBulkCommitAcrossBlockBoundary
+I20261011 16:12:41.628326 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 4 blocks, block_size=4, storage_mode=plain, total_memory=0.000976562 MB
+I20261011 16:12:41.628345 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 4 blocks, block_size=4, storage_mode=plain, total_memory=0.000976562 MB
+[       OK ] SequenceKVManagerTest.AppendTokensBulkCommitAcrossBlockBoundary (0 ms)
+[ RUN      ] SequenceKVManagerTest.AppendTokensFailureRollsBackWithoutMutation
+I20261011 16:12:41.628413 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 2 blocks, block_size=4, storage_mode=plain, total_memory=0.000488281 MB
+I20261011 16:12:41.628420 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 2 blocks, block_size=4, storage_mode=plain, total_memory=0.000488281 MB
+W20261011 16:12:41.628426 131991067152384 sequence_kv_manager.cpp:280] Failed to allocate 2 KV blocks for layer 0: no free blocks available
+[       OK ] SequenceKVManagerTest.AppendTokensFailureRollsBackWithoutMutation (0 ms)
+[ RUN      ] SequenceKVManagerTest.TruncateToShrinksLogicalLengthAndReleasesTailBlocks
+I20261011 16:12:41.628477 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 4 blocks, block_size=4, storage_mode=plain, total_memory=0.000976562 MB
+I20261011 16:12:41.628484 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 4 blocks, block_size=4, storage_mode=plain, total_memory=0.000976562 MB
+[       OK ] SequenceKVManagerTest.TruncateToShrinksLogicalLengthAndReleasesTailBlocks (0 ms)
+[ RUN      ] SequenceKVManagerTest.TruncateWithSharedPrefixKeepsSharedBlocksPinned
+I20261011 16:12:41.628525 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 6 blocks, block_size=4, storage_mode=plain, total_memory=0.00146484 MB
+I20261011 16:12:41.628533 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 6 blocks, block_size=4, storage_mode=plain, total_memory=0.00146484 MB
+
+[WARNING] /home/nowcoder/googletest/googletest/src/gtest-death-test.cc:1104:: Death tests use fork(), which is unsafe particularly in a threaded context. For this test, Google Test detected 35 threads. See https://github.com/google/googletest/blob/main/docs/advanced.md#death-tests-and-threads for more explanation and suggested solutions, especially if this is the last message you see before your test times out.
+[       OK ] SequenceKVManagerTest.TruncateWithSharedPrefixKeepsSharedBlocksPinned (4607 ms)
+[----------] 4 tests from SequenceKVManagerTest (4607 ms total)
+
+[----------] 3 tests from ServingMemoryBudget
+[ RUN      ] ServingMemoryBudget.AbsoluteBudgetDoesNotScaleWithDeviceFreeMemory
+[       OK ] ServingMemoryBudget.AbsoluteBudgetDoesNotScaleWithDeviceFreeMemory (0 ms)
+[ RUN      ] ServingMemoryBudget.CUDAAllocatorChargesCachedPhysicalBytesAndRejectsGrowth
+E20261011 16:12:46.237211 131991067152384 alloc_cu.cpp:66] Private CUDA allocation budget exhausted: reserved=4096 requested=6144 limit=8192
+E20261011 16:12:46.237284 131991067152384 alloc_cu.cpp:66] Private CUDA allocation budget exhausted: reserved=0 requested=8193 limit=8192
+[       OK ] ServingMemoryBudget.CUDAAllocatorChargesCachedPhysicalBytesAndRejectsGrowth (0 ms)
+[ RUN      ] ServingMemoryBudget.CUDAAllocatorReusesLargeBufferBeforeAnySmallAllocation
+[       OK ] ServingMemoryBudget.CUDAAllocatorReusesLargeBufferBeforeAnySmallAllocation (1 ms)
+[----------] 3 tests from ServingMemoryBudget (2 ms total)
+
+[----------] 2 tests from SharedWeightDescriptor
+[ RUN      ] SharedWeightDescriptor.RoundTripsCompleteIdentity
+[       OK ] SharedWeightDescriptor.RoundTripsCompleteIdentity (0 ms)
+[ RUN      ] SharedWeightDescriptor.RejectsIncompleteAndCorruptPayloads
+[       OK ] SharedWeightDescriptor.RejectsIncompleteAndCorruptPayloads (0 ms)
+[----------] 2 tests from SharedWeightDescriptor (0 ms total)
+
+[----------] 1 test from SharedWeightOwner
+[ RUN      ] SharedWeightOwner.FailedLoadNeverPublishesDescriptor
+[       OK ] SharedWeightOwner.FailedLoadNeverPublishesDescriptor (0 ms)
+[----------] 1 test from SharedWeightOwner (0 ms total)
+
+[----------] 1 test from SharedWeightBinding
+[ RUN      ] SharedWeightBinding.BindsBorrowedViewAndRejectsBounds
+[       OK ] SharedWeightBinding.BindsBorrowedViewAndRejectsBounds (0 ms)
+[----------] 1 test from SharedWeightBinding (0 ms total)
+
+[----------] 2 tests from SplitKVAttentionTest
+[ RUN      ] SplitKVAttentionTest.SingleSequenceMatchesBaseline
+I20261011 16:12:46.240623 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 128 blocks, block_size=16, storage_mode=plain, total_memory=2 MB
+I20261011 16:12:46.240668 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 128 blocks, block_size=16, storage_mode=plain, total_memory=2 MB
+[SplitKV vs Baseline] context_len=256 max_diff=6.70552e-08 max_base=0.119938 max_split=0.119938
+[       OK ] SplitKVAttentionTest.SingleSequenceMatchesBaseline (69 ms)
+[ RUN      ] SplitKVAttentionTest.ShortContextSinglePartition
+I20261011 16:12:46.309925 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 32 blocks, block_size=16, storage_mode=plain, total_memory=0.5 MB
+[SplitKV short] context_len=5 max_diff=0 max_base=0.697825 max_split=0.697825
+[       OK ] SplitKVAttentionTest.ShortContextSinglePartition (1 ms)
+[----------] 2 tests from SplitKVAttentionTest (71 ms total)
+
+[----------] 9 tests from TransferSchedulerTest
+[ RUN      ] TransferSchedulerTest.ThirtyTwoWaitersShareOneFlightAndCancelIndependently
+[       OK ] TransferSchedulerTest.ThirtyTwoWaitersShareOneFlightAndCancelIndependently (0 ms)
+[ RUN      ] TransferSchedulerTest.LastWaiterCancellationDrainsPhysicalFlight
+[       OK ] TransferSchedulerTest.LastWaiterCancellationDrainsPhysicalFlight (0 ms)
+[ RUN      ] TransferSchedulerTest.DonationChangesDispatchOrderAndDependenciesFormWave
+[       OK ] TransferSchedulerTest.DonationChangesDispatchOrderAndDependenciesFormWave (0 ms)
+[ RUN      ] TransferSchedulerTest.CapacityRejectsWithoutCreatingIntentOrAddressState
+[       OK ] TransferSchedulerTest.CapacityRejectsWithoutCreatingIntentOrAddressState (0 ms)
+[ RUN      ] TransferSchedulerTest.AgingBoundsBackgroundWaitUnderContinuousDecodeArrivals
+[       OK ] TransferSchedulerTest.AgingBoundsBackgroundWaitUnderContinuousDecodeArrivals (0 ms)
+[ RUN      ] TransferSchedulerTest.DirectionLanesRunIndependently
+[       OK ] TransferSchedulerTest.DirectionLanesRunIndependently (0 ms)
+[ RUN      ] TransferSchedulerTest.LaneOffOnKeepsTotalCapacityAndProtectsDirections
+[       OK ] TransferSchedulerTest.LaneOffOnKeepsTotalCapacityAndProtectsDirections (0 ms)
+[ RUN      ] TransferSchedulerTest.DemandReserveSurvivesBackgroundSaturation
+[       OK ] TransferSchedulerTest.DemandReserveSurvivesBackgroundSaturation (0 ms)
+[ RUN      ] TransferSchedulerTest.TypedJoinAndAbsoluteDeadlineKeepPhysicalFlightSafe
+[       OK ] TransferSchedulerTest.TypedJoinAndAbsoluteDeadlineKeepPhysicalFlightSafe (2 ms)
+[----------] 9 tests from TransferSchedulerTest (2 ms total)
+
+[----------] 4 tests from MultiModelRouting
+[ RUN      ] MultiModelRouting.IdentitySurvivesRPCSerialization
+[       OK ] MultiModelRouting.IdentitySurvivesRPCSerialization (0 ms)
+[ RUN      ] MultiModelRouting.ListsModelsAndRejectsUnknownWithoutSendingRPC
+[       OK ] MultiModelRouting.ListsModelsAndRejectsUnknownWithoutSendingRPC (0 ms)
+[ RUN      ] MultiModelRouting.RejectsDuplicateModelOrWorkerEndpoint
+[       OK ] MultiModelRouting.RejectsDuplicateModelOrWorkerEndpoint (1 ms)
+[ RUN      ] MultiModelRouting.SplitChineseCodePointIsBufferedUntilComplete
+[       OK ] MultiModelRouting.SplitChineseCodePointIsBufferedUntilComplete (1 ms)
+[----------] 4 tests from MultiModelRouting (4 ms total)
+
+[----------] 5 tests from PDEngineTest
+[ RUN      ] PDEngineTest.PrefillAndDecodeEnginesExposeIndependentSchedulersAndKvManagers
+I20261011 16:12:46.318883 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 16 blocks, block_size=4, storage_mode=plain, total_memory=0.00390625 MB
+I20261011 16:12:46.318919 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 16 blocks, block_size=4, storage_mode=plain, total_memory=0.00390625 MB
+I20261011 16:12:46.318965 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 16 blocks, block_size=4, storage_mode=plain, total_memory=0.00390625 MB
+I20261011 16:12:46.318980 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 16 blocks, block_size=4, storage_mode=plain, total_memory=0.00390625 MB
+[       OK ] PDEngineTest.PrefillAndDecodeEnginesExposeIndependentSchedulersAndKvManagers (9 ms)
+[ RUN      ] PDEngineTest.PrefillEngineOwnsPrefillSchedulerAdmission
+I20261011 16:12:46.328037 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 16 blocks, block_size=4, storage_mode=plain, total_memory=0.00390625 MB
+I20261011 16:12:46.328085 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 16 blocks, block_size=4, storage_mode=plain, total_memory=0.00390625 MB
+[       OK ] PDEngineTest.PrefillEngineOwnsPrefillSchedulerAdmission (8 ms)
+[ RUN      ] PDEngineTest.DecodeEngineRejectsNonDecodeOnlyExecutionAtWorkerBoundary
+I20261011 16:12:46.336761 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 16 blocks, block_size=4, storage_mode=plain, total_memory=0.00390625 MB
+I20261011 16:12:46.336794 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 16 blocks, block_size=4, storage_mode=plain, total_memory=0.00390625 MB
+[       OK ] PDEngineTest.DecodeEngineRejectsNonDecodeOnlyExecutionAtWorkerBoundary (8 ms)
+[ RUN      ] PDEngineTest.DecodeEngineInjectsReservationAsDecodeReadyRequest
+I20261011 16:12:46.345032 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 16 blocks, block_size=4, storage_mode=plain, total_memory=0.00390625 MB
+I20261011 16:12:46.345070 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 16 blocks, block_size=4, storage_mode=plain, total_memory=0.00390625 MB
+[       OK ] PDEngineTest.DecodeEngineInjectsReservationAsDecodeReadyRequest (8 ms)
+[ RUN      ] PDEngineTest.InProcPrefillCopyDecodeEnginePipelineSchedulesDecodeOnly
+I20261011 16:12:46.353671 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 16 blocks, block_size=4, storage_mode=plain, total_memory=0.00390625 MB
+I20261011 16:12:46.353694 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 16 blocks, block_size=4, storage_mode=plain, total_memory=0.00390625 MB
+I20261011 16:12:46.353718 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 16 blocks, block_size=4, storage_mode=plain, total_memory=0.00390625 MB
+I20261011 16:12:46.353725 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 16 blocks, block_size=4, storage_mode=plain, total_memory=0.00390625 MB
+[       OK ] PDEngineTest.InProcPrefillCopyDecodeEnginePipelineSchedulesDecodeOnly (7 ms)
+[----------] 5 tests from PDEngineTest (42 ms total)
+
+[----------] 15 tests from PDHandoffTest
+[ RUN      ] PDHandoffTest.ValidManifestPassesValidation
+[       OK ] PDHandoffTest.ValidManifestPassesValidation (0 ms)
+[ RUN      ] PDHandoffTest.IncompatiblePoolsFailValidation
+[       OK ] PDHandoffTest.IncompatiblePoolsFailValidation (0 ms)
+[ RUN      ] PDHandoffTest.NoCopyConnectorCompletesImmediately
+[       OK ] PDHandoffTest.NoCopyConnectorCompletesImmediately (0 ms)
+[ RUN      ] PDHandoffTest.CoordinatorMarksNoCopyTransferDecodeReady
+[       OK ] PDHandoffTest.CoordinatorMarksNoCopyTransferDecodeReady (0 ms)
+[ RUN      ] PDHandoffTest.CoordinatorReportsInvalidManifestFailure
+[       OK ] PDHandoffTest.CoordinatorReportsInvalidManifestFailure (0 ms)
+[ RUN      ] PDHandoffTest.CoordinatorCancelBeforeCompletion
+[       OK ] PDHandoffTest.CoordinatorCancelBeforeCompletion (0 ms)
+[ RUN      ] PDHandoffTest.DecodeReservationBuildsDstBlockManifest
+I20261011 16:12:46.362038 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 8 blocks, block_size=16, storage_mode=plain, total_memory=0.0625 MB
+I20261011 16:12:46.362076 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 8 blocks, block_size=16, storage_mode=plain, total_memory=0.0625 MB
+[       OK ] PDHandoffTest.DecodeReservationBuildsDstBlockManifest (0 ms)
+[ RUN      ] PDHandoffTest.DecodeReservationFailsWhenDstBlocksInsufficient
+I20261011 16:12:46.362175 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 1 blocks, block_size=16, storage_mode=plain, total_memory=0.0078125 MB
+I20261011 16:12:46.362191 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 1 blocks, block_size=16, storage_mode=plain, total_memory=0.0078125 MB
+[       OK ] PDHandoffTest.DecodeReservationFailsWhenDstBlocksInsufficient (0 ms)
+[ RUN      ] PDHandoffTest.InProcKVBlockCopyConnectorCopiesPlainBlocks
+I20261011 16:12:46.362393 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 8 blocks, block_size=16, storage_mode=plain, total_memory=0.0625 MB
+I20261011 16:12:46.362418 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 8 blocks, block_size=16, storage_mode=plain, total_memory=0.0625 MB
+I20261011 16:12:46.362458 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 8 blocks, block_size=16, storage_mode=plain, total_memory=0.0625 MB
+I20261011 16:12:46.362475 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 8 blocks, block_size=16, storage_mode=plain, total_memory=0.0625 MB
+[       OK ] PDHandoffTest.InProcKVBlockCopyConnectorCopiesPlainBlocks (0 ms)
+[ RUN      ] PDHandoffTest.CoordinatorRunsReservationCopyDecodeReadyPipeline
+I20261011 16:12:46.362849 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 8 blocks, block_size=16, storage_mode=plain, total_memory=0.0625 MB
+I20261011 16:12:46.362894 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 8 blocks, block_size=16, storage_mode=plain, total_memory=0.0625 MB
+I20261011 16:12:46.362915 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 8 blocks, block_size=16, storage_mode=plain, total_memory=0.0625 MB
+I20261011 16:12:46.362924 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 8 blocks, block_size=16, storage_mode=plain, total_memory=0.0625 MB
+[       OK ] PDHandoffTest.CoordinatorRunsReservationCopyDecodeReadyPipeline (0 ms)
+[ RUN      ] PDHandoffTest.CudaFp8ConnectorCopiesKeyValueAndScaleBlocks
+I20261011 16:12:46.363237 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 8 blocks, block_size=16, storage_mode=fp8_e4m3_per_token_head, total_memory=0.03125 MB
+I20261011 16:12:46.363251 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 8 blocks, block_size=16, storage_mode=fp8_e4m3_per_token_head, total_memory=0.03125 MB
+I20261011 16:12:46.363280 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 8 blocks, block_size=16, storage_mode=fp8_e4m3_per_token_head, total_memory=0.03125 MB
+I20261011 16:12:46.363334 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 8 blocks, block_size=16, storage_mode=fp8_e4m3_per_token_head, total_memory=0.03125 MB
+[       OK ] PDHandoffTest.CudaFp8ConnectorCopiesKeyValueAndScaleBlocks (5 ms)
+[ RUN      ] PDHandoffTest.CudaP2PConnectorCopiesPlainBlocksAcrossDevices
+/home/nowcoder/PagedBatchEngine/test/test_serving/test_pd_handoff.cpp:568: Skipped
+At least two CUDA devices are required
+
+[  SKIPPED ] PDHandoffTest.CudaP2PConnectorCopiesPlainBlocksAcrossDevices (0 ms)
+[ RUN      ] PDHandoffTest.SharedSchedulerMergesAndIndependentlyCancelsCudaP2PWaiters
+/home/nowcoder/PagedBatchEngine/test/test_serving/test_pd_handoff.cpp:621: Skipped
+At least two CUDA devices are required
+
+[  SKIPPED ] PDHandoffTest.SharedSchedulerMergesAndIndependentlyCancelsCudaP2PWaiters (0 ms)
+[ RUN      ] PDHandoffTest.NcclConnectorCopiesPlainBlocksAcrossDevices
+/home/nowcoder/PagedBatchEngine/test/test_serving/test_pd_handoff.cpp:697: Skipped
+NCCL support is disabled in this build
+
+[  SKIPPED ] PDHandoffTest.NcclConnectorCopiesPlainBlocksAcrossDevices (0 ms)
+[ RUN      ] PDHandoffTest.NcclLayerConnectorCopiesPlainBlocksAcrossDevices
+/home/nowcoder/PagedBatchEngine/test/test_serving/test_pd_handoff.cpp:755: Skipped
+NCCL support is disabled in this build
+
+[  SKIPPED ] PDHandoffTest.NcclLayerConnectorCopiesPlainBlocksAcrossDevices (0 ms)
+[----------] 15 tests from PDHandoffTest (6 ms total)
+
+[----------] 1 test from PDWorkerTest
+[ RUN      ] PDWorkerTest.ClassifiesEmptyDecodePrefillAndMixedSteps
+[       OK ] PDWorkerTest.ClassifiesEmptyDecodePrefillAndMixedSteps (0 ms)
+[----------] 1 test from PDWorkerTest (0 ms total)
+
+[----------] 1 test from RequestCoordinatorTest
+[ RUN      ] RequestCoordinatorTest.EnforcesGenerationStageDeadlineAndCancellation
+[       OK ] RequestCoordinatorTest.EnforcesGenerationStageDeadlineAndCancellation (0 ms)
+[----------] 1 test from RequestCoordinatorTest (0 ms total)
+
+[----------] 1 test from Qwen25VLChunkedTest
+[ RUN      ] Qwen25VLChunkedTest.FourFixturesCrossMediaSpansAtTwoChunkCaps
+/home/nowcoder/PagedBatchEngine/test/test_model/test_qwen25_vl_chunked.cpp:13: Skipped
+set Qwen25 VL env
+
+[  SKIPPED ] Qwen25VLChunkedTest.FourFixturesCrossMediaSpansAtTwoChunkCaps (0 ms)
+[----------] 1 test from Qwen25VLChunkedTest (0 ms total)
+
+[----------] 5 tests from Qwen25VLInputTest
+[ RUN      ] Qwen25VLInputTest.AcceptsFrozenOneImageContract
+[       OK ] Qwen25VLInputTest.AcceptsFrozenOneImageContract (0 ms)
+[ RUN      ] Qwen25VLInputTest.KeepsTokenOffsetsSeparateFromThreeAxisPositions
+[       OK ] Qwen25VLInputTest.KeepsTokenOffsetsSeparateFromThreeAxisPositions (0 ms)
+[ RUN      ] Qwen25VLInputTest.RejectsFeatureAndSpanLengthMismatchBeforeCopy
+[       OK ] Qwen25VLInputTest.RejectsFeatureAndSpanLengthMismatchBeforeCopy (0 ms)
+[ RUN      ] Qwen25VLInputTest.RejectsOverlappingMediaSpans
+[       OK ] Qwen25VLInputTest.RejectsOverlappingMediaSpans (0 ms)
+[ RUN      ] Qwen25VLInputTest.ValidatesBundleByteCoverage
+[       OK ] Qwen25VLInputTest.ValidatesBundleByteCoverage (0 ms)
+[----------] 5 tests from Qwen25VLInputTest (0 ms total)
+
+[----------] 2 tests from Qwen25VLModelTest
+[ RUN      ] Qwen25VLModelTest.OneImageMatchesReferenceLogitsAndGreedyDecode
+/home/nowcoder/PagedBatchEngine/test/test_model/test_qwen25_vl_model.cpp:51: Skipped
+Set PBE_QWEN25_VL_MODEL, PBE_QWEN25_VL_TOKENIZER and PBE_QWEN25_VL_FIXTURE_DIR
+
+[  SKIPPED ] Qwen25VLModelTest.OneImageMatchesReferenceLogitsAndGreedyDecode (0 ms)
+[ RUN      ] Qwen25VLModelTest.TextResolutionTwoImageAndMixedPrefillMatchReference
+/home/nowcoder/PagedBatchEngine/test/test_model/test_qwen25_vl_model.cpp:306: Skipped
+Set PBE_QWEN25_VL_MODEL, PBE_QWEN25_VL_TOKENIZER and PBE_QWEN25_VL_FIXTURE_DIR
+
+[  SKIPPED ] Qwen25VLModelTest.TextResolutionTwoImageAndMixedPrefillMatchReference (0 ms)
+[----------] 2 tests from Qwen25VLModelTest (0 ms total)
+
+[----------] 6 tests from Qwen2DeviceInitTest
+[ RUN      ] Qwen2DeviceInitTest.InitPassesRequestedDeviceIdToCudaRuntime
+[       OK ] Qwen2DeviceInitTest.InitPassesRequestedDeviceIdToCudaRuntime (0 ms)
+[ RUN      ] Qwen2DeviceInitTest.TwoInstancesCanLoadOnDistinctDevicesWithFixtureModel
+/home/nowcoder/PagedBatchEngine/test/test_model/test_qwen2_device_init.cpp:250: Skipped
+At least two CUDA devices are required
+
+[  SKIPPED ] Qwen2DeviceInitTest.TwoInstancesCanLoadOnDistinctDevicesWithFixtureModel (0 ms)
+[ RUN      ] Qwen2DeviceInitTest.DualGpuP2PMatchesSingleModelGreedyTokens
+/home/nowcoder/PagedBatchEngine/test/test_model/test_qwen2_device_init.cpp:276: Skipped
+At least two CUDA devices are required
+
+[  SKIPPED ] Qwen2DeviceInitTest.DualGpuP2PMatchesSingleModelGreedyTokens (0 ms)
+[ RUN      ] Qwen2DeviceInitTest.CheckpointResumeMatchesUninterruptedSampledTokens
+I20261011 16:12:47.008711 131991067152384 qwen2.cpp:532] Qwen2 init weight dtype: Bf16, runtime dtype: Bf16
+I20261011 16:12:47.465559 131991067152384 qwen2.cpp:1009] Serving workspace preallocation: token_capacity=16, reserved_bytes=7274496
+I20261011 16:12:47.472099 131991067152384 serving_memory_planner.cpp:96] Dynamic KV cache sizing: free_bytes=5994708992, total_bytes=8585216000, kv_cache_memory_utilization=0.2, requested_kv_bytes=1198941798, safety_reserve=299735450, kv_budget_bytes=1198941798, bytes_per_block_per_layer=8192, num_layers=24, blocks_per_layer=6098
+I20261011 16:12:47.473226 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 6098 blocks, block_size=16, storage_mode=plain, total_memory=47.6406 MB
+I20261011 16:12:47.474470 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 6098 blocks, block_size=16, storage_mode=plain, total_memory=47.6406 MB
+I20261011 16:12:47.475845 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 6098 blocks, block_size=16, storage_mode=plain, total_memory=47.6406 MB
+I20261011 16:12:47.477100 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 6098 blocks, block_size=16, storage_mode=plain, total_memory=47.6406 MB
+I20261011 16:12:47.478168 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 6098 blocks, block_size=16, storage_mode=plain, total_memory=47.6406 MB
+I20261011 16:12:47.479765 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 6098 blocks, block_size=16, storage_mode=plain, total_memory=47.6406 MB
+I20261011 16:12:47.481203 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 6098 blocks, block_size=16, storage_mode=plain, total_memory=47.6406 MB
+I20261011 16:12:47.482574 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 6098 blocks, block_size=16, storage_mode=plain, total_memory=47.6406 MB
+I20261011 16:12:47.483682 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 6098 blocks, block_size=16, storage_mode=plain, total_memory=47.6406 MB
+I20261011 16:12:47.484918 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 6098 blocks, block_size=16, storage_mode=plain, total_memory=47.6406 MB
+I20261011 16:12:47.486106 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 6098 blocks, block_size=16, storage_mode=plain, total_memory=47.6406 MB
+I20261011 16:12:47.487153 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 6098 blocks, block_size=16, storage_mode=plain, total_memory=47.6406 MB
+I20261011 16:12:47.488303 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 6098 blocks, block_size=16, storage_mode=plain, total_memory=47.6406 MB
+I20261011 16:12:47.489612 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 6098 blocks, block_size=16, storage_mode=plain, total_memory=47.6406 MB
+I20261011 16:12:47.490867 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 6098 blocks, block_size=16, storage_mode=plain, total_memory=47.6406 MB
+I20261011 16:12:47.492005 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 6098 blocks, block_size=16, storage_mode=plain, total_memory=47.6406 MB
+I20261011 16:12:47.493080 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 6098 blocks, block_size=16, storage_mode=plain, total_memory=47.6406 MB
+I20261011 16:12:47.494255 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 6098 blocks, block_size=16, storage_mode=plain, total_memory=47.6406 MB
+I20261011 16:12:47.495595 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 6098 blocks, block_size=16, storage_mode=plain, total_memory=47.6406 MB
+I20261011 16:12:47.496873 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 6098 blocks, block_size=16, storage_mode=plain, total_memory=47.6406 MB
+I20261011 16:12:47.498186 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 6098 blocks, block_size=16, storage_mode=plain, total_memory=47.6406 MB
+I20261011 16:12:47.499312 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 6098 blocks, block_size=16, storage_mode=plain, total_memory=47.6406 MB
+I20261011 16:12:47.500641 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 6098 blocks, block_size=16, storage_mode=plain, total_memory=47.6406 MB
+I20261011 16:12:47.501991 131991067152384 block_allocator.cpp:79] BlockAllocator initialized: 6098 blocks, block_size=16, storage_mode=plain, total_memory=47.6406 MB
+P5_CHECKPOINT baseline_ms=528.085 resumed_ms=101.511 checkpoint_ms=16.5033 checkpoints=2 output_tokens=6
+[       OK ] Qwen2DeviceInitTest.CheckpointResumeMatchesUninterruptedSampledTokens (1866 ms)
+[ RUN      ] Qwen2DeviceInitTest.DualGpuNcclMatchesSingleModelGreedyTokens
+/home/nowcoder/PagedBatchEngine/test/test_model/test_qwen2_device_init.cpp:351: Skipped
+NCCL support is not enabled in this build
+
+[  SKIPPED ] Qwen2DeviceInitTest.DualGpuNcclMatchesSingleModelGreedyTokens (0 ms)
+[ RUN      ] Qwen2DeviceInitTest.DualGpuNcclLayerMatchesSingleModelGreedyTokens
+/home/nowcoder/PagedBatchEngine/test/test_model/test_qwen2_device_init.cpp:393: Skipped
+NCCL support is not enabled in this build
+
+[  SKIPPED ] Qwen2DeviceInitTest.DualGpuNcclLayerMatchesSingleModelGreedyTokens (0 ms)
+[----------] 6 tests from Qwen2DeviceInitTest (1867 ms total)
+
+[----------] 5 tests from ContentRegistryTest
+[ RUN      ] ContentRegistryTest.RetentionSurvivesProducerAndTwoSequentialConsumers
+[       OK ] ContentRegistryTest.RetentionSurvivesProducerAndTwoSequentialConsumers (0 ms)
+[ RUN      ] ContentRegistryTest.LeaseCapacityIsBoundedAndReleaseIsExplicit
+[       OK ] ContentRegistryTest.LeaseCapacityIsBoundedAndReleaseIsExplicit (0 ms)
+[ RUN      ] ContentRegistryTest.TenThousandAcquireCancelCyclesReturnToSteadyState
+[       OK ] ContentRegistryTest.TenThousandAcquireCancelCyclesReturnToSteadyState (2 ms)
+[ RUN      ] ContentRegistryTest.AcquireReplayIsIdempotent
+[       OK ] ContentRegistryTest.AcquireReplayIsIdempotent (0 ms)
+[ RUN      ] ContentRegistryTest.StaleServiceTokenCannotReleaseReusedLeaseNumber
+[       OK ] ContentRegistryTest.StaleServiceTokenCannotReleaseReusedLeaseNumber (0 ms)
+[----------] 5 tests from ContentRegistryTest (2 ms total)
+
+[----------] 2 tests from DataProtocolTest
+[ RUN      ] DataProtocolTest.DataRefHasStableRoundTripAndFixedWidth
+[       OK ] DataProtocolTest.DataRefHasStableRoundTripAndFixedWidth (0 ms)
+[ RUN      ] DataProtocolTest.RejectsVersionLengthAndReservedField
+[       OK ] DataProtocolTest.RejectsVersionLengthAndReservedField (0 ms)
+[----------] 2 tests from DataProtocolTest (0 ms total)
+
+[----------] 8 tests from LocalDataRuntimeTest
+[ RUN      ] LocalDataRuntimeTest.ReserveIsIdempotentAndPreflightsCapacity
+[       OK ] LocalDataRuntimeTest.ReserveIsIdempotentAndPreflightsCapacity (0 ms)
+[ RUN      ] LocalDataRuntimeTest.SealPublishesOnlyCompleteDataAndLeaseDefersWithdraw
+[       OK ] LocalDataRuntimeTest.SealPublishesOnlyCompleteDataAndLeaseDefersWithdraw (0 ms)
+[ RUN      ] LocalDataRuntimeTest.ConcurrentProducersConvergeOnOneCanonicalObject
+[       OK ] LocalDataRuntimeTest.ConcurrentProducersConvergeOnOneCanonicalObject (0 ms)
+[ RUN      ] LocalDataRuntimeTest.ConflictingCanonicalChecksumIsQuarantined
+[       OK ] LocalDataRuntimeTest.ConflictingCanonicalChecksumIsQuarantined (0 ms)
+[ RUN      ] LocalDataRuntimeTest.TypedComputeAndIOLeasesDeferPhysicalReclaim
+[       OK ] LocalDataRuntimeTest.TypedComputeAndIOLeasesDeferPhysicalReclaim (0 ms)
+[ RUN      ] LocalDataRuntimeTest.RejectsOldOwnerAndStaleGeneration
+[       OK ] LocalDataRuntimeTest.RejectsOldOwnerAndStaleGeneration (0 ms)
+[ RUN      ] LocalDataRuntimeTest.ProducerExitBeforeSealLeavesNoVisibleObject
+[       OK ] LocalDataRuntimeTest.ProducerExitBeforeSealLeavesNoVisibleObject (0 ms)
+[ RUN      ] LocalDataRuntimeTest.ServiceRestartRejectsEveryOldAllocationHandle
+[       OK ] LocalDataRuntimeTest.ServiceRestartRejectsEveryOldAllocationHandle (0 ms)
+[----------] 8 tests from LocalDataRuntimeTest (0 ms total)
+
+[----------] 1 test from KVSnapshotCodecTest
+[ RUN      ] KVSnapshotCodecTest.StableRoundTripAndBoundedDecode
+[       OK ] KVSnapshotCodecTest.StableRoundTripAndBoundedDecode (0 ms)
+[----------] 1 test from KVSnapshotCodecTest (0 ms total)
+
+[----------] 5 tests from NodeAgentTest
+[ RUN      ] NodeAgentTest.SlowPartialHeadersCannotOccupyWorkersIndefinitely
+PBE_DATA_SERVICE_READY pid=29283 endpoint=/tmp/pbe-agent-test-29283-slow.sock incarnation=301 protocol=3 transport=bounded_host_copy capacity_bytes=1073741824 ipc_pool_bytes=0 ipc_pool_device=-1 shared_weight_bytes=0 shared_weight_uploads=0
+[       OK ] NodeAgentTest.SlowPartialHeadersCannotOccupyWorkersIndefinitely (106 ms)
+[ RUN      ] NodeAgentTest.PartialBodyUsesTheSameAbsoluteRequestDeadline
+PBE_DATA_SERVICE_READY pid=29283 endpoint=/tmp/pbe-agent-test-29283-partial-body.sock incarnation=302 protocol=3 transport=bounded_host_copy capacity_bytes=1073741824 ipc_pool_bytes=0 ipc_pool_device=-1 shared_weight_bytes=0 shared_weight_uploads=0
+[       OK ] NodeAgentTest.PartialBodyUsesTheSameAbsoluteRequestDeadline (106 ms)
+[ RUN      ] NodeAgentTest.HeaderDripCannotRenewTheAbsoluteRequestDeadline
+PBE_DATA_SERVICE_READY pid=29283 endpoint=/tmp/pbe-agent-test-29283-header-drip.sock incarnation=303 protocol=3 transport=bounded_host_copy capacity_bytes=1073741824 ipc_pool_bytes=0 ipc_pool_device=-1 shared_weight_bytes=0 shared_weight_uploads=0
+[       OK ] NodeAgentTest.HeaderDripCannotRenewTheAbsoluteRequestDeadline (107 ms)
+[ RUN      ] NodeAgentTest.StaleWireTokenCannotReleaseLeaseAfterServiceRestart
+PBE_DATA_SERVICE_READY pid=29283 endpoint=/tmp/pbe-agent-test-29283-restart.sock incarnation=401 protocol=3 transport=bounded_host_copy capacity_bytes=1073741824 ipc_pool_bytes=0 ipc_pool_device=-1 shared_weight_bytes=0 shared_weight_uploads=0
+PBE_DATA_SERVICE_READY pid=29283 endpoint=/tmp/pbe-agent-test-29283-restart.sock incarnation=402 protocol=3 transport=bounded_host_copy capacity_bytes=1073741824 ipc_pool_bytes=0 ipc_pool_device=-1 shared_weight_bytes=0 shared_weight_uploads=0
+[       OK ] NodeAgentTest.StaleWireTokenCannotReleaseLeaseAfterServiceRestart (15 ms)
+[ RUN      ] NodeAgentTest.ReplyLostAcquireCanReplayWithoutAddingALease
+PBE_DATA_SERVICE_READY pid=29283 endpoint=/tmp/pbe-agent-test-29283-replay.sock incarnation=501 protocol=3 transport=bounded_host_copy capacity_bytes=1073741824 ipc_pool_bytes=0 ipc_pool_device=-1 shared_weight_bytes=0 shared_weight_uploads=0
+[       OK ] NodeAgentTest.ReplyLostAcquireCanReplayWithoutAddingALease (12 ms)
+[----------] 5 tests from NodeAgentTest (349 ms total)
+
+[----------] 3 tests from TensorBundleTest
+[ RUN      ] TensorBundleTest.AcceptsAlignedDisjointComponentsWithPadding
+[       OK ] TensorBundleTest.AcceptsAlignedDisjointComponentsWithPadding (0 ms)
+[ RUN      ] TensorBundleTest.RejectsShapeBytesOverlapAndDuplicateNames
+[       OK ] TensorBundleTest.RejectsShapeBytesOverlapAndDuplicateNames (0 ms)
+[ RUN      ] TensorBundleTest.RejectsOverflowBeforeAllocation
+[       OK ] TensorBundleTest.RejectsOverflowBeforeAllocation (0 ms)
+[----------] 3 tests from TensorBundleTest (0 ms total)
+
+[----------] 1 test from TensorBundleCrossLanguageTest
+[ RUN      ] TensorBundleCrossLanguageTest.DecodesPythonGoldenWhenProvided
+/home/nowcoder/PagedBatchEngine/test/data_core/test_tensor_bundle_cross_language.cpp:5: Skipped
+set PBE_PYTHON_BUNDLE_GOLDEN
+
+[  SKIPPED ] TensorBundleCrossLanguageTest.DecodesPythonGoldenWhenProvided (0 ms)
+[----------] 1 test from TensorBundleCrossLanguageTest (0 ms total)
+
+[----------] Global test environment tear-down
+[==========] 212 tests from 52 test suites ran. (7680 ms total)
+[  PASSED  ] 200 tests.
+[  SKIPPED ] 12 tests, listed below:
+[  SKIPPED ] PDHandoffTest.CudaP2PConnectorCopiesPlainBlocksAcrossDevices
+[  SKIPPED ] PDHandoffTest.SharedSchedulerMergesAndIndependentlyCancelsCudaP2PWaiters
+[  SKIPPED ] PDHandoffTest.NcclConnectorCopiesPlainBlocksAcrossDevices
+[  SKIPPED ] PDHandoffTest.NcclLayerConnectorCopiesPlainBlocksAcrossDevices
+[  SKIPPED ] Qwen25VLChunkedTest.FourFixturesCrossMediaSpansAtTwoChunkCaps
+[  SKIPPED ] Qwen25VLModelTest.OneImageMatchesReferenceLogitsAndGreedyDecode
+[  SKIPPED ] Qwen25VLModelTest.TextResolutionTwoImageAndMixedPrefillMatchReference
+[  SKIPPED ] Qwen2DeviceInitTest.TwoInstancesCanLoadOnDistinctDevicesWithFixtureModel
+[  SKIPPED ] Qwen2DeviceInitTest.DualGpuP2PMatchesSingleModelGreedyTokens
+[  SKIPPED ] Qwen2DeviceInitTest.DualGpuNcclMatchesSingleModelGreedyTokens
+[  SKIPPED ] Qwen2DeviceInitTest.DualGpuNcclLayerMatchesSingleModelGreedyTokens
+[  SKIPPED ] TensorBundleCrossLanguageTest.DecodesPythonGoldenWhenProvided

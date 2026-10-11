@@ -79,6 +79,8 @@ struct BenchConfig {
   int32_t listen_port = 8080;
   int32_t http_worker_threads = 0;   // 0 auto-selects a bounded worker pool
   int32_t http_listen_backlog = 1024;
+  int32_t http_io_timeout_ms = 5000;
+  int32_t http_max_pending_connections = 128;
   int32_t max_queue_size = 128;
   int32_t request_timeout_ms = 0;  // 0 disables request timeout
   int32_t max_prompt_tokens = 0;   // 0 disables prompt length check

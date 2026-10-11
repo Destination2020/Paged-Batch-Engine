@@ -1,0 +1,6010 @@
+{
+  "arena_bytes": 88080384,
+  "iterations": 30,
+  "repeats": 3,
+  "library_dir": null,
+  "summary": {
+    "24-0-private": {
+      "allocate_us": {
+        "p50": 1.3025,
+        "p95": 2.425,
+        "samples": 90
+      },
+      "release_complete_us": {
+        "p50": 1.488,
+        "p95": 3.627,
+        "samples": 90
+      },
+      "release_cpu_us": {
+        "p50": 1.072,
+        "p95": 1.563,
+        "samples": 90
+      },
+      "write_us": {
+        "p50": 1321.5974999999999,
+        "p95": 2436.976,
+        "samples": 90
+      }
+    },
+    "24-0-shared": {
+      "allocate_us": {
+        "p50": 160.6505,
+        "p95": 301.269,
+        "samples": 90
+      },
+      "release_complete_us": {
+        "p50": 189.14249999999998,
+        "p95": 318.82,
+        "samples": 90
+      },
+      "release_cpu_us": {
+        "p50": 186.133,
+        "p95": 314.56,
+        "samples": 90
+      },
+      "write_us": {
+        "p50": 1728.2425,
+        "p95": 2804.832,
+        "samples": 90
+      }
+    },
+    "24-403-private": {
+      "allocate_us": {
+        "p50": 1.5030000000000001,
+        "p95": 2.775,
+        "samples": 90
+      },
+      "release_complete_us": {
+        "p50": 1.7535,
+        "p95": 6.603,
+        "samples": 90
+      },
+      "release_cpu_us": {
+        "p50": 1.233,
+        "p95": 3.277,
+        "samples": 90
+      },
+      "write_us": {
+        "p50": 1448.6435000000001,
+        "p95": 2274.688,
+        "samples": 90
+      }
+    },
+    "24-403-shared": {
+      "allocate_us": {
+        "p50": 3.787,
+        "p95": 6.172,
+        "samples": 90
+      },
+      "release_complete_us": {
+        "p50": 6.337,
+        "p95": 10.48,
+        "samples": 90
+      },
+      "release_cpu_us": {
+        "p50": 6.0009999999999994,
+        "p95": 9.979,
+        "samples": 90
+      },
+      "write_us": {
+        "p50": 1471.272,
+        "p95": 2626.665,
+        "samples": 90
+      }
+    },
+    "24-448-private": {
+      "denied_us": {
+        "p50": 0.02,
+        "p95": 0.02,
+        "samples": 90
+      }
+    },
+    "24-448-shared": {
+      "denied_us": {
+        "p50": 0.03,
+        "p95": 0.031,
+        "samples": 90
+      }
+    },
+    "28-0-private": {
+      "allocate_us": {
+        "p50": 2.0385,
+        "p95": 3.336,
+        "samples": 90
+      },
+      "release_complete_us": {
+        "p50": 2.4395,
+        "p95": 5.5,
+        "samples": 90
+      },
+      "release_cpu_us": {
+        "p50": 1.8185,
+        "p95": 2.985,
+        "samples": 90
+      },
+      "write_us": {
+        "p50": 2245.212,
+        "p95": 3110.061,
+        "samples": 90
+      }
+    },
+    "28-0-shared": {
+      "allocate_us": {
+        "p50": 153.2385,
+        "p95": 276.141,
+        "samples": 90
+      },
+      "release_complete_us": {
+        "p50": 198.665,
+        "p95": 340.349,
+        "samples": 90
+      },
+      "release_cpu_us": {
+        "p50": 196.1005,
+        "p95": 336.933,
+        "samples": 90
+      },
+      "write_us": {
+        "p50": 2415.4595,
+        "p95": 3746.648,
+        "samples": 90
+      }
+    },
+    "28-172-private": {
+      "allocate_us": {
+        "p50": 1.0670000000000002,
+        "p95": 1.823,
+        "samples": 90
+      },
+      "release_complete_us": {
+        "p50": 1.237,
+        "p95": 3.426,
+        "samples": 90
+      },
+      "release_cpu_us": {
+        "p50": 0.8414999999999999,
+        "p95": 1.733,
+        "samples": 90
+      },
+      "write_us": {
+        "p50": 1652.9305,
+        "p95": 2738.466,
+        "samples": 90
+      }
+    },
+    "28-172-shared": {
+      "allocate_us": {
+        "p50": 160.038,
+        "p95": 306.18,
+        "samples": 90
+      },
+      "release_complete_us": {
+        "p50": 193.683,
+        "p95": 293.133,
+        "samples": 90
+      },
+      "release_cpu_us": {
+        "p50": 190.0045,
+        "p95": 289.426,
+        "samples": 90
+      },
+      "write_us": {
+        "p50": 2063.969,
+        "p95": 3590.58,
+        "samples": 90
+      }
+    },
+    "28-192-private": {
+      "denied_us": {
+        "p50": 0.02,
+        "p95": 0.02,
+        "samples": 90
+      }
+    },
+    "28-192-shared": {
+      "denied_us": {
+        "p50": 0.03,
+        "p95": 0.03,
+        "samples": 90
+      }
+    }
+  },
+  "raw": [
+    {
+      "batch_pages": 4,
+      "capacity_pages": 448,
+      "held_pages": 0,
+      "layers": 24,
+      "samples": [
+        {
+          "allocate_us": 1.293,
+          "release_complete_us": 3.627,
+          "release_cpu_us": 1.192,
+          "write_us": 2175.55
+        },
+        {
+          "allocate_us": 1.833,
+          "release_complete_us": 1.703,
+          "release_cpu_us": 1.262,
+          "write_us": 1105.745
+        },
+        {
+          "allocate_us": 1.283,
+          "release_complete_us": 1.353,
+          "release_cpu_us": 0.912,
+          "write_us": 1293.77
+        },
+        {
+          "allocate_us": 1.693,
+          "release_complete_us": 1.313,
+          "release_cpu_us": 0.942,
+          "write_us": 1040.621
+        },
+        {
+          "allocate_us": 0.961,
+          "release_complete_us": 1.112,
+          "release_cpu_us": 0.761,
+          "write_us": 1512.274
+        },
+        {
+          "allocate_us": 1.252,
+          "release_complete_us": 1.332,
+          "release_cpu_us": 1.162,
+          "write_us": 962.694
+        },
+        {
+          "allocate_us": 1.303,
+          "release_complete_us": 1.693,
+          "release_cpu_us": 1.272,
+          "write_us": 1315.001
+        },
+        {
+          "allocate_us": 1.253,
+          "release_complete_us": 2.064,
+          "release_cpu_us": 1.313,
+          "write_us": 1757.969
+        },
+        {
+          "allocate_us": 1.393,
+          "release_complete_us": 1.272,
+          "release_cpu_us": 0.871,
+          "write_us": 1373.622
+        },
+        {
+          "allocate_us": 1.472,
+          "release_complete_us": 1.383,
+          "release_cpu_us": 0.972,
+          "write_us": 1315.562
+        },
+        {
+          "allocate_us": 1.663,
+          "release_complete_us": 1.332,
+          "release_cpu_us": 0.961,
+          "write_us": 1261.81
+        },
+        {
+          "allocate_us": 1.593,
+          "release_complete_us": 1.383,
+          "release_cpu_us": 1.032,
+          "write_us": 1166.91
+        },
+        {
+          "allocate_us": 1.012,
+          "release_complete_us": 16.381,
+          "release_cpu_us": 15.87,
+          "write_us": 2718.379
+        },
+        {
+          "allocate_us": 1.273,
+          "release_complete_us": 1.553,
+          "release_cpu_us": 1.142,
+          "write_us": 1860.604
+        },
+        {
+          "allocate_us": 1.012,
+          "release_complete_us": 1.353,
+          "release_cpu_us": 0.942,
+          "write_us": 1341.53
+        },
+        {
+          "allocate_us": 1.142,
+          "release_complete_us": 1.704,
+          "release_cpu_us": 0.982,
+          "write_us": 1640.807
+        },
+        {
+          "allocate_us": 0.992,
+          "release_complete_us": 3.386,
+          "release_cpu_us": 1.272,
+          "write_us": 2040.785
+        },
+        {
+          "allocate_us": 1.853,
+          "release_complete_us": 2.184,
+          "release_cpu_us": 1.513,
+          "write_us": 3237.482
+        },
+        {
+          "allocate_us": 1.984,
+          "release_complete_us": 1.413,
+          "release_cpu_us": 1.012,
+          "write_us": 1259.525
+        },
+        {
+          "allocate_us": 1.412,
+          "release_complete_us": 1.553,
+          "release_cpu_us": 1.132,
+          "write_us": 1478.039
+        },
+        {
+          "allocate_us": 1.302,
+          "release_complete_us": 1.593,
+          "release_cpu_us": 1.202,
+          "write_us": 2305.327
+        },
+        {
+          "allocate_us": 1.272,
+          "release_complete_us": 1.322,
+          "release_cpu_us": 0.911,
+          "write_us": 981.119
+        },
+        {
+          "allocate_us": 9.818,
+          "release_complete_us": 1.262,
+          "release_cpu_us": 0.882,
+          "write_us": 1557.911
+        },
+        {
+          "allocate_us": 1.343,
+          "release_complete_us": 1.463,
+          "release_cpu_us": 1.072,
+          "write_us": 1531.38
+        },
+        {
+          "allocate_us": 1.113,
+          "release_complete_us": 2.034,
+          "release_cpu_us": 1.002,
+          "write_us": 1674.922
+        },
+        {
+          "allocate_us": 1.543,
+          "release_complete_us": 1.503,
+          "release_cpu_us": 1.113,
+          "write_us": 1567.008
+        },
+        {
+          "allocate_us": 1.143,
+          "release_complete_us": 1.483,
+          "release_cpu_us": 1.092,
+          "write_us": 1895.71
+        },
+        {
+          "allocate_us": 1.463,
+          "release_complete_us": 1.653,
+          "release_cpu_us": 1.272,
+          "write_us": 1478.38
+        },
+        {
+          "allocate_us": 2.795,
+          "release_complete_us": 1.493,
+          "release_cpu_us": 1.123,
+          "write_us": 1191.857
+        },
+        {
+          "allocate_us": 1.984,
+          "release_complete_us": 1.503,
+          "release_cpu_us": 1.092,
+          "write_us": 1087.5
+        }
+      ],
+      "shared": false,
+      "repeat": 0,
+      "backend": "private"
+    },
+    {
+      "batch_pages": 4,
+      "capacity_pages": 448,
+      "held_pages": 0,
+      "layers": 24,
+      "samples": [
+        {
+          "allocate_us": 187.194,
+          "release_complete_us": 177.374,
+          "release_cpu_us": 174.137,
+          "write_us": 1085.697
+        },
+        {
+          "allocate_us": 131.499,
+          "release_complete_us": 182.448,
+          "release_cpu_us": 179.262,
+          "write_us": 2459.538
+        },
+        {
+          "allocate_us": 194.637,
+          "release_complete_us": 184.136,
+          "release_cpu_us": 180.95,
+          "write_us": 2923.637
+        },
+        {
+          "allocate_us": 159.301,
+          "release_complete_us": 318.82,
+          "release_cpu_us": 314.982,
+          "write_us": 2233.38
+        },
+        {
+          "allocate_us": 248.721,
+          "release_complete_us": 293.266,
+          "release_cpu_us": 289.709,
+          "write_us": 1935.656
+        },
+        {
+          "allocate_us": 228.172,
+          "release_complete_us": 200.309,
+          "release_cpu_us": 197.133,
+          "write_us": 1220.963
+        },
+        {
+          "allocate_us": 137.971,
+          "release_complete_us": 166.705,
+          "release_cpu_us": 163.449,
+          "write_us": 1141.232
+        },
+        {
+          "allocate_us": 204.107,
+          "release_complete_us": 222.551,
+          "release_cpu_us": 219.365,
+          "write_us": 1773.499
+        },
+        {
+          "allocate_us": 145.225,
+          "release_complete_us": 393.092,
+          "release_cpu_us": 386.139,
+          "write_us": 1088.863
+        },
+        {
+          "allocate_us": 232.583,
+          "release_complete_us": 172.597,
+          "release_cpu_us": 169.411,
+          "write_us": 1950.975
+        },
+        {
+          "allocate_us": 155.234,
+          "release_complete_us": 258.91,
+          "release_cpu_us": 255.544,
+          "write_us": 2046.747
+        },
+        {
+          "allocate_us": 187.495,
+          "release_complete_us": 196.021,
+          "release_cpu_us": 192.755,
+          "write_us": 1968.859
+        },
+        {
+          "allocate_us": 127.562,
+          "release_complete_us": 209.867,
+          "release_cpu_us": 206.601,
+          "write_us": 1435.569
+        },
+        {
+          "allocate_us": 216.751,
+          "release_complete_us": 219.485,
+          "release_cpu_us": 216.249,
+          "write_us": 1149.798
+        },
+        {
+          "allocate_us": 191.017,
+          "release_complete_us": 173.569,
+          "release_cpu_us": 172.186,
+          "write_us": 1656.472
+        },
+        {
+          "allocate_us": 190.471,
+          "release_complete_us": 257.357,
+          "release_cpu_us": 254.261,
+          "write_us": 1523.195
+        },
+        {
+          "allocate_us": 252.048,
+          "release_complete_us": 179.61,
+          "release_cpu_us": 177.647,
+          "write_us": 1024.49
+        },
+        {
+          "allocate_us": 150.946,
+          "release_complete_us": 193.651,
+          "release_cpu_us": 190.415,
+          "write_us": 1145.029
+        },
+        {
+          "allocate_us": 153.887,
+          "release_complete_us": 172.096,
+          "release_cpu_us": 170.343,
+          "write_us": 1669.472
+        },
+        {
+          "allocate_us": 145.044,
+          "release_complete_us": 288.797,
+          "release_cpu_us": 285.371,
+          "write_us": 2133.0
+        },
+        {
+          "allocate_us": 334.314,
+          "release_complete_us": 301.0,
+          "release_cpu_us": 297.243,
+          "write_us": 2581.389
+        },
+        {
+          "allocate_us": 236.368,
+          "release_complete_us": 274.259,
+          "release_cpu_us": 270.843,
+          "write_us": 1333.816
+        },
+        {
+          "allocate_us": 232.38,
+          "release_complete_us": 199.578,
+          "release_cpu_us": 197.815,
+          "write_us": 1275.906
+        },
+        {
+          "allocate_us": 130.277,
+          "release_complete_us": 233.867,
+          "release_cpu_us": 226.724,
+          "write_us": 2022.02
+        },
+        {
+          "allocate_us": 230.401,
+          "release_complete_us": 192.975,
+          "release_cpu_us": 189.689,
+          "write_us": 1203.66
+        },
+        {
+          "allocate_us": 162.929,
+          "release_complete_us": 274.75,
+          "release_cpu_us": 271.564,
+          "write_us": 1093.02
+        },
+        {
+          "allocate_us": 182.125,
+          "release_complete_us": 176.064,
+          "release_cpu_us": 173.92,
+          "write_us": 2207.681
+        },
+        {
+          "allocate_us": 157.417,
+          "release_complete_us": 171.555,
+          "release_cpu_us": 169.632,
+          "write_us": 2753.216
+        },
+        {
+          "allocate_us": 145.906,
+          "release_complete_us": 224.054,
+          "release_cpu_us": 220.097,
+          "write_us": 2780.707
+        },
+        {
+          "allocate_us": 182.606,
+          "release_complete_us": 201.913,
+          "release_cpu_us": 198.827,
+          "write_us": 1317.475
+        }
+      ],
+      "shared": true,
+      "repeat": 0,
+      "backend": "shared"
+    },
+    {
+      "batch_pages": 4,
+      "capacity_pages": 448,
+      "held_pages": 403,
+      "layers": 24,
+      "samples": [
+        {
+          "allocate_us": 2.324,
+          "release_complete_us": 1.944,
+          "release_cpu_us": 1.543,
+          "write_us": 1201.135
+        },
+        {
+          "allocate_us": 1.403,
+          "release_complete_us": 2.154,
+          "release_cpu_us": 1.783,
+          "write_us": 1090.425
+        },
+        {
+          "allocate_us": 1.242,
+          "release_complete_us": 1.583,
+          "release_cpu_us": 0.892,
+          "write_us": 1676.075
+        },
+        {
+          "allocate_us": 1.473,
+          "release_complete_us": 1.633,
+          "release_cpu_us": 1.243,
+          "write_us": 1531.029
+        },
+        {
+          "allocate_us": 1.352,
+          "release_complete_us": 1.623,
+          "release_cpu_us": 1.162,
+          "write_us": 2545.492
+        },
+        {
+          "allocate_us": 0.962,
+          "release_complete_us": 1.153,
+          "release_cpu_us": 0.762,
+          "write_us": 1136.492
+        },
+        {
+          "allocate_us": 1.182,
+          "release_complete_us": 1.312,
+          "release_cpu_us": 0.891,
+          "write_us": 1588.97
+        },
+        {
+          "allocate_us": 1.382,
+          "release_complete_us": 1.012,
+          "release_cpu_us": 0.641,
+          "write_us": 1504.51
+        },
+        {
+          "allocate_us": 1.332,
+          "release_complete_us": 2.054,
+          "release_cpu_us": 1.603,
+          "write_us": 1528.816
+        },
+        {
+          "allocate_us": 0.912,
+          "release_complete_us": 1.613,
+          "release_cpu_us": 1.182,
+          "write_us": 1656.037
+        },
+        {
+          "allocate_us": 1.302,
+          "release_complete_us": 2.074,
+          "release_cpu_us": 1.333,
+          "write_us": 2233.41
+        },
+        {
+          "allocate_us": 2.124,
+          "release_complete_us": 1.442,
+          "release_cpu_us": 1.012,
+          "write_us": 1199.272
+        },
+        {
+          "allocate_us": 1.052,
+          "release_complete_us": 4.278,
+          "release_cpu_us": 3.867,
+          "write_us": 1402.436
+        },
+        {
+          "allocate_us": 1.243,
+          "release_complete_us": 7.044,
+          "release_cpu_us": 1.884,
+          "write_us": 1638.102
+        },
+        {
+          "allocate_us": 1.423,
+          "release_complete_us": 4.819,
+          "release_cpu_us": 1.783,
+          "write_us": 1935.035
+        },
+        {
+          "allocate_us": 1.873,
+          "release_complete_us": 1.773,
+          "release_cpu_us": 1.272,
+          "write_us": 1440.348
+        },
+        {
+          "allocate_us": 1.453,
+          "release_complete_us": 1.743,
+          "release_cpu_us": 1.182,
+          "write_us": 1272.931
+        },
+        {
+          "allocate_us": 1.643,
+          "release_complete_us": 1.764,
+          "release_cpu_us": 1.233,
+          "write_us": 1448.403
+        },
+        {
+          "allocate_us": 1.513,
+          "release_complete_us": 1.322,
+          "release_cpu_us": 0.921,
+          "write_us": 1263.874
+        },
+        {
+          "allocate_us": 2.285,
+          "release_complete_us": 2.335,
+          "release_cpu_us": 1.473,
+          "write_us": 1537.151
+        },
+        {
+          "allocate_us": 1.753,
+          "release_complete_us": 6.463,
+          "release_cpu_us": 3.337,
+          "write_us": 2184.808
+        },
+        {
+          "allocate_us": 2.775,
+          "release_complete_us": 5.129,
+          "release_cpu_us": 2.735,
+          "write_us": 3066.158
+        },
+        {
+          "allocate_us": 2.054,
+          "release_complete_us": 2.855,
+          "release_cpu_us": 2.314,
+          "write_us": 1361.659
+        },
+        {
+          "allocate_us": 1.843,
+          "release_complete_us": 2.064,
+          "release_cpu_us": 1.393,
+          "write_us": 1288.16
+        },
+        {
+          "allocate_us": 3.457,
+          "release_complete_us": 3.536,
+          "release_cpu_us": 1.463,
+          "write_us": 1931.188
+        },
+        {
+          "allocate_us": 1.984,
+          "release_complete_us": 2.876,
+          "release_cpu_us": 1.573,
+          "write_us": 2166.583
+        },
+        {
+          "allocate_us": 2.345,
+          "release_complete_us": 2.975,
+          "release_cpu_us": 2.504,
+          "write_us": 1279.353
+        },
+        {
+          "allocate_us": 1.673,
+          "release_complete_us": 3.296,
+          "release_cpu_us": 1.723,
+          "write_us": 1864.802
+        },
+        {
+          "allocate_us": 2.154,
+          "release_complete_us": 3.095,
+          "release_cpu_us": 1.983,
+          "write_us": 1448.884
+        },
+        {
+          "allocate_us": 2.014,
+          "release_complete_us": 4.759,
+          "release_cpu_us": 2.444,
+          "write_us": 2575.859
+        }
+      ],
+      "shared": false,
+      "repeat": 0,
+      "backend": "private"
+    },
+    {
+      "batch_pages": 4,
+      "capacity_pages": 448,
+      "held_pages": 403,
+      "layers": 24,
+      "samples": [
+        {
+          "allocate_us": 2.394,
+          "release_complete_us": 3.777,
+          "release_cpu_us": 3.547,
+          "write_us": 1020.984
+        },
+        {
+          "allocate_us": 2.666,
+          "release_complete_us": 3.537,
+          "release_cpu_us": 3.286,
+          "write_us": 1341.31
+        },
+        {
+          "allocate_us": 2.565,
+          "release_complete_us": 3.677,
+          "release_cpu_us": 3.447,
+          "write_us": 1772.377
+        },
+        {
+          "allocate_us": 2.484,
+          "release_complete_us": 3.777,
+          "release_cpu_us": 3.507,
+          "write_us": 992.299
+        },
+        {
+          "allocate_us": 2.455,
+          "release_complete_us": 13.796,
+          "release_cpu_us": 13.355,
+          "write_us": 1047.422
+        },
+        {
+          "allocate_us": 3.938,
+          "release_complete_us": 5.049,
+          "release_cpu_us": 4.839,
+          "write_us": 2302.13
+        },
+        {
+          "allocate_us": 2.845,
+          "release_complete_us": 5.831,
+          "release_cpu_us": 5.541,
+          "write_us": 1724.348
+        },
+        {
+          "allocate_us": 3.546,
+          "release_complete_us": 3.677,
+          "release_cpu_us": 3.437,
+          "write_us": 1167.832
+        },
+        {
+          "allocate_us": 2.715,
+          "release_complete_us": 6.673,
+          "release_cpu_us": 6.342,
+          "write_us": 3100.572
+        },
+        {
+          "allocate_us": 2.815,
+          "release_complete_us": 4.187,
+          "release_cpu_us": 3.967,
+          "write_us": 1263.694
+        },
+        {
+          "allocate_us": 2.635,
+          "release_complete_us": 3.887,
+          "release_cpu_us": 3.647,
+          "write_us": 1266.769
+        },
+        {
+          "allocate_us": 2.475,
+          "release_complete_us": 3.457,
+          "release_cpu_us": 3.226,
+          "write_us": 981.589
+        },
+        {
+          "allocate_us": 2.194,
+          "release_complete_us": 7.755,
+          "release_cpu_us": 7.525,
+          "write_us": 1987.023
+        },
+        {
+          "allocate_us": 2.124,
+          "release_complete_us": 3.617,
+          "release_cpu_us": 3.387,
+          "write_us": 1540.237
+        },
+        {
+          "allocate_us": 2.425,
+          "release_complete_us": 3.577,
+          "release_cpu_us": 3.347,
+          "write_us": 1639.785
+        },
+        {
+          "allocate_us": 2.294,
+          "release_complete_us": 3.747,
+          "release_cpu_us": 3.507,
+          "write_us": 1370.436
+        },
+        {
+          "allocate_us": 2.415,
+          "release_complete_us": 3.597,
+          "release_cpu_us": 3.347,
+          "write_us": 1486.144
+        },
+        {
+          "allocate_us": 2.435,
+          "release_complete_us": 3.566,
+          "release_cpu_us": 3.336,
+          "write_us": 1508.006
+        },
+        {
+          "allocate_us": 2.144,
+          "release_complete_us": 3.958,
+          "release_cpu_us": 3.697,
+          "write_us": 2114.645
+        },
+        {
+          "allocate_us": 7.414,
+          "release_complete_us": 8.466,
+          "release_cpu_us": 8.155,
+          "write_us": 1397.677
+        },
+        {
+          "allocate_us": 3.367,
+          "release_complete_us": 15.199,
+          "release_cpu_us": 14.788,
+          "write_us": 1554.604
+        },
+        {
+          "allocate_us": 6.172,
+          "release_complete_us": 4.438,
+          "release_cpu_us": 4.168,
+          "write_us": 1239.708
+        },
+        {
+          "allocate_us": 2.985,
+          "release_complete_us": 4.268,
+          "release_cpu_us": 3.998,
+          "write_us": 2626.665
+        },
+        {
+          "allocate_us": 3.066,
+          "release_complete_us": 3.626,
+          "release_cpu_us": 3.376,
+          "write_us": 1087.25
+        },
+        {
+          "allocate_us": 13.566,
+          "release_complete_us": 4.629,
+          "release_cpu_us": 4.389,
+          "write_us": 1741.498
+        },
+        {
+          "allocate_us": 2.645,
+          "release_complete_us": 6.703,
+          "release_cpu_us": 6.412,
+          "write_us": 1630.618
+        },
+        {
+          "allocate_us": 3.076,
+          "release_complete_us": 3.597,
+          "release_cpu_us": 3.366,
+          "write_us": 1687.606
+        },
+        {
+          "allocate_us": 2.525,
+          "release_complete_us": 3.707,
+          "release_cpu_us": 3.477,
+          "write_us": 1726.459
+        },
+        {
+          "allocate_us": 2.625,
+          "release_complete_us": 5.59,
+          "release_cpu_us": 5.36,
+          "write_us": 2688.232
+        },
+        {
+          "allocate_us": 2.544,
+          "release_complete_us": 6.452,
+          "release_cpu_us": 6.202,
+          "write_us": 1214.521
+        }
+      ],
+      "shared": true,
+      "repeat": 0,
+      "backend": "shared"
+    },
+    {
+      "batch_pages": 4,
+      "capacity_pages": 448,
+      "held_pages": 448,
+      "layers": 24,
+      "samples": [
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.01
+        },
+        {
+          "denied_us": 0.01
+        },
+        {
+          "denied_us": 0.01
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.01
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.01
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.01
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.021
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.01
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.01
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        }
+      ],
+      "shared": false,
+      "repeat": 0,
+      "backend": "private"
+    },
+    {
+      "batch_pages": 4,
+      "capacity_pages": 448,
+      "held_pages": 448,
+      "layers": 24,
+      "samples": [
+        {
+          "denied_us": 0.03
+        },
+        {
+          "denied_us": 0.03
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.03
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.03
+        },
+        {
+          "denied_us": 0.03
+        },
+        {
+          "denied_us": 0.031
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.031
+        },
+        {
+          "denied_us": 0.03
+        },
+        {
+          "denied_us": 0.03
+        },
+        {
+          "denied_us": 0.03
+        },
+        {
+          "denied_us": 0.021
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.03
+        },
+        {
+          "denied_us": 0.03
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.03
+        },
+        {
+          "denied_us": 0.03
+        },
+        {
+          "denied_us": 0.03
+        },
+        {
+          "denied_us": 0.03
+        },
+        {
+          "denied_us": 0.03
+        },
+        {
+          "denied_us": 0.03
+        },
+        {
+          "denied_us": 0.03
+        },
+        {
+          "denied_us": 0.03
+        },
+        {
+          "denied_us": 0.02
+        }
+      ],
+      "shared": true,
+      "repeat": 0,
+      "backend": "shared"
+    },
+    {
+      "batch_pages": 4,
+      "capacity_pages": 192,
+      "held_pages": 0,
+      "layers": 28,
+      "samples": [
+        {
+          "allocate_us": 2.444,
+          "release_complete_us": 3.176,
+          "release_cpu_us": 2.705,
+          "write_us": 2426.306
+        },
+        {
+          "allocate_us": 1.854,
+          "release_complete_us": 4.218,
+          "release_cpu_us": 2.084,
+          "write_us": 3242.16
+        },
+        {
+          "allocate_us": 2.284,
+          "release_complete_us": 2.545,
+          "release_cpu_us": 2.024,
+          "write_us": 2416.577
+        },
+        {
+          "allocate_us": 2.134,
+          "release_complete_us": 2.736,
+          "release_cpu_us": 2.135,
+          "write_us": 2336.986
+        },
+        {
+          "allocate_us": 2.064,
+          "release_complete_us": 2.936,
+          "release_cpu_us": 2.134,
+          "write_us": 1936.438
+        },
+        {
+          "allocate_us": 1.903,
+          "release_complete_us": 4.539,
+          "release_cpu_us": 2.455,
+          "write_us": 2687.319
+        },
+        {
+          "allocate_us": 2.485,
+          "release_complete_us": 2.715,
+          "release_cpu_us": 2.214,
+          "write_us": 2459.739
+        },
+        {
+          "allocate_us": 1.813,
+          "release_complete_us": 2.434,
+          "release_cpu_us": 1.913,
+          "write_us": 1939.123
+        },
+        {
+          "allocate_us": 2.545,
+          "release_complete_us": 3.376,
+          "release_cpu_us": 2.104,
+          "write_us": 2660.319
+        },
+        {
+          "allocate_us": 1.934,
+          "release_complete_us": 2.174,
+          "release_cpu_us": 1.553,
+          "write_us": 2271.832
+        },
+        {
+          "allocate_us": 2.545,
+          "release_complete_us": 3.577,
+          "release_cpu_us": 2.024,
+          "write_us": 2814.23
+        },
+        {
+          "allocate_us": 1.753,
+          "release_complete_us": 2.825,
+          "release_cpu_us": 2.344,
+          "write_us": 2408.582
+        },
+        {
+          "allocate_us": 1.933,
+          "release_complete_us": 30.257,
+          "release_cpu_us": 28.264,
+          "write_us": 2913.178
+        },
+        {
+          "allocate_us": 1.913,
+          "release_complete_us": 3.085,
+          "release_cpu_us": 2.484,
+          "write_us": 1912.964
+        },
+        {
+          "allocate_us": 2.345,
+          "release_complete_us": 2.044,
+          "release_cpu_us": 1.583,
+          "write_us": 1874.48
+        },
+        {
+          "allocate_us": 1.513,
+          "release_complete_us": 4.549,
+          "release_cpu_us": 1.844,
+          "write_us": 2315.565
+        },
+        {
+          "allocate_us": 3.136,
+          "release_complete_us": 2.284,
+          "release_cpu_us": 1.693,
+          "write_us": 2312.6
+        },
+        {
+          "allocate_us": 1.953,
+          "release_complete_us": 1.794,
+          "release_cpu_us": 1.303,
+          "write_us": 2232.729
+        },
+        {
+          "allocate_us": 2.124,
+          "release_complete_us": 3.998,
+          "release_cpu_us": 1.984,
+          "write_us": 2741.522
+        },
+        {
+          "allocate_us": 1.843,
+          "release_complete_us": 2.905,
+          "release_cpu_us": 1.843,
+          "write_us": 2695.896
+        },
+        {
+          "allocate_us": 3.367,
+          "release_complete_us": 2.395,
+          "release_cpu_us": 1.844,
+          "write_us": 2383.033
+        },
+        {
+          "allocate_us": 1.723,
+          "release_complete_us": 1.954,
+          "release_cpu_us": 1.513,
+          "write_us": 1937.539
+        },
+        {
+          "allocate_us": 2.004,
+          "release_complete_us": 2.705,
+          "release_cpu_us": 1.663,
+          "write_us": 2533.078
+        },
+        {
+          "allocate_us": 1.703,
+          "release_complete_us": 2.515,
+          "release_cpu_us": 1.904,
+          "write_us": 2325.164
+        },
+        {
+          "allocate_us": 2.234,
+          "release_complete_us": 2.254,
+          "release_cpu_us": 1.552,
+          "write_us": 2104.897
+        },
+        {
+          "allocate_us": 1.863,
+          "release_complete_us": 3.116,
+          "release_cpu_us": 2.445,
+          "write_us": 2240.173
+        },
+        {
+          "allocate_us": 3.537,
+          "release_complete_us": 3.666,
+          "release_cpu_us": 2.304,
+          "write_us": 2807.937
+        },
+        {
+          "allocate_us": 2.545,
+          "release_complete_us": 2.004,
+          "release_cpu_us": 1.463,
+          "write_us": 2044.151
+        },
+        {
+          "allocate_us": 3.947,
+          "release_complete_us": 3.727,
+          "release_cpu_us": 2.705,
+          "write_us": 1830.397
+        },
+        {
+          "allocate_us": 1.984,
+          "release_complete_us": 5.24,
+          "release_cpu_us": 2.224,
+          "write_us": 2623.96
+        }
+      ],
+      "shared": false,
+      "repeat": 0,
+      "backend": "private"
+    },
+    {
+      "batch_pages": 4,
+      "capacity_pages": 192,
+      "held_pages": 0,
+      "layers": 28,
+      "samples": [
+        {
+          "allocate_us": 182.125,
+          "release_complete_us": 237.901,
+          "release_cpu_us": 234.605,
+          "write_us": 2387.822
+        },
+        {
+          "allocate_us": 216.79,
+          "release_complete_us": 226.99,
+          "release_cpu_us": 223.734,
+          "write_us": 2515.174
+        },
+        {
+          "allocate_us": 164.792,
+          "release_complete_us": 188.537,
+          "release_cpu_us": 185.25,
+          "write_us": 1971.965
+        },
+        {
+          "allocate_us": 132.421,
+          "release_complete_us": 203.63,
+          "release_cpu_us": 200.394,
+          "write_us": 2279.246
+        },
+        {
+          "allocate_us": 153.601,
+          "release_complete_us": 290.631,
+          "release_cpu_us": 275.743,
+          "write_us": 1430.234
+        },
+        {
+          "allocate_us": 254.562,
+          "release_complete_us": 285.857,
+          "release_cpu_us": 282.641,
+          "write_us": 1520.93
+        },
+        {
+          "allocate_us": 278.542,
+          "release_complete_us": 293.666,
+          "release_cpu_us": 291.813,
+          "write_us": 3134.386
+        },
+        {
+          "allocate_us": 428.762,
+          "release_complete_us": 335.074,
+          "release_cpu_us": 331.698,
+          "write_us": 2130.845
+        },
+        {
+          "allocate_us": 159.991,
+          "release_complete_us": 180.793,
+          "release_cpu_us": 178.659,
+          "write_us": 3746.648
+        },
+        {
+          "allocate_us": 165.994,
+          "release_complete_us": 230.827,
+          "release_cpu_us": 227.611,
+          "write_us": 2201.069
+        },
+        {
+          "allocate_us": 266.154,
+          "release_complete_us": 200.2,
+          "release_cpu_us": 196.963,
+          "write_us": 2222.589
+        },
+        {
+          "allocate_us": 357.157,
+          "release_complete_us": 470.09,
+          "release_cpu_us": 466.082,
+          "write_us": 2468.033
+        },
+        {
+          "allocate_us": 214.907,
+          "release_complete_us": 273.779,
+          "release_cpu_us": 270.432,
+          "write_us": 1742.38
+        },
+        {
+          "allocate_us": 165.824,
+          "release_complete_us": 230.967,
+          "release_cpu_us": 227.781,
+          "write_us": 2522.418
+        },
+        {
+          "allocate_us": 137.551,
+          "release_complete_us": 175.673,
+          "release_cpu_us": 173.599,
+          "write_us": 2521.325
+        },
+        {
+          "allocate_us": 134.815,
+          "release_complete_us": 195.541,
+          "release_cpu_us": 193.427,
+          "write_us": 1439.426
+        },
+        {
+          "allocate_us": 131.329,
+          "release_complete_us": 193.867,
+          "release_cpu_us": 191.924,
+          "write_us": 2397.28
+        },
+        {
+          "allocate_us": 152.939,
+          "release_complete_us": 241.892,
+          "release_cpu_us": 238.586,
+          "write_us": 2620.504
+        },
+        {
+          "allocate_us": 265.949,
+          "release_complete_us": 210.466,
+          "release_cpu_us": 205.216,
+          "write_us": 1954.181
+        },
+        {
+          "allocate_us": 272.027,
+          "release_complete_us": 388.215,
+          "release_cpu_us": 378.066,
+          "write_us": 4455.168
+        },
+        {
+          "allocate_us": 276.141,
+          "release_complete_us": 453.241,
+          "release_cpu_us": 428.013,
+          "write_us": 5408.794
+        },
+        {
+          "allocate_us": 230.487,
+          "release_complete_us": 236.658,
+          "release_cpu_us": 233.262,
+          "write_us": 2750.028
+        },
+        {
+          "allocate_us": 143.381,
+          "release_complete_us": 251.296,
+          "release_cpu_us": 248.761,
+          "write_us": 1744.074
+        },
+        {
+          "allocate_us": 150.595,
+          "release_complete_us": 216.649,
+          "release_cpu_us": 213.342,
+          "write_us": 2791.898
+        },
+        {
+          "allocate_us": 177.929,
+          "release_complete_us": 261.405,
+          "release_cpu_us": 258.83,
+          "write_us": 3019.338
+        },
+        {
+          "allocate_us": 206.561,
+          "release_complete_us": 213.504,
+          "release_cpu_us": 210.889,
+          "write_us": 2551.593
+        },
+        {
+          "allocate_us": 209.176,
+          "release_complete_us": 285.201,
+          "release_cpu_us": 282.496,
+          "write_us": 2282.673
+        },
+        {
+          "allocate_us": 204.027,
+          "release_complete_us": 211.411,
+          "release_cpu_us": 208.094,
+          "write_us": 1862.337
+        },
+        {
+          "allocate_us": 163.68,
+          "release_complete_us": 340.349,
+          "release_cpu_us": 336.933,
+          "write_us": 2550.641
+        },
+        {
+          "allocate_us": 171.329,
+          "release_complete_us": 228.983,
+          "release_cpu_us": 225.998,
+          "write_us": 2765.779
+        }
+      ],
+      "shared": true,
+      "repeat": 0,
+      "backend": "shared"
+    },
+    {
+      "batch_pages": 4,
+      "capacity_pages": 192,
+      "held_pages": 172,
+      "layers": 28,
+      "samples": [
+        {
+          "allocate_us": 1.172,
+          "release_complete_us": 1.763,
+          "release_cpu_us": 1.252,
+          "write_us": 2576.711
+        },
+        {
+          "allocate_us": 1.412,
+          "release_complete_us": 1.363,
+          "release_cpu_us": 0.992,
+          "write_us": 1519.808
+        },
+        {
+          "allocate_us": 1.874,
+          "release_complete_us": 1.202,
+          "release_cpu_us": 0.811,
+          "write_us": 1729.135
+        },
+        {
+          "allocate_us": 1.664,
+          "release_complete_us": 1.052,
+          "release_cpu_us": 0.621,
+          "write_us": 1651.818
+        },
+        {
+          "allocate_us": 1.042,
+          "release_complete_us": 1.073,
+          "release_cpu_us": 0.672,
+          "write_us": 1608.586
+        },
+        {
+          "allocate_us": 0.852,
+          "release_complete_us": 0.972,
+          "release_cpu_us": 0.581,
+          "write_us": 1470.044
+        },
+        {
+          "allocate_us": 0.852,
+          "release_complete_us": 1.213,
+          "release_cpu_us": 0.722,
+          "write_us": 1881.643
+        },
+        {
+          "allocate_us": 1.783,
+          "release_complete_us": 1.262,
+          "release_cpu_us": 0.891,
+          "write_us": 1387.027
+        },
+        {
+          "allocate_us": 1.192,
+          "release_complete_us": 1.112,
+          "release_cpu_us": 0.681,
+          "write_us": 1487.527
+        },
+        {
+          "allocate_us": 0.871,
+          "release_complete_us": 1.583,
+          "release_cpu_us": 1.072,
+          "write_us": 1842.851
+        },
+        {
+          "allocate_us": 1.002,
+          "release_complete_us": 3.426,
+          "release_cpu_us": 1.733,
+          "write_us": 3159.695
+        },
+        {
+          "allocate_us": 1.343,
+          "release_complete_us": 1.002,
+          "release_cpu_us": 0.611,
+          "write_us": 1470.986
+        },
+        {
+          "allocate_us": 1.804,
+          "release_complete_us": 26.44,
+          "release_cpu_us": 25.979,
+          "write_us": 1406.243
+        },
+        {
+          "allocate_us": 1.313,
+          "release_complete_us": 1.022,
+          "release_cpu_us": 0.611,
+          "write_us": 1660.595
+        },
+        {
+          "allocate_us": 0.892,
+          "release_complete_us": 1.152,
+          "release_cpu_us": 0.721,
+          "write_us": 1419.188
+        },
+        {
+          "allocate_us": 0.881,
+          "release_complete_us": 1.363,
+          "release_cpu_us": 0.742,
+          "write_us": 2360.05
+        },
+        {
+          "allocate_us": 0.881,
+          "release_complete_us": 1.152,
+          "release_cpu_us": 0.741,
+          "write_us": 1500.552
+        },
+        {
+          "allocate_us": 2.645,
+          "release_complete_us": 1.313,
+          "release_cpu_us": 0.902,
+          "write_us": 1608.977
+        },
+        {
+          "allocate_us": 1.182,
+          "release_complete_us": 1.723,
+          "release_cpu_us": 1.202,
+          "write_us": 1753.261
+        },
+        {
+          "allocate_us": 1.153,
+          "release_complete_us": 1.272,
+          "release_cpu_us": 0.822,
+          "write_us": 3588.506
+        },
+        {
+          "allocate_us": 0.962,
+          "release_complete_us": 1.222,
+          "release_cpu_us": 0.831,
+          "write_us": 1888.717
+        },
+        {
+          "allocate_us": 0.821,
+          "release_complete_us": 1.182,
+          "release_cpu_us": 0.792,
+          "write_us": 1356.71
+        },
+        {
+          "allocate_us": 1.333,
+          "release_complete_us": 1.202,
+          "release_cpu_us": 0.721,
+          "write_us": 1845.124
+        },
+        {
+          "allocate_us": 0.902,
+          "release_complete_us": 1.272,
+          "release_cpu_us": 0.832,
+          "write_us": 1568.31
+        },
+        {
+          "allocate_us": 0.872,
+          "release_complete_us": 1.222,
+          "release_cpu_us": 0.822,
+          "write_us": 2296.73
+        },
+        {
+          "allocate_us": 0.832,
+          "release_complete_us": 1.674,
+          "release_cpu_us": 1.253,
+          "write_us": 2251.183
+        },
+        {
+          "allocate_us": 0.842,
+          "release_complete_us": 1.363,
+          "release_cpu_us": 0.932,
+          "write_us": 1445.327
+        },
+        {
+          "allocate_us": 1.624,
+          "release_complete_us": 1.463,
+          "release_cpu_us": 1.002,
+          "write_us": 2738.466
+        },
+        {
+          "allocate_us": 1.222,
+          "release_complete_us": 1.092,
+          "release_cpu_us": 0.702,
+          "write_us": 1940.265
+        },
+        {
+          "allocate_us": 0.872,
+          "release_complete_us": 1.302,
+          "release_cpu_us": 0.851,
+          "write_us": 2396.93
+        }
+      ],
+      "shared": false,
+      "repeat": 0,
+      "backend": "private"
+    },
+    {
+      "batch_pages": 4,
+      "capacity_pages": 192,
+      "held_pages": 172,
+      "layers": 28,
+      "samples": [
+        {
+          "allocate_us": 168.685,
+          "release_complete_us": 167.285,
+          "release_cpu_us": 164.259,
+          "write_us": 1574.552
+        },
+        {
+          "allocate_us": 111.241,
+          "release_complete_us": 152.068,
+          "release_cpu_us": 150.655,
+          "write_us": 2978.874
+        },
+        {
+          "allocate_us": 277.491,
+          "release_complete_us": 207.293,
+          "release_cpu_us": 204.187,
+          "write_us": 2022.766
+        },
+        {
+          "allocate_us": 186.713,
+          "release_complete_us": 254.732,
+          "release_cpu_us": 252.739,
+          "write_us": 1263.163
+        },
+        {
+          "allocate_us": 241.698,
+          "release_complete_us": 215.348,
+          "release_cpu_us": 212.232,
+          "write_us": 1553.662
+        },
+        {
+          "allocate_us": 225.367,
+          "release_complete_us": 229.264,
+          "release_cpu_us": 227.721,
+          "write_us": 2484.926
+        },
+        {
+          "allocate_us": 118.394,
+          "release_complete_us": 154.622,
+          "release_cpu_us": 153.39,
+          "write_us": 1509.639
+        },
+        {
+          "allocate_us": 111.522,
+          "release_complete_us": 201.381,
+          "release_cpu_us": 197.614,
+          "write_us": 2341.024
+        },
+        {
+          "allocate_us": 218.284,
+          "release_complete_us": 164.181,
+          "release_cpu_us": 161.195,
+          "write_us": 2497.37
+        },
+        {
+          "allocate_us": 112.273,
+          "release_complete_us": 134.294,
+          "release_cpu_us": 133.052,
+          "write_us": 1326.402
+        },
+        {
+          "allocate_us": 116.261,
+          "release_complete_us": 293.133,
+          "release_cpu_us": 289.426,
+          "write_us": 2100.178
+        },
+        {
+          "allocate_us": 162.358,
+          "release_complete_us": 234.214,
+          "release_cpu_us": 231.048,
+          "write_us": 2272.185
+        },
+        {
+          "allocate_us": 147.679,
+          "release_complete_us": 184.039,
+          "release_cpu_us": 182.576,
+          "write_us": 1463.432
+        },
+        {
+          "allocate_us": 170.563,
+          "release_complete_us": 204.438,
+          "release_cpu_us": 201.272,
+          "write_us": 2702.919
+        },
+        {
+          "allocate_us": 170.583,
+          "release_complete_us": 235.005,
+          "release_cpu_us": 231.528,
+          "write_us": 3030.029
+        },
+        {
+          "allocate_us": 158.738,
+          "release_complete_us": 235.958,
+          "release_cpu_us": 232.712,
+          "write_us": 3431.54
+        },
+        {
+          "allocate_us": 411.138,
+          "release_complete_us": 242.869,
+          "release_cpu_us": 239.543,
+          "write_us": 1995.489
+        },
+        {
+          "allocate_us": 207.924,
+          "release_complete_us": 237.71,
+          "release_cpu_us": 234.273,
+          "write_us": 3233.253
+        },
+        {
+          "allocate_us": 185.592,
+          "release_complete_us": 180.49,
+          "release_cpu_us": 177.204,
+          "write_us": 1554.023
+        },
+        {
+          "allocate_us": 233.052,
+          "release_complete_us": 178.729,
+          "release_cpu_us": 177.116,
+          "write_us": 5157.039
+        },
+        {
+          "allocate_us": 120.939,
+          "release_complete_us": 174.39,
+          "release_cpu_us": 172.977,
+          "write_us": 2675.618
+        },
+        {
+          "allocate_us": 165.954,
+          "release_complete_us": 174.179,
+          "release_cpu_us": 170.953,
+          "write_us": 1510.521
+        },
+        {
+          "allocate_us": 156.476,
+          "release_complete_us": 237.009,
+          "release_cpu_us": 233.833,
+          "write_us": 1524.608
+        },
+        {
+          "allocate_us": 199.058,
+          "release_complete_us": 264.04,
+          "release_cpu_us": 259.992,
+          "write_us": 2631.694
+        },
+        {
+          "allocate_us": 239.163,
+          "release_complete_us": 234.454,
+          "release_cpu_us": 233.002,
+          "write_us": 2330.824
+        },
+        {
+          "allocate_us": 373.603,
+          "release_complete_us": 266.585,
+          "release_cpu_us": 259.592,
+          "write_us": 1930.04
+        },
+        {
+          "allocate_us": 308.855,
+          "release_complete_us": 201.111,
+          "release_cpu_us": 199.348,
+          "write_us": 2201.419
+        },
+        {
+          "allocate_us": 181.654,
+          "release_complete_us": 219.736,
+          "release_cpu_us": 216.36,
+          "write_us": 1977.355
+        },
+        {
+          "allocate_us": 172.868,
+          "release_complete_us": 195.092,
+          "release_cpu_us": 192.667,
+          "write_us": 2409.281
+        },
+        {
+          "allocate_us": 163.83,
+          "release_complete_us": 209.587,
+          "release_cpu_us": 206.12,
+          "write_us": 3018.277
+        }
+      ],
+      "shared": true,
+      "repeat": 0,
+      "backend": "shared"
+    },
+    {
+      "batch_pages": 4,
+      "capacity_pages": 192,
+      "held_pages": 192,
+      "layers": 28,
+      "samples": [
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.021
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.01
+        },
+        {
+          "denied_us": 0.01
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.01
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.01
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.011
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.01
+        }
+      ],
+      "shared": false,
+      "repeat": 0,
+      "backend": "private"
+    },
+    {
+      "batch_pages": 4,
+      "capacity_pages": 192,
+      "held_pages": 192,
+      "layers": 28,
+      "samples": [
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.03
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.03
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.03
+        },
+        {
+          "denied_us": 0.03
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.031
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.03
+        },
+        {
+          "denied_us": 0.03
+        },
+        {
+          "denied_us": 0.03
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.04
+        },
+        {
+          "denied_us": 0.03
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.03
+        },
+        {
+          "denied_us": 0.03
+        },
+        {
+          "denied_us": 0.03
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.03
+        },
+        {
+          "denied_us": 0.03
+        },
+        {
+          "denied_us": 0.03
+        },
+        {
+          "denied_us": 0.02
+        }
+      ],
+      "shared": true,
+      "repeat": 0,
+      "backend": "shared"
+    },
+    {
+      "batch_pages": 4,
+      "capacity_pages": 448,
+      "held_pages": 0,
+      "layers": 24,
+      "samples": [
+        {
+          "allocate_us": 225.923,
+          "release_complete_us": 164.612,
+          "release_cpu_us": 162.538,
+          "write_us": 1807.052
+        },
+        {
+          "allocate_us": 170.132,
+          "release_complete_us": 140.787,
+          "release_cpu_us": 139.514,
+          "write_us": 1610.781
+        },
+        {
+          "allocate_us": 112.964,
+          "release_complete_us": 159.262,
+          "release_cpu_us": 156.036,
+          "write_us": 1724.305
+        },
+        {
+          "allocate_us": 133.663,
+          "release_complete_us": 155.775,
+          "release_cpu_us": 154.372,
+          "write_us": 1326.142
+        },
+        {
+          "allocate_us": 152.7,
+          "release_complete_us": 184.698,
+          "release_cpu_us": 181.472,
+          "write_us": 2203.052
+        },
+        {
+          "allocate_us": 233.003,
+          "release_complete_us": 221.95,
+          "release_cpu_us": 215.138,
+          "write_us": 2281.792
+        },
+        {
+          "allocate_us": 251.294,
+          "release_complete_us": 216.592,
+          "release_cpu_us": 213.597,
+          "write_us": 2516.316
+        },
+        {
+          "allocate_us": 255.704,
+          "release_complete_us": 151.196,
+          "release_cpu_us": 149.954,
+          "write_us": 1707.645
+        },
+        {
+          "allocate_us": 113.615,
+          "release_complete_us": 142.98,
+          "release_cpu_us": 141.678,
+          "write_us": 1660.155
+        },
+        {
+          "allocate_us": 159.857,
+          "release_complete_us": 155.179,
+          "release_cpu_us": 152.063,
+          "write_us": 1387.889
+        },
+        {
+          "allocate_us": 126.951,
+          "release_complete_us": 227.761,
+          "release_cpu_us": 226.298,
+          "write_us": 2536.935
+        },
+        {
+          "allocate_us": 147.049,
+          "release_complete_us": 170.493,
+          "release_cpu_us": 166.746,
+          "write_us": 1068.764
+        },
+        {
+          "allocate_us": 166.244,
+          "release_complete_us": 251.626,
+          "release_cpu_us": 248.46,
+          "write_us": 1492.718
+        },
+        {
+          "allocate_us": 301.269,
+          "release_complete_us": 178.59,
+          "release_cpu_us": 174.953,
+          "write_us": 3243.483
+        },
+        {
+          "allocate_us": 119.315,
+          "release_complete_us": 149.663,
+          "release_cpu_us": 147.93,
+          "write_us": 1385.504
+        },
+        {
+          "allocate_us": 126.35,
+          "release_complete_us": 153.96,
+          "release_cpu_us": 151.415,
+          "write_us": 1333.716
+        },
+        {
+          "allocate_us": 116.23,
+          "release_complete_us": 158.862,
+          "release_cpu_us": 156.849,
+          "write_us": 2343.98
+        },
+        {
+          "allocate_us": 143.061,
+          "release_complete_us": 164.341,
+          "release_cpu_us": 162.518,
+          "write_us": 1447.882
+        },
+        {
+          "allocate_us": 429.453,
+          "release_complete_us": 272.486,
+          "release_cpu_us": 265.513,
+          "write_us": 1424.969
+        },
+        {
+          "allocate_us": 208.835,
+          "release_complete_us": 199.467,
+          "release_cpu_us": 196.251,
+          "write_us": 2718.217
+        },
+        {
+          "allocate_us": 403.773,
+          "release_complete_us": 194.008,
+          "release_cpu_us": 191.543,
+          "write_us": 1526.483
+        },
+        {
+          "allocate_us": 192.474,
+          "release_complete_us": 174.711,
+          "release_cpu_us": 171.485,
+          "write_us": 2011.259
+        },
+        {
+          "allocate_us": 124.576,
+          "release_complete_us": 289.807,
+          "release_cpu_us": 286.711,
+          "write_us": 1635.358
+        },
+        {
+          "allocate_us": 147.291,
+          "release_complete_us": 155.024,
+          "release_cpu_us": 151.888,
+          "write_us": 1641.919
+        },
+        {
+          "allocate_us": 138.751,
+          "release_complete_us": 371.085,
+          "release_cpu_us": 366.356,
+          "write_us": 2480.107
+        },
+        {
+          "allocate_us": 349.222,
+          "release_complete_us": 172.848,
+          "release_cpu_us": 171.415,
+          "write_us": 1900.659
+        },
+        {
+          "allocate_us": 115.769,
+          "release_complete_us": 190.02,
+          "release_cpu_us": 186.794,
+          "write_us": 1888.156
+        },
+        {
+          "allocate_us": 161.444,
+          "release_complete_us": 175.863,
+          "release_cpu_us": 174.611,
+          "write_us": 2465.221
+        },
+        {
+          "allocate_us": 230.551,
+          "release_complete_us": 184.876,
+          "release_cpu_us": 181.72,
+          "write_us": 2262.976
+        },
+        {
+          "allocate_us": 192.733,
+          "release_complete_us": 169.291,
+          "release_cpu_us": 167.367,
+          "write_us": 2211.15
+        }
+      ],
+      "shared": true,
+      "repeat": 1,
+      "backend": "shared"
+    },
+    {
+      "batch_pages": 4,
+      "capacity_pages": 448,
+      "held_pages": 0,
+      "layers": 24,
+      "samples": [
+        {
+          "allocate_us": 1.142,
+          "release_complete_us": 1.573,
+          "release_cpu_us": 1.172,
+          "write_us": 2413.692
+        },
+        {
+          "allocate_us": 1.413,
+          "release_complete_us": 1.533,
+          "release_cpu_us": 1.113,
+          "write_us": 1219.449
+        },
+        {
+          "allocate_us": 1.342,
+          "release_complete_us": 1.363,
+          "release_cpu_us": 0.962,
+          "write_us": 1069.626
+        },
+        {
+          "allocate_us": 1.132,
+          "release_complete_us": 1.313,
+          "release_cpu_us": 0.912,
+          "write_us": 1587.907
+        },
+        {
+          "allocate_us": 1.082,
+          "release_complete_us": 1.122,
+          "release_cpu_us": 0.741,
+          "write_us": 1195.324
+        },
+        {
+          "allocate_us": 1.393,
+          "release_complete_us": 1.703,
+          "release_cpu_us": 1.082,
+          "write_us": 3238.604
+        },
+        {
+          "allocate_us": 1.312,
+          "release_complete_us": 1.342,
+          "release_cpu_us": 0.921,
+          "write_us": 1114.161
+        },
+        {
+          "allocate_us": 1.072,
+          "release_complete_us": 1.462,
+          "release_cpu_us": 1.082,
+          "write_us": 1124.771
+        },
+        {
+          "allocate_us": 1.072,
+          "release_complete_us": 1.383,
+          "release_cpu_us": 0.812,
+          "write_us": 1144.347
+        },
+        {
+          "allocate_us": 1.272,
+          "release_complete_us": 1.132,
+          "release_cpu_us": 0.761,
+          "write_us": 1580.493
+        },
+        {
+          "allocate_us": 1.142,
+          "release_complete_us": 1.613,
+          "release_cpu_us": 0.872,
+          "write_us": 1150.77
+        },
+        {
+          "allocate_us": 1.252,
+          "release_complete_us": 1.784,
+          "release_cpu_us": 1.083,
+          "write_us": 1771.054
+        },
+        {
+          "allocate_us": 1.012,
+          "release_complete_us": 12.794,
+          "release_cpu_us": 12.333,
+          "write_us": 2531.835
+        },
+        {
+          "allocate_us": 1.633,
+          "release_complete_us": 1.633,
+          "release_cpu_us": 1.212,
+          "write_us": 1033.778
+        },
+        {
+          "allocate_us": 1.442,
+          "release_complete_us": 3.667,
+          "release_cpu_us": 2.185,
+          "write_us": 1611.422
+        },
+        {
+          "allocate_us": 2.255,
+          "release_complete_us": 1.803,
+          "release_cpu_us": 1.303,
+          "write_us": 2104.135
+        },
+        {
+          "allocate_us": 1.232,
+          "release_complete_us": 1.212,
+          "release_cpu_us": 0.832,
+          "write_us": 1095.966
+        },
+        {
+          "allocate_us": 1.402,
+          "release_complete_us": 1.403,
+          "release_cpu_us": 0.972,
+          "write_us": 1377.159
+        },
+        {
+          "allocate_us": 1.283,
+          "release_complete_us": 1.463,
+          "release_cpu_us": 1.092,
+          "write_us": 1064.827
+        },
+        {
+          "allocate_us": 1.223,
+          "release_complete_us": 1.383,
+          "release_cpu_us": 1.012,
+          "write_us": 1319.418
+        },
+        {
+          "allocate_us": 1.333,
+          "release_complete_us": 1.613,
+          "release_cpu_us": 1.122,
+          "write_us": 1343.103
+        },
+        {
+          "allocate_us": 5.13,
+          "release_complete_us": 1.583,
+          "release_cpu_us": 1.203,
+          "write_us": 1259.024
+        },
+        {
+          "allocate_us": 1.212,
+          "release_complete_us": 1.493,
+          "release_cpu_us": 1.062,
+          "write_us": 2081.602
+        },
+        {
+          "allocate_us": 1.102,
+          "release_complete_us": 1.322,
+          "release_cpu_us": 0.951,
+          "write_us": 1213.208
+        },
+        {
+          "allocate_us": 1.282,
+          "release_complete_us": 1.293,
+          "release_cpu_us": 0.902,
+          "write_us": 1243.445
+        },
+        {
+          "allocate_us": 1.352,
+          "release_complete_us": 1.092,
+          "release_cpu_us": 0.721,
+          "write_us": 1005.405
+        },
+        {
+          "allocate_us": 1.522,
+          "release_complete_us": 1.643,
+          "release_cpu_us": 1.112,
+          "write_us": 1205.393
+        },
+        {
+          "allocate_us": 1.182,
+          "release_complete_us": 1.323,
+          "release_cpu_us": 0.892,
+          "write_us": 2153.919
+        },
+        {
+          "allocate_us": 2.425,
+          "release_complete_us": 1.563,
+          "release_cpu_us": 1.202,
+          "write_us": 1039.539
+        },
+        {
+          "allocate_us": 1.572,
+          "release_complete_us": 1.423,
+          "release_cpu_us": 1.012,
+          "write_us": 1161.86
+        }
+      ],
+      "shared": false,
+      "repeat": 1,
+      "backend": "private"
+    },
+    {
+      "batch_pages": 4,
+      "capacity_pages": 448,
+      "held_pages": 403,
+      "layers": 24,
+      "samples": [
+        {
+          "allocate_us": 4.799,
+          "release_complete_us": 9.969,
+          "release_cpu_us": 9.508,
+          "write_us": 3050.387
+        },
+        {
+          "allocate_us": 5.009,
+          "release_complete_us": 6.813,
+          "release_cpu_us": 6.432,
+          "write_us": 1540.578
+        },
+        {
+          "allocate_us": 4.359,
+          "release_complete_us": 5.891,
+          "release_cpu_us": 5.541,
+          "write_us": 1345.568
+        },
+        {
+          "allocate_us": 4.389,
+          "release_complete_us": 6.222,
+          "release_cpu_us": 5.841,
+          "write_us": 1316.413
+        },
+        {
+          "allocate_us": 3.787,
+          "release_complete_us": 7.585,
+          "release_cpu_us": 7.144,
+          "write_us": 1917.862
+        },
+        {
+          "allocate_us": 4.158,
+          "release_complete_us": 6.522,
+          "release_cpu_us": 6.192,
+          "write_us": 1347.582
+        },
+        {
+          "allocate_us": 4.098,
+          "release_complete_us": 6.783,
+          "release_cpu_us": 6.352,
+          "write_us": 1877.556
+        },
+        {
+          "allocate_us": 4.078,
+          "release_complete_us": 7.244,
+          "release_cpu_us": 6.883,
+          "write_us": 1644.825
+        },
+        {
+          "allocate_us": 3.787,
+          "release_complete_us": 5.811,
+          "release_cpu_us": 5.44,
+          "write_us": 1237.835
+        },
+        {
+          "allocate_us": 3.617,
+          "release_complete_us": 6.613,
+          "release_cpu_us": 6.102,
+          "write_us": 1675.523
+        },
+        {
+          "allocate_us": 3.947,
+          "release_complete_us": 15.82,
+          "release_cpu_us": 15.379,
+          "write_us": 1414.469
+        },
+        {
+          "allocate_us": 3.336,
+          "release_complete_us": 6.212,
+          "release_cpu_us": 5.821,
+          "write_us": 1348.534
+        },
+        {
+          "allocate_us": 4.428,
+          "release_complete_us": 10.1,
+          "release_cpu_us": 9.739,
+          "write_us": 1298.348
+        },
+        {
+          "allocate_us": 3.918,
+          "release_complete_us": 6.422,
+          "release_cpu_us": 6.031,
+          "write_us": 1341.481
+        },
+        {
+          "allocate_us": 3.426,
+          "release_complete_us": 5.991,
+          "release_cpu_us": 5.691,
+          "write_us": 1288.942
+        },
+        {
+          "allocate_us": 3.547,
+          "release_complete_us": 10.26,
+          "release_cpu_us": 9.819,
+          "write_us": 1853.64
+        },
+        {
+          "allocate_us": 4.017,
+          "release_complete_us": 7.494,
+          "release_cpu_us": 7.054,
+          "write_us": 1446.98
+        },
+        {
+          "allocate_us": 4.158,
+          "release_complete_us": 6.242,
+          "release_cpu_us": 5.901,
+          "write_us": 1497.597
+        },
+        {
+          "allocate_us": 3.908,
+          "release_complete_us": 5.881,
+          "release_cpu_us": 5.46,
+          "write_us": 1437.673
+        },
+        {
+          "allocate_us": 3.106,
+          "release_complete_us": 5.801,
+          "release_cpu_us": 5.46,
+          "write_us": 1237.364
+        },
+        {
+          "allocate_us": 3.647,
+          "release_complete_us": 7.264,
+          "release_cpu_us": 6.903,
+          "write_us": 1815.698
+        },
+        {
+          "allocate_us": 3.947,
+          "release_complete_us": 10.48,
+          "release_cpu_us": 9.979,
+          "write_us": 2972.35
+        },
+        {
+          "allocate_us": 4.739,
+          "release_complete_us": 8.957,
+          "release_cpu_us": 8.496,
+          "write_us": 1812.302
+        },
+        {
+          "allocate_us": 4.468,
+          "release_complete_us": 7.084,
+          "release_cpu_us": 6.673,
+          "write_us": 1516.312
+        },
+        {
+          "allocate_us": 15.019,
+          "release_complete_us": 8.156,
+          "release_cpu_us": 7.625,
+          "write_us": 2037.018
+        },
+        {
+          "allocate_us": 4.178,
+          "release_complete_us": 7.193,
+          "release_cpu_us": 6.813,
+          "write_us": 1691.424
+        },
+        {
+          "allocate_us": 4.299,
+          "release_complete_us": 7.484,
+          "release_cpu_us": 7.054,
+          "write_us": 1519.287
+        },
+        {
+          "allocate_us": 3.847,
+          "release_complete_us": 6.613,
+          "release_cpu_us": 6.232,
+          "write_us": 1315.962
+        },
+        {
+          "allocate_us": 3.677,
+          "release_complete_us": 5.931,
+          "release_cpu_us": 5.56,
+          "write_us": 1311.594
+        },
+        {
+          "allocate_us": 3.587,
+          "release_complete_us": 6.272,
+          "release_cpu_us": 5.931,
+          "write_us": 1261.058
+        }
+      ],
+      "shared": true,
+      "repeat": 1,
+      "backend": "shared"
+    },
+    {
+      "batch_pages": 4,
+      "capacity_pages": 448,
+      "held_pages": 403,
+      "layers": 24,
+      "samples": [
+        {
+          "allocate_us": 1.413,
+          "release_complete_us": 1.202,
+          "release_cpu_us": 1.042,
+          "write_us": 1100.434
+        },
+        {
+          "allocate_us": 1.523,
+          "release_complete_us": 1.293,
+          "release_cpu_us": 0.932,
+          "write_us": 2006.069
+        },
+        {
+          "allocate_us": 1.643,
+          "release_complete_us": 1.163,
+          "release_cpu_us": 0.792,
+          "write_us": 1749.874
+        },
+        {
+          "allocate_us": 1.833,
+          "release_complete_us": 1.213,
+          "release_cpu_us": 0.822,
+          "write_us": 1670.023
+        },
+        {
+          "allocate_us": 1.423,
+          "release_complete_us": 1.633,
+          "release_cpu_us": 1.202,
+          "write_us": 2024.504
+        },
+        {
+          "allocate_us": 0.941,
+          "release_complete_us": 1.433,
+          "release_cpu_us": 1.032,
+          "write_us": 1600.702
+        },
+        {
+          "allocate_us": 1.142,
+          "release_complete_us": 0.962,
+          "release_cpu_us": 0.611,
+          "write_us": 1148.445
+        },
+        {
+          "allocate_us": 0.972,
+          "release_complete_us": 3.106,
+          "release_cpu_us": 1.163,
+          "write_us": 1747.229
+        },
+        {
+          "allocate_us": 1.733,
+          "release_complete_us": 1.603,
+          "release_cpu_us": 1.213,
+          "write_us": 1208.037
+        },
+        {
+          "allocate_us": 0.872,
+          "release_complete_us": 2.455,
+          "release_cpu_us": 1.553,
+          "write_us": 1154.917
+        },
+        {
+          "allocate_us": 1.623,
+          "release_complete_us": 1.543,
+          "release_cpu_us": 1.143,
+          "write_us": 2032.329
+        },
+        {
+          "allocate_us": 1.332,
+          "release_complete_us": 1.012,
+          "release_cpu_us": 0.621,
+          "write_us": 1371.077
+        },
+        {
+          "allocate_us": 0.982,
+          "release_complete_us": 13.004,
+          "release_cpu_us": 12.473,
+          "write_us": 1981.223
+        },
+        {
+          "allocate_us": 1.002,
+          "release_complete_us": 1.072,
+          "release_cpu_us": 0.701,
+          "write_us": 1008.771
+        },
+        {
+          "allocate_us": 1.082,
+          "release_complete_us": 1.212,
+          "release_cpu_us": 0.821,
+          "write_us": 1299.892
+        },
+        {
+          "allocate_us": 0.891,
+          "release_complete_us": 2.264,
+          "release_cpu_us": 1.082,
+          "write_us": 2211.258
+        },
+        {
+          "allocate_us": 1.062,
+          "release_complete_us": 1.603,
+          "release_cpu_us": 1.233,
+          "write_us": 1762.548
+        },
+        {
+          "allocate_us": 1.293,
+          "release_complete_us": 1.202,
+          "release_cpu_us": 0.832,
+          "write_us": 1058.384
+        },
+        {
+          "allocate_us": 1.202,
+          "release_complete_us": 1.413,
+          "release_cpu_us": 0.932,
+          "write_us": 1745.536
+        },
+        {
+          "allocate_us": 1.793,
+          "release_complete_us": 1.473,
+          "release_cpu_us": 1.092,
+          "write_us": 1127.265
+        },
+        {
+          "allocate_us": 1.072,
+          "release_complete_us": 1.603,
+          "release_cpu_us": 1.193,
+          "write_us": 1122.776
+        },
+        {
+          "allocate_us": 1.031,
+          "release_complete_us": 1.533,
+          "release_cpu_us": 1.132,
+          "write_us": 1085.045
+        },
+        {
+          "allocate_us": 1.022,
+          "release_complete_us": 1.683,
+          "release_cpu_us": 1.293,
+          "write_us": 1148.906
+        },
+        {
+          "allocate_us": 0.952,
+          "release_complete_us": 1.162,
+          "release_cpu_us": 0.791,
+          "write_us": 1102.599
+        },
+        {
+          "allocate_us": 2.384,
+          "release_complete_us": 1.152,
+          "release_cpu_us": 0.762,
+          "write_us": 998.361
+        },
+        {
+          "allocate_us": 0.992,
+          "release_complete_us": 1.192,
+          "release_cpu_us": 0.832,
+          "write_us": 1079.374
+        },
+        {
+          "allocate_us": 0.861,
+          "release_complete_us": 1.142,
+          "release_cpu_us": 0.762,
+          "write_us": 1128.227
+        },
+        {
+          "allocate_us": 0.892,
+          "release_complete_us": 1.242,
+          "release_cpu_us": 0.871,
+          "write_us": 964.977
+        },
+        {
+          "allocate_us": 1.022,
+          "release_complete_us": 1.222,
+          "release_cpu_us": 0.851,
+          "write_us": 981.068
+        },
+        {
+          "allocate_us": 0.871,
+          "release_complete_us": 1.272,
+          "release_cpu_us": 0.882,
+          "write_us": 1123.949
+        }
+      ],
+      "shared": false,
+      "repeat": 1,
+      "backend": "private"
+    },
+    {
+      "batch_pages": 4,
+      "capacity_pages": 448,
+      "held_pages": 448,
+      "layers": 24,
+      "samples": [
+        {
+          "denied_us": 0.03
+        },
+        {
+          "denied_us": 0.03
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.031
+        },
+        {
+          "denied_us": 0.03
+        },
+        {
+          "denied_us": 0.03
+        },
+        {
+          "denied_us": 0.03
+        },
+        {
+          "denied_us": 0.03
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.03
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.03
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.03
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.03
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.03
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.03
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.03
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.03
+        },
+        {
+          "denied_us": 0.04
+        },
+        {
+          "denied_us": 0.02
+        }
+      ],
+      "shared": true,
+      "repeat": 1,
+      "backend": "shared"
+    },
+    {
+      "batch_pages": 4,
+      "capacity_pages": 448,
+      "held_pages": 448,
+      "layers": 24,
+      "samples": [
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.01
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.01
+        },
+        {
+          "denied_us": 0.01
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.01
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.01
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.01
+        },
+        {
+          "denied_us": 0.01
+        },
+        {
+          "denied_us": 0.01
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.01
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        }
+      ],
+      "shared": false,
+      "repeat": 1,
+      "backend": "private"
+    },
+    {
+      "batch_pages": 4,
+      "capacity_pages": 192,
+      "held_pages": 0,
+      "layers": 28,
+      "samples": [
+        {
+          "allocate_us": 129.896,
+          "release_complete_us": 139.724,
+          "release_cpu_us": 138.362,
+          "write_us": 1311.053
+        },
+        {
+          "allocate_us": 209.026,
+          "release_complete_us": 187.746,
+          "release_cpu_us": 184.57,
+          "write_us": 3122.754
+        },
+        {
+          "allocate_us": 119.857,
+          "release_complete_us": 186.742,
+          "release_cpu_us": 184.267,
+          "write_us": 1775.543
+        },
+        {
+          "allocate_us": 141.119,
+          "release_complete_us": 136.218,
+          "release_cpu_us": 134.665,
+          "write_us": 1754.373
+        },
+        {
+          "allocate_us": 105.37,
+          "release_complete_us": 165.243,
+          "release_cpu_us": 163.46,
+          "write_us": 2284.777
+        },
+        {
+          "allocate_us": 108.585,
+          "release_complete_us": 153.541,
+          "release_cpu_us": 150.445,
+          "write_us": 2070.311
+        },
+        {
+          "allocate_us": 114.798,
+          "release_complete_us": 137.23,
+          "release_cpu_us": 135.637,
+          "write_us": 1788.817
+        },
+        {
+          "allocate_us": 105.489,
+          "release_complete_us": 144.303,
+          "release_cpu_us": 142.189,
+          "write_us": 1852.047
+        },
+        {
+          "allocate_us": 112.192,
+          "release_complete_us": 195.009,
+          "release_cpu_us": 191.904,
+          "write_us": 2529.04
+        },
+        {
+          "allocate_us": 159.031,
+          "release_complete_us": 312.893,
+          "release_cpu_us": 306.651,
+          "write_us": 2501.979
+        },
+        {
+          "allocate_us": 204.046,
+          "release_complete_us": 168.048,
+          "release_cpu_us": 166.145,
+          "write_us": 1871.765
+        },
+        {
+          "allocate_us": 118.484,
+          "release_complete_us": 190.159,
+          "release_cpu_us": 187.524,
+          "write_us": 2880.906
+        },
+        {
+          "allocate_us": 115.018,
+          "release_complete_us": 160.015,
+          "release_cpu_us": 157.931,
+          "write_us": 3614.075
+        },
+        {
+          "allocate_us": 117.212,
+          "release_complete_us": 242.908,
+          "release_cpu_us": 239.892,
+          "write_us": 3109.52
+        },
+        {
+          "allocate_us": 124.676,
+          "release_complete_us": 171.666,
+          "release_cpu_us": 168.54,
+          "write_us": 1860.505
+        },
+        {
+          "allocate_us": 150.605,
+          "release_complete_us": 165.472,
+          "release_cpu_us": 163.067,
+          "write_us": 2001.39
+        },
+        {
+          "allocate_us": 134.928,
+          "release_complete_us": 168.9,
+          "release_cpu_us": 166.616,
+          "write_us": 2343.909
+        },
+        {
+          "allocate_us": 174.301,
+          "release_complete_us": 254.492,
+          "release_cpu_us": 247.449,
+          "write_us": 1393.018
+        },
+        {
+          "allocate_us": 194.649,
+          "release_complete_us": 174.551,
+          "release_cpu_us": 171.315,
+          "write_us": 2759.316
+        },
+        {
+          "allocate_us": 141.788,
+          "release_complete_us": 263.509,
+          "release_cpu_us": 260.233,
+          "write_us": 1634.306
+        },
+        {
+          "allocate_us": 219.566,
+          "release_complete_us": 226.87,
+          "release_cpu_us": 220.197,
+          "write_us": 2682.189
+        },
+        {
+          "allocate_us": 220.768,
+          "release_complete_us": 162.837,
+          "release_cpu_us": 159.821,
+          "write_us": 2279.286
+        },
+        {
+          "allocate_us": 118.625,
+          "release_complete_us": 269.682,
+          "release_cpu_us": 266.486,
+          "write_us": 3869.429
+        },
+        {
+          "allocate_us": 141.202,
+          "release_complete_us": 333.814,
+          "release_cpu_us": 326.941,
+          "write_us": 3900.821
+        },
+        {
+          "allocate_us": 225.627,
+          "release_complete_us": 177.406,
+          "release_cpu_us": 174.991,
+          "write_us": 2009.416
+        },
+        {
+          "allocate_us": 117.352,
+          "release_complete_us": 209.487,
+          "release_cpu_us": 208.195,
+          "write_us": 2453.647
+        },
+        {
+          "allocate_us": 122.753,
+          "release_complete_us": 167.512,
+          "release_cpu_us": 164.436,
+          "write_us": 1448.153
+        },
+        {
+          "allocate_us": 150.53,
+          "release_complete_us": 179.369,
+          "release_cpu_us": 177.366,
+          "write_us": 1508.167
+        },
+        {
+          "allocate_us": 131.549,
+          "release_complete_us": 141.799,
+          "release_cpu_us": 140.436,
+          "write_us": 1306.725
+        },
+        {
+          "allocate_us": 124.125,
+          "release_complete_us": 153.511,
+          "release_cpu_us": 152.249,
+          "write_us": 2660.208
+        }
+      ],
+      "shared": true,
+      "repeat": 1,
+      "backend": "shared"
+    },
+    {
+      "batch_pages": 4,
+      "capacity_pages": 192,
+      "held_pages": 0,
+      "layers": 28,
+      "samples": [
+        {
+          "allocate_us": 1.914,
+          "release_complete_us": 2.445,
+          "release_cpu_us": 1.874,
+          "write_us": 2061.604
+        },
+        {
+          "allocate_us": 2.725,
+          "release_complete_us": 3.667,
+          "release_cpu_us": 2.234,
+          "write_us": 2548.296
+        },
+        {
+          "allocate_us": 2.185,
+          "release_complete_us": 2.946,
+          "release_cpu_us": 2.325,
+          "write_us": 1922.721
+        },
+        {
+          "allocate_us": 2.044,
+          "release_complete_us": 2.985,
+          "release_cpu_us": 2.114,
+          "write_us": 2315.756
+        },
+        {
+          "allocate_us": 2.354,
+          "release_complete_us": 1.703,
+          "release_cpu_us": 1.352,
+          "write_us": 1888.767
+        },
+        {
+          "allocate_us": 2.835,
+          "release_complete_us": 2.205,
+          "release_cpu_us": 1.694,
+          "write_us": 2002.132
+        },
+        {
+          "allocate_us": 2.414,
+          "release_complete_us": 4.428,
+          "release_cpu_us": 2.244,
+          "write_us": 4047.717
+        },
+        {
+          "allocate_us": 2.074,
+          "release_complete_us": 2.324,
+          "release_cpu_us": 1.673,
+          "write_us": 2358.837
+        },
+        {
+          "allocate_us": 2.474,
+          "release_complete_us": 2.906,
+          "release_cpu_us": 2.345,
+          "write_us": 2583.393
+        },
+        {
+          "allocate_us": 2.555,
+          "release_complete_us": 4.869,
+          "release_cpu_us": 2.094,
+          "write_us": 3124.738
+        },
+        {
+          "allocate_us": 3.136,
+          "release_complete_us": 4.528,
+          "release_cpu_us": 2.985,
+          "write_us": 2585.567
+        },
+        {
+          "allocate_us": 1.874,
+          "release_complete_us": 3.898,
+          "release_cpu_us": 2.265,
+          "write_us": 2402.65
+        },
+        {
+          "allocate_us": 2.485,
+          "release_complete_us": 24.256,
+          "release_cpu_us": 21.521,
+          "write_us": 2835.43
+        },
+        {
+          "allocate_us": 2.504,
+          "release_complete_us": 2.425,
+          "release_cpu_us": 1.914,
+          "write_us": 2262.335
+        },
+        {
+          "allocate_us": 2.775,
+          "release_complete_us": 3.367,
+          "release_cpu_us": 2.024,
+          "write_us": 2618.249
+        },
+        {
+          "allocate_us": 2.054,
+          "release_complete_us": 2.094,
+          "release_cpu_us": 1.533,
+          "write_us": 1974.299
+        },
+        {
+          "allocate_us": 2.715,
+          "release_complete_us": 2.956,
+          "release_cpu_us": 2.104,
+          "write_us": 2149.05
+        },
+        {
+          "allocate_us": 2.956,
+          "release_complete_us": 5.5,
+          "release_cpu_us": 2.474,
+          "write_us": 2116.899
+        },
+        {
+          "allocate_us": 3.186,
+          "release_complete_us": 2.745,
+          "release_cpu_us": 2.264,
+          "write_us": 1819.797
+        },
+        {
+          "allocate_us": 2.033,
+          "release_complete_us": 5.32,
+          "release_cpu_us": 2.996,
+          "write_us": 2732.566
+        },
+        {
+          "allocate_us": 2.134,
+          "release_complete_us": 2.334,
+          "release_cpu_us": 1.503,
+          "write_us": 1864.622
+        },
+        {
+          "allocate_us": 2.224,
+          "release_complete_us": 3.186,
+          "release_cpu_us": 2.004,
+          "write_us": 2637.495
+        },
+        {
+          "allocate_us": 2.615,
+          "release_complete_us": 2.274,
+          "release_cpu_us": 1.713,
+          "write_us": 1931.338
+        },
+        {
+          "allocate_us": 1.753,
+          "release_complete_us": 5.5,
+          "release_cpu_us": 1.813,
+          "write_us": 2429.101
+        },
+        {
+          "allocate_us": 2.695,
+          "release_complete_us": 3.276,
+          "release_cpu_us": 2.054,
+          "write_us": 2149.952
+        },
+        {
+          "allocate_us": 12.003,
+          "release_complete_us": 4.298,
+          "release_cpu_us": 2.194,
+          "write_us": 2676.379
+        },
+        {
+          "allocate_us": 2.695,
+          "release_complete_us": 2.295,
+          "release_cpu_us": 1.824,
+          "write_us": 1830.427
+        },
+        {
+          "allocate_us": 1.854,
+          "release_complete_us": 2.515,
+          "release_cpu_us": 1.553,
+          "write_us": 2421.356
+        },
+        {
+          "allocate_us": 3.336,
+          "release_complete_us": 2.324,
+          "release_cpu_us": 1.683,
+          "write_us": 1886.783
+        },
+        {
+          "allocate_us": 2.535,
+          "release_complete_us": 1.884,
+          "release_cpu_us": 1.373,
+          "write_us": 1808.214
+        }
+      ],
+      "shared": false,
+      "repeat": 1,
+      "backend": "private"
+    },
+    {
+      "batch_pages": 4,
+      "capacity_pages": 192,
+      "held_pages": 172,
+      "layers": 28,
+      "samples": [
+        {
+          "allocate_us": 220.616,
+          "release_complete_us": 153.223,
+          "release_cpu_us": 151.119,
+          "write_us": 3590.58
+        },
+        {
+          "allocate_us": 119.927,
+          "release_complete_us": 133.583,
+          "release_cpu_us": 132.071,
+          "write_us": 1784.369
+        },
+        {
+          "allocate_us": 107.944,
+          "release_complete_us": 234.133,
+          "release_cpu_us": 230.977,
+          "write_us": 2327.248
+        },
+        {
+          "allocate_us": 306.18,
+          "release_complete_us": 150.726,
+          "release_cpu_us": 149.343,
+          "write_us": 1935.245
+        },
+        {
+          "allocate_us": 148.452,
+          "release_complete_us": 218.043,
+          "release_cpu_us": 214.988,
+          "write_us": 2107.04
+        },
+        {
+          "allocate_us": 169.591,
+          "release_complete_us": 256.396,
+          "release_cpu_us": 253.39,
+          "write_us": 1558.943
+        },
+        {
+          "allocate_us": 181.603,
+          "release_complete_us": 187.405,
+          "release_cpu_us": 184.349,
+          "write_us": 1650.846
+        },
+        {
+          "allocate_us": 170.588,
+          "release_complete_us": 172.507,
+          "release_cpu_us": 170.874,
+          "write_us": 1603.973
+        },
+        {
+          "allocate_us": 157.889,
+          "release_complete_us": 156.895,
+          "release_cpu_us": 154.561,
+          "write_us": 1889.819
+        },
+        {
+          "allocate_us": 133.483,
+          "release_complete_us": 181.285,
+          "release_cpu_us": 178.971,
+          "write_us": 4119.742
+        },
+        {
+          "allocate_us": 176.605,
+          "release_complete_us": 163.029,
+          "release_cpu_us": 159.923,
+          "write_us": 1673.299
+        },
+        {
+          "allocate_us": 117.432,
+          "release_complete_us": 153.661,
+          "release_cpu_us": 152.379,
+          "write_us": 1952.929
+        },
+        {
+          "allocate_us": 160.544,
+          "release_complete_us": 341.104,
+          "release_cpu_us": 337.958,
+          "write_us": 2426.366
+        },
+        {
+          "allocate_us": 194.179,
+          "release_complete_us": 174.57,
+          "release_cpu_us": 171.454,
+          "write_us": 1433.054
+        },
+        {
+          "allocate_us": 147.239,
+          "release_complete_us": 161.817,
+          "release_cpu_us": 160.114,
+          "write_us": 1566.166
+        },
+        {
+          "allocate_us": 121.52,
+          "release_complete_us": 139.795,
+          "release_cpu_us": 138.192,
+          "write_us": 1886.774
+        },
+        {
+          "allocate_us": 121.39,
+          "release_complete_us": 302.503,
+          "release_cpu_us": 299.427,
+          "write_us": 1376.587
+        },
+        {
+          "allocate_us": 192.395,
+          "release_complete_us": 220.417,
+          "release_cpu_us": 217.732,
+          "write_us": 1825.717
+        },
+        {
+          "allocate_us": 129.195,
+          "release_complete_us": 142.149,
+          "release_cpu_us": 140.606,
+          "write_us": 1866.916
+        },
+        {
+          "allocate_us": 111.371,
+          "release_complete_us": 244.874,
+          "release_cpu_us": 238.231,
+          "write_us": 2442.907
+        },
+        {
+          "allocate_us": 261.385,
+          "release_complete_us": 178.528,
+          "release_cpu_us": 175.362,
+          "write_us": 2119.294
+        },
+        {
+          "allocate_us": 132.05,
+          "release_complete_us": 160.614,
+          "release_cpu_us": 158.711,
+          "write_us": 1928.673
+        },
+        {
+          "allocate_us": 115.539,
+          "release_complete_us": 161.717,
+          "release_cpu_us": 159.933,
+          "write_us": 1835.085
+        },
+        {
+          "allocate_us": 111.531,
+          "release_complete_us": 201.621,
+          "release_cpu_us": 198.465,
+          "write_us": 1948.26
+        },
+        {
+          "allocate_us": 153.351,
+          "release_complete_us": 203.215,
+          "release_cpu_us": 198.876,
+          "write_us": 3233.875
+        },
+        {
+          "allocate_us": 127.912,
+          "release_complete_us": 210.248,
+          "release_cpu_us": 206.802,
+          "write_us": 2257.456
+        },
+        {
+          "allocate_us": 217.402,
+          "release_complete_us": 204.618,
+          "release_cpu_us": 201.372,
+          "write_us": 2388.353
+        },
+        {
+          "allocate_us": 190.731,
+          "release_complete_us": 164.752,
+          "release_cpu_us": 161.566,
+          "write_us": 1794.529
+        },
+        {
+          "allocate_us": 128.083,
+          "release_complete_us": 173.508,
+          "release_cpu_us": 171.855,
+          "write_us": 1979.298
+        },
+        {
+          "allocate_us": 152.869,
+          "release_complete_us": 146.597,
+          "release_cpu_us": 145.215,
+          "write_us": 1429.888
+        }
+      ],
+      "shared": true,
+      "repeat": 1,
+      "backend": "shared"
+    },
+    {
+      "batch_pages": 4,
+      "capacity_pages": 192,
+      "held_pages": 172,
+      "layers": 28,
+      "samples": [
+        {
+          "allocate_us": 1.894,
+          "release_complete_us": 1.172,
+          "release_cpu_us": 0.741,
+          "write_us": 1417.615
+        },
+        {
+          "allocate_us": 1.222,
+          "release_complete_us": 1.213,
+          "release_cpu_us": 0.852,
+          "write_us": 1401.675
+        },
+        {
+          "allocate_us": 1.162,
+          "release_complete_us": 2.245,
+          "release_cpu_us": 1.173,
+          "write_us": 1708.586
+        },
+        {
+          "allocate_us": 1.533,
+          "release_complete_us": 1.573,
+          "release_cpu_us": 1.162,
+          "write_us": 1654.043
+        },
+        {
+          "allocate_us": 1.022,
+          "release_complete_us": 0.962,
+          "release_cpu_us": 0.601,
+          "write_us": 1395.603
+        },
+        {
+          "allocate_us": 1.423,
+          "release_complete_us": 1.934,
+          "release_cpu_us": 1.473,
+          "write_us": 3517.492
+        },
+        {
+          "allocate_us": 1.072,
+          "release_complete_us": 1.282,
+          "release_cpu_us": 0.882,
+          "write_us": 1883.818
+        },
+        {
+          "allocate_us": 1.012,
+          "release_complete_us": 1.092,
+          "release_cpu_us": 0.701,
+          "write_us": 1394.972
+        },
+        {
+          "allocate_us": 1.112,
+          "release_complete_us": 1.011,
+          "release_cpu_us": 0.611,
+          "write_us": 2193.043
+        },
+        {
+          "allocate_us": 0.912,
+          "release_complete_us": 1.062,
+          "release_cpu_us": 0.652,
+          "write_us": 2042.468
+        },
+        {
+          "allocate_us": 1.072,
+          "release_complete_us": 1.062,
+          "release_cpu_us": 0.652,
+          "write_us": 1631.41
+        },
+        {
+          "allocate_us": 0.892,
+          "release_complete_us": 1.062,
+          "release_cpu_us": 0.681,
+          "write_us": 1425.43
+        },
+        {
+          "allocate_us": 0.991,
+          "release_complete_us": 13.536,
+          "release_cpu_us": 13.105,
+          "write_us": 1638.574
+        },
+        {
+          "allocate_us": 0.901,
+          "release_complete_us": 1.392,
+          "release_cpu_us": 0.901,
+          "write_us": 2129.554
+        },
+        {
+          "allocate_us": 0.861,
+          "release_complete_us": 1.122,
+          "release_cpu_us": 0.721,
+          "write_us": 1515.671
+        },
+        {
+          "allocate_us": 1.112,
+          "release_complete_us": 1.352,
+          "release_cpu_us": 0.881,
+          "write_us": 2310.777
+        },
+        {
+          "allocate_us": 0.892,
+          "release_complete_us": 1.042,
+          "release_cpu_us": 0.671,
+          "write_us": 1380.164
+        },
+        {
+          "allocate_us": 1.803,
+          "release_complete_us": 1.282,
+          "release_cpu_us": 0.862,
+          "write_us": 2318.371
+        },
+        {
+          "allocate_us": 1.382,
+          "release_complete_us": 0.921,
+          "release_cpu_us": 0.761,
+          "write_us": 1295.164
+        },
+        {
+          "allocate_us": 0.831,
+          "release_complete_us": 2.355,
+          "release_cpu_us": 1.252,
+          "write_us": 1581.255
+        },
+        {
+          "allocate_us": 1.222,
+          "release_complete_us": 1.263,
+          "release_cpu_us": 0.862,
+          "write_us": 1679.0
+        },
+        {
+          "allocate_us": 0.861,
+          "release_complete_us": 1.012,
+          "release_cpu_us": 0.632,
+          "write_us": 1457.23
+        },
+        {
+          "allocate_us": 0.892,
+          "release_complete_us": 1.252,
+          "release_cpu_us": 0.882,
+          "write_us": 1615.58
+        },
+        {
+          "allocate_us": 0.892,
+          "release_complete_us": 1.532,
+          "release_cpu_us": 1.062,
+          "write_us": 2548.967
+        },
+        {
+          "allocate_us": 1.002,
+          "release_complete_us": 1.162,
+          "release_cpu_us": 0.751,
+          "write_us": 1556.007
+        },
+        {
+          "allocate_us": 0.942,
+          "release_complete_us": 1.283,
+          "release_cpu_us": 0.902,
+          "write_us": 1654.313
+        },
+        {
+          "allocate_us": 1.032,
+          "release_complete_us": 1.303,
+          "release_cpu_us": 0.932,
+          "write_us": 1564.363
+        },
+        {
+          "allocate_us": 1.272,
+          "release_complete_us": 1.373,
+          "release_cpu_us": 0.872,
+          "write_us": 2191.27
+        },
+        {
+          "allocate_us": 0.942,
+          "release_complete_us": 1.853,
+          "release_cpu_us": 1.352,
+          "write_us": 1860.954
+        },
+        {
+          "allocate_us": 0.822,
+          "release_complete_us": 1.082,
+          "release_cpu_us": 0.701,
+          "write_us": 1484.912
+        }
+      ],
+      "shared": false,
+      "repeat": 1,
+      "backend": "private"
+    },
+    {
+      "batch_pages": 4,
+      "capacity_pages": 192,
+      "held_pages": 192,
+      "layers": 28,
+      "samples": [
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.03
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.03
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.03
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.03
+        },
+        {
+          "denied_us": 0.03
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.03
+        },
+        {
+          "denied_us": 0.03
+        },
+        {
+          "denied_us": 0.031
+        },
+        {
+          "denied_us": 0.03
+        },
+        {
+          "denied_us": 0.03
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.03
+        },
+        {
+          "denied_us": 0.03
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.03
+        },
+        {
+          "denied_us": 0.03
+        },
+        {
+          "denied_us": 0.03
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        }
+      ],
+      "shared": true,
+      "repeat": 1,
+      "backend": "shared"
+    },
+    {
+      "batch_pages": 4,
+      "capacity_pages": 192,
+      "held_pages": 192,
+      "layers": 28,
+      "samples": [
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.021
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.01
+        },
+        {
+          "denied_us": 0.01
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.01
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.01
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.021
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.01
+        }
+      ],
+      "shared": false,
+      "repeat": 1,
+      "backend": "private"
+    },
+    {
+      "batch_pages": 4,
+      "capacity_pages": 448,
+      "held_pages": 0,
+      "layers": 24,
+      "samples": [
+        {
+          "allocate_us": 0.941,
+          "release_complete_us": 1.142,
+          "release_cpu_us": 0.781,
+          "write_us": 1021.265
+        },
+        {
+          "allocate_us": 1.052,
+          "release_complete_us": 1.513,
+          "release_cpu_us": 1.102,
+          "write_us": 1477.158
+        },
+        {
+          "allocate_us": 0.861,
+          "release_complete_us": 2.465,
+          "release_cpu_us": 1.263,
+          "write_us": 2164.509
+        },
+        {
+          "allocate_us": 1.292,
+          "release_complete_us": 1.513,
+          "release_cpu_us": 1.072,
+          "write_us": 1821.761
+        },
+        {
+          "allocate_us": 0.862,
+          "release_complete_us": 1.463,
+          "release_cpu_us": 1.062,
+          "write_us": 1494.741
+        },
+        {
+          "allocate_us": 1.102,
+          "release_complete_us": 1.703,
+          "release_cpu_us": 1.272,
+          "write_us": 2017.641
+        },
+        {
+          "allocate_us": 1.393,
+          "release_complete_us": 1.523,
+          "release_cpu_us": 1.113,
+          "write_us": 1230.46
+        },
+        {
+          "allocate_us": 1.583,
+          "release_complete_us": 1.833,
+          "release_cpu_us": 1.402,
+          "write_us": 1619.458
+        },
+        {
+          "allocate_us": 1.052,
+          "release_complete_us": 1.443,
+          "release_cpu_us": 0.982,
+          "write_us": 1615.259
+        },
+        {
+          "allocate_us": 1.443,
+          "release_complete_us": 1.774,
+          "release_cpu_us": 1.353,
+          "write_us": 1918.223
+        },
+        {
+          "allocate_us": 1.152,
+          "release_complete_us": 1.513,
+          "release_cpu_us": 1.152,
+          "write_us": 1358.413
+        },
+        {
+          "allocate_us": 1.002,
+          "release_complete_us": 1.223,
+          "release_cpu_us": 0.862,
+          "write_us": 1190.414
+        },
+        {
+          "allocate_us": 1.082,
+          "release_complete_us": 13.576,
+          "release_cpu_us": 12.955,
+          "write_us": 1225.551
+        },
+        {
+          "allocate_us": 1.924,
+          "release_complete_us": 1.403,
+          "release_cpu_us": 1.032,
+          "write_us": 1376.076
+        },
+        {
+          "allocate_us": 1.072,
+          "release_complete_us": 0.942,
+          "release_cpu_us": 0.711,
+          "write_us": 1031.023
+        },
+        {
+          "allocate_us": 1.242,
+          "release_complete_us": 1.753,
+          "release_cpu_us": 1.292,
+          "write_us": 2436.976
+        },
+        {
+          "allocate_us": 1.212,
+          "release_complete_us": 1.302,
+          "release_cpu_us": 0.911,
+          "write_us": 1118.96
+        },
+        {
+          "allocate_us": 2.064,
+          "release_complete_us": 1.473,
+          "release_cpu_us": 1.072,
+          "write_us": 1089.684
+        },
+        {
+          "allocate_us": 1.513,
+          "release_complete_us": 1.292,
+          "release_cpu_us": 0.911,
+          "write_us": 1081.469
+        },
+        {
+          "allocate_us": 1.373,
+          "release_complete_us": 1.552,
+          "release_cpu_us": 1.072,
+          "write_us": 1858.309
+        },
+        {
+          "allocate_us": 1.082,
+          "release_complete_us": 2.264,
+          "release_cpu_us": 0.902,
+          "write_us": 1859.712
+        },
+        {
+          "allocate_us": 8.045,
+          "release_complete_us": 1.302,
+          "release_cpu_us": 0.921,
+          "write_us": 1091.547
+        },
+        {
+          "allocate_us": 1.513,
+          "release_complete_us": 1.193,
+          "release_cpu_us": 0.822,
+          "write_us": 1121.113
+        },
+        {
+          "allocate_us": 1.213,
+          "release_complete_us": 1.263,
+          "release_cpu_us": 0.902,
+          "write_us": 1186.677
+        },
+        {
+          "allocate_us": 1.322,
+          "release_complete_us": 1.643,
+          "release_cpu_us": 1.092,
+          "write_us": 1205.518
+        },
+        {
+          "allocate_us": 1.853,
+          "release_complete_us": 1.363,
+          "release_cpu_us": 0.852,
+          "write_us": 1323.777
+        },
+        {
+          "allocate_us": 1.452,
+          "release_complete_us": 1.443,
+          "release_cpu_us": 0.892,
+          "write_us": 1142.299
+        },
+        {
+          "allocate_us": 1.944,
+          "release_complete_us": 2.886,
+          "release_cpu_us": 1.563,
+          "write_us": 1214.6
+        },
+        {
+          "allocate_us": 2.034,
+          "release_complete_us": 1.873,
+          "release_cpu_us": 1.402,
+          "write_us": 1604.119
+        },
+        {
+          "allocate_us": 2.124,
+          "release_complete_us": 1.362,
+          "release_cpu_us": 0.961,
+          "write_us": 1135.34
+        }
+      ],
+      "shared": false,
+      "repeat": 2,
+      "backend": "private"
+    },
+    {
+      "batch_pages": 4,
+      "capacity_pages": 448,
+      "held_pages": 0,
+      "layers": 24,
+      "samples": [
+        {
+          "allocate_us": 108.746,
+          "release_complete_us": 266.858,
+          "release_cpu_us": 263.231,
+          "write_us": 3286.414
+        },
+        {
+          "allocate_us": 275.722,
+          "release_complete_us": 269.668,
+          "release_cpu_us": 262.946,
+          "write_us": 2541.654
+        },
+        {
+          "allocate_us": 183.918,
+          "release_complete_us": 191.335,
+          "release_cpu_us": 189.1,
+          "write_us": 2804.832
+        },
+        {
+          "allocate_us": 156.446,
+          "release_complete_us": 151.667,
+          "release_cpu_us": 149.924,
+          "write_us": 1576.957
+        },
+        {
+          "allocate_us": 125.437,
+          "release_complete_us": 147.267,
+          "release_cpu_us": 144.983,
+          "write_us": 1396.274
+        },
+        {
+          "allocate_us": 207.033,
+          "release_complete_us": 158.122,
+          "release_cpu_us": 155.797,
+          "write_us": 2437.486
+        },
+        {
+          "allocate_us": 135.056,
+          "release_complete_us": 225.346,
+          "release_cpu_us": 222.09,
+          "write_us": 1556.999
+        },
+        {
+          "allocate_us": 239.083,
+          "release_complete_us": 188.265,
+          "release_cpu_us": 185.119,
+          "write_us": 2088.796
+        },
+        {
+          "allocate_us": 122.912,
+          "release_complete_us": 183.791,
+          "release_cpu_us": 181.687,
+          "write_us": 2298.844
+        },
+        {
+          "allocate_us": 147.98,
+          "release_complete_us": 180.049,
+          "release_cpu_us": 176.983,
+          "write_us": 1088.462
+        },
+        {
+          "allocate_us": 118.774,
+          "release_complete_us": 169.803,
+          "release_cpu_us": 167.549,
+          "write_us": 2595.546
+        },
+        {
+          "allocate_us": 115.068,
+          "release_complete_us": 229.826,
+          "release_cpu_us": 226.71,
+          "write_us": 1732.18
+        },
+        {
+          "allocate_us": 173.137,
+          "release_complete_us": 158.039,
+          "release_cpu_us": 156.616,
+          "write_us": 1111.024
+        },
+        {
+          "allocate_us": 115.218,
+          "release_complete_us": 143.031,
+          "release_cpu_us": 141.689,
+          "write_us": 1602.705
+        },
+        {
+          "allocate_us": 109.868,
+          "release_complete_us": 321.373,
+          "release_cpu_us": 314.56,
+          "write_us": 1077.742
+        },
+        {
+          "allocate_us": 217.242,
+          "release_complete_us": 205.564,
+          "release_cpu_us": 201.587,
+          "write_us": 1541.109
+        },
+        {
+          "allocate_us": 238.311,
+          "release_complete_us": 334.942,
+          "release_cpu_us": 331.796,
+          "write_us": 1757.279
+        },
+        {
+          "allocate_us": 238.143,
+          "release_complete_us": 190.82,
+          "release_cpu_us": 187.694,
+          "write_us": 1739.705
+        },
+        {
+          "allocate_us": 123.995,
+          "release_complete_us": 177.498,
+          "release_cpu_us": 174.402,
+          "write_us": 3077.209
+        },
+        {
+          "allocate_us": 205.329,
+          "release_complete_us": 157.809,
+          "release_cpu_us": 156.116,
+          "write_us": 1374.984
+        },
+        {
+          "allocate_us": 112.824,
+          "release_complete_us": 161.315,
+          "release_cpu_us": 159.612,
+          "write_us": 1329.007
+        },
+        {
+          "allocate_us": 121.199,
+          "release_complete_us": 190.802,
+          "release_cpu_us": 187.586,
+          "write_us": 2227.328
+        },
+        {
+          "allocate_us": 153.09,
+          "release_complete_us": 273.969,
+          "release_cpu_us": 270.883,
+          "write_us": 1132.414
+        },
+        {
+          "allocate_us": 298.355,
+          "release_complete_us": 200.983,
+          "release_cpu_us": 198.779,
+          "write_us": 2574.253
+        },
+        {
+          "allocate_us": 135.316,
+          "release_complete_us": 160.574,
+          "release_cpu_us": 158.75,
+          "write_us": 1553.713
+        },
+        {
+          "allocate_us": 120.509,
+          "release_complete_us": 187.505,
+          "release_cpu_us": 185.472,
+          "write_us": 1604.378
+        },
+        {
+          "allocate_us": 117.152,
+          "release_complete_us": 196.352,
+          "release_cpu_us": 193.065,
+          "write_us": 2036.447
+        },
+        {
+          "allocate_us": 178.177,
+          "release_complete_us": 144.264,
+          "release_cpu_us": 142.931,
+          "write_us": 1995.349
+        },
+        {
+          "allocate_us": 133.523,
+          "release_complete_us": 255.033,
+          "release_cpu_us": 248.19,
+          "write_us": 1714.216
+        },
+        {
+          "allocate_us": 225.027,
+          "release_complete_us": 190.899,
+          "release_cpu_us": 187.713,
+          "write_us": 1797.334
+        }
+      ],
+      "shared": true,
+      "repeat": 2,
+      "backend": "shared"
+    },
+    {
+      "batch_pages": 4,
+      "capacity_pages": 448,
+      "held_pages": 403,
+      "layers": 24,
+      "samples": [
+        {
+          "allocate_us": 1.763,
+          "release_complete_us": 2.104,
+          "release_cpu_us": 1.723,
+          "write_us": 1049.458
+        },
+        {
+          "allocate_us": 1.493,
+          "release_complete_us": 1.793,
+          "release_cpu_us": 1.352,
+          "write_us": 1777.126
+        },
+        {
+          "allocate_us": 1.202,
+          "release_complete_us": 1.272,
+          "release_cpu_us": 0.912,
+          "write_us": 959.808
+        },
+        {
+          "allocate_us": 1.482,
+          "release_complete_us": 1.433,
+          "release_cpu_us": 0.992,
+          "write_us": 1811.601
+        },
+        {
+          "allocate_us": 1.453,
+          "release_complete_us": 1.473,
+          "release_cpu_us": 1.032,
+          "write_us": 1614.798
+        },
+        {
+          "allocate_us": 1.302,
+          "release_complete_us": 1.132,
+          "release_cpu_us": 0.762,
+          "write_us": 1550.717
+        },
+        {
+          "allocate_us": 1.252,
+          "release_complete_us": 1.453,
+          "release_cpu_us": 1.032,
+          "write_us": 2091.932
+        },
+        {
+          "allocate_us": 1.012,
+          "release_complete_us": 1.162,
+          "release_cpu_us": 0.731,
+          "write_us": 1034.149
+        },
+        {
+          "allocate_us": 1.643,
+          "release_complete_us": 7.334,
+          "release_cpu_us": 2.384,
+          "write_us": 1785.162
+        },
+        {
+          "allocate_us": 2.004,
+          "release_complete_us": 2.285,
+          "release_cpu_us": 1.714,
+          "write_us": 1435.298
+        },
+        {
+          "allocate_us": 1.633,
+          "release_complete_us": 1.894,
+          "release_cpu_us": 1.383,
+          "write_us": 1264.004
+        },
+        {
+          "allocate_us": 1.593,
+          "release_complete_us": 4.208,
+          "release_cpu_us": 2.014,
+          "write_us": 2022.611
+        },
+        {
+          "allocate_us": 1.703,
+          "release_complete_us": 5.541,
+          "release_cpu_us": 5.08,
+          "write_us": 1304.961
+        },
+        {
+          "allocate_us": 1.794,
+          "release_complete_us": 1.383,
+          "release_cpu_us": 0.982,
+          "write_us": 1357.661
+        },
+        {
+          "allocate_us": 2.024,
+          "release_complete_us": 2.385,
+          "release_cpu_us": 1.202,
+          "write_us": 1935.556
+        },
+        {
+          "allocate_us": 1.814,
+          "release_complete_us": 1.924,
+          "release_cpu_us": 1.413,
+          "write_us": 1303.178
+        },
+        {
+          "allocate_us": 1.513,
+          "release_complete_us": 2.174,
+          "release_cpu_us": 1.383,
+          "write_us": 1414.309
+        },
+        {
+          "allocate_us": 1.483,
+          "release_complete_us": 7.054,
+          "release_cpu_us": 2.866,
+          "write_us": 2274.688
+        },
+        {
+          "allocate_us": 2.585,
+          "release_complete_us": 2.935,
+          "release_cpu_us": 2.394,
+          "write_us": 1471.687
+        },
+        {
+          "allocate_us": 3.015,
+          "release_complete_us": 6.603,
+          "release_cpu_us": 3.277,
+          "write_us": 3023.396
+        },
+        {
+          "allocate_us": 2.464,
+          "release_complete_us": 2.996,
+          "release_cpu_us": 2.144,
+          "write_us": 1429.637
+        },
+        {
+          "allocate_us": 2.144,
+          "release_complete_us": 4.97,
+          "release_cpu_us": 2.465,
+          "write_us": 2028.171
+        },
+        {
+          "allocate_us": 2.254,
+          "release_complete_us": 2.214,
+          "release_cpu_us": 1.763,
+          "write_us": 1390.644
+        },
+        {
+          "allocate_us": 1.804,
+          "release_complete_us": 1.362,
+          "release_cpu_us": 0.771,
+          "write_us": 1385.324
+        },
+        {
+          "allocate_us": 3.847,
+          "release_complete_us": 2.304,
+          "release_cpu_us": 1.873,
+          "write_us": 1345.829
+        },
+        {
+          "allocate_us": 1.814,
+          "release_complete_us": 1.713,
+          "release_cpu_us": 1.252,
+          "write_us": 1312.426
+        },
+        {
+          "allocate_us": 1.733,
+          "release_complete_us": 2.906,
+          "release_cpu_us": 1.303,
+          "write_us": 1623.986
+        },
+        {
+          "allocate_us": 2.124,
+          "release_complete_us": 2.966,
+          "release_cpu_us": 2.004,
+          "write_us": 2026.818
+        },
+        {
+          "allocate_us": 2.575,
+          "release_complete_us": 2.675,
+          "release_cpu_us": 2.094,
+          "write_us": 1817.983
+        },
+        {
+          "allocate_us": 2.935,
+          "release_complete_us": 2.464,
+          "release_cpu_us": 1.873,
+          "write_us": 1589.832
+        }
+      ],
+      "shared": false,
+      "repeat": 2,
+      "backend": "private"
+    },
+    {
+      "batch_pages": 4,
+      "capacity_pages": 448,
+      "held_pages": 403,
+      "layers": 24,
+      "samples": [
+        {
+          "allocate_us": 4.068,
+          "release_complete_us": 10.059,
+          "release_cpu_us": 9.568,
+          "write_us": 1907.112
+        },
+        {
+          "allocate_us": 5.009,
+          "release_complete_us": 6.302,
+          "release_cpu_us": 5.971,
+          "write_us": 1302.758
+        },
+        {
+          "allocate_us": 4.358,
+          "release_complete_us": 6.242,
+          "release_cpu_us": 5.911,
+          "write_us": 1309.891
+        },
+        {
+          "allocate_us": 3.988,
+          "release_complete_us": 6.042,
+          "release_cpu_us": 5.731,
+          "write_us": 1395.723
+        },
+        {
+          "allocate_us": 3.646,
+          "release_complete_us": 7.283,
+          "release_cpu_us": 6.923,
+          "write_us": 1206.525
+        },
+        {
+          "allocate_us": 3.747,
+          "release_complete_us": 6.372,
+          "release_cpu_us": 6.032,
+          "write_us": 1333.715
+        },
+        {
+          "allocate_us": 3.817,
+          "release_complete_us": 8.627,
+          "release_cpu_us": 8.156,
+          "write_us": 1771.545
+        },
+        {
+          "allocate_us": 4.298,
+          "release_complete_us": 9.599,
+          "release_cpu_us": 9.128,
+          "write_us": 2335.203
+        },
+        {
+          "allocate_us": 4.439,
+          "release_complete_us": 6.863,
+          "release_cpu_us": 6.463,
+          "write_us": 1600.1
+        },
+        {
+          "allocate_us": 3.897,
+          "release_complete_us": 5.961,
+          "release_cpu_us": 5.59,
+          "write_us": 1458.503
+        },
+        {
+          "allocate_us": 4.027,
+          "release_complete_us": 8.697,
+          "release_cpu_us": 8.206,
+          "write_us": 2005.328
+        },
+        {
+          "allocate_us": 3.326,
+          "release_complete_us": 5.871,
+          "release_cpu_us": 5.52,
+          "write_us": 1262.131
+        },
+        {
+          "allocate_us": 3.667,
+          "release_complete_us": 10.26,
+          "release_cpu_us": 9.879,
+          "write_us": 1214.059
+        },
+        {
+          "allocate_us": 3.507,
+          "release_complete_us": 5.851,
+          "release_cpu_us": 5.48,
+          "write_us": 1340.87
+        },
+        {
+          "allocate_us": 3.897,
+          "release_complete_us": 5.941,
+          "release_cpu_us": 5.591,
+          "write_us": 1211.114
+        },
+        {
+          "allocate_us": 3.387,
+          "release_complete_us": 5.721,
+          "release_cpu_us": 5.37,
+          "write_us": 1267.961
+        },
+        {
+          "allocate_us": 3.486,
+          "release_complete_us": 6.162,
+          "release_cpu_us": 5.851,
+          "write_us": 1383.21
+        },
+        {
+          "allocate_us": 3.857,
+          "release_complete_us": 9.498,
+          "release_cpu_us": 9.068,
+          "write_us": 2349.139
+        },
+        {
+          "allocate_us": 4.328,
+          "release_complete_us": 7.074,
+          "release_cpu_us": 6.703,
+          "write_us": 1484.041
+        },
+        {
+          "allocate_us": 4.339,
+          "release_complete_us": 9.038,
+          "release_cpu_us": 8.607,
+          "write_us": 2016.278
+        },
+        {
+          "allocate_us": 3.156,
+          "release_complete_us": 6.493,
+          "release_cpu_us": 6.052,
+          "write_us": 1254.155
+        },
+        {
+          "allocate_us": 3.787,
+          "release_complete_us": 9.909,
+          "release_cpu_us": 9.448,
+          "write_us": 2184.748
+        },
+        {
+          "allocate_us": 3.907,
+          "release_complete_us": 6.612,
+          "release_cpu_us": 6.232,
+          "write_us": 1567.589
+        },
+        {
+          "allocate_us": 3.717,
+          "release_complete_us": 7.163,
+          "release_cpu_us": 6.802,
+          "write_us": 1423.837
+        },
+        {
+          "allocate_us": 15.34,
+          "release_complete_us": 6.292,
+          "release_cpu_us": 5.941,
+          "write_us": 1396.254
+        },
+        {
+          "allocate_us": 4.198,
+          "release_complete_us": 5.921,
+          "release_cpu_us": 5.581,
+          "write_us": 1317.275
+        },
+        {
+          "allocate_us": 3.997,
+          "release_complete_us": 6.302,
+          "release_cpu_us": 5.942,
+          "write_us": 1380.224
+        },
+        {
+          "allocate_us": 3.667,
+          "release_complete_us": 6.813,
+          "release_cpu_us": 6.412,
+          "write_us": 1926.459
+        },
+        {
+          "allocate_us": 4.529,
+          "release_complete_us": 9.107,
+          "release_cpu_us": 8.556,
+          "write_us": 1913.273
+        },
+        {
+          "allocate_us": 4.78,
+          "release_complete_us": 11.932,
+          "release_cpu_us": 11.442,
+          "write_us": 2154.941
+        }
+      ],
+      "shared": true,
+      "repeat": 2,
+      "backend": "shared"
+    },
+    {
+      "batch_pages": 4,
+      "capacity_pages": 448,
+      "held_pages": 448,
+      "layers": 24,
+      "samples": [
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.01
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.01
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.01
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.01
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.01
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.01
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        }
+      ],
+      "shared": false,
+      "repeat": 2,
+      "backend": "private"
+    },
+    {
+      "batch_pages": 4,
+      "capacity_pages": 448,
+      "held_pages": 448,
+      "layers": 24,
+      "samples": [
+        {
+          "denied_us": 0.03
+        },
+        {
+          "denied_us": 0.03
+        },
+        {
+          "denied_us": 0.03
+        },
+        {
+          "denied_us": 0.03
+        },
+        {
+          "denied_us": 0.03
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.03
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.03
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.03
+        },
+        {
+          "denied_us": 0.03
+        },
+        {
+          "denied_us": 0.03
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.03
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.03
+        },
+        {
+          "denied_us": 0.03
+        },
+        {
+          "denied_us": 0.03
+        },
+        {
+          "denied_us": 0.06
+        },
+        {
+          "denied_us": 0.05
+        },
+        {
+          "denied_us": 0.03
+        }
+      ],
+      "shared": true,
+      "repeat": 2,
+      "backend": "shared"
+    },
+    {
+      "batch_pages": 4,
+      "capacity_pages": 192,
+      "held_pages": 0,
+      "layers": 28,
+      "samples": [
+        {
+          "allocate_us": 1.232,
+          "release_complete_us": 1.323,
+          "release_cpu_us": 0.942,
+          "write_us": 1585.553
+        },
+        {
+          "allocate_us": 1.352,
+          "release_complete_us": 2.595,
+          "release_cpu_us": 1.913,
+          "write_us": 3110.061
+        },
+        {
+          "allocate_us": 1.733,
+          "release_complete_us": 1.172,
+          "release_cpu_us": 0.702,
+          "write_us": 1612.504
+        },
+        {
+          "allocate_us": 1.714,
+          "release_complete_us": 3.105,
+          "release_cpu_us": 1.663,
+          "write_us": 1975.601
+        },
+        {
+          "allocate_us": 1.423,
+          "release_complete_us": 1.372,
+          "release_cpu_us": 0.901,
+          "write_us": 1671.947
+        },
+        {
+          "allocate_us": 1.433,
+          "release_complete_us": 1.553,
+          "release_cpu_us": 1.132,
+          "write_us": 1525.048
+        },
+        {
+          "allocate_us": 1.192,
+          "release_complete_us": 1.343,
+          "release_cpu_us": 0.771,
+          "write_us": 3294.069
+        },
+        {
+          "allocate_us": 1.734,
+          "release_complete_us": 1.302,
+          "release_cpu_us": 0.842,
+          "write_us": 1474.292
+        },
+        {
+          "allocate_us": 0.932,
+          "release_complete_us": 1.232,
+          "release_cpu_us": 0.791,
+          "write_us": 2247.116
+        },
+        {
+          "allocate_us": 1.402,
+          "release_complete_us": 1.182,
+          "release_cpu_us": 0.741,
+          "write_us": 2500.175
+        },
+        {
+          "allocate_us": 0.981,
+          "release_complete_us": 1.123,
+          "release_cpu_us": 0.682,
+          "write_us": 1846.827
+        },
+        {
+          "allocate_us": 1.814,
+          "release_complete_us": 1.773,
+          "release_cpu_us": 1.322,
+          "write_us": 1493.008
+        },
+        {
+          "allocate_us": 1.372,
+          "release_complete_us": 15.459,
+          "release_cpu_us": 14.698,
+          "write_us": 1735.738
+        },
+        {
+          "allocate_us": 1.313,
+          "release_complete_us": 2.635,
+          "release_cpu_us": 2.114,
+          "write_us": 2506.727
+        },
+        {
+          "allocate_us": 1.773,
+          "release_complete_us": 1.533,
+          "release_cpu_us": 1.102,
+          "write_us": 2330.434
+        },
+        {
+          "allocate_us": 2.224,
+          "release_complete_us": 1.242,
+          "release_cpu_us": 0.851,
+          "write_us": 1510.261
+        },
+        {
+          "allocate_us": 1.142,
+          "release_complete_us": 1.152,
+          "release_cpu_us": 0.771,
+          "write_us": 1338.115
+        },
+        {
+          "allocate_us": 1.142,
+          "release_complete_us": 1.704,
+          "release_cpu_us": 1.303,
+          "write_us": 1305.302
+        },
+        {
+          "allocate_us": 1.032,
+          "release_complete_us": 1.303,
+          "release_cpu_us": 0.862,
+          "write_us": 2208.663
+        },
+        {
+          "allocate_us": 1.583,
+          "release_complete_us": 1.333,
+          "release_cpu_us": 0.912,
+          "write_us": 2243.308
+        },
+        {
+          "allocate_us": 1.042,
+          "release_complete_us": 2.285,
+          "release_cpu_us": 1.714,
+          "write_us": 1775.071
+        },
+        {
+          "allocate_us": 1.843,
+          "release_complete_us": 1.443,
+          "release_cpu_us": 0.942,
+          "write_us": 2458.216
+        },
+        {
+          "allocate_us": 1.183,
+          "release_complete_us": 1.553,
+          "release_cpu_us": 1.092,
+          "write_us": 3006.724
+        },
+        {
+          "allocate_us": 2.164,
+          "release_complete_us": 1.473,
+          "release_cpu_us": 1.042,
+          "write_us": 2020.637
+        },
+        {
+          "allocate_us": 1.382,
+          "release_complete_us": 1.383,
+          "release_cpu_us": 0.892,
+          "write_us": 1752.299
+        },
+        {
+          "allocate_us": 1.553,
+          "release_complete_us": 1.884,
+          "release_cpu_us": 1.433,
+          "write_us": 2906.034
+        },
+        {
+          "allocate_us": 1.092,
+          "release_complete_us": 1.884,
+          "release_cpu_us": 1.393,
+          "write_us": 1428.605
+        },
+        {
+          "allocate_us": 2.585,
+          "release_complete_us": 1.944,
+          "release_cpu_us": 1.503,
+          "write_us": 1869.28
+        },
+        {
+          "allocate_us": 3.306,
+          "release_complete_us": 1.483,
+          "release_cpu_us": 0.982,
+          "write_us": 1783.939
+        },
+        {
+          "allocate_us": 2.124,
+          "release_complete_us": 1.173,
+          "release_cpu_us": 0.792,
+          "write_us": 1382.047
+        }
+      ],
+      "shared": false,
+      "repeat": 2,
+      "backend": "private"
+    },
+    {
+      "batch_pages": 4,
+      "capacity_pages": 192,
+      "held_pages": 0,
+      "layers": 28,
+      "samples": [
+        {
+          "allocate_us": 186.486,
+          "release_complete_us": 199.516,
+          "release_cpu_us": 196.08,
+          "write_us": 2539.96
+        },
+        {
+          "allocate_us": 150.166,
+          "release_complete_us": 197.814,
+          "release_cpu_us": 195.711,
+          "write_us": 2658.224
+        },
+        {
+          "allocate_us": 180.066,
+          "release_complete_us": 180.332,
+          "release_cpu_us": 179.43,
+          "write_us": 2646.558
+        },
+        {
+          "allocate_us": 154.963,
+          "release_complete_us": 214.155,
+          "release_cpu_us": 210.949,
+          "write_us": 2570.088
+        },
+        {
+          "allocate_us": 153.538,
+          "release_complete_us": 170.144,
+          "release_cpu_us": 167.82,
+          "write_us": 3660.323
+        },
+        {
+          "allocate_us": 136.538,
+          "release_complete_us": 160.795,
+          "release_cpu_us": 158.941,
+          "write_us": 2562.704
+        },
+        {
+          "allocate_us": 116.771,
+          "release_complete_us": 196.212,
+          "release_cpu_us": 193.036,
+          "write_us": 2451.874
+        },
+        {
+          "allocate_us": 134.855,
+          "release_complete_us": 165.182,
+          "release_cpu_us": 163.83,
+          "write_us": 2533.789
+        },
+        {
+          "allocate_us": 118.284,
+          "release_complete_us": 197.434,
+          "release_cpu_us": 196.121,
+          "write_us": 2063.458
+        },
+        {
+          "allocate_us": 114.487,
+          "release_complete_us": 155.294,
+          "release_cpu_us": 153.882,
+          "write_us": 2022.35
+        },
+        {
+          "allocate_us": 122.051,
+          "release_complete_us": 141.809,
+          "release_cpu_us": 140.476,
+          "write_us": 2110.687
+        },
+        {
+          "allocate_us": 126.419,
+          "release_complete_us": 178.847,
+          "release_cpu_us": 175.19,
+          "write_us": 2227.188
+        },
+        {
+          "allocate_us": 147.16,
+          "release_complete_us": 200.65,
+          "release_cpu_us": 198.797,
+          "write_us": 2265.03
+        },
+        {
+          "allocate_us": 163.98,
+          "release_complete_us": 159.081,
+          "release_cpu_us": 157.308,
+          "write_us": 1975.913
+        },
+        {
+          "allocate_us": 116.34,
+          "release_complete_us": 216.127,
+          "release_cpu_us": 213.132,
+          "write_us": 2811.475
+        },
+        {
+          "allocate_us": 157.039,
+          "release_complete_us": 164.021,
+          "release_cpu_us": 162.568,
+          "write_us": 2471.15
+        },
+        {
+          "allocate_us": 119.256,
+          "release_complete_us": 142.901,
+          "release_cpu_us": 141.508,
+          "write_us": 2292.041
+        },
+        {
+          "allocate_us": 190.711,
+          "release_complete_us": 151.728,
+          "release_cpu_us": 150.485,
+          "write_us": 2433.95
+        },
+        {
+          "allocate_us": 412.221,
+          "release_complete_us": 237.295,
+          "release_cpu_us": 234.119,
+          "write_us": 2710.067
+        },
+        {
+          "allocate_us": 272.326,
+          "release_complete_us": 209.446,
+          "release_cpu_us": 207.092,
+          "write_us": 1978.686
+        },
+        {
+          "allocate_us": 131.939,
+          "release_complete_us": 259.942,
+          "release_cpu_us": 256.726,
+          "write_us": 1608.066
+        },
+        {
+          "allocate_us": 157.278,
+          "release_complete_us": 147.079,
+          "release_cpu_us": 145.736,
+          "write_us": 1601.303
+        },
+        {
+          "allocate_us": 202.564,
+          "release_complete_us": 201.612,
+          "release_cpu_us": 198.456,
+          "write_us": 2754.126
+        },
+        {
+          "allocate_us": 132.541,
+          "release_complete_us": 238.169,
+          "release_cpu_us": 221.718,
+          "write_us": 2550.591
+        },
+        {
+          "allocate_us": 245.646,
+          "release_complete_us": 229.176,
+          "release_cpu_us": 225.86,
+          "write_us": 3554.522
+        },
+        {
+          "allocate_us": 148.511,
+          "release_complete_us": 167.938,
+          "release_cpu_us": 166.435,
+          "write_us": 1360.768
+        },
+        {
+          "allocate_us": 115.208,
+          "release_complete_us": 267.788,
+          "release_cpu_us": 260.905,
+          "write_us": 2433.639
+        },
+        {
+          "allocate_us": 212.132,
+          "release_complete_us": 188.114,
+          "release_cpu_us": 184.968,
+          "write_us": 2619.812
+        },
+        {
+          "allocate_us": 163.281,
+          "release_complete_us": 148.441,
+          "release_cpu_us": 146.878,
+          "write_us": 2291.591
+        },
+        {
+          "allocate_us": 114.096,
+          "release_complete_us": 362.527,
+          "release_cpu_us": 359.391,
+          "write_us": 2786.267
+        }
+      ],
+      "shared": true,
+      "repeat": 2,
+      "backend": "shared"
+    },
+    {
+      "batch_pages": 4,
+      "capacity_pages": 192,
+      "held_pages": 172,
+      "layers": 28,
+      "samples": [
+        {
+          "allocate_us": 0.882,
+          "release_complete_us": 1.273,
+          "release_cpu_us": 0.802,
+          "write_us": 2652.794
+        },
+        {
+          "allocate_us": 1.363,
+          "release_complete_us": 1.192,
+          "release_cpu_us": 0.811,
+          "write_us": 2434.531
+        },
+        {
+          "allocate_us": 1.533,
+          "release_complete_us": 2.084,
+          "release_cpu_us": 1.533,
+          "write_us": 2436.475
+        },
+        {
+          "allocate_us": 1.803,
+          "release_complete_us": 0.821,
+          "release_cpu_us": 0.661,
+          "write_us": 1334.718
+        },
+        {
+          "allocate_us": 1.092,
+          "release_complete_us": 1.042,
+          "release_cpu_us": 0.661,
+          "write_us": 1490.854
+        },
+        {
+          "allocate_us": 0.871,
+          "release_complete_us": 1.113,
+          "release_cpu_us": 0.712,
+          "write_us": 2131.958
+        },
+        {
+          "allocate_us": 1.233,
+          "release_complete_us": 2.955,
+          "release_cpu_us": 1.953,
+          "write_us": 2345.222
+        },
+        {
+          "allocate_us": 1.823,
+          "release_complete_us": 1.433,
+          "release_cpu_us": 0.922,
+          "write_us": 2482.692
+        },
+        {
+          "allocate_us": 1.082,
+          "release_complete_us": 1.112,
+          "release_cpu_us": 0.641,
+          "write_us": 2076.412
+        },
+        {
+          "allocate_us": 1.463,
+          "release_complete_us": 0.752,
+          "release_cpu_us": 0.571,
+          "write_us": 1316.994
+        },
+        {
+          "allocate_us": 0.882,
+          "release_complete_us": 1.372,
+          "release_cpu_us": 0.971,
+          "write_us": 1770.584
+        },
+        {
+          "allocate_us": 1.032,
+          "release_complete_us": 0.791,
+          "release_cpu_us": 0.591,
+          "write_us": 1288.791
+        },
+        {
+          "allocate_us": 0.872,
+          "release_complete_us": 18.726,
+          "release_cpu_us": 18.285,
+          "write_us": 1351.7
+        },
+        {
+          "allocate_us": 0.902,
+          "release_complete_us": 1.042,
+          "release_cpu_us": 0.651,
+          "write_us": 1556.157
+        },
+        {
+          "allocate_us": 1.823,
+          "release_complete_us": 1.222,
+          "release_cpu_us": 0.821,
+          "write_us": 2105.878
+        },
+        {
+          "allocate_us": 0.922,
+          "release_complete_us": 1.092,
+          "release_cpu_us": 0.692,
+          "write_us": 1709.828
+        },
+        {
+          "allocate_us": 1.092,
+          "release_complete_us": 1.252,
+          "release_cpu_us": 0.862,
+          "write_us": 1498.488
+        },
+        {
+          "allocate_us": 1.643,
+          "release_complete_us": 1.032,
+          "release_cpu_us": 0.872,
+          "write_us": 1281.287
+        },
+        {
+          "allocate_us": 1.042,
+          "release_complete_us": 1.473,
+          "release_cpu_us": 1.022,
+          "write_us": 1463.282
+        },
+        {
+          "allocate_us": 1.693,
+          "release_complete_us": 1.533,
+          "release_cpu_us": 1.133,
+          "write_us": 2124.193
+        },
+        {
+          "allocate_us": 1.082,
+          "release_complete_us": 1.102,
+          "release_cpu_us": 0.691,
+          "write_us": 1710.109
+        },
+        {
+          "allocate_us": 1.062,
+          "release_complete_us": 1.182,
+          "release_cpu_us": 0.792,
+          "write_us": 1431.862
+        },
+        {
+          "allocate_us": 0.972,
+          "release_complete_us": 0.952,
+          "release_cpu_us": 0.792,
+          "write_us": 1270.947
+        },
+        {
+          "allocate_us": 0.851,
+          "release_complete_us": 1.172,
+          "release_cpu_us": 0.992,
+          "write_us": 1264.826
+        },
+        {
+          "allocate_us": 0.881,
+          "release_complete_us": 4.128,
+          "release_cpu_us": 1.573,
+          "write_us": 2126.698
+        },
+        {
+          "allocate_us": 1.543,
+          "release_complete_us": 1.122,
+          "release_cpu_us": 0.892,
+          "write_us": 1355.928
+        },
+        {
+          "allocate_us": 1.292,
+          "release_complete_us": 1.373,
+          "release_cpu_us": 0.932,
+          "write_us": 2235.945
+        },
+        {
+          "allocate_us": 1.312,
+          "release_complete_us": 1.382,
+          "release_cpu_us": 1.012,
+          "write_us": 1488.119
+        },
+        {
+          "allocate_us": 0.962,
+          "release_complete_us": 1.493,
+          "release_cpu_us": 1.042,
+          "write_us": 2919.86
+        },
+        {
+          "allocate_us": 1.072,
+          "release_complete_us": 1.373,
+          "release_cpu_us": 0.992,
+          "write_us": 1634.666
+        }
+      ],
+      "shared": false,
+      "repeat": 2,
+      "backend": "private"
+    },
+    {
+      "batch_pages": 4,
+      "capacity_pages": 192,
+      "held_pages": 172,
+      "layers": 28,
+      "samples": [
+        {
+          "allocate_us": 207.303,
+          "release_complete_us": 222.171,
+          "release_cpu_us": 218.924,
+          "write_us": 1384.833
+        },
+        {
+          "allocate_us": 152.88,
+          "release_complete_us": 160.875,
+          "release_cpu_us": 158.961,
+          "write_us": 2707.147
+        },
+        {
+          "allocate_us": 109.487,
+          "release_complete_us": 237.961,
+          "release_cpu_us": 234.805,
+          "write_us": 2464.067
+        },
+        {
+          "allocate_us": 127.592,
+          "release_complete_us": 168.737,
+          "release_cpu_us": 165.702,
+          "write_us": 2318.331
+        },
+        {
+          "allocate_us": 176.346,
+          "release_complete_us": 151.908,
+          "release_cpu_us": 150.445,
+          "write_us": 2402.39
+        },
+        {
+          "allocate_us": 175.823,
+          "release_complete_us": 237.585,
+          "release_cpu_us": 230.832,
+          "write_us": 2049.331
+        },
+        {
+          "allocate_us": 221.252,
+          "release_complete_us": 171.406,
+          "release_cpu_us": 169.032,
+          "write_us": 3756.224
+        },
+        {
+          "allocate_us": 136.368,
+          "release_complete_us": 158.991,
+          "release_cpu_us": 157.298,
+          "write_us": 2487.081
+        },
+        {
+          "allocate_us": 113.034,
+          "release_complete_us": 159.742,
+          "release_cpu_us": 157.979,
+          "write_us": 2533.048
+        },
+        {
+          "allocate_us": 116.41,
+          "release_complete_us": 156.858,
+          "release_cpu_us": 155.325,
+          "write_us": 1960.543
+        },
+        {
+          "allocate_us": 156.937,
+          "release_complete_us": 159.592,
+          "release_cpu_us": 157.348,
+          "write_us": 1442.232
+        },
+        {
+          "allocate_us": 134.826,
+          "release_complete_us": 244.24,
+          "release_cpu_us": 237.638,
+          "write_us": 2078.607
+        },
+        {
+          "allocate_us": 229.346,
+          "release_complete_us": 186.271,
+          "release_cpu_us": 182.954,
+          "write_us": 1600.702
+        },
+        {
+          "allocate_us": 256.527,
+          "release_complete_us": 170.533,
+          "release_cpu_us": 169.13,
+          "write_us": 1743.071
+        },
+        {
+          "allocate_us": 121.06,
+          "release_complete_us": 189.574,
+          "release_cpu_us": 186.327,
+          "write_us": 1312.596
+        },
+        {
+          "allocate_us": 203.806,
+          "release_complete_us": 192.274,
+          "release_cpu_us": 188.186,
+          "write_us": 2366.467
+        },
+        {
+          "allocate_us": 145.476,
+          "release_complete_us": 238.452,
+          "release_cpu_us": 235.296,
+          "write_us": 2553.957
+        },
+        {
+          "allocate_us": 207.102,
+          "release_complete_us": 317.742,
+          "release_cpu_us": 314.506,
+          "write_us": 2524.241
+        },
+        {
+          "allocate_us": 187.304,
+          "release_complete_us": 211.711,
+          "release_cpu_us": 208.926,
+          "write_us": 1848.261
+        },
+        {
+          "allocate_us": 145.726,
+          "release_complete_us": 215.258,
+          "release_cpu_us": 212.883,
+          "write_us": 1465.526
+        },
+        {
+          "allocate_us": 140.326,
+          "release_complete_us": 285.178,
+          "release_cpu_us": 281.221,
+          "write_us": 2457.845
+        },
+        {
+          "allocate_us": 124.706,
+          "release_complete_us": 175.204,
+          "release_cpu_us": 172.529,
+          "write_us": 3719.244
+        },
+        {
+          "allocate_us": 159.532,
+          "release_complete_us": 161.045,
+          "release_cpu_us": 158.771,
+          "write_us": 2176.212
+        },
+        {
+          "allocate_us": 116.591,
+          "release_complete_us": 198.536,
+          "release_cpu_us": 195.32,
+          "write_us": 1528.104
+        },
+        {
+          "allocate_us": 236.157,
+          "release_complete_us": 158.581,
+          "release_cpu_us": 157.198,
+          "write_us": 2150.994
+        },
+        {
+          "allocate_us": 117.362,
+          "release_complete_us": 197.384,
+          "release_cpu_us": 191.823,
+          "write_us": 1893.607
+        },
+        {
+          "allocate_us": 203.866,
+          "release_complete_us": 314.485,
+          "release_cpu_us": 307.592,
+          "write_us": 1277.71
+        },
+        {
+          "allocate_us": 451.359,
+          "release_complete_us": 215.799,
+          "release_cpu_us": 212.673,
+          "write_us": 2434.096
+        },
+        {
+          "allocate_us": 158.28,
+          "release_complete_us": 237.5,
+          "release_cpu_us": 234.885,
+          "write_us": 2345.733
+        },
+        {
+          "allocate_us": 128.894,
+          "release_complete_us": 188.297,
+          "release_cpu_us": 185.061,
+          "write_us": 2487.471
+        }
+      ],
+      "shared": true,
+      "repeat": 2,
+      "backend": "shared"
+    },
+    {
+      "batch_pages": 4,
+      "capacity_pages": 192,
+      "held_pages": 192,
+      "layers": 28,
+      "samples": [
+        {
+          "denied_us": 0.021
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.01
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.01
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.01
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.01
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.01
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        }
+      ],
+      "shared": false,
+      "repeat": 2,
+      "backend": "private"
+    },
+    {
+      "batch_pages": 4,
+      "capacity_pages": 192,
+      "held_pages": 192,
+      "layers": 28,
+      "samples": [
+        {
+          "denied_us": 0.03
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.03
+        },
+        {
+          "denied_us": 0.03
+        },
+        {
+          "denied_us": 0.03
+        },
+        {
+          "denied_us": 0.03
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.03
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.03
+        },
+        {
+          "denied_us": 0.021
+        },
+        {
+          "denied_us": 0.03
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.03
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.03
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.021
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.03
+        },
+        {
+          "denied_us": 0.03
+        },
+        {
+          "denied_us": 0.03
+        },
+        {
+          "denied_us": 0.03
+        },
+        {
+          "denied_us": 0.03
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.02
+        },
+        {
+          "denied_us": 0.051
+        }
+      ],
+      "shared": true,
+      "repeat": 2,
+      "backend": "shared"
+    }
+  ]
+}

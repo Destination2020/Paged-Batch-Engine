@@ -2,137 +2,51 @@
 #include <algorithm>
 #include <chrono>
 #include <cstring>
+#include <cstdlib>
+#include <iostream>
 #include <deque>
 #include <limits>
 #include <mutex>
 #include <numeric>
+#include <set>
 #include <stdexcept>
+#include <unordered_map>
 #include <vector>
 #include <unistd.h>
 #include <nlohmann/json.hpp>
 #include "serving/serving_zmq_rpc.h"
 
+#include "shared_kv_protocol.h"
 namespace base {
-namespace {
-using Json = nlohmann::json;
-void cuda_check(cudaError_t code) {
-  if (code != cudaSuccess) throw std::runtime_error(cudaGetErrorString(code));
-}
-std::string uuid_for_device(int device) {
-  cudaDeviceProp prop{};
-  cuda_check(cudaGetDeviceProperties(&prop, device));
-  static const char digits[] = "0123456789abcdef";
-  std::string uuid;
-  for (unsigned char byte : prop.uuid.bytes) {
-    uuid += digits[byte >> 4]; uuid += digits[byte & 15];
-  }
-  return uuid;
-}
-Json lease_json(const ChunkLease& lease) {
-  return {{"epoch", lease.epoch}, {"id", lease.id}, {"generation", lease.generation},
-          {"offset", lease.offset}, {"bytes", lease.bytes},
-          {"model", lease.model}, {"layout", lease.layout}};
-}
-ChunkLease parse_lease(const Json& j) {
-  return {j.at("epoch"), j.at("id"), j.at("generation"), j.at("offset"),
-          j.at("bytes"), j.at("model"), j.at("layout")};
-}
-uint64_t round_up(uint64_t bytes, uint64_t alignment) {
-  if (bytes > std::numeric_limits<uint64_t>::max() - alignment)
-    throw std::invalid_argument("KV size overflow");
-  return (bytes + alignment - 1) / alignment * alignment;
-}
-}  // namespace
-
-struct SharedKVArenaClient::Impl {
-  serving::ZmqRpcConfig rpc;
-  std::string model;
-  uint64_t bytes = 0, epoch = 0, hard_limit = 0;
-  void* data = nullptr;
-  int device = 0;
-  std::mutex mu;
-  Json request(Json body) {
-    std::lock_guard<std::mutex> lock(mu);
-    body["epoch"] = epoch;
-    body["model"] = model;
-    Json response;
-    auto status = serving::zmq_request_response(rpc, body, &response);
-    if (!status) throw std::runtime_error("KV owner unreachable: " + status.get_err_msg());
-    if (!response.value("ok", false)) throw std::runtime_error(response.value("error", "KV owner error"));
-    return response;
-  }
-};
-SharedKVArenaClient::SharedKVArenaClient(std::string endpoint, std::string model,
-    uint64_t hard_limit_bytes, int device) : impl_(new Impl) {
-  impl_->rpc = {std::move(endpoint), 5000};
-  impl_->model = std::move(model);
-  impl_->device = device;
-  cuda_check(cudaSetDevice(device));
-  auto response = impl_->request({{"type", "health"}});
-  if (response.at("gpu_uuid") != uuid_for_device(device))
-    throw std::runtime_error("shared KV owner and worker GPU UUID differ");
-  impl_->bytes = response.at("bytes");
-  impl_->epoch = response.at("epoch");
-  impl_->hard_limit = hard_limit_bytes;
-  auto handle_bytes = serving::hex_json_to_binary(response.at("memory_handle"));
-  if (handle_bytes.size() != sizeof(cudaIpcMemHandle_t))
-    throw std::runtime_error("invalid CUDA IPC memory handle");
-  cudaIpcMemHandle_t handle{};
-  std::memcpy(&handle, handle_bytes.data(), sizeof(handle));
-  cuda_check(cudaIpcOpenMemHandle(&impl_->data, handle, cudaIpcMemLazyEnablePeerAccess));
-  try {
-    impl_->request({{"type", "register"}, {"hard_limit", hard_limit_bytes}});
-  } catch (...) {
-    cudaIpcCloseMemHandle(impl_->data);
-    impl_->data = nullptr;
-    throw;
-  }
-}
-SharedKVArenaClient::~SharedKVArenaClient() {
-  if (impl_->data) { cudaSetDevice(impl_->device); cudaIpcCloseMemHandle(impl_->data); }
-}
-void* SharedKVArenaClient::data() const { return impl_->data; }
-uint64_t SharedKVArenaClient::bytes() const { return impl_->bytes; }
-uint64_t SharedKVArenaClient::hard_limit() const { return impl_->hard_limit; }
-ChunkLease SharedKVArenaClient::acquire(const std::string& layout,
-    uint64_t bytes, uint64_t alignment) {
-  auto lease = parse_lease(impl_->request({{"type", "acquire"}, {"layout", layout},
-                                    {"bytes", bytes}, {"alignment", alignment}}).at("lease"));
-  if (lease.epoch != impl_->epoch || !lease.id || !lease.generation ||
-      lease.model != impl_->model || lease.layout != layout || lease.bytes != bytes ||
-      lease.offset % alignment || lease.offset > impl_->bytes || lease.bytes > impl_->bytes - lease.offset)
-    throw std::runtime_error("invalid owner chunk descriptor");
-  return lease;
-}
-void SharedKVArenaClient::release(const ChunkLease& lease) {
-  impl_->request({{"type", "release"}, {"lease", lease_json(lease)}, {"gpu_complete", true}});
-}
-
+using namespace shared_kv_detail;
 struct SharedKVPageGroup::Impl {
+  struct Chunk;
   struct Page {
     uint64_t offset;
     std::vector<bool> active, reserved;
-    std::vector<cudaEvent_t> retired;
+    int active_layers = 0;
+    cudaEvent_t retired = nullptr;
+    Chunk* chunk = nullptr;
     explicit Page(uint64_t offset_value, int layers)
-        : offset(offset_value), active(layers, false), reserved(layers, false), retired(layers, nullptr) {}
-    bool empty() const {
-      return std::none_of(active.begin(), active.end(), [](bool v) { return v; }) &&
-             std::all_of(retired.begin(), retired.end(), [](cudaEvent_t e) { return !e; });
-    }
+        : offset(offset_value), active(layers, false), reserved(layers, false) {}
   };
-  struct Chunk { ChunkLease lease; std::vector<Page> pages; };
+  struct Chunk { ChunkLease lease; std::vector<Page> pages; size_t free_pages = 0; };
   std::shared_ptr<SharedKVArenaClient> arena;
   int layers;
   uint64_t half_bytes, page_bytes, alignment, chunk_bytes;
   cudaStream_t stream;
   std::string layout;
-  std::vector<Chunk> chunks;
+  // Heap-owned chunks and fixed-size page vectors keep indexed Page* stable.
+  std::unordered_map<uint64_t, std::unique_ptr<Chunk>> chunks;
+  std::unordered_map<int, Page*> pages;
+  std::set<int> free_pages;
+  std::deque<Page*> retiring;
+  std::vector<cudaEvent_t> events;
+  uint64_t leased_bytes = 0;
   std::vector<std::deque<int>> pending;
-  mutable std::recursive_mutex mu;
+  mutable std::mutex mu;
   uint64_t leased() const {
-    uint64_t result = 0;
-    for (const auto& chunk : chunks) result += chunk.lease.bytes;
-    return result;
+    return leased_bytes;
   }
 };
 SharedKVPageGroup::SharedKVPageGroup(std::shared_ptr<SharedKVArenaClient> arena,
@@ -155,119 +69,138 @@ SharedKVPageGroup::SharedKVPageGroup(std::shared_ptr<SharedKVArenaClient> arena,
 SharedKVPageGroup::~SharedKVPageGroup() {
   // Failed CUDA synchronization must quarantine leases; never return their bytes.
   if (cudaStreamSynchronize(impl_->stream) != cudaSuccess) return;
-  for (auto& chunk : impl_->chunks) {
+  for (auto& entry : impl_->chunks) {
+    auto& chunk = *entry.second;
     for (auto& page : chunk.pages)
-      for (auto event : page.retired) if (event) cudaEventDestroy(event);
+      if (page.retired) cudaEventDestroy(page.retired);
     try { impl_->arena->release(chunk.lease); } catch (...) { /* domain shutdown */ }
   }
+  for (auto event : impl_->events) cudaEventDestroy(event);
 }
 void SharedKVPageGroup::collect() {
-  std::lock_guard<std::recursive_mutex> lock(impl_->mu);
-  for (auto it = impl_->chunks.begin(); it != impl_->chunks.end();) {
-    for (auto& page : it->pages) {
-      for (auto& event : page.retired) {
-        if (!event) continue;
-        const auto status = cudaEventQuery(event);
-        if (status == cudaErrorNotReady) continue;
-        cuda_check(status);
-        cuda_check(cudaEventDestroy(event));
-        event = nullptr;
+  std::lock_guard<std::mutex> lock(impl_->mu);
+  collect_locked();
+}
+void SharedKVPageGroup::collect_locked() {
+  while (!impl_->retiring.empty()) {
+    auto* page = impl_->retiring.front();
+    const auto status = cudaEventQuery(page->retired);
+    // All retirement events use the same stream and are recorded in queue order.
+    if (status == cudaErrorNotReady) break;
+    cuda_check(status);
+    impl_->events.push_back(page->retired);
+    page->retired = nullptr;
+    impl_->retiring.pop_front();
+    impl_->free_pages.insert(static_cast<int>(page->offset / impl_->half_bytes));
+    auto* chunk = page->chunk;
+    if (++chunk->free_pages == chunk->pages.size()) {
+      impl_->arena->release(chunk->lease);
+      for (const auto& item : chunk->pages) {
+        const int id = static_cast<int>(item.offset / impl_->half_bytes);
+        impl_->free_pages.erase(id);
+        impl_->pages.erase(id);
       }
+      impl_->leased_bytes -= chunk->lease.bytes;
+      impl_->chunks.erase(chunk->lease.id);
     }
-    if (std::all_of(it->pages.begin(), it->pages.end(), [](const Impl::Page& p) { return p.empty(); })) {
-      impl_->arena->release(it->lease);
-      it = impl_->chunks.erase(it);
-    } else ++it;
   }
 }
 int SharedKVPageGroup::allocate(int layer) {
-  std::lock_guard<std::recursive_mutex> lock(impl_->mu);
+  std::lock_guard<std::mutex> lock(impl_->mu);
   if (layer < 0 || layer >= impl_->layers) throw std::invalid_argument("invalid layer");
-  collect();
   if (layer > 0) {
     auto& pending = impl_->pending[layer];
     if (pending.empty()) throw std::logic_error("Allocate shared pages in layer order");
     const int id = pending.front(); pending.pop_front();
-    for (auto& chunk : impl_->chunks) for (auto& page : chunk.pages)
-      if (id == static_cast<int>(page.offset / impl_->half_bytes)) page.reserved[layer] = false;
+    impl_->pages.at(id)->reserved[layer] = false;
     return id;
   }
+  collect_locked();
   auto reserve = [&](Impl::Page& page) {
     const int id = static_cast<int>(page.offset / impl_->half_bytes);
     std::fill(page.active.begin(), page.active.end(), true);
+    page.active_layers = impl_->layers;
+    --page.chunk->free_pages;
+    impl_->free_pages.erase(id);
     for (int l = 1; l < impl_->layers; ++l) {
       page.reserved[l] = true;
       impl_->pending[l].push_back(id);
     }
     return id;
   };
-  for (auto& chunk : impl_->chunks)
-    for (auto& page : chunk.pages) if (page.empty()) return reserve(page);
+  if (!impl_->free_pages.empty()) return reserve(*impl_->pages.at(*impl_->free_pages.begin()));
+  const uint64_t remaining = impl_->arena->hard_limit() - impl_->leased_bytes;
+  if (remaining < impl_->page_bytes) return -1;
+  const uint64_t request_bytes = remaining >= impl_->chunk_bytes ? impl_->chunk_bytes : impl_->page_bytes;
   ChunkLease lease;
   // Quota/fragmentation failures may retry a single all-layer page. Other errors
   // (owner death, epoch mismatch, protocol failure) fail the worker/domain.
   auto acquire = [&](uint64_t bytes) {
     return impl_->arena->acquire(impl_->layout, bytes, impl_->alignment);
   };
-  try { lease = acquire(impl_->chunk_bytes); }
-  catch (const std::runtime_error& e) {
-    const std::string error = e.what();
-    if (error != "model_kv_quota_exhausted" && error != "arena_fragmented" && error != "arena_exhausted") throw;
+  try { lease = acquire(request_bytes); }
+  catch (const ChunkAllocationError&) {
+    if (request_bytes == impl_->page_bytes) return -1;
     try { lease = acquire(impl_->page_bytes); }
-    catch (const std::runtime_error& retry) {
-      const std::string message = retry.what();
-      if (message == "model_kv_quota_exhausted" || message == "arena_fragmented" || message == "arena_exhausted") return -1;
-      throw;
-    }
+    catch (const ChunkAllocationError&) { return -1; }
   }
-  Impl::Chunk chunk;
-  chunk.lease = lease;
+  auto chunk = std::make_unique<Impl::Chunk>();
+  chunk->lease = lease;
+  chunk->pages.reserve(lease.bytes / impl_->page_bytes);
   for (uint64_t offset = lease.offset; offset < lease.offset + lease.bytes; offset += impl_->page_bytes)
-    chunk.pages.emplace_back(offset, impl_->layers);
-  const int id = reserve(chunk.pages.front());
-  impl_->chunks.emplace_back(std::move(chunk));
+    chunk->pages.emplace_back(offset, impl_->layers);
+  chunk->free_pages = chunk->pages.size();
+  for (auto& page : chunk->pages) {
+    page.chunk = chunk.get();
+    const int id = static_cast<int>(page.offset / impl_->half_bytes);
+    impl_->pages.emplace(id, &page);
+    impl_->free_pages.insert(id);
+  }
+  const int id = reserve(chunk->pages.front());
+  impl_->leased_bytes += lease.bytes;
+  impl_->chunks.emplace(lease.id, std::move(chunk));
   return id;
 }
 void SharedKVPageGroup::retire(int layer, int id) {
-  std::lock_guard<std::recursive_mutex> lock(impl_->mu);
-  for (auto& chunk : impl_->chunks) {
-    for (auto& page : chunk.pages) {
-      if (id != static_cast<int>(page.offset / impl_->half_bytes)) continue;
-      if (!page.active.at(layer) || page.retired.at(layer) || page.reserved.at(layer))
-        throw std::logic_error("double/stale page retire");
-      if (layer == 0) {
-        // Roll back unconsumed layer reservations if layer-0 allocation failed.
-        for (int l = 1; l < impl_->layers; ++l) if (page.reserved[l]) {
-          auto& pending = impl_->pending[l];
-          pending.erase(std::remove(pending.begin(), pending.end(), id), pending.end());
-          page.reserved[l] = false;
-          page.active[l] = false;
-        }
-      }
-      cudaEvent_t event{};
-      cuda_check(cudaEventCreateWithFlags(&event, cudaEventDisableTiming));
-      const auto status = cudaEventRecord(event, impl_->stream);
-      if (status != cudaSuccess) { cudaEventDestroy(event); cuda_check(status); }
-      page.retired[layer] = event;
-      page.active[layer] = false;
-      // Fast reclamation after sampled-token synchronization; otherwise deferred.
-      collect();
-      return;
+  std::lock_guard<std::mutex> lock(impl_->mu);
+  auto found = impl_->pages.find(id);
+  if (found == impl_->pages.end()) throw std::logic_error("page does not belong to current chunk generation");
+  auto& page = *found->second;
+  if (!page.active.at(layer) || page.retired || page.reserved.at(layer))
+    throw std::logic_error("double/stale page retire");
+  if (layer == 0) {
+    // Roll back unconsumed layer reservations if layer-0 allocation failed.
+    for (int l = 1; l < impl_->layers; ++l) if (page.reserved[l]) {
+      auto& pending = impl_->pending[l];
+      pending.erase(std::remove(pending.begin(), pending.end(), id), pending.end());
+      page.reserved[l] = false;
+      page.active[l] = false;
+      --page.active_layers;
     }
   }
-  throw std::logic_error("page does not belong to current chunk generation");
+  page.active[layer] = false;
+  if (--page.active_layers == 0) {
+    // A whole page is indivisible across layers. Its final reference retires
+    // after every layer's use on the group's stream, so one fence suffices.
+    cudaEvent_t event{};
+    if (impl_->events.empty()) cuda_check(cudaEventCreateWithFlags(&event, cudaEventDisableTiming));
+    else { event = impl_->events.back(); impl_->events.pop_back(); }
+    const auto status = cudaEventRecord(event, impl_->stream);
+    if (status != cudaSuccess) { cudaEventDestroy(event); cuda_check(status); }
+    page.retired = event;
+    impl_->retiring.push_back(&page);
+    collect_locked();
+  }
 }
 int SharedKVPageGroup::free_blocks(int layer) const {
-  std::lock_guard<std::recursive_mutex> lock(impl_->mu);
+  std::lock_guard<std::mutex> lock(impl_->mu);
   uint64_t count = (impl_->arena->hard_limit() - impl_->leased()) / impl_->page_bytes;
-  for (const auto& chunk : impl_->chunks)
-    for (const auto& page : chunk.pages)
-      if (page.empty()) ++count;
+  count += impl_->free_pages.size();
   count += impl_->pending.at(layer).size();
   return static_cast<int>(std::min<uint64_t>(INT32_MAX, count));
 }
 uint64_t SharedKVPageGroup::leased_bytes() const {
-  std::lock_guard<std::recursive_mutex> lock(impl_->mu);
+  std::lock_guard<std::mutex> lock(impl_->mu);
   return impl_->leased();
 }
 uint64_t SharedKVPageGroup::arena_bytes() const { return impl_->arena->bytes(); }
@@ -285,52 +218,4 @@ void* SharedKVPageGroup::value_base(int layer) const {
   return static_cast<char*>(impl_->arena->data()) + (2ull * layer + 1) * impl_->half_bytes;
 }
 
-int run_shared_kv_owner(const std::string& endpoint, uint64_t bytes, int device) {
-  cuda_check(cudaSetDevice(device));
-  void* data = nullptr;
-  cuda_check(cudaMalloc(&data, bytes)); // dedicated allocation, never allocator-cached
-  try {
-    cudaIpcMemHandle_t handle{};
-    cuda_check(cudaIpcGetMemHandle(&handle, data));
-    const auto epoch = static_cast<uint64_t>(std::chrono::steady_clock::now().time_since_epoch().count());
-    GlobalChunkAllocator allocator(bytes, epoch);
-    std::unique_ptr<serving::ZmqSocket> socket;
-    auto status = serving::make_zmq_rep_socket({endpoint, 1000}, &socket);
-    if (!status) throw std::runtime_error(status.get_err_msg());
-    const auto uuid = uuid_for_device(device);
-    for (;;) {
-      Json request;
-      status = socket->recv_json(&request);
-      if (!status) continue;
-      Json response;
-      try {
-        const std::string type = request.at("type");
-        if (type == "health" || type == "metrics") {
-          size_t free_bytes = 0, total_bytes = 0;
-          cuda_check(cudaMemGetInfo(&free_bytes, &total_bytes));
-          response = {{"gpu_free_bytes", free_bytes}, {"gpu_total_bytes", total_bytes},
-              {"ok", true}, {"bytes", bytes}, {"epoch", epoch}, {"gpu_uuid", uuid},
-              {"free_bytes", allocator.free_bytes()}, {"lease_count", allocator.lease_count()},
-              {"memory_handle", serving::binary_to_hex_json(std::string(reinterpret_cast<char*>(&handle), sizeof(handle)))}};
-        } else {
-          if (request.at("epoch").get<uint64_t>() != epoch) throw std::invalid_argument("stale_arena_epoch");
-          const std::string model = request.at("model");
-          if (type == "register") allocator.register_model(model, request.at("hard_limit"));
-          else if (type == "acquire") {
-            auto lease = allocator.acquire(model, request.at("layout"), request.at("bytes"), request.at("alignment"));
-            response["lease"] = lease_json(lease);
-          } else if (type == "release") {
-            auto lease = parse_lease(request.at("lease"));
-            if (lease.model != model || !request.value("gpu_complete", false))
-              throw std::invalid_argument("release_without_owner_identity_or_gpu_fence");
-            allocator.release(lease);
-          } else throw std::invalid_argument("unknown_owner_operation");
-          response["ok"] = true;
-        }
-      } catch (const std::exception& e) { response = {{"ok", false}, {"error", e.what()}}; }
-      status = socket->send_json(response);
-      if (!status) throw std::runtime_error(status.get_err_msg());
-    }
-  } catch (...) { cudaFree(data); throw; }
-}
-}  // namespace base
+} // namespace base

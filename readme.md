@@ -522,3 +522,36 @@ Paged attention benchmark：
 - 在线服务：`infMain/source/serving/serving_online_server.cpp`
 - P/D handoff：`infMain/include/serving/pd_handoff.h`
 - Benchmark app：`infMain/source/serving/serving_benchmark_app.cpp`
+
+## 服务实现边界与回归验证
+
+在线服务依赖 `ServingRuntime` 模型执行接口；`ServingBenchmarkApp` 负责命令行启动、离线基准和统计，参数解析在 `serving_config_parser.cpp`。P/D 传输的公共校验、进程内复制、P2P 和 NCCL 分别位于 `pd_handoff_common.cpp`、`pd_handoff.cpp`、`pd_handoff_p2p.cpp` 和 `pd_handoff_nccl.cpp`。
+
+多模型 API 每个模型使用一个结果轮询线程和持久 ZeroMQ 连接，每次最多取回 32 个事件；控制 RPC 保持独立。Worker 直接读取请求句柄，不再为每个请求创建结果转发线程。取消会立即删除远端请求记录；超过请求截止时间或连续 30 秒没有轮询的记录也会取消回收。这不允许 Owner 根据超时强制复用显存：GPU fence 完成和租约归还仍是显存复用的前提。
+
+HTTP 通过 `--http-io-timeout-ms`（默认 5000）限制读取完整请求和单次发送的时间，通过 `--http-max-pending-connections`（默认 128）限制等待处理的连接数；队列满返回 503。请求头上限 64 KiB，请求体上限 8 MiB，不支持 chunked 上传。`timeout_ms` 对流式和非流式生成均生效；未指定时使用 `--request-timeout-ms`，该值为 0 时仍表示关闭生成超时。
+
+共享 KV 的实现分为 `shared_kv_client.cpp`（IPC 映射与租约通信）、`shared_kv_owner.cpp`（全局显存所有者）和 `shared_kv_arena.cpp`（页状态及 CUDA fence）。容量不足使用明确错误码，通信故障不会作为容量不足重试；Owner RPC 仍按顺序完成，归还确认前不会把同一范围交给另一个模型。
+
+构建后可按环境选择测试：
+
+```bash
+cmake --build build-mps -j 4
+ctest --test-dir build-mps -L cpu --output-on-failure
+ctest --test-dir build-mps -L gpu --output-on-failure
+```
+
+CPU 组包含 HTTP 协议、真实 API 与模拟 Worker、数据客户端通信和部署故障处置测试；需要 Python 的部分由 CMake 检测解释器和 pyzmq 后注册。GPU 组包含主 GTest 回归和跨进程共享 KV 复用专项。可通过 `PBE_QWEN2_TEST_MODEL`、`PBE_QWEN2_TEST_TOKENIZER` 指定测试模型。旧的 `test_*` 命名测试未加入默认主回归，仍可显式执行；不能把 CTest 通过解释为所有历史测试或所有硬件后端均已验证。
+
+真实双模型输出和退出流程使用以下工具验证；模型路径、显存预算及批次参数通过配置文件指定：
+
+```bash
+python3 tools/serving/validate_multi_model.py --config configs/qwen25-dual-mps.json \
+  --backend process --reuse-rounds 5 --test-worker-failure --output-dir /tmp/pbe-model-check
+python3 tools/serving/validate_lifecycle.py --config configs/qwen25-dual-mps.json \
+  --scenario drain --output-dir /tmp/pbe-drain-check
+```
+
+`process` 后端通过不代表 MPS 可用。MPS 和多 GPU NCCL 路径必须在具备相应驱动、库及设备的环境中另外验收。
+
+本轮重构的构建信息、功能验证、资源回收与微基准原始数据见 [验证报告](docs/benchmarks/refactor-quality-2026-10-11/report.json)。微基准跨运行波动较大，报告不据此宣称端到端推理加速。

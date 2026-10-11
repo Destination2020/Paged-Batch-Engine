@@ -1,0 +1,8 @@
+Log file created at: 2026/10/11 16:12:29
+Running on machine: LAPTOP-6TDESKLR
+Running duration (h:mm:ss): 0:00:00
+Log line format: [IWEF]yyyymmdd hh:mm:ss.uuuuuu threadid file:line] msg
+I20261011 16:12:29.413449 132301745750016 qwen2.cpp:532] Qwen2 init weight dtype: Bf16, runtime dtype: Bf16
+W20261011 16:12:30.597083 132301745750016 serving_memory_planner.cpp:125] Device memory is tight before serving workspace allocation: free_bytes=252534784, non_workspace_reserve=268435456. Falling back to minimum workspace token capacity=16
+I20261011 16:12:30.599984 132301745750016 qwen2.cpp:1009] Serving workspace preallocation: token_capacity=16, reserved_bytes=8990720
+I20261011 16:12:31.330391 132301745750016 serving_zmq_engine_core.cpp:715] ZMQ EngineCore listening on ipc:///tmp/pbe-real-reuse-serial/domain/qwen25-1.5b.sock

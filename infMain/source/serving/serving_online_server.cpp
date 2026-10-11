@@ -20,97 +20,17 @@
 
 #include "serving/generation_config.h"
 #include "serving/scheduler.h"
-#include "serving/serving_benchmark_app.h"
+#include "serving/serving_runtime.h"
 #include "serving/serving_config.h"
 #include "serving/serving_http_server.h"
+#include "serving/serving_http_protocol.h"
 #include "serving/serving_online_engine_pool.h"
 #include "serving/serving_zmq_rpc.h"
 
 namespace serving {
 namespace {
-std::string http_reason(int status) {
-  switch (status) {
-    case 200: return "OK";
-    case 400: return "Bad Request";
-    case 404: return "Not Found";
-    case 405: return "Method Not Allowed";
-    case 408: return "Request Timeout";
-    case 429: return "Too Many Requests";
-    case 500: return "Internal Server Error";
-    default: return "Error";
-  }
-}
-
-bool send_all(int fd, const std::string& data) {
-  const char* ptr = data.data();
-  size_t remaining = data.size();
-  while (remaining > 0) {
-    const ssize_t written = ::send(fd, ptr, remaining, MSG_NOSIGNAL);
-    if (written <= 0) {
-      return false;
-    }
-    ptr += written;
-    remaining -= static_cast<size_t>(written);
-  }
-  return true;
-}
-
-bool send_http_response(int fd,
-                        int status,
-                        const std::string& content_type,
-                        const std::string& body) {
-  std::ostringstream os;
-  os << "HTTP/1.1 " << status << " " << http_reason(status) << "\r\n"
-     << "Content-Type: " << content_type << "\r\n"
-     << "Content-Length: " << body.size() << "\r\n"
-     << "Connection: close\r\n\r\n"
-     << body;
-  return send_all(fd, os.str());
-}
-
 std::string json_error(const std::string& message) {
-  nlohmann::json body;
-  body["error"] = message;
-  return body.dump();
-}
-
-bool read_http_request(int fd, std::string* request) {
-  CHECK_NE(request, nullptr);
-  request->clear();
-  char buffer[4096];
-  size_t content_length = 0;
-  size_t header_end = std::string::npos;
-  while (request->size() < 8 * 1024 * 1024) {
-    const ssize_t n = ::recv(fd, buffer, sizeof(buffer), 0);
-    if (n <= 0) {
-      return false;
-    }
-    request->append(buffer, static_cast<size_t>(n));
-    header_end = request->find("\r\n\r\n");
-    if (header_end != std::string::npos) {
-      const std::string headers = request->substr(0, header_end + 4);
-      std::istringstream input(headers);
-      std::string line;
-      while (std::getline(input, line)) {
-        if (!line.empty() && line.back() == '\r') {
-          line.pop_back();
-        }
-        const std::string key = "Content-Length:";
-        if (line.size() >= key.size() &&
-            std::equal(key.begin(), key.end(), line.begin(),
-                       [](char a, char b) {
-                         return std::tolower(a) == std::tolower(b);
-                       })) {
-          content_length = static_cast<size_t>(std::stoll(line.substr(key.size())));
-        }
-      }
-      const size_t body_received = request->size() - (header_end + 4);
-      if (body_received >= content_length) {
-        return true;
-      }
-    }
-  }
-  return false;
+  return nlohmann::json{{"error", message}}.dump();
 }
 
 std::string http_body(const std::string& request) {
@@ -253,7 +173,26 @@ void handle_generate_request(int client_fd,
 
   const bool openai_completion = path == "/v1/completions" || path == "/v1/chat/completions";
   const bool chat_completion = path == "/v1/chat/completions";
-  OnlineGenerateRequest generate_request = parse_online_generate_request(payload);
+  OnlineGenerateRequest generate_request;
+  try {
+    if (!payload.is_object()) throw std::invalid_argument("request must be a JSON object");
+    generate_request = parse_online_generate_request(payload);
+    if (generate_request.timeout_ms < 0) throw std::invalid_argument("timeout_ms must be nonnegative");
+  } catch (const std::exception& e) {
+    send_http_response(client_fd, 400, "application/json", json_error(e.what()));
+    return;
+  }
+  const int timeout_ms = generate_request.timeout_ms > 0
+      ? generate_request.timeout_ms : engine_pool->default_timeout_ms();
+  const auto deadline = timeout_ms > 0
+      ? std::chrono::steady_clock::now() + std::chrono::milliseconds(timeout_ms)
+      : std::chrono::steady_clock::time_point::max();
+  set_http_request_deadline(timeout_ms);
+  auto remaining_ms = [&]() -> int32_t {
+    if (timeout_ms <= 0) return 0;
+    return static_cast<int32_t>(std::max<int64_t>(1, std::chrono::duration_cast<std::chrono::milliseconds>(
+        deadline - std::chrono::steady_clock::now()).count()));
+  };
   if (generate_request.prompt.empty()) {
     send_http_response(client_fd, 400, "application/json", json_error("prompt is required"));
     return;
@@ -272,11 +211,10 @@ void handle_generate_request(int client_fd,
     bool failed = false;
     std::string finish_error;
     std::string text;
-    const int32_t timeout_ms = generate_request.timeout_ms > 0
-        ? generate_request.timeout_ms
-        : engine_pool->default_timeout_ms();
-    if (!handle->wait_full_text(timeout_ms, &text, &failed, &finish_error)) {
+    if (std::chrono::steady_clock::now() >= deadline ||
+        !handle->wait_full_text(remaining_ms(), &text, &failed, &finish_error)) {
       engine_pool->cancel(handle, "request_timeout");
+      set_http_request_deadline(0); // allow a bounded error response after expiry
       send_http_response(client_fd, 408, "application/json", json_error("request_timeout"));
       return;
     }
@@ -310,8 +248,15 @@ void handle_generate_request(int client_fd,
     bool finished = false;
     bool failed = false;
     std::string finish_error;
-    const bool has_token = handle->wait_next_token(&token_text, &finished, &failed,
-                                                   &finish_error);
+    if (std::chrono::steady_clock::now() >= deadline) {
+      engine_pool->cancel(handle, "request_timeout");
+      set_http_request_deadline(0);
+      send_all(client_fd, "event: error\ndata: {\"error\":\"request_timeout\"}\n\n");
+      return;
+    }
+    const bool has_token = handle->wait_next_token_for(
+        timeout_ms > 0 ? std::min(100, remaining_ms()) : 100,
+        &token_text, &finished, &failed, &finish_error);
     if (has_token) {
       nlohmann::json event;
       if (openai_completion) {
@@ -352,8 +297,9 @@ void handle_generate_request(int client_fd,
 
 void handle_http_client(int client_fd, OnlineEnginePool* engine_pool) {
   std::string request;
-  if (!read_http_request(client_fd, &request)) {
-    send_http_response(client_fd, 408, "application/json", json_error("read request failed"));
+  const int read_status = read_http_request(client_fd, &request);
+  if (read_status != 200) {
+    send_http_response(client_fd, read_status, "application/json", json_error("read request failed"));
     return;
   }
 
@@ -387,12 +333,12 @@ void handle_http_client(int client_fd, OnlineEnginePool* engine_pool) {
 
 }  // namespace
 
-int run_online_server(ServingBenchmarkApp* app) {
+int run_online_server(ServingRuntime* app) {
   CHECK_NE(app, nullptr);
   return run_online_server(app, app->bench_config());
 }
 
-int run_online_server(ServingBenchmarkApp* app, const BenchConfig& config) {
+int run_online_server(ServingRuntime* app, const BenchConfig& config) {
   std::unique_ptr<OnlineEnginePool> engine_pool;
   if (config.online_process_role == kOnlineProcessRoleZmqHttpApi) {
     if (!config.model_registry_path.empty()) engine_pool = std::make_unique<MultiModelOnlineEnginePool>(config);
@@ -408,6 +354,8 @@ int run_online_server(ServingBenchmarkApp* app, const BenchConfig& config) {
   http_config.port = config.listen_port;
   http_config.listen_backlog = config.http_listen_backlog;
   http_config.worker_threads = config.http_worker_threads;
+  http_config.io_timeout_ms = config.http_io_timeout_ms;
+  http_config.max_pending_connections = config.http_max_pending_connections;
 
   EpollHttpServer server(
       http_config,

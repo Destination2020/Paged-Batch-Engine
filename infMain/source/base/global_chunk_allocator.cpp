@@ -27,7 +27,7 @@ ChunkLease GlobalChunkAllocator::acquire(const std::string& model,
   if (!limits_.count(model) || layout.empty() || !bytes || !alignment || bytes % alignment)
     throw std::invalid_argument("invalid chunk request");
   if (bytes > limits_.at(model) - used_.at(model))
-    throw std::runtime_error("model_kv_quota_exhausted");
+    throw ChunkAllocationError(ChunkAllocationFailure::kQuota);
   auto best = free_.end();
   uint64_t best_offset = 0, best_waste = std::numeric_limits<uint64_t>::max();
   for (auto it = free_.begin(); it != free_.end(); ++it) {
@@ -40,8 +40,8 @@ ChunkLease GlobalChunkAllocator::acquire(const std::string& model,
       best_waste = it->second - bytes;
     }
   }
-  if (best == free_.end()) throw std::runtime_error(
-      free_bytes() >= bytes ? "arena_fragmented" : "arena_exhausted");
+  if (best == free_.end()) throw ChunkAllocationError(
+      free_bytes() >= bytes ? ChunkAllocationFailure::kFragmented : ChunkAllocationFailure::kExhausted);
   const uint64_t begin = best->first, end = begin + best->second;
   free_.erase(best);
   if (best_offset > begin) free_[begin] = best_offset - begin;

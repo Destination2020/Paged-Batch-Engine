@@ -1,0 +1,89 @@
+{
+  "backend": "process",
+  "model_ids": [
+    "qwen25-0.5b",
+    "qwen25-1.5b"
+  ],
+  "different_weight_paths": true,
+  "max_active_requests_per_model": 1,
+  "baseline_matches": true,
+  "utf8_streaming": true,
+  "cancellation_route": true,
+  "unknown_model_rejected": true,
+  "arena_fully_reclaimed": true,
+  "outputs": {
+    "qwen25-0.5b": [
+      "中国的首都北京，是中国的政治、经济、文化、交通和国际交往中心，也是世界上最大的城市之一。",
+      "Certainly! Below is a simple Python function that adds two numbers:\n\n```python\ndef add_numbers(a, b):",
+      "很抱歉，我无法从您提供的信息中提取出具体会议讨论的内容。这段话似乎是一段混乱的"
+    ],
+    "qwen25-1.5b": [
+      "中国的首都是中国北京。",
+      "Certainly! Here's a simple Python function to add two numbers:\n\n```python\ndef add_numbers(a, b):",
+      "今天的会议主要讨论了共享显存和并发推理。"
+    ]
+  },
+  "alternating_reuse_requests": [
+    {
+      "round": 0,
+      "model": "qwen25-0.5b",
+      "free_bytes": 536870912,
+      "lease_count": 0
+    },
+    {
+      "round": 0,
+      "model": "qwen25-1.5b",
+      "free_bytes": 536870912,
+      "lease_count": 0
+    },
+    {
+      "round": 1,
+      "model": "qwen25-0.5b",
+      "free_bytes": 536870912,
+      "lease_count": 0
+    },
+    {
+      "round": 1,
+      "model": "qwen25-1.5b",
+      "free_bytes": 536870912,
+      "lease_count": 0
+    },
+    {
+      "round": 2,
+      "model": "qwen25-0.5b",
+      "free_bytes": 536870912,
+      "lease_count": 0
+    },
+    {
+      "round": 2,
+      "model": "qwen25-1.5b",
+      "free_bytes": 536870912,
+      "lease_count": 0
+    },
+    {
+      "round": 3,
+      "model": "qwen25-0.5b",
+      "free_bytes": 536870912,
+      "lease_count": 0
+    },
+    {
+      "round": 3,
+      "model": "qwen25-1.5b",
+      "free_bytes": 536870912,
+      "lease_count": 0
+    },
+    {
+      "round": 4,
+      "model": "qwen25-0.5b",
+      "free_bytes": 536870912,
+      "lease_count": 0
+    },
+    {
+      "round": 4,
+      "model": "qwen25-1.5b",
+      "free_bytes": 536870912,
+      "lease_count": 0
+    }
+  ],
+  "worker_failure_stops_gpu_domain": true
+}

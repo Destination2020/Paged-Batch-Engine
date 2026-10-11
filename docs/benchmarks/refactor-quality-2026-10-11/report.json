@@ -1,0 +1,104 @@
+{
+  "date": "2026-10-11",
+  "base_commit": "ea98b1a269c4bc4b7e955afeaf4f410dc780aa6d",
+  "library_sha256": "1741f7e8c6f7833c467bbf3b41bc1644a5d17ad03ec8dc55ababee1c836365d7",
+  "backend": "process",
+  "models": [
+    "Qwen2.5-0.5B-Instruct",
+    "Qwen2.5-1.5B-Instruct"
+  ],
+  "cpp": {
+    "tests": 219,
+    "failures": 0,
+    "disabled": 0,
+    "skipped": 12
+  },
+  "ctest": {
+    "cpu_groups": 4,
+    "gpu_groups": 2,
+    "all_passed": true
+  },
+  "python_test_cases": 25,
+  "changes": [
+    "HTTP bounded parsing, field validation, I/O deadlines and admission limits",
+    "SSE and nonstream request deadlines and cancellation",
+    "one persistent polling channel per model, batched token events, no per-request forwarding thread",
+    "terminal request reclamation independent of client acknowledgement; abandoned consumer expiry",
+    "typed shared KV allocation failures, separate client/owner/page management; explicit lock ownership",
+    "C++ and Python data client transaction deadlines and Python payload bounds",
+    "ServingRuntime separated from benchmark launcher and configuration parsing",
+    "PD transfer common/in-process/P2P/NCCL implementations separated",
+    "ordered injectable shutdown coordinator and registered CTest suites"
+  ],
+  "limitations": [
+    "Real CUDA MPS is unavailable on this WSL/driver; MPS control paths are covered by mocks, not kernel-overlap execution.",
+    "Multi-GPU and NCCL execution were not available; current build has NCCL disabled.",
+    "Historical test_* suites are excluded from the main regression entry; passing CTest is not certification of every legacy test.",
+    "Control RPCs still use separate request sockets; shared KV owner RPC remains synchronous to preserve release acknowledgement ordering.",
+    "Microbenchmark values from different sessions vary; no end-to-end inference speedup is claimed."
+  ],
+  "intermediate_failures_fixed": [
+    "Shared-page retire recursively acquired a nonrecursive mutex; corrected to collect_locked and verified by GPU reuse tests.",
+    "Lifecycle assertions previously assumed no phase events; now assert resource event ordering while allowing phase diagnostics.",
+    "An in-flight build missed a late Owner source edit; final validation used a completed frozen build."
+  ],
+  "validation": {
+    "real_model_output_match": true,
+    "alternating_requests": 10,
+    "direct_cancellations": 20,
+    "cancelled_request_records_remaining": 0,
+    "kv_arena_bytes_returned": 536870912,
+    "malformed_rpc_survives": true,
+    "drain_cancel_owner_failure": true,
+    "warm_requests_for_retention_measurement": 100,
+    "subsequent_requests_with_stable_memory_and_threads": 500,
+    "frozen_build_kv_reuse_rounds": 3
+  },
+  "files": [
+    "build.log",
+    "cancel.json",
+    "config.json",
+    "cpp-tests.xml",
+    "cpu-tests.log",
+    "drain.json",
+    "gpu-tests.log",
+    "kv-micro.json",
+    "kv-reuse.json",
+    "memory-after-cold.json",
+    "memory-after-warm.json",
+    "memory-before.json",
+    "model-fault-shutdown.json",
+    "model-owner-trace.jsonl",
+    "models.json",
+    "owner-failure.json",
+    "python-data.log",
+    "kv-micro-repeat.json",
+    "kv-micro-comparison.json",
+    "gpu-tests-full.log"
+  ],
+  "performance_note": "Repeated microbenchmarks show session/run variability. Persistent KV owner RPC remains a sub-millisecond operation, slower than purely local private allocation; no performance-neutrality or throughput improvement claim is made from these unpaired historical comparisons.",
+  "evidence_sha256": {
+    "python-data.log": "bd5201fad773316bbfda2cfee7833ff2d8db356db81550c537f47ba44de0ed2d",
+    "model-fault-shutdown.json": "899686cb949ea8fca6dda1d299611e1cdfb79030790e9e27ad3f8fce27bced58",
+    "build.log": "ad7a999240b5b884de344deae1e9e129dc3391eaea351de0100850b160d12118",
+    "gpu-tests.log": "eaa6363acc08c0e1dc294099bc8727bbcd24303829ca137301854d6107f46a30",
+    "kv-micro-comparison.json": "cd5e126ff2b45f0bad084e047b90d8515c4311652c2e249f4d8faf1e8a656118",
+    "config.json": "311103c3800487d4a0ead74edec0b296169f9de9ec314e494bb9744c80a750fd",
+    "cpu-tests.log": "a98f2b6fadfa75489f3fb2cc5714fb4756d384b41e0d845dee601b11f3c02363",
+    "drain.json": "f31d98f3d10e89b583bf0869d19e4c1541904d019811b1f1d12c87cd58d9ce44",
+    "owner-failure.json": "f46be1c366ebd12fb8dbc22e0215a25c29f26b5408294668e96b873f13dbf76c",
+    "memory-before.json": "6252bed761aec77c105ff5c5335b380d57001809629dab3eeda9ebf4935c6753",
+    "kv-reuse.json": "c774248c4b0db12295f0d4b031806c8d2ee22d451cc6daa064908b4f7fa252fc",
+    "memory-after-warm.json": "a3f8964daa2edb4a83bca03558efad95966101864f5a27bcf8a855cc0c892e78",
+    "cancel.json": "9056434977a3a3d2ebb47c355582bc58fe11921eeb4ce1d226785bdf832fe05a",
+    "models.json": "9a1cbcdb162e40cd8ee1f93cdb99d7e483f9a36a51b0ec01e78eefa16802ad7d",
+    "kv-micro-repeat.json": "04f875215f8faae928485650798111353a9a5ab51cee35806a4ec85129d5a833",
+    "cpp-tests.xml": "3b0086deee0ff125fc7dd861b188498aca19ffaac4a38a34f38856dbeeb1404c",
+    "kv-micro.json": "b34042e95a4e897ad06b4cdcafa6076630d6f24aab321d2c3d3cf1882a416a23",
+    "memory-after-cold.json": "8c310572eebfb37af31be832f4bb6d44bfbbb4c552c1a6d90d356ed48b898f42",
+    "gpu-tests-full.log": "27ec0fc498df971f5c5fdd628fdeebd3ed29d113a034c46843dd13f5901add63",
+    "model-owner-trace.jsonl": "9ad37113d0926aacb41c0e75f1f43780e711cf12d755e0f1d2aa967bb69e010c"
+  },
+  "tests_complete": true,
+  "test_processes_stopped": true
+}

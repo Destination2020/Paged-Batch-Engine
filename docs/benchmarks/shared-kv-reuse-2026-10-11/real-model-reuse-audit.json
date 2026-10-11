@@ -1,0 +1,74 @@
+{
+  "acquires": 25,
+  "releases": 25,
+  "peak_leased_bytes": 13500416,
+  "live_leases_at_end": 0,
+  "live_intervals_never_overlap": true,
+  "acquire_events_reusing_other_models_bytes": 17,
+  "examples": [
+    {
+      "previous_model": "qwen25-0.5b",
+      "next_model": "qwen25-1.5b",
+      "released_lease": 1,
+      "new_lease": 2,
+      "offset": 0,
+      "overlapping_bytes": 2162688
+    },
+    {
+      "previous_model": "qwen25-0.5b",
+      "next_model": "qwen25-1.5b",
+      "released_lease": 1,
+      "new_lease": 3,
+      "offset": 0,
+      "overlapping_bytes": 2162688
+    },
+    {
+      "previous_model": "qwen25-0.5b",
+      "next_model": "qwen25-1.5b",
+      "released_lease": 1,
+      "new_lease": 5,
+      "offset": 0,
+      "overlapping_bytes": 2162688
+    },
+    {
+      "previous_model": "qwen25-0.5b",
+      "next_model": "qwen25-1.5b",
+      "released_lease": 1,
+      "new_lease": 7,
+      "offset": 0,
+      "overlapping_bytes": 2162688
+    },
+    {
+      "previous_model": "qwen25-1.5b",
+      "next_model": "qwen25-0.5b",
+      "released_lease": 7,
+      "new_lease": 13,
+      "offset": 0,
+      "overlapping_bytes": 2162688
+    },
+    {
+      "previous_model": "qwen25-1.5b",
+      "next_model": "qwen25-0.5b",
+      "released_lease": 7,
+      "new_lease": 14,
+      "offset": 0,
+      "overlapping_bytes": 2162688
+    },
+    {
+      "previous_model": "qwen25-0.5b",
+      "next_model": "qwen25-1.5b",
+      "released_lease": 8,
+      "new_lease": 15,
+      "offset": 2359296,
+      "overlapping_bytes": 2162688
+    },
+    {
+      "previous_model": "qwen25-1.5b",
+      "next_model": "qwen25-0.5b",
+      "released_lease": 7,
+      "new_lease": 16,
+      "offset": 0,
+      "overlapping_bytes": 2162688
+    }
+  ]
+}

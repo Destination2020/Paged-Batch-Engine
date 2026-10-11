@@ -96,7 +96,7 @@ struct SharedWeightLease {
 
 class DataClient {
  public:
-  explicit DataClient(std::string endpoint = kDefaultDataEndpoint);
+  explicit DataClient(std::string endpoint = kDefaultDataEndpoint, int32_t timeout_ms = 30000);
 
   DataError ping(uint64_t* owner_incarnation) const;
   DataError reserve(const DataReservation& reservation, AllocationHandle* handle) const;
@@ -137,6 +137,7 @@ class DataClient {
   DataError transact(DataServiceOp op, const std::vector<uint8_t>& request,
                      std::vector<uint8_t>* response) const;
   std::string endpoint_;
+  int32_t timeout_ms_;
   uint64_t consumer_incarnation_ = 0;
   mutable std::atomic<uint64_t> next_operation_{1};
 };

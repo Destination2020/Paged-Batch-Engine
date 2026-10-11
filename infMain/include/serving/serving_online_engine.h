@@ -20,7 +20,7 @@
 
 namespace serving {
 
-class ServingBenchmarkApp;
+class ServingRuntime;
 
 struct OnlineGenerateRequest {
   std::string model_id;
@@ -62,7 +62,7 @@ class OnlineRequestHandle {
 
 class OnlineServingEngine {
  public:
-  OnlineServingEngine(ServingBenchmarkApp* app, const BenchConfig& config);
+  OnlineServingEngine(ServingRuntime* app, const BenchConfig& config);
   ~OnlineServingEngine();
 
   void start();
@@ -95,7 +95,7 @@ class OnlineServingEngine {
                               const SampledTokenView& sampled_tokens);
   void publish_finished();
 
-  ServingBenchmarkApp* app_ = nullptr;
+  ServingRuntime* app_ = nullptr;
   BenchConfig config_;
   std::unique_ptr<Scheduler> scheduler_;
   std::unique_ptr<GpuWorker> gpu_worker_;

@@ -1,0 +1,4 @@
+private-0.5b: I20261011 16:12:56.622181 123790655946752 qwen2.cpp:1009] Serving workspace preallocation: token_capacity=16, reserved_bytes=7274496
+private-1.5b: I20261011 16:12:59.485448 125703703465984 qwen2.cpp:1009] Serving workspace preallocation: token_capacity=16, reserved_bytes=8990720
+shared-0.5b: I20261011 16:13:03.052269 127528521019392 qwen2.cpp:1009] Serving workspace preallocation: token_capacity=16, reserved_bytes=7274496
+shared-1.5b: I20261011 16:13:05.059143 135628925186048 qwen2.cpp:1009] Serving workspace preallocation: token_capacity=16, reserved_bytes=8990720

@@ -1,0 +1,367 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites tests="212" failures="0" disabled="0" errors="0" time="3.799" timestamp="2026-10-11T16:58:13.973" name="AllTests">
+  <testsuite name="BlockLeaseTest" tests="2" failures="0" disabled="0" skipped="0" errors="0" time="0." timestamp="2026-10-11T16:58:13.973">
+    <testcase name="IOAndComputePreventReuseUntilBothReleased" file="/home/nowcoder/PagedBatchEngine/test/test_block_lease.cpp" line="9" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:13.973" classname="BlockLeaseTest" />
+    <testcase name="RejectsWrongPoolAndMoveAssignmentReleasesOldPin" file="/home/nowcoder/PagedBatchEngine/test/test_block_lease.cpp" line="36" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:13.973" classname="BlockLeaseTest" />
+  </testsuite>
+  <testsuite name="PageSchemaTest" tests="1" failures="0" disabled="0" skipped="0" errors="0" time="0." timestamp="2026-10-11T16:58:13.973">
+    <testcase name="RequiresCompleteKvAndScaleCoverage" file="/home/nowcoder/PagedBatchEngine/test/test_cache_transfer_plan.cpp" line="130" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:13.973" classname="PageSchemaTest" />
+  </testsuite>
+  <testsuite name="TransferPlanTest" tests="7" failures="0" disabled="0" skipped="0" errors="0" time="0.023" timestamp="2026-10-11T16:58:13.973">
+    <testcase name="ShuffledLayoutsAndVirtualBlocksRoundTrip" file="/home/nowcoder/PagedBatchEngine/test/test_cache_transfer_plan.cpp" line="149" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:13.973" classname="TransferPlanTest" />
+    <testcase name="MissingComponentFailsBeforeAnyDestinationWrite" file="/home/nowcoder/PagedBatchEngine/test/test_cache_transfer_plan.cpp" line="203" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:13.974" classname="TransferPlanTest" />
+    <testcase name="ShapeAndDtypeMismatchFailBeforeAnyDestinationWrite" file="/home/nowcoder/PagedBatchEngine/test/test_cache_transfer_plan.cpp" line="234" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:13.974" classname="TransferPlanTest" />
+    <testcase name="IndependentAllocationsPackAndRestorePlainAndFp8" file="/home/nowcoder/PagedBatchEngine/test/test_cache_transfer_plan.cpp" line="264" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:13.974" classname="TransferPlanTest" />
+    <testcase name="HeadSplitMergeAndReorderPreserveElementSemantics" file="/home/nowcoder/PagedBatchEngine/test/test_cache_transfer_plan.cpp" line="328" status="run" result="completed" time="0.001" timestamp="2026-10-11T16:58:13.975" classname="TransferPlanTest" />
+    <testcase name="InvalidCoverageAndRepresentationFailBeforeWrite" file="/home/nowcoder/PagedBatchEngine/test/test_cache_transfer_plan.cpp" line="379" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:13.976" classname="TransferPlanTest" />
+    <testcase name="ImmutableTemplateCacheIgnoresAddressesAndIsBounded" file="/home/nowcoder/PagedBatchEngine/test/test_cache_transfer_plan.cpp" line="426" status="run" result="completed" time="0.019" timestamp="2026-10-11T16:58:13.976" classname="TransferPlanTest" />
+  </testsuite>
+  <testsuite name="LayoutCodecTest" tests="1" failures="0" disabled="0" skipped="0" errors="0" time="0." timestamp="2026-10-11T16:58:13.996">
+    <testcase name="RejectsOverlappingOrNonPermutationLayouts" file="/home/nowcoder/PagedBatchEngine/test/test_cache_transfer_plan.cpp" line="456" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:13.996" classname="LayoutCodecTest" />
+  </testsuite>
+  <testsuite name="CompressedRadixCacheTreeTest" tests="15" failures="0" disabled="0" skipped="0" errors="0" time="0." timestamp="2026-10-11T16:58:13.996">
+    <testcase name="InsertsOneCompressedSegmentForLongPrefix" file="/home/nowcoder/PagedBatchEngine/test/test_compressed_radix_cache_tree.cpp" line="23" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:13.996" classname="CompressedRadixCacheTreeTest" />
+    <testcase name="MatchInsideSegmentSplitsNodeAtBlockBoundary" file="/home/nowcoder/PagedBatchEngine/test/test_compressed_radix_cache_tree.cpp" line="45" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:13.996" classname="CompressedRadixCacheTreeTest" />
+    <testcase name="InsertDivergentSuffixAfterSplitCreatesSibling" file="/home/nowcoder/PagedBatchEngine/test/test_compressed_radix_cache_tree.cpp" line="74" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:13.996" classname="CompressedRadixCacheTreeTest" />
+    <testcase name="InsertShorterPrefixSplitsExistingLongLeaf" file="/home/nowcoder/PagedBatchEngine/test/test_compressed_radix_cache_tree.cpp" line="103" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:13.996" classname="CompressedRadixCacheTreeTest" />
+    <testcase name="IgnoresPartialTrailingBlock" file="/home/nowcoder/PagedBatchEngine/test/test_compressed_radix_cache_tree.cpp" line="121" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:13.996" classname="CompressedRadixCacheTreeTest" />
+    <testcase name="PinAndUnpinOperateOnWholePath" file="/home/nowcoder/PagedBatchEngine/test/test_compressed_radix_cache_tree.cpp" line="137" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:13.996" classname="CompressedRadixCacheTreeTest" />
+    <testcase name="NamespaceCanBeModeledBySeparateTrees" file="/home/nowcoder/PagedBatchEngine/test/test_compressed_radix_cache_tree.cpp" line="156" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:13.996" classname="CompressedRadixCacheTreeTest" />
+    <testcase name="RepeatedMatchesCanSplitCompressedPathMultipleTimes" file="/home/nowcoder/PagedBatchEngine/test/test_compressed_radix_cache_tree.cpp" line="166" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:13.996" classname="CompressedRadixCacheTreeTest" />
+    <testcase name="SplitPreservesPinnedSuffixPathCounts" file="/home/nowcoder/PagedBatchEngine/test/test_compressed_radix_cache_tree.cpp" line="197" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:13.997" classname="CompressedRadixCacheTreeTest" />
+    <testcase name="SharedPrefixPinCountsAccumulateAcrossBranches" file="/home/nowcoder/PagedBatchEngine/test/test_compressed_radix_cache_tree.cpp" line="221" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:13.997" classname="CompressedRadixCacheTreeTest" />
+    <testcase name="ComplexMultiBranchTreeMatchesCorrectLeaves" file="/home/nowcoder/PagedBatchEngine/test/test_compressed_radix_cache_tree.cpp" line="259" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:13.997" classname="CompressedRadixCacheTreeTest" />
+    <testcase name="InsertExactExistingSequenceIsIdempotentAfterSplits" file="/home/nowcoder/PagedBatchEngine/test/test_compressed_radix_cache_tree.cpp" line="289" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:13.997" classname="CompressedRadixCacheTreeTest" />
+    <testcase name="ShorterMatchCanResolveInternalBoundaryForFallback" file="/home/nowcoder/PagedBatchEngine/test/test_compressed_radix_cache_tree.cpp" line="309" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:13.997" classname="CompressedRadixCacheTreeTest" />
+    <testcase name="EmptyAndPartialOnlyInputsReturnRoot" file="/home/nowcoder/PagedBatchEngine/test/test_compressed_radix_cache_tree.cpp" line="326" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:13.997" classname="CompressedRadixCacheTreeTest" />
+    <testcase name="ValidatesConstructionAndInputErrors" file="/home/nowcoder/PagedBatchEngine/test/test_compressed_radix_cache_tree.cpp" line="345" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:13.997" classname="CompressedRadixCacheTreeTest" />
+  </testsuite>
+  <testsuite name="GlobalChunkAllocator" tests="4" failures="0" disabled="0" skipped="0" errors="0" time="0.006" timestamp="2026-10-11T16:58:13.997">
+    <testcase name="SharesReturnedBytesAcrossDifferentLayouts" file="/home/nowcoder/PagedBatchEngine/test/test_global_chunk_allocator.cpp" line="8" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:13.997" classname="GlobalChunkAllocator" />
+    <testcase name="RejectsWrongEpochIdentityAndDuplicateRelease" file="/home/nowcoder/PagedBatchEngine/test/test_global_chunk_allocator.cpp" line="28" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:13.997" classname="GlobalChunkAllocator" />
+    <testcase name="AlignmentFragmentationAndQuotaAreAtomic" file="/home/nowcoder/PagedBatchEngine/test/test_global_chunk_allocator.cpp" line="49" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:13.997" classname="GlobalChunkAllocator" />
+    <testcase name="RandomizedAccountingAndDisjointIntervals" file="/home/nowcoder/PagedBatchEngine/test/test_global_chunk_allocator.cpp" line="68" status="run" result="completed" time="0.005" timestamp="2026-10-11T16:58:13.997" classname="GlobalChunkAllocator" />
+  </testsuite>
+  <testsuite name="HostStoreTest" tests="5" failures="0" disabled="0" skipped="0" errors="0" time="0." timestamp="2026-10-11T16:58:14.003">
+    <testcase name="AdmissionBoundsBytesAndEntriesBeforeAllocation" file="/home/nowcoder/PagedBatchEngine/test/test_host_store.cpp" line="21" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:14.003" classname="HostStoreTest" />
+    <testcase name="CancelAfterSubmitRetainsBufferUntilPhysicalCompletion" file="/home/nowcoder/PagedBatchEngine/test/test_host_store.cpp" line="42" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:14.003" classname="HostStoreTest" />
+    <testcase name="ReadyPageRoundTripAndReadPinProtectEviction" file="/home/nowcoder/PagedBatchEngine/test/test_host_store.cpp" line="61" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:14.003" classname="HostStoreTest" />
+    <testcase name="UnknownCompletionQuarantinesCapacity" file="/home/nowcoder/PagedBatchEngine/test/test_host_store.cpp" line="92" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:14.003" classname="HostStoreTest" />
+    <testcase name="AllocationFailureDoesNotConsumeBudget" file="/home/nowcoder/PagedBatchEngine/test/test_host_store.cpp" line="110" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:14.003" classname="HostStoreTest" />
+  </testsuite>
+  <testsuite name="HostStoreCudaTest" tests="2" failures="0" disabled="0" skipped="0" errors="0" time="0.299" timestamp="2026-10-11T16:58:14.003">
+    <testcase name="CancellationDoesNotFreeInFlightSourceOrPinnedDestination" file="/home/nowcoder/PagedBatchEngine/test/test_host_store_cuda.cpp" line="20" status="run" result="completed" time="0.291" timestamp="2026-10-11T16:58:14.003" classname="HostStoreCudaTest" />
+    <testcase name="BoundScatterPlainAndFp8RoundTripAtDifferentBlockAddresses" file="/home/nowcoder/PagedBatchEngine/test/test_host_store_cuda.cpp" line="82" status="run" result="completed" time="0.007" timestamp="2026-10-11T16:58:14.295" classname="HostStoreCudaTest" />
+  </testsuite>
+  <testsuite name="KVCacheManagerTest" tests="30" failures="0" disabled="0" skipped="0" errors="0" time="0.014" timestamp="2026-10-11T16:58:14.302">
+    <testcase name="ReusesFreedSlotWithFreshGeneration" file="/home/nowcoder/PagedBatchEngine/test/test_kv_cache_manager.cpp" line="80" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:14.302" classname="KVCacheManagerTest" />
+    <testcase name="ReusesOneSlotFor100000Lifetimes" file="/home/nowcoder/PagedBatchEngine/test/test_kv_cache_manager.cpp" line="114" status="run" result="completed" time="0.013" timestamp="2026-10-11T16:58:14.303" classname="KVCacheManagerTest" />
+    <testcase name="RetiresExhaustedSlotWithoutHandleReuse" file="/home/nowcoder/PagedBatchEngine/test/test_kv_cache_manager.cpp" line="132" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:14.316" classname="KVCacheManagerTest" />
+    <testcase name="InvalidatesStaleAndMalformedHandles" file="/home/nowcoder/PagedBatchEngine/test/test_kv_cache_manager.cpp" line="148" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:14.316" classname="KVCacheManagerTest" />
+    <testcase name="AppendFailsWhenAllocatorCapacityIsExhausted" file="/home/nowcoder/PagedBatchEngine/test/test_kv_cache_manager.cpp" line="165" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:14.316" classname="KVCacheManagerTest" />
+    <testcase name="RadixCacheReusesLongestPrefixWithSeedTail" file="/home/nowcoder/PagedBatchEngine/test/test_kv_cache_manager.cpp" line="184" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:14.316" classname="KVCacheManagerTest" />
+    <testcase name="RadixCachePartialHitSplitsCompressedNode" file="/home/nowcoder/PagedBatchEngine/test/test_kv_cache_manager.cpp" line="216" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:14.316" classname="KVCacheManagerTest" />
+    <testcase name="RadixCachePublishKeepsBlocksResidentAfterRequestFree" file="/home/nowcoder/PagedBatchEngine/test/test_kv_cache_manager.cpp" line="257" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:14.316" classname="KVCacheManagerTest" />
+    <testcase name="RadixCacheCanBeDisabledExplicitly" file="/home/nowcoder/PagedBatchEngine/test/test_kv_cache_manager.cpp" line="282" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:14.316" classname="KVCacheManagerTest" />
+    <testcase name="RadixCacheDoesNotEvictActivePinnedPath" file="/home/nowcoder/PagedBatchEngine/test/test_kv_cache_manager.cpp" line="311" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:14.316" classname="KVCacheManagerTest" />
+    <testcase name="AppendUnderPressureEvictsColdRadixCache" file="/home/nowcoder/PagedBatchEngine/test/test_kv_cache_manager.cpp" line="339" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:14.316" classname="KVCacheManagerTest" />
+    <testcase name="LogicalPagesResolveDifferentLayerBlockIdsAfterSplit" file="/home/nowcoder/PagedBatchEngine/test/test_kv_cache_manager.cpp" line="362" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:14.316" classname="KVCacheManagerTest" />
+    <testcase name="PublishesOnlyCommittedFullPages" file="/home/nowcoder/PagedBatchEngine/test/test_kv_cache_manager.cpp" line="392" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:14.316" classname="KVCacheManagerTest" />
+    <testcase name="ComputeLeaseSurvivesRequestCancellation" file="/home/nowcoder/PagedBatchEngine/test/test_kv_cache_manager.cpp" line="415" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:14.316" classname="KVCacheManagerTest" />
+    <testcase name="SharedExternalPrefixCanServeSequentialDecodeRequests" file="/home/nowcoder/PagedBatchEngine/test/test_kv_cache_manager.cpp" line="431" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:14.316" classname="KVCacheManagerTest" />
+    <testcase name="AllocationIntentHasNoSideEffectsAndRejectsStaleProgress" file="/home/nowcoder/PagedBatchEngine/test/test_kv_cache_manager.cpp" line="449" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:14.316" classname="KVCacheManagerTest" />
+    <testcase name="MissingResidencyUsesOnlyContiguousReadyPrefix" file="/home/nowcoder/PagedBatchEngine/test/test_kv_cache_manager.cpp" line="468" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:14.316" classname="KVCacheManagerTest" />
+    <testcase name="PartialTailForkSharesThenCopiesOnFirstAppend" file="/home/nowcoder/PagedBatchEngine/test/test_kv_cache_manager.cpp" line="488" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:14.316" classname="KVCacheManagerTest" />
+    <testcase name="PageAlignedForkNeedsNoCowAndSamplesIndependently" file="/home/nowcoder/PagedBatchEngine/test/test_kv_cache_manager.cpp" line="546" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:14.316" classname="KVCacheManagerTest" />
+    <testcase name="MultimodalRadixKeyIncludesFullImageIdentity" file="/home/nowcoder/PagedBatchEngine/test/test_kv_cache_manager.cpp" line="569" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:14.316" classname="KVCacheManagerTest" />
+    <testcase name="PrefixBuilderPublishesAfterTemporaryRequestExits" file="/home/nowcoder/PagedBatchEngine/test/test_kv_cache_manager.cpp" line="598" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:14.316" classname="KVCacheManagerTest" />
+    <testcase name="HostOnlyPrefixRestoresAllLayersBeforeAdoption" file="/home/nowcoder/PagedBatchEngine/test/test_kv_cache_manager.cpp" line="616" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:14.316" classname="KVCacheManagerTest" />
+    <testcase name="SharedRestoreTargetsAreReservedOnceForThirtyTwoRequests" file="/home/nowcoder/PagedBatchEngine/test/test_kv_cache_manager.cpp" line="647" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:14.317" classname="KVCacheManagerTest" />
+    <testcase name="ReservedRestoreTargetsRejectGrowthWithoutPartialAllocation" file="/home/nowcoder/PagedBatchEngine/test/test_kv_cache_manager.cpp" line="673" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:14.317" classname="KVCacheManagerTest" />
+    <testcase name="CancelledRestoreDrainsWithoutReusingDestinationEarly" file="/home/nowcoder/PagedBatchEngine/test/test_kv_cache_manager.cpp" line="698" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:14.317" classname="KVCacheManagerTest" />
+    <testcase name="AllocationPressureDemotesWithoutErasingLogicalPrefix" file="/home/nowcoder/PagedBatchEngine/test/test_kv_cache_manager.cpp" line="715" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:14.317" classname="KVCacheManagerTest" />
+    <testcase name="RecoveryGraphProtectsActiveConsumerOnActualDemotionPath" file="/home/nowcoder/PagedBatchEngine/test/test_kv_cache_manager.cpp" line="739" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:14.317" classname="KVCacheManagerTest" />
+    <testcase name="RecoveryGraphKeepsLastReplicaWhenHostIsFull" file="/home/nowcoder/PagedBatchEngine/test/test_kv_cache_manager.cpp" line="755" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:14.317" classname="KVCacheManagerTest" />
+    <testcase name="RecoveryGraphRejectsVersionInvalidationOnDemotionPath" file="/home/nowcoder/PagedBatchEngine/test/test_kv_cache_manager.cpp" line="766" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:14.317" classname="KVCacheManagerTest" />
+    <testcase name="ClearRetiresActualPageRecoveryObjects" file="/home/nowcoder/PagedBatchEngine/test/test_kv_cache_manager.cpp" line="777" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:14.317" classname="KVCacheManagerTest" />
+  </testsuite>
+  <testsuite name="KVPoolViewTest" tests="1" failures="0" disabled="0" skipped="0" errors="0" time="0." timestamp="2026-10-11T16:58:14.317">
+    <testcase name="BindsPhysicalPoolWithoutOwningAllocationQueue" file="/home/nowcoder/PagedBatchEngine/test/test_kv_pool_view.cpp" line="5" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:14.317" classname="KVPoolViewTest" />
+  </testsuite>
+  <testsuite name="LogicalRadixProbeTest" tests="1" failures="0" disabled="0" skipped="0" errors="0" time="0." timestamp="2026-10-11T16:58:14.317">
+    <testcase name="ShortProbePreservesTreeAndWidePageIds" file="/home/nowcoder/PagedBatchEngine/test/test_logical_radix_probe.cpp" line="4" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:14.317" classname="LogicalRadixProbeTest" />
+  </testsuite>
+  <testsuite name="NodeMemoryBudgetTest" tests="2" failures="0" disabled="0" skipped="0" errors="0" time="0." timestamp="2026-10-11T16:58:14.317">
+    <testcase name="JointFailureRollsBackEveryPool" file="/home/nowcoder/PagedBatchEngine/test/test_node_memory_budget.cpp" line="4" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:14.317" classname="NodeMemoryBudgetTest" />
+    <testcase name="TwoGrowersMakeExplicitProgressWithoutHoldAndWait" file="/home/nowcoder/PagedBatchEngine/test/test_node_memory_budget.cpp" line="19" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:14.317" classname="NodeMemoryBudgetTest" />
+  </testsuite>
+  <testsuite name="P5AblationTest" tests="1" failures="0" disabled="0" skipped="0" errors="0" time="0.045" timestamp="2026-10-11T16:58:14.317">
+    <testcase name="FixedBudgetReportsLayoutTransactionAndSingleFlightCosts" file="/home/nowcoder/PagedBatchEngine/test/test_p5_ablation.cpp" line="52" status="run" result="completed" time="0.045" timestamp="2026-10-11T16:58:14.317" classname="P5AblationTest" />
+  </testsuite>
+  <testsuite name="PageDirectoryTest" tests="4" failures="0" disabled="0" skipped="0" errors="0" time="0." timestamp="2026-10-11T16:58:14.363">
+    <testcase name="EvictionRetainsInFlightPageUntilLeaseCompletion" file="/home/nowcoder/PagedBatchEngine/test/test_page_directory.cpp" line="4" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:14.363" classname="PageDirectoryTest" />
+    <testcase name="BoundedPublicationValidatesAllLayersBeforeRetaining" file="/home/nowcoder/PagedBatchEngine/test/test_page_directory.cpp" line="26" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:14.363" classname="PageDirectoryTest" />
+    <testcase name="HostResidencyDemotionRestoreAndDeferredEviction" file="/home/nowcoder/PagedBatchEngine/test/test_page_directory.cpp" line="51" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:14.363" classname="PageDirectoryTest" />
+    <testcase name="HostAttachmentRejectsSchemaVersionAndDuplicateTicket" file="/home/nowcoder/PagedBatchEngine/test/test_page_directory.cpp" line="113" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:14.363" classname="PageDirectoryTest" />
+  </testsuite>
+  <testsuite name="PageMigrationTest" tests="7" failures="0" disabled="0" skipped="0" errors="0" time="0." timestamp="2026-10-11T16:58:14.363">
+    <testcase name="CpuRoundTripPublishesOnlyCompletedWholePages" file="/home/nowcoder/PagedBatchEngine/test/test_page_migration.cpp" line="44" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:14.363" classname="PageMigrationTest" />
+    <testcase name="CancelRetainsBothEndsUntilLateCopyAndCompletion" file="/home/nowcoder/PagedBatchEngine/test/test_page_migration.cpp" line="71" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:14.363" classname="PageMigrationTest" />
+    <testcase name="UnknownCompletionQuarantinesUntilExplicitDrain" file="/home/nowcoder/PagedBatchEngine/test/test_page_migration.cpp" line="102" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:14.363" classname="PageMigrationTest" />
+    <testcase name="AdmissionAndUnknownPageFailureHaveNoLeaks" file="/home/nowcoder/PagedBatchEngine/test/test_page_migration.cpp" line="128" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:14.363" classname="PageMigrationTest" />
+    <testcase name="DeletedDestinationRejectsLateH2DCommit" file="/home/nowcoder/PagedBatchEngine/test/test_page_migration.cpp" line="144" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:14.363" classname="PageMigrationTest" />
+    <testcase name="LaterLayerAllocationFailureRollsBackOnlyNewBlocks" file="/home/nowcoder/PagedBatchEngine/test/test_page_migration.cpp" line="173" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:14.363" classname="PageMigrationTest" />
+    <testcase name="SafeSubmitFailureAndShutdownRollbackOnlyOwnedResources" file="/home/nowcoder/PagedBatchEngine/test/test_page_migration.cpp" line="202" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:14.363" classname="PageMigrationTest" />
+  </testsuite>
+  <testsuite name="PageMigrationCudaTest" tests="3" failures="0" disabled="0" skipped="0" errors="0" time="0.023" timestamp="2026-10-11T16:58:14.363">
+    <testcase name="GatedTransactionsRetainResourcesAndRestorePlainFp8" file="/home/nowcoder/PagedBatchEngine/test/test_page_migration_cuda.cpp" line="13" status="run" result="completed" time="0.014" timestamp="2026-10-11T16:58:14.363" classname="PageMigrationCudaTest" />
+    <testcase name="KVManagerRestoresHostOnlyRadixPrefix" file="/home/nowcoder/PagedBatchEngine/test/test_page_migration_cuda.cpp" line="110" status="run" result="completed" time="0.006" timestamp="2026-10-11T16:58:14.378" classname="PageMigrationCudaTest" />
+    <testcase name="ThirtyTwoRequestsShareOnePhysicalRestore" file="/home/nowcoder/PagedBatchEngine/test/test_page_migration_cuda.cpp" line="164" status="run" result="completed" time="0.003" timestamp="2026-10-11T16:58:14.384" classname="PageMigrationCudaTest" />
+  </testsuite>
+  <testsuite name="PagedAttentionTest" tests="1" failures="0" disabled="0" skipped="0" errors="0" time="0.014" timestamp="2026-10-11T16:58:14.387">
+    <testcase name="SingleSequenceDecodeCorrectness" file="/home/nowcoder/PagedBatchEngine/test/test_paged_attention.cpp" line="14" status="run" result="completed" time="0.014" timestamp="2026-10-11T16:58:14.387" classname="PagedAttentionTest" />
+  </testsuite>
+  <testsuite name="PagedAttentionFastTest" tests="5" failures="0" disabled="0" skipped="0" errors="0" time="0.007" timestamp="2026-10-11T16:58:14.401">
+    <testcase name="ReturnsFalseForFp32" file="/home/nowcoder/PagedBatchEngine/test/test_paged_attention_fast.cpp" line="267" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:14.401" classname="PagedAttentionFastTest" />
+    <testcase name="FallsBackShortBucket" file="/home/nowcoder/PagedBatchEngine/test/test_paged_attention_fast.cpp" line="343" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:14.402" classname="PagedAttentionFastTest" />
+    <testcase name="FallsBackMidBucket" file="/home/nowcoder/PagedBatchEngine/test/test_paged_attention_fast.cpp" line="372" status="run" result="completed" time="0.001" timestamp="2026-10-11T16:58:14.402" classname="PagedAttentionFastTest" />
+    <testcase name="MatchesLegacyLongBucket" file="/home/nowcoder/PagedBatchEngine/test/test_paged_attention_fast.cpp" line="401" status="run" result="completed" time="0.004" timestamp="2026-10-11T16:58:14.403" classname="PagedAttentionFastTest" />
+    <testcase name="EmptySequenceProducesZeroOutput" file="/home/nowcoder/PagedBatchEngine/test/test_paged_attention_fast.cpp" line="407" status="run" result="completed" time="0.001" timestamp="2026-10-11T16:58:14.408" classname="PagedAttentionFastTest" />
+  </testsuite>
+  <testsuite name="Qwen25MRoPETest" tests="1" failures="0" disabled="0" skipped="0" errors="0" time="0." timestamp="2026-10-11T16:58:14.409">
+    <testcase name="SelectsTemporalHeightAndWidthSections" file="/home/nowcoder/PagedBatchEngine/test/test_qwen25_mrope.cpp" line="11" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:14.409" classname="Qwen25MRoPETest" />
+  </testsuite>
+  <testsuite name="RecoveryDependencyTest" tests="6" failures="0" disabled="0" skipped="0" errors="0" time="0." timestamp="2026-10-11T16:58:14.410">
+    <testcase name="ExactFeatureKeepsLastReplicaWithoutProvenRecipe" file="/home/nowcoder/PagedBatchEngine/test/test_recovery_dependency.cpp" line="25" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:14.410" classname="RecoveryDependencyTest" />
+    <testcase name="DemoteCommitsHostBeforeGpuMayDisappear" file="/home/nowcoder/PagedBatchEngine/test/test_recovery_dependency.cpp" line="35" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:14.410" classname="RecoveryDependencyTest" />
+    <testcase name="RejectsMissingOldAndCyclicDependencies" file="/home/nowcoder/PagedBatchEngine/test/test_recovery_dependency.cpp" line="48" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:14.410" classname="RecoveryDependencyTest" />
+    <testcase name="HostFullDropsOnlyProvenRecomputableObjects" file="/home/nowcoder/PagedBatchEngine/test/test_recovery_dependency.cpp" line="66" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:14.410" classname="RecoveryDependencyTest" />
+    <testcase name="TenThousandAcquireReleaseCyclesReclaimCleanly" file="/home/nowcoder/PagedBatchEngine/test/test_recovery_dependency.cpp" line="79" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:14.410" classname="RecoveryDependencyTest" />
+    <testcase name="WatermarksHaveHysteresis" file="/home/nowcoder/PagedBatchEngine/test/test_recovery_dependency.cpp" line="91" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:14.410" classname="RecoveryDependencyTest" />
+  </testsuite>
+  <testsuite name="RequestCheckpointTest" tests="8" failures="0" disabled="0" skipped="0" errors="0" time="0.01" timestamp="2026-10-11T16:58:14.410">
+    <testcase name="PrepareIsInvisibleAndPageBoundariesRestoreBitwise" file="/home/nowcoder/PagedBatchEngine/test/test_request_checkpoint.cpp" line="88" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:14.410" classname="RequestCheckpointTest" />
+    <testcase name="RevisionsCancelStaleRestoreAndRelocateRepeatedly" file="/home/nowcoder/PagedBatchEngine/test/test_request_checkpoint.cpp" line="147" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:14.410" classname="RequestCheckpointTest" />
+    <testcase name="ModelOrSchemaMismatchCannotAllocateDestination" file="/home/nowcoder/PagedBatchEngine/test/test_request_checkpoint.cpp" line="199" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:14.411" classname="RequestCheckpointTest" />
+    <testcase name="OlderPrepareCannotReplaceNewerReadyRevision" file="/home/nowcoder/PagedBatchEngine/test/test_request_checkpoint.cpp" line="214" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:14.411" classname="RequestCheckpointTest" />
+    <testcase name="CancelRevokesPreparingTicketAndReclaimsMetadata" file="/home/nowcoder/PagedBatchEngine/test/test_request_checkpoint.cpp" line="236" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:14.411" classname="RequestCheckpointTest" />
+    <testcase name="ByteAndRecordAdmissionPreserveExistingRevision" file="/home/nowcoder/PagedBatchEngine/test/test_request_checkpoint.cpp" line="254" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:14.411" classname="RequestCheckpointTest" />
+    <testcase name="LifecycleChurnLeavesRecordsAndMetadataBounded" file="/home/nowcoder/PagedBatchEngine/test/test_request_checkpoint.cpp" line="282" status="run" result="completed" time="0.009" timestamp="2026-10-11T16:58:14.411" classname="RequestCheckpointTest" />
+    <testcase name="CudaFp8SnapshotRestoresKvAndScalesAcrossNewBlocks" file="/home/nowcoder/PagedBatchEngine/test/test_request_checkpoint.cpp" line="302" status="run" result="completed" time="0.001" timestamp="2026-10-11T16:58:14.420" classname="RequestCheckpointTest" />
+  </testsuite>
+  <testsuite name="RequestSamplingTest" tests="2" failures="0" disabled="0" skipped="0" errors="0" time="0." timestamp="2026-10-11T16:58:14.421">
+    <testcase name="BatchReorderAndRetryPreserveRandomInputs" file="/home/nowcoder/PagedBatchEngine/test/test_request_progress.cpp" line="7" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:14.421" classname="RequestSamplingTest" />
+    <testcase name="CopyOfProgressResumesRandomStream" file="/home/nowcoder/PagedBatchEngine/test/test_request_progress.cpp" line="36" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:14.421" classname="RequestSamplingTest" />
+  </testsuite>
+  <testsuite name="RequestMetricsTest" tests="1" failures="0" disabled="0" skipped="0" errors="0" time="0." timestamp="2026-10-11T16:58:14.421">
+    <testcase name="PreservesUnevenTokenGapsSeparatelyFromRequestMean" file="/home/nowcoder/PagedBatchEngine/test/test_request_progress.cpp" line="54" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:14.421" classname="RequestMetricsTest" />
+  </testsuite>
+  <testsuite name="RequestWireTest" tests="1" failures="0" disabled="0" skipped="0" errors="0" time="0." timestamp="2026-10-11T16:58:14.421">
+    <testcase name="PreservesFullWidthSeedAndHandles" file="/home/nowcoder/PagedBatchEngine/test/test_request_progress.cpp" line="70" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:14.421" classname="RequestWireTest" />
+  </testsuite>
+  <testsuite name="RolePlacementTest" tests="5" failures="0" disabled="0" skipped="0" errors="0" time="0." timestamp="2026-10-11T16:58:14.421">
+    <testcase name="EmptyRemoteBeatsCachedButLongQueue" file="/home/nowcoder/PagedBatchEngine/test/test_role_placement.cpp" line="23" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:14.421" classname="RolePlacementTest" />
+    <testcase name="FreshCacheWinsWhenTransferDominates" file="/home/nowcoder/PagedBatchEngine/test/test_role_placement.cpp" line="33" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:14.421" classname="RolePlacementTest" />
+    <testcase name="StaleUnknownQueueIsNotTreatedAsZero" file="/home/nowcoder/PagedBatchEngine/test/test_role_placement.cpp" line="43" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:14.421" classname="RolePlacementTest" />
+    <testcase name="FiltersBudgetIncarnationAndRetriesAnotherRole" file="/home/nowcoder/PagedBatchEngine/test/test_role_placement.cpp" line="56" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:14.421" classname="RolePlacementTest" />
+    <testcase name="HotspotLimitAndHysteresisAreBounded" file="/home/nowcoder/PagedBatchEngine/test/test_role_placement.cpp" line="71" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:14.421" classname="RolePlacementTest" />
+  </testsuite>
+  <testsuite name="SchedulerRadixCacheTest" tests="2" failures="0" disabled="0" skipped="0" errors="0" time="0.007" timestamp="2026-10-11T16:58:14.421">
+    <testcase name="PartialHitBuildsCorrectPrefillMetadataAcrossChunks" file="/home/nowcoder/PagedBatchEngine/test/test_scheduler_radix_cache.cpp" line="50" status="run" result="completed" time="0.004" timestamp="2026-10-11T16:58:14.421" classname="SchedulerRadixCacheTest" />
+    <testcase name="ServicesHostRestoreBeforeSchedulingColdPrefixTail" file="/home/nowcoder/PagedBatchEngine/test/test_scheduler_radix_cache.cpp" line="136" status="run" result="completed" time="0.003" timestamp="2026-10-11T16:58:14.425" classname="SchedulerRadixCacheTest" />
+  </testsuite>
+  <testsuite name="SchedulerPolicyTest" tests="2" failures="0" disabled="0" skipped="0" errors="0" time="0.006" timestamp="2026-10-11T16:58:14.429">
+    <testcase name="PriorityPolicyAdmitsHigherPriorityWaitingRequestFirst" file="/home/nowcoder/PagedBatchEngine/test/test_scheduler_radix_cache.cpp" line="160" status="run" result="completed" time="0.003" timestamp="2026-10-11T16:58:14.429" classname="SchedulerPolicyTest" />
+    <testcase name="LongPrefillThresholdCapsChunkSize" file="/home/nowcoder/PagedBatchEngine/test/test_scheduler_radix_cache.cpp" line="185" status="run" result="completed" time="0.002" timestamp="2026-10-11T16:58:14.432" classname="SchedulerPolicyTest" />
+  </testsuite>
+  <testsuite name="SchedulerDecodeReadyTest" tests="2" failures="0" disabled="0" skipped="0" errors="0" time="0.006" timestamp="2026-10-11T16:58:14.435">
+    <testcase name="AdmissionRespectsMaxNumSeqs" file="/home/nowcoder/PagedBatchEngine/test/test_scheduler_radix_cache.cpp" line="207" status="run" result="completed" time="0.003" timestamp="2026-10-11T16:58:14.435" classname="SchedulerDecodeReadyTest" />
+    <testcase name="AdmissionRespectsEstimatedRemainingBlocks" file="/home/nowcoder/PagedBatchEngine/test/test_scheduler_radix_cache.cpp" line="250" status="run" result="completed" time="0.002" timestamp="2026-10-11T16:58:14.438" classname="SchedulerDecodeReadyTest" />
+  </testsuite>
+  <testsuite name="SchedulerCheckpointTest" tests="3" failures="0" disabled="0" skipped="0" errors="0" time="0.009" timestamp="2026-10-11T16:58:14.441">
+    <testcase name="SuspendsOnlyAtStepBoundaryAndResumesPendingTokenOnce" file="/home/nowcoder/PagedBatchEngine/test/test_scheduler_radix_cache.cpp" line="278" status="run" result="completed" time="0.003" timestamp="2026-10-11T16:58:14.441" classname="SchedulerCheckpointTest" />
+    <testcase name="CancelledSuspendedRequestCannotBecomeRunnable" file="/home/nowcoder/PagedBatchEngine/test/test_scheduler_radix_cache.cpp" line="343" status="run" result="completed" time="0.003" timestamp="2026-10-11T16:58:14.445" classname="SchedulerCheckpointTest" />
+    <testcase name="DecodePressureTriggersCheckpointSaveAndFree" file="/home/nowcoder/PagedBatchEngine/test/test_scheduler_radix_cache.cpp" line="370" status="run" result="completed" time="0.002" timestamp="2026-10-11T16:58:14.448" classname="SchedulerCheckpointTest" />
+  </testsuite>
+  <testsuite name="SequenceKVManagerTest" tests="4" failures="0" disabled="0" skipped="0" errors="0" time="1.81" timestamp="2026-10-11T16:58:14.451">
+    <testcase name="AppendTokensBulkCommitAcrossBlockBoundary" file="/home/nowcoder/PagedBatchEngine/test/test_sequence_kv_manager.cpp" line="24" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:14.451" classname="SequenceKVManagerTest" />
+    <testcase name="AppendTokensFailureRollsBackWithoutMutation" file="/home/nowcoder/PagedBatchEngine/test/test_sequence_kv_manager.cpp" line="60" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:14.451" classname="SequenceKVManagerTest" />
+    <testcase name="TruncateToShrinksLogicalLengthAndReleasesTailBlocks" file="/home/nowcoder/PagedBatchEngine/test/test_sequence_kv_manager.cpp" line="96" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:14.451" classname="SequenceKVManagerTest" />
+    <testcase name="TruncateWithSharedPrefixKeepsSharedBlocksPinned" file="/home/nowcoder/PagedBatchEngine/test/test_sequence_kv_manager.cpp" line="133" status="run" result="completed" time="1.809" timestamp="2026-10-11T16:58:14.451" classname="SequenceKVManagerTest" />
+  </testsuite>
+  <testsuite name="ServingMemoryBudget" tests="3" failures="0" disabled="0" skipped="0" errors="0" time="0.001" timestamp="2026-10-11T16:58:16.261">
+    <testcase name="AbsoluteBudgetDoesNotScaleWithDeviceFreeMemory" file="/home/nowcoder/PagedBatchEngine/test/test_serving_memory_budget.cpp" line="5" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:16.261" classname="ServingMemoryBudget" />
+    <testcase name="CUDAAllocatorChargesCachedPhysicalBytesAndRejectsGrowth" file="/home/nowcoder/PagedBatchEngine/test/test_serving_memory_budget.cpp" line="27" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:16.261" classname="ServingMemoryBudget" />
+    <testcase name="CUDAAllocatorReusesLargeBufferBeforeAnySmallAllocation" file="/home/nowcoder/PagedBatchEngine/test/test_serving_memory_budget.cpp" line="52" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:16.261" classname="ServingMemoryBudget" />
+  </testsuite>
+  <testsuite name="SharedWeightDescriptor" tests="2" failures="0" disabled="0" skipped="0" errors="0" time="0." timestamp="2026-10-11T16:58:16.262">
+    <testcase name="RoundTripsCompleteIdentity" file="/home/nowcoder/PagedBatchEngine/test/test_shared_weight.cpp" line="26" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:16.262" classname="SharedWeightDescriptor" />
+    <testcase name="RejectsIncompleteAndCorruptPayloads" file="/home/nowcoder/PagedBatchEngine/test/test_shared_weight.cpp" line="42" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:16.262" classname="SharedWeightDescriptor" />
+  </testsuite>
+  <testsuite name="SharedWeightOwner" tests="1" failures="0" disabled="0" skipped="0" errors="0" time="0." timestamp="2026-10-11T16:58:16.262">
+    <testcase name="FailedLoadNeverPublishesDescriptor" file="/home/nowcoder/PagedBatchEngine/test/test_shared_weight.cpp" line="55" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:16.262" classname="SharedWeightOwner" />
+  </testsuite>
+  <testsuite name="SharedWeightBinding" tests="1" failures="0" disabled="0" skipped="0" errors="0" time="0." timestamp="2026-10-11T16:58:16.263">
+    <testcase name="BindsBorrowedViewAndRejectsBounds" file="/home/nowcoder/PagedBatchEngine/test/test_shared_weight.cpp" line="68" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:16.263" classname="SharedWeightBinding" />
+  </testsuite>
+  <testsuite name="SplitKVAttentionTest" tests="2" failures="0" disabled="0" skipped="0" errors="0" time="0.026" timestamp="2026-10-11T16:58:16.263">
+    <testcase name="SingleSequenceMatchesBaseline" file="/home/nowcoder/PagedBatchEngine/test/test_splitkv_attention.cpp" line="30" status="run" result="completed" time="0.025" timestamp="2026-10-11T16:58:16.263" classname="SplitKVAttentionTest" />
+    <testcase name="ShortContextSinglePartition" file="/home/nowcoder/PagedBatchEngine/test/test_splitkv_attention.cpp" line="165" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:16.288" classname="SplitKVAttentionTest" />
+  </testsuite>
+  <testsuite name="TransferSchedulerTest" tests="9" failures="0" disabled="0" skipped="0" errors="0" time="0.002" timestamp="2026-10-11T16:58:16.289">
+    <testcase name="ThirtyTwoWaitersShareOneFlightAndCancelIndependently" file="/home/nowcoder/PagedBatchEngine/test/test_transfer_scheduler.cpp" line="39" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:16.289" classname="TransferSchedulerTest" />
+    <testcase name="LastWaiterCancellationDrainsPhysicalFlight" file="/home/nowcoder/PagedBatchEngine/test/test_transfer_scheduler.cpp" line="67" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:16.289" classname="TransferSchedulerTest" />
+    <testcase name="DonationChangesDispatchOrderAndDependenciesFormWave" file="/home/nowcoder/PagedBatchEngine/test/test_transfer_scheduler.cpp" line="85" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:16.289" classname="TransferSchedulerTest" />
+    <testcase name="CapacityRejectsWithoutCreatingIntentOrAddressState" file="/home/nowcoder/PagedBatchEngine/test/test_transfer_scheduler.cpp" line="113" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:16.289" classname="TransferSchedulerTest" />
+    <testcase name="AgingBoundsBackgroundWaitUnderContinuousDecodeArrivals" file="/home/nowcoder/PagedBatchEngine/test/test_transfer_scheduler.cpp" line="127" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:16.289" classname="TransferSchedulerTest" />
+    <testcase name="DirectionLanesRunIndependently" file="/home/nowcoder/PagedBatchEngine/test/test_transfer_scheduler.cpp" line="155" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:16.289" classname="TransferSchedulerTest" />
+    <testcase name="LaneOffOnKeepsTotalCapacityAndProtectsDirections" file="/home/nowcoder/PagedBatchEngine/test/test_transfer_scheduler.cpp" line="179" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:16.289" classname="TransferSchedulerTest" />
+    <testcase name="DemandReserveSurvivesBackgroundSaturation" file="/home/nowcoder/PagedBatchEngine/test/test_transfer_scheduler.cpp" line="211" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:16.289" classname="TransferSchedulerTest" />
+    <testcase name="TypedJoinAndAbsoluteDeadlineKeepPhysicalFlightSafe" file="/home/nowcoder/PagedBatchEngine/test/test_transfer_scheduler.cpp" line="231" status="run" result="completed" time="0.002" timestamp="2026-10-11T16:58:16.289" classname="TransferSchedulerTest" />
+  </testsuite>
+  <testsuite name="MultiModelRouting" tests="4" failures="0" disabled="0" skipped="0" errors="0" time="0.002" timestamp="2026-10-11T16:58:16.291">
+    <testcase name="IdentitySurvivesRPCSerialization" file="/home/nowcoder/PagedBatchEngine/test/test_serving/test_multi_model_routing.cpp" line="8" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:16.291" classname="MultiModelRouting" />
+    <testcase name="ListsModelsAndRejectsUnknownWithoutSendingRPC" file="/home/nowcoder/PagedBatchEngine/test/test_serving/test_multi_model_routing.cpp" line="21" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:16.291" classname="MultiModelRouting" />
+    <testcase name="RejectsDuplicateModelOrWorkerEndpoint" file="/home/nowcoder/PagedBatchEngine/test/test_serving/test_multi_model_routing.cpp" line="40" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:16.292" classname="MultiModelRouting" />
+    <testcase name="SplitChineseCodePointIsBufferedUntilComplete" file="/home/nowcoder/PagedBatchEngine/test/test_serving/test_multi_model_routing.cpp" line="52" status="run" result="completed" time="0.001" timestamp="2026-10-11T16:58:16.292" classname="MultiModelRouting" />
+  </testsuite>
+  <testsuite name="PDEngineTest" tests="5" failures="0" disabled="0" skipped="0" errors="0" time="0.018" timestamp="2026-10-11T16:58:16.293">
+    <testcase name="PrefillAndDecodeEnginesExposeIndependentSchedulersAndKvManagers" file="/home/nowcoder/PagedBatchEngine/test/test_serving/test_pd_engine.cpp" line="136" status="run" result="completed" time="0.003" timestamp="2026-10-11T16:58:16.293" classname="PDEngineTest" />
+    <testcase name="PrefillEngineOwnsPrefillSchedulerAdmission" file="/home/nowcoder/PagedBatchEngine/test/test_serving/test_pd_engine.cpp" line="151" status="run" result="completed" time="0.003" timestamp="2026-10-11T16:58:16.297" classname="PDEngineTest" />
+    <testcase name="DecodeEngineRejectsNonDecodeOnlyExecutionAtWorkerBoundary" file="/home/nowcoder/PagedBatchEngine/test/test_serving/test_pd_engine.cpp" line="169" status="run" result="completed" time="0.003" timestamp="2026-10-11T16:58:16.301" classname="PDEngineTest" />
+    <testcase name="DecodeEngineInjectsReservationAsDecodeReadyRequest" file="/home/nowcoder/PagedBatchEngine/test/test_serving/test_pd_engine.cpp" line="187" status="run" result="completed" time="0.003" timestamp="2026-10-11T16:58:16.304" classname="PDEngineTest" />
+    <testcase name="InProcPrefillCopyDecodeEnginePipelineSchedulesDecodeOnly" file="/home/nowcoder/PagedBatchEngine/test/test_serving/test_pd_engine.cpp" line="231" status="run" result="completed" time="0.004" timestamp="2026-10-11T16:58:16.307" classname="PDEngineTest" />
+  </testsuite>
+  <testsuite name="PDHandoffTest" tests="15" failures="0" disabled="0" skipped="4" errors="0" time="0.003" timestamp="2026-10-11T16:58:16.312">
+    <testcase name="ValidManifestPassesValidation" file="/home/nowcoder/PagedBatchEngine/test/test_serving/test_pd_handoff.cpp" line="284" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:16.312" classname="PDHandoffTest" />
+    <testcase name="IncompatiblePoolsFailValidation" file="/home/nowcoder/PagedBatchEngine/test/test_serving/test_pd_handoff.cpp" line="291" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:16.312" classname="PDHandoffTest" />
+    <testcase name="NoCopyConnectorCompletesImmediately" file="/home/nowcoder/PagedBatchEngine/test/test_serving/test_pd_handoff.cpp" line="297" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:16.312" classname="PDHandoffTest" />
+    <testcase name="CoordinatorMarksNoCopyTransferDecodeReady" file="/home/nowcoder/PagedBatchEngine/test/test_serving/test_pd_handoff.cpp" line="308" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:16.312" classname="PDHandoffTest" />
+    <testcase name="CoordinatorReportsInvalidManifestFailure" file="/home/nowcoder/PagedBatchEngine/test/test_serving/test_pd_handoff.cpp" line="321" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:16.312" classname="PDHandoffTest" />
+    <testcase name="CoordinatorCancelBeforeCompletion" file="/home/nowcoder/PagedBatchEngine/test/test_serving/test_pd_handoff.cpp" line="334" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:16.312" classname="PDHandoffTest" />
+    <testcase name="DecodeReservationBuildsDstBlockManifest" file="/home/nowcoder/PagedBatchEngine/test/test_serving/test_pd_handoff.cpp" line="373" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:16.312" classname="PDHandoffTest" />
+    <testcase name="DecodeReservationFailsWhenDstBlocksInsufficient" file="/home/nowcoder/PagedBatchEngine/test/test_serving/test_pd_handoff.cpp" line="409" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:16.312" classname="PDHandoffTest" />
+    <testcase name="InProcKVBlockCopyConnectorCopiesPlainBlocks" file="/home/nowcoder/PagedBatchEngine/test/test_serving/test_pd_handoff.cpp" line="429" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:16.312" classname="PDHandoffTest" />
+    <testcase name="CoordinatorRunsReservationCopyDecodeReadyPipeline" file="/home/nowcoder/PagedBatchEngine/test/test_serving/test_pd_handoff.cpp" line="465" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:16.312" classname="PDHandoffTest" />
+    <testcase name="CudaFp8ConnectorCopiesKeyValueAndScaleBlocks" file="/home/nowcoder/PagedBatchEngine/test/test_serving/test_pd_handoff.cpp" line="508" status="run" result="completed" time="0.003" timestamp="2026-10-11T16:58:16.312" classname="PDHandoffTest" />
+    <testcase name="CudaP2PConnectorCopiesPlainBlocksAcrossDevices" file="/home/nowcoder/PagedBatchEngine/test/test_serving/test_pd_handoff.cpp" line="566" status="run" result="skipped" time="0." timestamp="2026-10-11T16:58:16.316" classname="PDHandoffTest">
+      <skipped message="/home/nowcoder/PagedBatchEngine/test/test_serving/test_pd_handoff.cpp:568&#x0A;At least two CUDA devices are required&#x0A;"><![CDATA[/home/nowcoder/PagedBatchEngine/test/test_serving/test_pd_handoff.cpp:568
+At least two CUDA devices are required
+]]></skipped>
+    </testcase>
+    <testcase name="SharedSchedulerMergesAndIndependentlyCancelsCudaP2PWaiters" file="/home/nowcoder/PagedBatchEngine/test/test_serving/test_pd_handoff.cpp" line="619" status="run" result="skipped" time="0." timestamp="2026-10-11T16:58:16.316" classname="PDHandoffTest">
+      <skipped message="/home/nowcoder/PagedBatchEngine/test/test_serving/test_pd_handoff.cpp:621&#x0A;At least two CUDA devices are required&#x0A;"><![CDATA[/home/nowcoder/PagedBatchEngine/test/test_serving/test_pd_handoff.cpp:621
+At least two CUDA devices are required
+]]></skipped>
+    </testcase>
+    <testcase name="NcclConnectorCopiesPlainBlocksAcrossDevices" file="/home/nowcoder/PagedBatchEngine/test/test_serving/test_pd_handoff.cpp" line="695" status="run" result="skipped" time="0." timestamp="2026-10-11T16:58:16.316" classname="PDHandoffTest">
+      <skipped message="/home/nowcoder/PagedBatchEngine/test/test_serving/test_pd_handoff.cpp:697&#x0A;NCCL support is disabled in this build&#x0A;"><![CDATA[/home/nowcoder/PagedBatchEngine/test/test_serving/test_pd_handoff.cpp:697
+NCCL support is disabled in this build
+]]></skipped>
+    </testcase>
+    <testcase name="NcclLayerConnectorCopiesPlainBlocksAcrossDevices" file="/home/nowcoder/PagedBatchEngine/test/test_serving/test_pd_handoff.cpp" line="753" status="run" result="skipped" time="0." timestamp="2026-10-11T16:58:16.316" classname="PDHandoffTest">
+      <skipped message="/home/nowcoder/PagedBatchEngine/test/test_serving/test_pd_handoff.cpp:755&#x0A;NCCL support is disabled in this build&#x0A;"><![CDATA[/home/nowcoder/PagedBatchEngine/test/test_serving/test_pd_handoff.cpp:755
+NCCL support is disabled in this build
+]]></skipped>
+    </testcase>
+  </testsuite>
+  <testsuite name="PDWorkerTest" tests="1" failures="0" disabled="0" skipped="0" errors="0" time="0." timestamp="2026-10-11T16:58:16.316">
+    <testcase name="ClassifiesEmptyDecodePrefillAndMixedSteps" file="/home/nowcoder/PagedBatchEngine/test/test_serving/test_pd_worker.cpp" line="7" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:16.316" classname="PDWorkerTest" />
+  </testsuite>
+  <testsuite name="RequestCoordinatorTest" tests="1" failures="0" disabled="0" skipped="0" errors="0" time="0." timestamp="2026-10-11T16:58:16.316">
+    <testcase name="EnforcesGenerationStageDeadlineAndCancellation" file="/home/nowcoder/PagedBatchEngine/test/test_serving/test_request_coordinator.cpp" line="3" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:16.316" classname="RequestCoordinatorTest" />
+  </testsuite>
+  <testsuite name="Qwen25VLChunkedTest" tests="1" failures="0" disabled="0" skipped="1" errors="0" time="0." timestamp="2026-10-11T16:58:16.316">
+    <testcase name="FourFixturesCrossMediaSpansAtTwoChunkCaps" file="/home/nowcoder/PagedBatchEngine/test/test_model/test_qwen25_vl_chunked.cpp" line="13" status="run" result="skipped" time="0." timestamp="2026-10-11T16:58:16.316" classname="Qwen25VLChunkedTest">
+      <skipped message="/home/nowcoder/PagedBatchEngine/test/test_model/test_qwen25_vl_chunked.cpp:13&#x0A;set Qwen25 VL env&#x0A;"><![CDATA[/home/nowcoder/PagedBatchEngine/test/test_model/test_qwen25_vl_chunked.cpp:13
+set Qwen25 VL env
+]]></skipped>
+    </testcase>
+  </testsuite>
+  <testsuite name="Qwen25VLInputTest" tests="5" failures="0" disabled="0" skipped="0" errors="0" time="0." timestamp="2026-10-11T16:58:16.316">
+    <testcase name="AcceptsFrozenOneImageContract" file="/home/nowcoder/PagedBatchEngine/test/test_model/test_qwen25_vl_input.cpp" line="19" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:16.316" classname="Qwen25VLInputTest" />
+    <testcase name="KeepsTokenOffsetsSeparateFromThreeAxisPositions" file="/home/nowcoder/PagedBatchEngine/test/test_model/test_qwen25_vl_input.cpp" line="26" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:16.316" classname="Qwen25VLInputTest" />
+    <testcase name="RejectsFeatureAndSpanLengthMismatchBeforeCopy" file="/home/nowcoder/PagedBatchEngine/test/test_model/test_qwen25_vl_input.cpp" line="39" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:16.316" classname="Qwen25VLInputTest" />
+    <testcase name="RejectsOverlappingMediaSpans" file="/home/nowcoder/PagedBatchEngine/test/test_model/test_qwen25_vl_input.cpp" line="48" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:16.316" classname="Qwen25VLInputTest" />
+    <testcase name="ValidatesBundleByteCoverage" file="/home/nowcoder/PagedBatchEngine/test/test_model/test_qwen25_vl_input.cpp" line="56" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:16.316" classname="Qwen25VLInputTest" />
+  </testsuite>
+  <testsuite name="Qwen25VLModelTest" tests="2" failures="0" disabled="0" skipped="2" errors="0" time="0." timestamp="2026-10-11T16:58:16.316">
+    <testcase name="OneImageMatchesReferenceLogitsAndGreedyDecode" file="/home/nowcoder/PagedBatchEngine/test/test_model/test_qwen25_vl_model.cpp" line="46" status="run" result="skipped" time="0." timestamp="2026-10-11T16:58:16.316" classname="Qwen25VLModelTest">
+      <skipped message="/home/nowcoder/PagedBatchEngine/test/test_model/test_qwen25_vl_model.cpp:51&#x0A;Set PBE_QWEN25_VL_MODEL, PBE_QWEN25_VL_TOKENIZER and PBE_QWEN25_VL_FIXTURE_DIR&#x0A;"><![CDATA[/home/nowcoder/PagedBatchEngine/test/test_model/test_qwen25_vl_model.cpp:51
+Set PBE_QWEN25_VL_MODEL, PBE_QWEN25_VL_TOKENIZER and PBE_QWEN25_VL_FIXTURE_DIR
+]]></skipped>
+    </testcase>
+    <testcase name="TextResolutionTwoImageAndMixedPrefillMatchReference" file="/home/nowcoder/PagedBatchEngine/test/test_model/test_qwen25_vl_model.cpp" line="301" status="run" result="skipped" time="0." timestamp="2026-10-11T16:58:16.316" classname="Qwen25VLModelTest">
+      <skipped message="/home/nowcoder/PagedBatchEngine/test/test_model/test_qwen25_vl_model.cpp:306&#x0A;Set PBE_QWEN25_VL_MODEL, PBE_QWEN25_VL_TOKENIZER and PBE_QWEN25_VL_FIXTURE_DIR&#x0A;"><![CDATA[/home/nowcoder/PagedBatchEngine/test/test_model/test_qwen25_vl_model.cpp:306
+Set PBE_QWEN25_VL_MODEL, PBE_QWEN25_VL_TOKENIZER and PBE_QWEN25_VL_FIXTURE_DIR
+]]></skipped>
+    </testcase>
+  </testsuite>
+  <testsuite name="Qwen2DeviceInitTest" tests="6" failures="0" disabled="0" skipped="4" errors="0" time="1.11" timestamp="2026-10-11T16:58:16.316">
+    <testcase name="InitPassesRequestedDeviceIdToCudaRuntime" file="/home/nowcoder/PagedBatchEngine/test/test_model/test_qwen2_device_init.cpp" line="230" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:16.316" classname="Qwen2DeviceInitTest" />
+    <testcase name="TwoInstancesCanLoadOnDistinctDevicesWithFixtureModel" file="/home/nowcoder/PagedBatchEngine/test/test_model/test_qwen2_device_init.cpp" line="248" status="run" result="skipped" time="0." timestamp="2026-10-11T16:58:16.316" classname="Qwen2DeviceInitTest">
+      <skipped message="/home/nowcoder/PagedBatchEngine/test/test_model/test_qwen2_device_init.cpp:250&#x0A;At least two CUDA devices are required&#x0A;"><![CDATA[/home/nowcoder/PagedBatchEngine/test/test_model/test_qwen2_device_init.cpp:250
+At least two CUDA devices are required
+]]></skipped>
+    </testcase>
+    <testcase name="DualGpuP2PMatchesSingleModelGreedyTokens" file="/home/nowcoder/PagedBatchEngine/test/test_model/test_qwen2_device_init.cpp" line="274" status="run" result="skipped" time="0." timestamp="2026-10-11T16:58:16.316" classname="Qwen2DeviceInitTest">
+      <skipped message="/home/nowcoder/PagedBatchEngine/test/test_model/test_qwen2_device_init.cpp:276&#x0A;At least two CUDA devices are required&#x0A;"><![CDATA[/home/nowcoder/PagedBatchEngine/test/test_model/test_qwen2_device_init.cpp:276
+At least two CUDA devices are required
+]]></skipped>
+    </testcase>
+    <testcase name="CheckpointResumeMatchesUninterruptedSampledTokens" file="/home/nowcoder/PagedBatchEngine/test/test_model/test_qwen2_device_init.cpp" line="313" status="run" result="completed" time="1.11" timestamp="2026-10-11T16:58:16.316" classname="Qwen2DeviceInitTest" />
+    <testcase name="DualGpuNcclMatchesSingleModelGreedyTokens" file="/home/nowcoder/PagedBatchEngine/test/test_model/test_qwen2_device_init.cpp" line="349" status="run" result="skipped" time="0." timestamp="2026-10-11T16:58:17.426" classname="Qwen2DeviceInitTest">
+      <skipped message="/home/nowcoder/PagedBatchEngine/test/test_model/test_qwen2_device_init.cpp:351&#x0A;NCCL support is not enabled in this build&#x0A;"><![CDATA[/home/nowcoder/PagedBatchEngine/test/test_model/test_qwen2_device_init.cpp:351
+NCCL support is not enabled in this build
+]]></skipped>
+    </testcase>
+    <testcase name="DualGpuNcclLayerMatchesSingleModelGreedyTokens" file="/home/nowcoder/PagedBatchEngine/test/test_model/test_qwen2_device_init.cpp" line="391" status="run" result="skipped" time="0." timestamp="2026-10-11T16:58:17.426" classname="Qwen2DeviceInitTest">
+      <skipped message="/home/nowcoder/PagedBatchEngine/test/test_model/test_qwen2_device_init.cpp:393&#x0A;NCCL support is not enabled in this build&#x0A;"><![CDATA[/home/nowcoder/PagedBatchEngine/test/test_model/test_qwen2_device_init.cpp:393
+NCCL support is not enabled in this build
+]]></skipped>
+    </testcase>
+  </testsuite>
+  <testsuite name="ContentRegistryTest" tests="5" failures="0" disabled="0" skipped="0" errors="0" time="0.001" timestamp="2026-10-11T16:58:17.426">
+    <testcase name="RetentionSurvivesProducerAndTwoSequentialConsumers" file="/home/nowcoder/PagedBatchEngine/test/data_core/test_content_registry.cpp" line="4" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:17.426" classname="ContentRegistryTest" />
+    <testcase name="LeaseCapacityIsBoundedAndReleaseIsExplicit" file="/home/nowcoder/PagedBatchEngine/test/data_core/test_content_registry.cpp" line="19" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:17.426" classname="ContentRegistryTest" />
+    <testcase name="TenThousandAcquireCancelCyclesReturnToSteadyState" file="/home/nowcoder/PagedBatchEngine/test/data_core/test_content_registry.cpp" line="26" status="run" result="completed" time="0.001" timestamp="2026-10-11T16:58:17.426" classname="ContentRegistryTest" />
+    <testcase name="AcquireReplayIsIdempotent" file="/home/nowcoder/PagedBatchEngine/test/data_core/test_content_registry.cpp" line="48" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:17.428" classname="ContentRegistryTest" />
+    <testcase name="StaleServiceTokenCannotReleaseReusedLeaseNumber" file="/home/nowcoder/PagedBatchEngine/test/data_core/test_content_registry.cpp" line="59" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:17.428" classname="ContentRegistryTest" />
+  </testsuite>
+  <testsuite name="DataProtocolTest" tests="2" failures="0" disabled="0" skipped="0" errors="0" time="0." timestamp="2026-10-11T16:58:17.428">
+    <testcase name="DataRefHasStableRoundTripAndFixedWidth" file="/home/nowcoder/PagedBatchEngine/test/data_core/test_data_protocol.cpp" line="5" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:17.428" classname="DataProtocolTest" />
+    <testcase name="RejectsVersionLengthAndReservedField" file="/home/nowcoder/PagedBatchEngine/test/data_core/test_data_protocol.cpp" line="21" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:17.428" classname="DataProtocolTest" />
+  </testsuite>
+  <testsuite name="LocalDataRuntimeTest" tests="8" failures="0" disabled="0" skipped="0" errors="0" time="0." timestamp="2026-10-11T16:58:17.428">
+    <testcase name="ReserveIsIdempotentAndPreflightsCapacity" file="/home/nowcoder/PagedBatchEngine/test/data_core/test_data_runtime.cpp" line="16" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:17.428" classname="LocalDataRuntimeTest" />
+    <testcase name="SealPublishesOnlyCompleteDataAndLeaseDefersWithdraw" file="/home/nowcoder/PagedBatchEngine/test/data_core/test_data_runtime.cpp" line="26" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:17.428" classname="LocalDataRuntimeTest" />
+    <testcase name="ConcurrentProducersConvergeOnOneCanonicalObject" file="/home/nowcoder/PagedBatchEngine/test/data_core/test_data_runtime.cpp" line="52" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:17.428" classname="LocalDataRuntimeTest" />
+    <testcase name="ConflictingCanonicalChecksumIsQuarantined" file="/home/nowcoder/PagedBatchEngine/test/data_core/test_data_runtime.cpp" line="66" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:17.428" classname="LocalDataRuntimeTest" />
+    <testcase name="TypedComputeAndIOLeasesDeferPhysicalReclaim" file="/home/nowcoder/PagedBatchEngine/test/data_core/test_data_runtime.cpp" line="81" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:17.428" classname="LocalDataRuntimeTest" />
+    <testcase name="RejectsOldOwnerAndStaleGeneration" file="/home/nowcoder/PagedBatchEngine/test/data_core/test_data_runtime.cpp" line="104" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:17.428" classname="LocalDataRuntimeTest" />
+    <testcase name="ProducerExitBeforeSealLeavesNoVisibleObject" file="/home/nowcoder/PagedBatchEngine/test/data_core/test_data_runtime.cpp" line="118" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:17.428" classname="LocalDataRuntimeTest" />
+    <testcase name="ServiceRestartRejectsEveryOldAllocationHandle" file="/home/nowcoder/PagedBatchEngine/test/data_core/test_data_runtime.cpp" line="131" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:17.428" classname="LocalDataRuntimeTest" />
+  </testsuite>
+  <testsuite name="KVSnapshotCodecTest" tests="1" failures="0" disabled="0" skipped="0" errors="0" time="0." timestamp="2026-10-11T16:58:17.428">
+    <testcase name="StableRoundTripAndBoundedDecode" file="/home/nowcoder/PagedBatchEngine/test/data_core/test_kv_snapshot_codec.cpp" line="3" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:17.428" classname="KVSnapshotCodecTest" />
+  </testsuite>
+  <testsuite name="NodeAgentTest" tests="5" failures="0" disabled="0" skipped="0" errors="0" time="0.344" timestamp="2026-10-11T16:58:17.428">
+    <testcase name="SlowPartialHeadersCannotOccupyWorkersIndefinitely" file="/home/nowcoder/PagedBatchEngine/test/data_core/test_node_agent.cpp" line="78" status="run" result="completed" time="0.106" timestamp="2026-10-11T16:58:17.428" classname="NodeAgentTest" />
+    <testcase name="PartialBodyUsesTheSameAbsoluteRequestDeadline" file="/home/nowcoder/PagedBatchEngine/test/data_core/test_node_agent.cpp" line="91" status="run" result="completed" time="0.105" timestamp="2026-10-11T16:58:17.534" classname="NodeAgentTest" />
+    <testcase name="HeaderDripCannotRenewTheAbsoluteRequestDeadline" file="/home/nowcoder/PagedBatchEngine/test/data_core/test_node_agent.cpp" line="103" status="run" result="completed" time="0.107" timestamp="2026-10-11T16:58:17.639" classname="NodeAgentTest" />
+    <testcase name="StaleWireTokenCannotReleaseLeaseAfterServiceRestart" file="/home/nowcoder/PagedBatchEngine/test/data_core/test_node_agent.cpp" line="115" status="run" result="completed" time="0.013" timestamp="2026-10-11T16:58:17.747" classname="NodeAgentTest" />
+    <testcase name="ReplyLostAcquireCanReplayWithoutAddingALease" file="/home/nowcoder/PagedBatchEngine/test/data_core/test_node_agent.cpp" line="135" status="run" result="completed" time="0.011" timestamp="2026-10-11T16:58:17.760" classname="NodeAgentTest" />
+  </testsuite>
+  <testsuite name="TensorBundleTest" tests="3" failures="0" disabled="0" skipped="0" errors="0" time="0." timestamp="2026-10-11T16:58:17.772">
+    <testcase name="AcceptsAlignedDisjointComponentsWithPadding" file="/home/nowcoder/PagedBatchEngine/test/data_core/test_tensor_bundle.cpp" line="18" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:17.772" classname="TensorBundleTest" />
+    <testcase name="RejectsShapeBytesOverlapAndDuplicateNames" file="/home/nowcoder/PagedBatchEngine/test/data_core/test_tensor_bundle.cpp" line="24" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:17.772" classname="TensorBundleTest" />
+    <testcase name="RejectsOverflowBeforeAllocation" file="/home/nowcoder/PagedBatchEngine/test/data_core/test_tensor_bundle.cpp" line="38" status="run" result="completed" time="0." timestamp="2026-10-11T16:58:17.772" classname="TensorBundleTest" />
+  </testsuite>
+  <testsuite name="TensorBundleCrossLanguageTest" tests="1" failures="0" disabled="0" skipped="1" errors="0" time="0." timestamp="2026-10-11T16:58:17.772">
+    <testcase name="DecodesPythonGoldenWhenProvided" file="/home/nowcoder/PagedBatchEngine/test/data_core/test_tensor_bundle_cross_language.cpp" line="5" status="run" result="skipped" time="0." timestamp="2026-10-11T16:58:17.772" classname="TensorBundleCrossLanguageTest">
+      <skipped message="/home/nowcoder/PagedBatchEngine/test/data_core/test_tensor_bundle_cross_language.cpp:5&#x0A;set PBE_PYTHON_BUNDLE_GOLDEN&#x0A;"><![CDATA[/home/nowcoder/PagedBatchEngine/test/data_core/test_tensor_bundle_cross_language.cpp:5
+set PBE_PYTHON_BUNDLE_GOLDEN
+]]></skipped>
+    </testcase>
+  </testsuite>
+</testsuites>

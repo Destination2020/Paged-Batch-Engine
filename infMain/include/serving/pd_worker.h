@@ -11,7 +11,7 @@
 namespace serving {
 
 class Scheduler;
-class ServingBenchmarkApp;
+class ServingRuntime;
 
 enum class PDWorkerStepKind {
   kEmpty,
@@ -53,33 +53,33 @@ class DecodeWorker {
 
 class InProcPrefillWorker final : public PrefillWorker {
  public:
-  InProcPrefillWorker(ServingBenchmarkApp* app, Scheduler* scheduler);
+  InProcPrefillWorker(ServingRuntime* app, Scheduler* scheduler);
 
   base::Status execute_prefill_step(const SchedulerOutput& output,
                                     void* stream,
                                     PDWorkerStepOutput* step_output) override;
 
  private:
-  ServingBenchmarkApp* app_ = nullptr;
+  ServingRuntime* app_ = nullptr;
   Scheduler* scheduler_ = nullptr;
 };
 
 class InProcDecodeWorker final : public DecodeWorker {
  public:
-  InProcDecodeWorker(ServingBenchmarkApp* app, Scheduler* scheduler);
+  InProcDecodeWorker(ServingRuntime* app, Scheduler* scheduler);
 
   base::Status execute_decode_step(const SchedulerOutput& output,
                                    void* stream,
                                    PDWorkerStepOutput* step_output) override;
 
  private:
-  ServingBenchmarkApp* app_ = nullptr;
+  ServingRuntime* app_ = nullptr;
   Scheduler* scheduler_ = nullptr;
 };
 
 class InProcPDWorkerPair final {
  public:
-  InProcPDWorkerPair(ServingBenchmarkApp* app, Scheduler* scheduler);
+  InProcPDWorkerPair(ServingRuntime* app, Scheduler* scheduler);
 
   base::Status execute_step(const SchedulerOutput& output,
                             void* stream,

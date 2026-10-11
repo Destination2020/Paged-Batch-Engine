@@ -1,0 +1,44 @@
+{
+  "24-0-shared": {
+    "allocate_us": {
+      "previous_session_p50": 190.31150000000002,
+      "current_first_p50": 271.7645,
+      "current_repeat_p50": 160.6505
+    }
+  },
+  "24-403-shared": {
+    "allocate_us": {
+      "previous_session_p50": 5.24,
+      "current_first_p50": 3.166,
+      "current_repeat_p50": 3.787
+    }
+  },
+  "24-448-shared": {
+    "denied_us": {
+      "previous_session_p50": 0.03,
+      "current_first_p50": 0.04,
+      "current_repeat_p50": 0.03
+    }
+  },
+  "28-0-shared": {
+    "allocate_us": {
+      "previous_session_p50": 194.443,
+      "current_first_p50": 232.122,
+      "current_repeat_p50": 153.2385
+    }
+  },
+  "28-172-shared": {
+    "allocate_us": {
+      "previous_session_p50": 172.011,
+      "current_first_p50": 252.30349999999999,
+      "current_repeat_p50": 160.038
+    }
+  },
+  "28-192-shared": {
+    "denied_us": {
+      "previous_session_p50": 0.03,
+      "current_first_p50": 0.04,
+      "current_repeat_p50": 0.03
+    }
+  }
+}

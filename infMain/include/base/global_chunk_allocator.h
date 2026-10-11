@@ -2,9 +2,21 @@
 #include <cstdint>
 #include <map>
 #include <string>
+#include <stdexcept>
 #include <unordered_map>
 
 namespace base {
+enum class ChunkAllocationFailure { kQuota = 1, kFragmented = 2, kExhausted = 3 };
+class ChunkAllocationError : public std::runtime_error {
+ public:
+  explicit ChunkAllocationError(ChunkAllocationFailure code)
+      : std::runtime_error(code == ChunkAllocationFailure::kQuota ? "model_kv_quota_exhausted" :
+          code == ChunkAllocationFailure::kFragmented ? "arena_fragmented" : "arena_exhausted"),
+        code_(code) {}
+  ChunkAllocationFailure code() const { return code_; }
+ private:
+  ChunkAllocationFailure code_;
+};
 struct ChunkLease {
   uint64_t epoch = 0, id = 0, generation = 0;
   uint64_t offset = 0, bytes = 0;

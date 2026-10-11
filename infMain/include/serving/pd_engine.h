@@ -16,7 +16,7 @@
 
 namespace serving {
 
-class ServingBenchmarkApp;
+class ServingRuntime;
 
 struct InProcPDEngineConfig {
   SchedulerConfig scheduler_config;
@@ -33,7 +33,7 @@ struct DecodeReadySubmitResult {
 
 class InProcPrefillEngine final {
  public:
-  InProcPrefillEngine(ServingBenchmarkApp* app,
+  InProcPrefillEngine(ServingRuntime* app,
                       base::KVCacheManager* kv_manager,
                       InProcPDEngineConfig config);
 
@@ -52,7 +52,7 @@ class InProcPrefillEngine final {
   const KVPoolDescriptor& kv_pool() const { return config_.kv_pool; }
 
  private:
-  ServingBenchmarkApp* app_ = nullptr;
+  ServingRuntime* app_ = nullptr;
   base::KVCacheManager* kv_manager_ = nullptr;
   InProcPDEngineConfig config_;
   std::unique_ptr<Scheduler> scheduler_;
@@ -61,7 +61,7 @@ class InProcPrefillEngine final {
 
 class InProcDecodeEngine final {
  public:
-  InProcDecodeEngine(ServingBenchmarkApp* app,
+  InProcDecodeEngine(ServingRuntime* app,
                      base::KVCacheManager* kv_manager,
                      InProcPDEngineConfig config);
 
@@ -87,7 +87,7 @@ class InProcDecodeEngine final {
   const KVPoolDescriptor& kv_pool() const { return config_.kv_pool; }
 
  private:
-  ServingBenchmarkApp* app_ = nullptr;
+  ServingRuntime* app_ = nullptr;
   base::KVCacheManager* kv_manager_ = nullptr;
   InProcPDEngineConfig config_;
   std::unique_ptr<Scheduler> scheduler_;

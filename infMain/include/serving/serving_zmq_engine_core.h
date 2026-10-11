@@ -6,9 +6,9 @@
 
 namespace serving {
 
-class ServingBenchmarkApp;
+class ServingRuntime;
 
-base::Status run_zmq_engine_core_server(ServingBenchmarkApp* app,
+base::Status run_zmq_engine_core_server(ServingRuntime* app,
                                         const BenchConfig& config);
 
 }  // namespace serving

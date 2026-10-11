@@ -11,7 +11,7 @@
 
 namespace serving {
 
-class ServingBenchmarkApp;
+class ServingRuntime;
 
 class OnlineEnginePool {
  public:
@@ -33,7 +33,7 @@ class OnlineEnginePool {
 
 class SingleOnlineEnginePool final : public OnlineEnginePool {
  public:
-  SingleOnlineEnginePool(ServingBenchmarkApp* app, const BenchConfig& config);
+  SingleOnlineEnginePool(ServingRuntime* app, const BenchConfig& config);
   ~SingleOnlineEnginePool() override;
 
   void start() override;

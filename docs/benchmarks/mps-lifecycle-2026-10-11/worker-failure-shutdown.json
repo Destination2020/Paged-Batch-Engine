@@ -1,0 +1,54 @@
+{
+  "backend": "process",
+  "events": [
+    {
+      "event": "fault",
+      "monotonic_ns": 62625493048201,
+      "reason": "qwen25-0.5b exited (-9); see /tmp/pbe-life-models/domain/qwen25-0.5b.log"
+    },
+    {
+      "event": "fault",
+      "monotonic_ns": 62625493069491,
+      "reason": "qwen25-0.5b exited unexpectedly (-9)"
+    },
+    {
+      "event": "fault",
+      "monotonic_ns": 62625493080662,
+      "reason": "forced process exit: api"
+    },
+    {
+      "event": "forced_exit",
+      "monotonic_ns": 62625525637063,
+      "name": "api",
+      "pid": 23021
+    },
+    {
+      "event": "fault",
+      "monotonic_ns": 62625525660307,
+      "reason": "qwen25-0.5b exited before shutdown acknowledgement (-9)"
+    },
+    {
+      "event": "worker_stopped",
+      "monotonic_ns": 62625942188277,
+      "name": "qwen25-1.5b",
+      "pid": 22925,
+      "mode": "cancel",
+      "gpu_synchronized": true
+    },
+    {
+      "event": "arena_before_exit",
+      "monotonic_ns": 62625943860915,
+      "free_bytes": 536870912,
+      "arena_bytes": 536870912,
+      "lease_count": 0
+    },
+    {
+      "event": "owner_stopped",
+      "monotonic_ns": 62626110221524,
+      "pid": 22817,
+      "arena_freed": true
+    }
+  ],
+  "graceful": false,
+  "mps_recovery_required": false
+}

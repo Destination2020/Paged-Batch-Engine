@@ -1,0 +1,20 @@
+{
+  "backend": "process",
+  "events": [
+    {
+      "event": "arena_before_exit",
+      "monotonic_ns": 62606839779096,
+      "free_bytes": 33554432,
+      "arena_bytes": 33554432,
+      "lease_count": 0
+    },
+    {
+      "event": "owner_stopped",
+      "monotonic_ns": 62606954969715,
+      "pid": 22441,
+      "arena_freed": true
+    }
+  ],
+  "graceful": true,
+  "mps_recovery_required": false
+}

@@ -54,3 +54,45 @@ add_executable(paged_attention_fp8_bench ../test/test_paged_attention_fp8_benchm
 target_include_directories(paged_attention_fp8_bench PUBLIC ../infMain/include)
 target_link_libraries(paged_attention_fp8_bench PRIVATE glog::glog pthread llama cublas cublasLt cudart)
 set_target_properties(paged_attention_fp8_bench PROPERTIES WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+
+# CPU-only protocol checks do not initialize a CUDA context or load a model.
+add_executable(test_http_protocol
+  test_serving/test_http_protocol.cpp
+  ../infMain/source/serving/serving_http_protocol.cpp)
+target_include_directories(test_http_protocol PRIVATE ../infMain/include)
+target_link_libraries(test_http_protocol PRIVATE GTest::gtest_main)
+add_test(NAME pbe.http_protocol COMMAND test_http_protocol)
+set_tests_properties(pbe.http_protocol PROPERTIES LABELS "cpu;serving")
+add_test(NAME pbe.unit COMMAND test_llm "--gtest_filter=-test_*.*")
+set_tests_properties(pbe.unit PROPERTIES WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}" LABELS "gpu;unit" RUN_SERIAL TRUE)
+
+find_package(Python3 COMPONENTS Interpreter QUIET)
+if(Python3_Interpreter_FOUND)
+  add_test(NAME pbe.data_client_transport
+    COMMAND ${Python3_EXECUTABLE} -m unittest discover
+      -s ${CMAKE_SOURCE_DIR}/test/data_core -p test_client_transport.py)
+  set_tests_properties(pbe.data_client_transport PROPERTIES
+    ENVIRONMENT "PYTHONPATH=${CMAKE_SOURCE_DIR}/python" LABELS "cpu;data" TIMEOUT 30)
+  execute_process(COMMAND ${Python3_EXECUTABLE} -c "import zmq"
+    RESULT_VARIABLE PBE_PYTHON_HAS_ZMQ OUTPUT_QUIET ERROR_QUIET)
+  if(PBE_PYTHON_HAS_ZMQ EQUAL 0 AND KUIPER_BUILD_DEMOS)
+    add_test(NAME pbe.http_integration
+      COMMAND ${Python3_EXECUTABLE} -m unittest discover
+        -s ${CMAKE_SOURCE_DIR}/tools/serving -p test_http_integration.py)
+    set_tests_properties(pbe.http_integration PROPERTIES
+      ENVIRONMENT "PBE_SERVING_BINARY=${CMAKE_BINARY_DIR}/demo/serving_qwen"
+      LABELS "cpu;serving;integration" TIMEOUT 60)
+    add_test(NAME pbe.deployment
+      COMMAND ${Python3_EXECUTABLE} -m unittest discover
+        -s ${CMAKE_SOURCE_DIR}/tools/serving -p test_deployment.py)
+    set_tests_properties(pbe.deployment PROPERTIES LABELS "cpu;deployment" TIMEOUT 30)
+  endif()
+endif()
+
+if(Python3_Interpreter_FOUND AND PBE_PYTHON_HAS_ZMQ EQUAL 0 AND KUIPER_BUILD_DEMOS AND KUIPER_HAS_ZMQ)
+  add_test(NAME pbe.shared_kv_reuse
+    COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tools/serving/validate_kv_reuse.py
+      --build-dir ${CMAKE_BINARY_DIR} --rounds 3)
+  set_tests_properties(pbe.shared_kv_reuse PROPERTIES LABELS "gpu;integration;kv"
+    TIMEOUT 120 RUN_SERIAL TRUE)
+endif()

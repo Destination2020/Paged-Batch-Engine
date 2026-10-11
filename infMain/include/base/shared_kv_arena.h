@@ -42,6 +42,7 @@ class SharedKVPageGroup {
   void* value_base(int layer) const;
   void collect();
  private:
+  void collect_locked(); // caller holds the page-state mutex
   struct Impl;
   std::unique_ptr<Impl> impl_;
 };

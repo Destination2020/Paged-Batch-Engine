@@ -1,0 +1,42 @@
+PBE_SERVING_EXTERNAL_KV_BOUND pool_owner=53965172068018 grant_service=53965172068018 grant_consumer=68707173886082 grant=1 slots=64 bytes=12582912 transport=same_gpu_ipc_map transferred_bytes=0 transfer_ms=0.083989
+CONFIG_SUMMARY max_new_tokens=16 max_batched_tokens_request=128 max_batched_tokens_resolved=128 prefill_chunk_cap_request=64 prefill_chunk_cap_resolved=64 scheduling_policy=fcfs preemption_policy=recompute long_prefill_token_threshold=0 max_partial_prefills=0 max_long_partial_prefills=0 device_id=0 request_timeout_ms=0 max_prompt_tokens=0 pd_mode=off online_process_role=inproc engine_zmq_endpoint=tcp://127.0.0.1:19090 prefill_zmq_endpoint=tcp://127.0.0.1:19091 engine_zmq_timeout_ms=30000 prefill_device_id=0 decode_device_id=0 http_worker_threads=0 http_listen_backlog=1024 kv_cache_memory_utilization=0.800 kv_cache_blocks_per_layer_request=64 warmup_rounds=0 radix_cache_config_explicit=1 radix_cache_enabled=0 host_cache_enabled=0 host_cache_bytes=0 host_cache_pages=0 host_cache_inflight_pages=2 host_demote_after_warmup=0 prompt_count=2 prompt_min_tokens=35 prompt_p50_tokens=36 prompt_p95_tokens=36 prompt_max_tokens=36 prompt_total_tokens=71 prompt_mean_tokens=35.500 capacity_max_batch_size=16 capacity_block_size=16 capacity_total_kv_blocks=64 capacity_free_kv_blocks=64 capacity_layer_num=24 capacity_model_dim=896 capacity_head_num=14 capacity_kv_head_num=2 capacity_head_size=64 capacity_kv_dim=128 capacity_hidden_dim=4864 capacity_vocab_size=151936 capacity_device_free_memory_bytes=5938085888 capacity_device_total_memory_bytes=8585216000 capacity_kv_bytes_per_token=12288 capacity_kv_bytes_per_block_per_layer=8192 capacity_total_kv_pool_bytes=12582912 capacity_workspace_bytes_per_token=454656 capacity_serving_workspace_token_capacity=128 capacity_serving_workspace_reserved_bytes=58195968 auto_usable_free_kv_blocks=64 auto_kv_token_budget=1024 auto_device_workspace_bytes_budget=58195968 auto_workspace_token_budget=128 auto_capacity_token_budget=128 auto_scheduler_seq_window=2 auto_target_decode_concurrency=1 auto_prefill_reserved_seqs=1 auto_prompt_prefill_chunk_target=32 auto_scheduler_token_budget=48 auto_safety_token_cap=4096 auto_prefill_safety_token_cap=1024
+=== Submitting 2 requests ===
+Request 0: "What is paged attention?" (35 tokens)
+Request 1: "Give one benefit of continuous batching." (36 tokens)
+
+=== Starting continuous batching ===
+[step 0] requests=2 tokens=71 decode=0 prefill=71 sampled=2 waiting_queue=0 running_queue=2 preemptions=0 schedule_ms=0.036 build_ms=0.155 forward_ms=398.412 sample_ms=0.660 process_ms=0.014
+[step 1] requests=2 tokens=2 decode=2 prefill=0 sampled=2 waiting_queue=0 running_queue=2 preemptions=0 schedule_ms=0.013 build_ms=0.095 forward_ms=12.901 sample_ms=0.436 process_ms=0.008
+[step 2] requests=2 tokens=2 decode=2 prefill=0 sampled=2 waiting_queue=0 running_queue=2 preemptions=0 schedule_ms=0.010 build_ms=0.140 forward_ms=14.842 sample_ms=0.415 process_ms=0.006
+[step 3] requests=2 tokens=2 decode=2 prefill=0 sampled=2 waiting_queue=0 running_queue=2 preemptions=0 schedule_ms=0.010 build_ms=0.203 forward_ms=15.824 sample_ms=1.143 process_ms=0.006
+[step 4] requests=2 tokens=2 decode=2 prefill=0 sampled=2 waiting_queue=0 running_queue=2 preemptions=0 schedule_ms=0.011 build_ms=0.236 forward_ms=15.486 sample_ms=0.426 process_ms=0.006
+[step 5] requests=2 tokens=2 decode=2 prefill=0 sampled=2 waiting_queue=0 running_queue=2 preemptions=0 schedule_ms=0.012 build_ms=0.124 forward_ms=15.123 sample_ms=0.416 process_ms=0.004
+[step 6] requests=2 tokens=2 decode=2 prefill=0 sampled=2 waiting_queue=0 running_queue=2 preemptions=0 schedule_ms=0.011 build_ms=0.232 forward_ms=16.485 sample_ms=0.435 process_ms=0.004
+[step 7] requests=2 tokens=2 decode=2 prefill=0 sampled=2 waiting_queue=0 running_queue=2 preemptions=0 schedule_ms=0.011 build_ms=0.169 forward_ms=17.704 sample_ms=0.412 process_ms=0.005
+[step 8] requests=2 tokens=2 decode=2 prefill=0 sampled=2 waiting_queue=0 running_queue=2 preemptions=0 schedule_ms=0.012 build_ms=0.226 forward_ms=15.872 sample_ms=0.395 process_ms=0.008
+[step 9] requests=2 tokens=2 decode=2 prefill=0 sampled=2 waiting_queue=0 running_queue=2 preemptions=0 schedule_ms=0.011 build_ms=0.183 forward_ms=16.622 sample_ms=0.380 process_ms=0.004
+[step 10] requests=2 tokens=2 decode=2 prefill=0 sampled=2 waiting_queue=0 running_queue=2 preemptions=0 schedule_ms=0.009 build_ms=0.203 forward_ms=16.517 sample_ms=0.503 process_ms=0.005
+[step 11] requests=2 tokens=2 decode=2 prefill=0 sampled=2 waiting_queue=0 running_queue=2 preemptions=0 schedule_ms=0.012 build_ms=0.117 forward_ms=20.785 sample_ms=0.443 process_ms=0.005
+[step 12] requests=2 tokens=2 decode=2 prefill=0 sampled=2 waiting_queue=0 running_queue=2 preemptions=0 schedule_ms=0.013 build_ms=0.267 forward_ms=25.977 sample_ms=0.489 process_ms=0.005
+[step 13] requests=2 tokens=2 decode=2 prefill=0 sampled=2 waiting_queue=0 running_queue=2 preemptions=0 schedule_ms=0.021 build_ms=0.203 forward_ms=18.215 sample_ms=0.448 process_ms=0.005
+[step 14] requests=2 tokens=2 decode=2 prefill=0 sampled=2 waiting_queue=0 running_queue=2 preemptions=0 schedule_ms=0.022 build_ms=0.177 forward_ms=17.365 sample_ms=0.448 process_ms=0.005
+REQUEST_METRIC client_request_id=0 status=ok prompt_tokens=35 generated_tokens=16 output_tokens=16 ttft_ms=399.281 itl_ms=17.845 latency_ms=666.954 finish_reason=completed
+
+--- Request 0 finished ---
+Paged attention is a type of attention mechanism used in natural language processing (N
+REQUEST_METRIC client_request_id=1 status=ok prompt_tokens=36 generated_tokens=16 output_tokens=16 ttft_ms=399.281 itl_ms=17.845 latency_ms=666.954 finish_reason=completed
+
+--- Request 1 finished ---
+Continuous batching is a technique used in machine learning and deep learning to improve the efficiency
+[step 15] requests=2 tokens=2 decode=2 prefill=0 sampled=2 waiting_queue=0 running_queue=2 preemptions=0 schedule_ms=0.012 build_ms=0.174 forward_ms=16.963 sample_ms=0.450 process_ms=0.107
+
+=== Done ===
+Steps: 16
+Total decode tokens: 32
+Duration: 0.667137s
+Throughput: 47.9662 tokens/s
+FINAL_SUMMARY total_steps=16 active_steps=16 decode_only_steps=15 completed_requests=2 failed_requests=0 total_decode_tokens=32 total_prefill_tokens=71 total_batched_tokens=101 scheduler_no_progress_steps=0 scheduler_preemptions=0 scheduler_priority_preemptions=0 scheduler_decode_kv_preemptions=0 scheduler_waiting_rejections=0 scheduler_stalled_prefill_failures=0 scheduler_cache_transfer_completions=0 scheduler_cache_restore_wait_steps=0 avg_waiting_queue=0.000 avg_running_queue=2.000 max_waiting_queue=0 max_running_queue=2 wall_ms=667.137 throughput_tps=47.966 avg_schedule_ms=0.014 avg_build_metadata_ms=0.182 avg_forward_ms=40.943 avg_sample_ms=0.494 avg_process_outputs_ms=0.012 avg_step_ms=41.650 ttft_ms=399.281 ttft_p50_ms=399.281 ttft_p95_ms=399.281 ttft_p99_ms=399.281 token_gap_count=30 token_gap_p50_ms=17.251 token_gap_p95_ms=24.377 token_gap_p99_ms=26.806 request_mean_token_gap_p95_ms=17.845 itl_ms=17.845 itl_p50_ms=17.845 itl_p95_ms=17.845 itl_p99_ms=17.845 latency_ms=666.954 latency_p50_ms=666.954 latency_p95_ms=666.954 latency_p99_ms=666.954 radix_cache_lookups=0 radix_cache_hits=0 radix_cache_misses=0 radix_cache_tokens_reused=0 radix_cache_publish_requests=0 radix_cache_published_blocks=0 radix_cache_evictions=0 radix_cache_evicted_blocks=0 host_demoted_blocks=0 host_restore_requests=0 host_restored_blocks=0 host_restore_failures=0 radix_cache_nodes=1 radix_cache_splits=0 radix_cache_evictable_blocks=0
+PBE_SERVING_EXTERNAL_KV_RELEASED grant=1
+total_slots=64 free_slots=64 active_grants=0
+incarnation=53965172068018 bytes_used=0 objects=0 leases=0 bytes_received=236 bytes_sent=740 requests=6
+PBE_SERVING_EXTERNAL_KV_OK evidence=/tmp/pbe-reuse-external

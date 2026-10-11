@@ -36,6 +36,27 @@ def completion(port, prompt, model=None):
     return result["choices"][0]["text"]
 
 
+def stream_timing(port, prompt, model=None):
+    """Client wall time to first nonempty SSE text and response completion."""
+    start = time.perf_counter()
+    arrivals, pieces = [], []
+    with urllib.request.urlopen(request(port, prompt, model, stream=True), timeout=120) as response:
+        for line in response:
+            if line.startswith(b'data: {'):
+                event = json.loads(line[6:])
+                if model and event['model'] != model:
+                    raise AssertionError('timed stream model mismatch')
+                piece = event['choices'][0]['text']
+                if piece:
+                    arrivals.append(time.perf_counter())
+                    pieces.append(piece)
+    if not arrivals:
+        raise AssertionError('empty timed stream')
+    return dict(first_text_ms=(arrivals[0] - start) * 1000,
+                total_ms=(time.perf_counter() - start) * 1000,
+                text_events=len(arrivals), text=''.join(pieces))
+
+
 def ready_http(port, process, timeout=180):
     deadline = time.monotonic() + timeout
     while time.monotonic() < deadline:
@@ -60,7 +81,13 @@ def main():
     parser.add_argument("--test-worker-failure", action="store_true",
                         help="kill one worker after correctness checks and verify entire GPU domain exits")
     parser.add_argument("--output-dir", type=Path)
+    parser.add_argument("--reuse-rounds", type=int, default=0,
+                        help="alternate real model requests, waiting for full KV return after each")
+    parser.add_argument("--timing-rounds", type=int, default=0,
+                        help="serial SSE latency samples with private, shared and 93.75%% occupied shared KV")
     args = parser.parse_args()
+    if args.reuse_rounds < 0 or args.timing_rounds < 0:
+        parser.error('reuse-rounds and timing-rounds must be nonnegative')
     config = json.loads(args.config.read_text())
     validate_config(config)
     directory = args.output_dir or Path(tempfile.mkdtemp(prefix="pbe-validate-"))
@@ -75,6 +102,14 @@ def main():
     for model in config["models"]:
         model["max_active_requests"] = 1
     expected = {}
+    timings = []
+    def timed_samples(port, model, route, mode):
+        for index in range(-1, args.timing_rounds):
+            sample = stream_timing(port, prompts[1], route)
+            if sample.pop('text').rstrip() != expected[model][1].rstrip():
+                raise AssertionError('timed output differs from private baseline')
+            if index >= 0:
+                timings.append(dict(model=model, mode=mode, **sample))
     supervisor = None
     try:
         for model in config["models"]:
@@ -86,6 +121,8 @@ def main():
             baseline = domain.spawn("baseline-" + model["id"], command)
             ready_http(args.port - 1, baseline)
             expected[model["id"]] = [completion(args.port - 1, prompt) for prompt in prompts]
+            if args.timing_rounds:
+                timed_samples(args.port - 1, model['id'], None, 'private')
             os.killpg(baseline.pid, signal.SIGTERM); baseline.wait(timeout=15)
             domain.children.remove(("baseline-" + model["id"], baseline))
         config.update(backend=args.backend, listen_port=args.port, listen_host="127.0.0.1")
@@ -130,6 +167,37 @@ def main():
                 raise
         else:
             raise AssertionError("unknown model accepted")
+        registry = json.loads((directory / "domain/registry.json").read_text())
+        # Malformed JSON must receive an error while preserving the REP state machine.
+        import zmq
+        def rejects_malformed(endpoint):
+            with zmq.Context() as context:
+                with context.socket(zmq.REQ) as channel:
+                    channel.setsockopt(zmq.LINGER, 0)
+                    channel.setsockopt(zmq.RCVTIMEO, 2000)
+                    channel.connect(endpoint)
+                    channel.send(b'{')
+                    assert not channel.recv_json()['ok']
+            assert rpc(endpoint, {'type': 'health'})['ok']
+        rejects_malformed(f"ipc://{directory / 'domain/kv.sock'}")
+        for worker in registry['models']:
+            rejects_malformed(worker['endpoint'])
+        # Cancellation must reclaim server-side request records without polling final.
+        for worker in registry["models"]:
+            for _ in range(10):
+                submitted = rpc(worker["endpoint"], dict(type="generate", request=dict(
+                    model_id=worker["id"], prompt="Hello", timeout_ms=5000,
+                    generation_config=dict(max_new_tokens=32))))
+                rpc(worker["endpoint"], dict(type="cancel", request_id=submitted["request_id"],
+                                            reason="cancellation_retention_regression"))
+            deadline = time.monotonic() + 5
+            while time.monotonic() < deadline:
+                remaining = rpc(worker["endpoint"], {"type": "metrics"})["metrics"]["remote_requests"]
+                if remaining == 0:
+                    break
+                time.sleep(.05)
+            else:
+                raise AssertionError(f"worker retains cancelled requests: {worker['id']}: {remaining}")
         endpoint = f"ipc://{directory / 'domain/kv.sock'}"
         deadline = time.monotonic() + 30
         while time.monotonic() < deadline:
@@ -141,8 +209,48 @@ def main():
             raise AssertionError("KV arena not fully reclaimed after generation/cancellation")
         report = dict(backend=args.backend, model_ids=list(expected),
                       different_weight_paths=len({model["weights"] for model in config["models"]}) > 1,
-                      max_active_requests_per_model=1, baseline_matches=True, utf8_streaming=True, cancellation_route=True,
+                      max_active_requests_per_model=1, baseline_matches=True, utf8_streaming=True, cancellation_route=True, cancelled_request_records_reclaimed=True, malformed_rpc_rejected=True,
                       unknown_model_rejected=True, arena_fully_reclaimed=True, outputs=actual)
+        reuse = []
+        for round_index in range(args.reuse_rounds):
+            for model in config["models"]:
+                if completion(args.port, prompts[0], model["id"]) != expected[model["id"]][0]:
+                    raise AssertionError("output changed after repeated cross-model pool reuse")
+                deadline = time.monotonic() + 30
+                while time.monotonic() < deadline:
+                    state = rpc(endpoint, {"type": "metrics"})
+                    if state["lease_count"] == 0 and state["free_bytes"] == state["bytes"]:
+                        break
+                    time.sleep(0.05)
+                else:
+                    raise AssertionError("KV not returned between alternating models")
+                reuse.append(dict(round=round_index, model=model["id"],
+                                  free_bytes=state["free_bytes"], lease_count=state["lease_count"]))
+        report["alternating_reuse_requests"] = reuse
+        if args.timing_rounds:
+            for model in config['models']:
+                timed_samples(args.port, model['id'], model['id'], 'shared_empty')
+            health = rpc(endpoint, {'type': 'health'})
+            identity = dict(epoch=health['epoch'], model='timing-capacity-holder')
+            rpc(endpoint, dict(type='register', hard_limit=health['bytes'], **identity))
+            pressure_bytes = (health['bytes'] * 15 // 16) // 256 * 256
+            lease = rpc(endpoint, dict(type='acquire', layout='capacity-only',
+                        bytes=pressure_bytes, alignment=256, **identity))['lease']
+            try:
+                for model in config['models']:
+                    timed_samples(args.port, model['id'], model['id'], 'shared_93.75_percent_held')
+            finally:
+                # The holder never submits GPU work or maps/writes these bytes.
+                rpc(endpoint, dict(type='release', lease=lease, gpu_complete=True, **identity))
+            deadline = time.monotonic() + 30
+            while time.monotonic() < deadline:
+                state = rpc(endpoint, {'type': 'metrics'})
+                if state['lease_count'] == 0 and state['free_bytes'] == state['bytes']:
+                    break
+                time.sleep(.05)
+            else:
+                raise AssertionError('KV not returned after timing')
+        report['timings'] = timings
         if args.test_worker_failure:
             registry = json.loads((directory / "domain/registry.json").read_text())
             os.killpg(registry["models"][0]["worker_pid"], signal.SIGKILL)

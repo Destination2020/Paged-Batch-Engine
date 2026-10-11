@@ -10,6 +10,7 @@
 #include <utility>
 #include <fstream>
 #include <stdexcept>
+#include <unordered_map>
 
 #include "base/nvtx_utils.h"
 #include "serving/serving_config.h"
@@ -33,7 +34,7 @@ class ZmqRemoteRequestHandle final : public OnlineRequestHandle {
 
 }  // namespace
 
-SingleOnlineEnginePool::SingleOnlineEnginePool(ServingBenchmarkApp* app,
+SingleOnlineEnginePool::SingleOnlineEnginePool(ServingRuntime* app,
                                                const BenchConfig& config)
     : engine_(std::make_unique<OnlineServingEngine>(app, config)),
       model_id_(config.model_id.empty() ? "paged-batch-engine" : config.model_id) {}
@@ -79,43 +80,76 @@ struct ZmqOnlineEnginePool::Impl {
     return zmq_request_response(rpc, request, response);
   }
 
-  void poll_tokens(std::shared_ptr<ZmqRemoteRequestHandle> handle) {
-    while (!stopping.load() && !handle->cancelled()) {
-      nlohmann::json response;
-      base::Status status;
+  void poll_tokens() {
+    // This socket is created, used and destroyed on its owning I/O thread.
+    std::unique_ptr<ZmqSocket> socket;
+    while (true) {
+      std::vector<std::shared_ptr<ZmqRemoteRequestHandle>> snapshot;
       {
-        base::nvtx::ScopedRange range("zmq_token_poll_rpc",
-                                      base::nvtx::kColorProcess);
-        status = request_response(
-            {{"type", zmq_rpc_message_type_name(ZmqRpcMessageType::kToken)},
-             {"request_id", handle->remote_request_id()},
-             {"timeout_ms",
-              std::max(1, std::min(config.engine_zmq_timeout_ms, 1000))}},
-            &response);
+        std::unique_lock<std::mutex> lock(mu);
+        cv.wait(lock, [&] { return stopping.load() || !requests.empty(); });
+        if (stopping.load()) break;
+        for (auto& entry : requests) snapshot.push_back(entry.second);
       }
-      if (!status) {
-        handle->finish("", true, status.get_err_msg());
-        return;
+      bool progress = false;
+      for (const auto& handle : snapshot) {
+        if (stopping.load()) break;
+        bool terminal = handle->cancelled();
+        if (!terminal) {
+          try {
+            nlohmann::json response;
+            auto status = socket ? base::error::Success() : make_zmq_req_socket(rpc, &socket);
+            if (status) status = socket->send_json({{"type", "token"},
+                {"request_id", handle->remote_request_id()}, {"max_events", 32}});
+            if (status) status = socket->recv_json(&response);
+            if (!status) {
+              // A token may have been consumed before a lost reply. Do not replay.
+              socket.reset();
+              std::lock_guard<std::mutex> lock(mu);
+              failure = "worker_transport_failed: " + status.get_err_msg();
+              for (auto& entry : requests) entry.second->finish("", true, failure);
+              requests.clear();
+              return; // fail the model channel once, not one timeout per request
+            }
+            if (!response.value("ok", false))
+              throw std::runtime_error(response.value("error", "zmq_token_failed"));
+            const auto events = response.contains("events") ? response.at("events")
+                : nlohmann::json::array({response.at("event")});
+            if (!events.is_array() || events.empty())
+              throw std::runtime_error("invalid token event batch");
+            for (const auto& event : events) {
+              const auto type = event.value("type", std::string());
+              if (type == "token") {
+                handle->push_token(event.value("text", ""));
+                progress = true;
+              } else if (type == "final") {
+                handle->finish(event.value("text", ""), event.value("failed", false),
+                               event.value("error", ""));
+                terminal = true;
+                progress = true;
+                break;
+              } else if (type != "none") {
+                throw std::runtime_error("invalid token event");
+              }
+            }
+          } catch (const std::exception& error) {
+            handle->finish("", true, error.what());
+            terminal = true;
+          }
+        }
+        if (terminal) {
+          std::lock_guard<std::mutex> lock(mu);
+          requests.erase(handle->remote_request_id());
+        }
       }
-      if (!response.value("ok", false)) {
-        handle->finish("", true, response.value("error", "zmq_token_failed"));
-        return;
+      if (!progress) {
+        std::unique_lock<std::mutex> lock(mu);
+        cv.wait_for(lock, std::chrono::milliseconds(5), [&] { return stopping.load(); });
       }
-      const auto& event = response.at("event");
-      const auto type = zmq_rpc_message_type_from_string(
-          event.value("type", std::string()));
-      if (type == ZmqRpcMessageType::kToken) {
-        handle->push_token(event.value("text", ""));
-        continue;
-      }
-      if (type == ZmqRpcMessageType::kFinal) {
-        handle->finish(event.value("text", ""),
-                       event.value("failed", false),
-                       event.value("error", ""));
-        return;
-      }
-      std::this_thread::sleep_for(std::chrono::milliseconds(5));
     }
+    std::lock_guard<std::mutex> lock(mu);
+    for (auto& entry : requests) entry.second->finish("", true, "server_stopping");
+    requests.clear();
   }
 
   BenchConfig config;
@@ -123,7 +157,11 @@ struct ZmqOnlineEnginePool::Impl {
   std::atomic<bool> started{false};
   std::atomic<bool> stopping{false};
   mutable std::mutex mu;
-  std::vector<std::thread> polling_threads;
+  std::mutex lifecycle_mu;
+  std::condition_variable cv;
+  std::unordered_map<int64_t, std::shared_ptr<ZmqRemoteRequestHandle>> requests;
+  std::thread polling_thread;
+  std::string failure;
 };
 
 ZmqOnlineEnginePool::ZmqOnlineEnginePool(const BenchConfig& config)
@@ -132,7 +170,9 @@ ZmqOnlineEnginePool::ZmqOnlineEnginePool(const BenchConfig& config)
 ZmqOnlineEnginePool::~ZmqOnlineEnginePool() { stop(); }
 
 void ZmqOnlineEnginePool::start() {
-  impl_->stopping.store(false);
+  std::lock_guard<std::mutex> lock(impl_->lifecycle_mu);
+  if (impl_->started.load()) return;
+  if (impl_->stopping.load()) throw std::runtime_error("engine pool has stopped");
   nlohmann::json response;
   auto status = impl_->request_response(
       {{"type", zmq_rpc_message_type_name(ZmqRpcMessageType::kHealth)}},
@@ -144,22 +184,19 @@ void ZmqOnlineEnginePool::start() {
   }
   if (!impl_->config.model_id.empty() && response.value("model_id", "") != impl_->config.model_id)
     throw std::runtime_error("EngineCore model identity mismatch");
+  impl_->polling_thread = std::thread([impl = impl_.get()] { impl->poll_tokens(); });
   impl_->started.store(true);
 }
 
 void ZmqOnlineEnginePool::stop() {
-  impl_->stopping.store(true);
-  impl_->started.store(false);
-  std::vector<std::thread> local;
+  std::lock_guard<std::mutex> lock(impl_->lifecycle_mu);
   {
-    std::lock_guard<std::mutex> lock(impl_->mu);
-    local.swap(impl_->polling_threads);
+    std::lock_guard<std::mutex> state_lock(impl_->mu);
+    impl_->stopping.store(true);
+    impl_->started.store(false);
   }
-  for (auto& thread : local) {
-    if (thread.joinable()) {
-      thread.join();
-    }
-  }
+  impl_->cv.notify_all();
+  if (impl_->polling_thread.joinable()) impl_->polling_thread.join();
 }
 
 std::shared_ptr<OnlineRequestHandle> ZmqOnlineEnginePool::submit(
@@ -167,9 +204,17 @@ std::shared_ptr<OnlineRequestHandle> ZmqOnlineEnginePool::submit(
   if (!impl_->started.load()) {
     start();
   }
+  {
+    std::lock_guard<std::mutex> lock(impl_->mu);
+    if (!impl_->failure.empty()) {
+      if (error) *error = impl_->failure;
+      return nullptr;
+    }
+  }
   nlohmann::json response;
   OnlineGenerateRequest remote_request = request;
   remote_request.stream = true;
+  if (remote_request.timeout_ms <= 0) remote_request.timeout_ms = impl_->config.request_timeout_ms;
   auto status = impl_->request_response(
       {{"type", zmq_rpc_message_type_name(ZmqRpcMessageType::kGenerate)},
        {"request", online_generate_request_to_json(remote_request)}},
@@ -192,10 +237,15 @@ std::shared_ptr<OnlineRequestHandle> ZmqOnlineEnginePool::submit(
   handle->model_id = request.model_id;
   {
     std::lock_guard<std::mutex> lock(impl_->mu);
-    impl_->polling_threads.emplace_back(
-        [impl = impl_.get(), handle]() { impl->poll_tokens(handle); });
+    if (!impl_->stopping.load() && impl_->failure.empty()) {
+      impl_->requests.emplace(handle->remote_request_id(), handle);
+      impl_->cv.notify_one();
+      return handle;
+    }
   }
-  return handle;
+  cancel(handle, "server_stopping");
+  if (error) *error = "server_stopping";
+  return nullptr;
 }
 
 void ZmqOnlineEnginePool::cancel(const std::shared_ptr<OnlineRequestHandle>& handle,
@@ -204,6 +254,11 @@ void ZmqOnlineEnginePool::cancel(const std::shared_ptr<OnlineRequestHandle>& han
     return;
   }
   handle->mark_cancelled();
+  handle->finish("", true, reason);
+  {
+    std::lock_guard<std::mutex> lock(impl_->mu);
+    impl_->requests.erase(handle->request_id());
+  }
   nlohmann::json response;
   auto status = impl_->request_response(
       {{"type", zmq_rpc_message_type_name(ZmqRpcMessageType::kCancel)},
@@ -239,6 +294,12 @@ nlohmann::json ZmqOnlineEnginePool::metrics_json() const {
   metrics["process"]["engine_zmq_endpoint"] = impl_->rpc.endpoint;
   metrics["process"]["prefill_zmq_endpoint"] = impl_->config.prefill_zmq_endpoint;
   metrics["engine_pool"]["type"] = "zmq";
+  {
+    std::lock_guard<std::mutex> lock(impl_->mu);
+    metrics["engine_pool"]["pending_remote_requests"] = impl_->requests.size();
+    metrics["engine_pool"]["polling_threads"] = impl_->started.load() && impl_->failure.empty() ? 1 : 0;
+    metrics["engine_pool"]["failure"] = impl_->failure;
+  }
   return metrics;
 }
 

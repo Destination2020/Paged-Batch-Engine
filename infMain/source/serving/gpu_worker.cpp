@@ -5,11 +5,11 @@
 #include <utility>
 
 #include "serving/pd_worker.h"
-#include "serving/serving_benchmark_app.h"
+#include "serving/serving_runtime.h"
 
 namespace serving {
 
-InProcGpuWorker::InProcGpuWorker(ServingBenchmarkApp* app, Scheduler* scheduler)
+InProcGpuWorker::InProcGpuWorker(ServingRuntime* app, Scheduler* scheduler)
     : app_(app), scheduler_(scheduler) {
   CHECK_NE(app_, nullptr);
   CHECK_NE(scheduler_, nullptr);

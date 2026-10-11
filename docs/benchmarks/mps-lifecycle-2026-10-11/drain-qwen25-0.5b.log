@@ -1,0 +1,2 @@
+ZMQ_ENGINE_CORE_READY endpoint=ipc:///tmp/pbe-life-drain-final/domain/qwen25-0.5b.sock role=zmq-engine-core
+ZMQ_ENGINE_CORE_STOPPED gpu_synchronized=1

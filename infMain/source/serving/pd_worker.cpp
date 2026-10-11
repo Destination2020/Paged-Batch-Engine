@@ -3,7 +3,7 @@
 #include <glog/logging.h>
 #include <cuda_runtime_api.h>
 
-#include "serving/serving_benchmark_app.h"
+#include "serving/serving_runtime.h"
 
 namespace serving {
 
@@ -28,7 +28,7 @@ bool pd_worker_step_has_decode(PDWorkerStepKind kind) {
   return kind == PDWorkerStepKind::kDecodeOnly || kind == PDWorkerStepKind::kMixed;
 }
 
-InProcPrefillWorker::InProcPrefillWorker(ServingBenchmarkApp* app, Scheduler* scheduler)
+InProcPrefillWorker::InProcPrefillWorker(ServingRuntime* app, Scheduler* scheduler)
     : app_(app), scheduler_(scheduler) {
   CHECK_NE(app_, nullptr);
   CHECK_NE(scheduler_, nullptr);
@@ -71,7 +71,7 @@ base::Status InProcPrefillWorker::execute_prefill_step(
   return base::error::Success();
 }
 
-InProcDecodeWorker::InProcDecodeWorker(ServingBenchmarkApp* app, Scheduler* scheduler)
+InProcDecodeWorker::InProcDecodeWorker(ServingRuntime* app, Scheduler* scheduler)
     : app_(app), scheduler_(scheduler) {
   CHECK_NE(app_, nullptr);
   CHECK_NE(scheduler_, nullptr);
@@ -103,7 +103,7 @@ base::Status InProcDecodeWorker::execute_decode_step(
   return base::error::Success();
 }
 
-InProcPDWorkerPair::InProcPDWorkerPair(ServingBenchmarkApp* app, Scheduler* scheduler)
+InProcPDWorkerPair::InProcPDWorkerPair(ServingRuntime* app, Scheduler* scheduler)
     : prefill_worker_(app, scheduler), decode_worker_(app, scheduler) {}
 
 base::Status InProcPDWorkerPair::execute_step(const SchedulerOutput& output,

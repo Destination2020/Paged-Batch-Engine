@@ -1,0 +1,36 @@
+Log file created at: 2026/10/11 16:12:21
+Running on machine: LAPTOP-6TDESKLR
+Running duration (h:mm:ss): 0:00:00
+Log line format: [IWEF]yyyymmdd hh:mm:ss.uuuuuu threadid file:line] msg
+I20261011 16:12:21.558082 130801884053504 qwen2.cpp:532] Qwen2 init weight dtype: Bf16, runtime dtype: Bf16
+I20261011 16:12:23.271934 130801884053504 qwen2.cpp:1009] Serving workspace preallocation: token_capacity=128, reserved_bytes=71925760
+I20261011 16:12:23.281760 130801884053504 block_allocator.cpp:79] BlockAllocator initialized: 146 blocks, block_size=16, storage_mode=plain, total_memory=2.28125 MB
+I20261011 16:12:23.283034 130801884053504 block_allocator.cpp:79] BlockAllocator initialized: 146 blocks, block_size=16, storage_mode=plain, total_memory=2.28125 MB
+I20261011 16:12:23.284230 130801884053504 block_allocator.cpp:79] BlockAllocator initialized: 146 blocks, block_size=16, storage_mode=plain, total_memory=2.28125 MB
+I20261011 16:12:23.285491 130801884053504 block_allocator.cpp:79] BlockAllocator initialized: 146 blocks, block_size=16, storage_mode=plain, total_memory=2.28125 MB
+I20261011 16:12:23.286662 130801884053504 block_allocator.cpp:79] BlockAllocator initialized: 146 blocks, block_size=16, storage_mode=plain, total_memory=2.28125 MB
+I20261011 16:12:23.287785 130801884053504 block_allocator.cpp:79] BlockAllocator initialized: 146 blocks, block_size=16, storage_mode=plain, total_memory=2.28125 MB
+I20261011 16:12:23.288964 130801884053504 block_allocator.cpp:79] BlockAllocator initialized: 146 blocks, block_size=16, storage_mode=plain, total_memory=2.28125 MB
+I20261011 16:12:23.290137 130801884053504 block_allocator.cpp:79] BlockAllocator initialized: 146 blocks, block_size=16, storage_mode=plain, total_memory=2.28125 MB
+I20261011 16:12:23.291128 130801884053504 block_allocator.cpp:79] BlockAllocator initialized: 146 blocks, block_size=16, storage_mode=plain, total_memory=2.28125 MB
+I20261011 16:12:23.292070 130801884053504 block_allocator.cpp:79] BlockAllocator initialized: 146 blocks, block_size=16, storage_mode=plain, total_memory=2.28125 MB
+I20261011 16:12:23.293064 130801884053504 block_allocator.cpp:79] BlockAllocator initialized: 146 blocks, block_size=16, storage_mode=plain, total_memory=2.28125 MB
+I20261011 16:12:23.293958 130801884053504 block_allocator.cpp:79] BlockAllocator initialized: 146 blocks, block_size=16, storage_mode=plain, total_memory=2.28125 MB
+I20261011 16:12:23.294924 130801884053504 block_allocator.cpp:79] BlockAllocator initialized: 146 blocks, block_size=16, storage_mode=plain, total_memory=2.28125 MB
+I20261011 16:12:23.295905 130801884053504 block_allocator.cpp:79] BlockAllocator initialized: 146 blocks, block_size=16, storage_mode=plain, total_memory=2.28125 MB
+I20261011 16:12:23.296762 130801884053504 block_allocator.cpp:79] BlockAllocator initialized: 146 blocks, block_size=16, storage_mode=plain, total_memory=2.28125 MB
+I20261011 16:12:23.297576 130801884053504 block_allocator.cpp:79] BlockAllocator initialized: 146 blocks, block_size=16, storage_mode=plain, total_memory=2.28125 MB
+I20261011 16:12:23.298567 130801884053504 block_allocator.cpp:79] BlockAllocator initialized: 146 blocks, block_size=16, storage_mode=plain, total_memory=2.28125 MB
+I20261011 16:12:23.299694 130801884053504 block_allocator.cpp:79] BlockAllocator initialized: 146 blocks, block_size=16, storage_mode=plain, total_memory=2.28125 MB
+I20261011 16:12:23.300758 130801884053504 block_allocator.cpp:79] BlockAllocator initialized: 146 blocks, block_size=16, storage_mode=plain, total_memory=2.28125 MB
+I20261011 16:12:23.301829 130801884053504 block_allocator.cpp:79] BlockAllocator initialized: 146 blocks, block_size=16, storage_mode=plain, total_memory=2.28125 MB
+I20261011 16:12:23.302936 130801884053504 block_allocator.cpp:79] BlockAllocator initialized: 146 blocks, block_size=16, storage_mode=plain, total_memory=2.28125 MB
+I20261011 16:12:23.304162 130801884053504 block_allocator.cpp:79] BlockAllocator initialized: 146 blocks, block_size=16, storage_mode=plain, total_memory=2.28125 MB
+I20261011 16:12:23.305228 130801884053504 block_allocator.cpp:79] BlockAllocator initialized: 146 blocks, block_size=16, storage_mode=plain, total_memory=2.28125 MB
+I20261011 16:12:23.306208 130801884053504 block_allocator.cpp:79] BlockAllocator initialized: 146 blocks, block_size=16, storage_mode=plain, total_memory=2.28125 MB
+I20261011 16:12:23.307258 130801884053504 block_allocator.cpp:79] BlockAllocator initialized: 146 blocks, block_size=16, storage_mode=plain, total_memory=2.28125 MB
+I20261011 16:12:23.308239 130801884053504 block_allocator.cpp:79] BlockAllocator initialized: 146 blocks, block_size=16, storage_mode=plain, total_memory=2.28125 MB
+I20261011 16:12:23.309257 130801884053504 block_allocator.cpp:79] BlockAllocator initialized: 146 blocks, block_size=16, storage_mode=plain, total_memory=2.28125 MB
+I20261011 16:12:23.310332 130801884053504 block_allocator.cpp:79] BlockAllocator initialized: 146 blocks, block_size=16, storage_mode=plain, total_memory=2.28125 MB
+I20261011 16:12:23.688979 130801884053504 serving_http_server.cpp:123] HTTP worker thread pool started: workers=32
+I20261011 16:12:23.689126 130801884053504 serving_online_server.cpp:416] Online serving listening on http://127.0.0.1:18080 endpoints: GET /health, GET /metrics, POST /generate, POST /v1/completions, POST /v1/chat/completions http_workers=0 listen_backlog=1024 process_role=inproc engine_zmq_endpoint=tcp://127.0.0.1:19090 prefill_zmq_endpoint=tcp://127.0.0.1:19091

@@ -1,0 +1,26 @@
+{
+  "backend": "mps_process",
+  "events": [
+    {
+      "event": "fault",
+      "monotonic_ns": 62641475442491,
+      "reason": "KV owner did not register with MPS; refusing to load models"
+    },
+    {
+      "event": "arena_before_exit",
+      "monotonic_ns": 62641476650952,
+      "free_bytes": 536870912,
+      "arena_bytes": 536870912,
+      "lease_count": 0
+    },
+    {
+      "event": "owner_stopped",
+      "monotonic_ns": 62641592627741,
+      "pid": 27567,
+      "arena_freed": true
+    }
+  ],
+  "graceful": false,
+  "mps_recovery_required": true,
+  "owned_mps_daemon_stopped": true
+}

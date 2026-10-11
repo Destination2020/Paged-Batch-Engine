@@ -1,0 +1,56 @@
+{
+  "scenario": "owner-failure",
+  "owner_refuses_live_leases": true,
+  "epoch": 62559046279481,
+  "supervisor_exit": 1,
+  "shutdown": {
+    "backend": "process",
+    "events": [
+      {
+        "event": "fault",
+        "monotonic_ns": 62563431925170,
+        "reason": "kv-owner exited (-9); see /tmp/pbe-life-owner-failure/domain/kv-owner.log"
+      },
+      {
+        "event": "fault",
+        "monotonic_ns": 62563431937283,
+        "reason": "kv-owner exited unexpectedly (-9)"
+      },
+      {
+        "event": "fault",
+        "monotonic_ns": 62563431941541,
+        "reason": "forced process exit: api"
+      },
+      {
+        "event": "forced_exit",
+        "monotonic_ns": 62563448092382,
+        "name": "api",
+        "pid": 20496
+      },
+      {
+        "event": "worker_stopped",
+        "monotonic_ns": 62563663220809,
+        "name": "qwen25-0.5b",
+        "pid": 20371,
+        "mode": "cancel",
+        "gpu_synchronized": true
+      },
+      {
+        "event": "worker_stopped",
+        "monotonic_ns": 62563979065538,
+        "name": "qwen25-1.5b",
+        "pid": 20436,
+        "mode": "cancel",
+        "gpu_synchronized": true
+      },
+      {
+        "event": "fault",
+        "monotonic_ns": 62563979086378,
+        "reason": "owner exited before importer cleanup (-9)"
+      }
+    ],
+    "graceful": false,
+    "mps_recovery_required": false
+  },
+  "all_gpu_processes_exited": true
+}

@@ -3,6 +3,7 @@
   "arena_mib": 512,
   "chunk_target_mib": 2,
   "reserve_mib": 768,
+  "shutdown_timeout_s": 30,
   "listen_host": "127.0.0.1",
   "listen_port": 8080,
   "default_model": "qwen25-0.5b",
