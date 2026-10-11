@@ -1,0 +1,81 @@
+{
+  "scenario": "drain",
+  "backend": "process",
+  "owner_refuses_live_leases": true,
+  "epoch": 87996527590653,
+  "leases_when_stop_requested": 1,
+  "active_http_stream_completed": true,
+  "supervisor_exit": 130,
+  "shutdown": {
+    "backend": "process",
+    "events": [
+      {
+        "event": "shutdown_phase",
+        "monotonic_ns": 88001566118111,
+        "phase": "api"
+      },
+      {
+        "event": "api_drain_requested",
+        "monotonic_ns": 88001566122470,
+        "pid": 29951
+      },
+      {
+        "event": "api_drained",
+        "monotonic_ns": 88003885772558,
+        "pid": 29951
+      },
+      {
+        "event": "shutdown_phase",
+        "monotonic_ns": 88003885788117,
+        "phase": "workers"
+      },
+      {
+        "event": "worker_stopped",
+        "monotonic_ns": 88004101222524,
+        "name": "qwen25-0.5b",
+        "pid": 29829,
+        "mode": "drain",
+        "gpu_synchronized": true
+      },
+      {
+        "event": "worker_stopped",
+        "monotonic_ns": 88004467337251,
+        "name": "qwen25-1.5b",
+        "pid": 29881,
+        "mode": "drain",
+        "gpu_synchronized": true
+      },
+      {
+        "event": "shutdown_phase",
+        "monotonic_ns": 88004467354033,
+        "phase": "auxiliary"
+      },
+      {
+        "event": "shutdown_phase",
+        "monotonic_ns": 88004467364563,
+        "phase": "owner"
+      },
+      {
+        "event": "arena_before_exit",
+        "monotonic_ns": 88004468670896,
+        "free_bytes": 536870912,
+        "arena_bytes": 536870912,
+        "lease_count": 0
+      },
+      {
+        "event": "owner_stopped",
+        "monotonic_ns": 88004584356838,
+        "pid": 29788,
+        "arena_freed": true
+      },
+      {
+        "event": "shutdown_phase",
+        "monotonic_ns": 88004584378980,
+        "phase": "complete"
+      }
+    ],
+    "graceful": true,
+    "mps_recovery_required": false
+  },
+  "all_gpu_processes_exited": true
+}

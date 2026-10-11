@@ -14,29 +14,39 @@
 #include <vector>
 #include <unistd.h>
 #include <nlohmann/json.hpp>
-#include "serving/serving_zmq_rpc.h"
+#include "base/zmq_transport.h"
 
 #include "shared_kv_protocol.h"
 namespace base {
 using namespace shared_kv_detail;
 struct SharedKVArenaClient::Impl {
-  serving::ZmqRpcConfig rpc;
+  transport::ZmqRpcConfig rpc;
   std::string model;
   uint64_t bytes = 0, epoch = 0, hard_limit = 0;
   void* data = nullptr;
   int device = 0;
   std::mutex mu;
-  std::unique_ptr<serving::ZmqSocket> socket;
+  std::unique_ptr<transport::ZmqSocket> socket;
   bool failed = false;
+  bool measure = false; // Set before publishing the client to other threads.
+  SharedKVRpcTiming timing;
   Json request(Json body) {
+    using Clock = std::chrono::steady_clock;
+    const auto waiting = measure ? Clock::now() : Clock::time_point{};
     std::lock_guard<std::mutex> lock(mu);
     if (failed) throw std::runtime_error("KV owner connection failed; stop GPU domain");
+    const auto exchanging = measure ? Clock::now() : Clock::time_point{};
     body["epoch"] = epoch;
     body["model"] = model;
     Json response;
-    auto status = socket ? error::Success() : serving::make_zmq_req_socket(rpc, &socket);
+    auto status = socket ? error::Success() : transport::make_zmq_req_socket(rpc, &socket);
     if (status) status = socket->send_json(body);
     if (status) status = socket->recv_json(&response);
+    if (measure) {
+      ++timing.calls;
+      timing.mutex_wait_us += std::chrono::duration<double, std::micro>(exchanging - waiting).count();
+      timing.exchange_us += std::chrono::duration<double, std::micro>(Clock::now() - exchanging).count();
+    }
     if (!status) {
       // A lost reply may follow a committed acquire/release. Never replay it.
       failed = true;
@@ -63,7 +73,7 @@ SharedKVArenaClient::SharedKVArenaClient(std::string endpoint, std::string model
   impl_->bytes = response.at("bytes");
   impl_->epoch = response.at("epoch");
   impl_->hard_limit = hard_limit_bytes;
-  auto handle_bytes = serving::hex_json_to_binary(response.at("memory_handle"));
+  auto handle_bytes = transport::hex_json_to_binary(response.at("memory_handle"));
   if (handle_bytes.size() != sizeof(cudaIpcMemHandle_t))
     throw std::runtime_error("invalid CUDA IPC memory handle");
   cudaIpcMemHandle_t handle{};
@@ -83,6 +93,11 @@ SharedKVArenaClient::~SharedKVArenaClient() {
 void* SharedKVArenaClient::data() const { return impl_->data; }
 uint64_t SharedKVArenaClient::bytes() const { return impl_->bytes; }
 uint64_t SharedKVArenaClient::hard_limit() const { return impl_->hard_limit; }
+void SharedKVArenaClient::enable_rpc_timing() { impl_->measure = true; }
+SharedKVRpcTiming SharedKVArenaClient::rpc_timing() const {
+  std::lock_guard<std::mutex> lock(impl_->mu);
+  return impl_->timing;
+}
 ChunkLease SharedKVArenaClient::acquire(const std::string& layout,
     uint64_t bytes, uint64_t alignment) {
   auto lease = parse_lease(impl_->request({{"type", "acquire"}, {"layout", layout},

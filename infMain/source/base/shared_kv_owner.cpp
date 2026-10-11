@@ -14,7 +14,7 @@
 #include <vector>
 #include <unistd.h>
 #include <nlohmann/json.hpp>
-#include "serving/serving_zmq_rpc.h"
+#include "base/zmq_transport.h"
 
 #include "shared_kv_protocol.h"
 namespace base {
@@ -28,8 +28,8 @@ int run_shared_kv_owner(const std::string& endpoint, uint64_t bytes, int device)
     cuda_check(cudaIpcGetMemHandle(&handle, data));
     const auto epoch = static_cast<uint64_t>(std::chrono::steady_clock::now().time_since_epoch().count());
     GlobalChunkAllocator allocator(bytes, epoch);
-    std::unique_ptr<serving::ZmqSocket> socket;
-    auto status = serving::make_zmq_rep_socket({endpoint, 1000}, &socket);
+    std::unique_ptr<transport::ZmqSocket> socket;
+    auto status = transport::make_zmq_rep_socket({endpoint, 1000}, &socket);
     if (!status) throw std::runtime_error(status.get_err_msg());
     const auto uuid = uuid_for_device(device);
     const char* trace_env = std::getenv("PBE_SHARED_KV_TRACE");
@@ -63,7 +63,7 @@ int run_shared_kv_owner(const std::string& endpoint, uint64_t bytes, int device)
           response = {{"gpu_free_bytes", free_bytes}, {"gpu_total_bytes", total_bytes},
               {"ok", true}, {"bytes", bytes}, {"epoch", epoch}, {"gpu_uuid", uuid},
               {"free_bytes", allocator.free_bytes()}, {"lease_count", allocator.lease_count()},
-              {"memory_handle", serving::binary_to_hex_json(std::string(reinterpret_cast<char*>(&handle), sizeof(handle)))}};
+              {"memory_handle", transport::binary_to_hex_json(std::string(reinterpret_cast<char*>(&handle), sizeof(handle)))}};
         } else {
           if (request.at("epoch").get<uint64_t>() != epoch) throw std::invalid_argument("stale_arena_epoch");
           const std::string model = request.at("model");

@@ -292,7 +292,7 @@ nlohmann::json ZmqOnlineEnginePool::metrics_json() const {
   nlohmann::json metrics = response.value("metrics", nlohmann::json::object());
   metrics["process"]["role"] = kOnlineProcessRoleZmqHttpApi;
   metrics["process"]["engine_zmq_endpoint"] = impl_->rpc.endpoint;
-  metrics["process"]["prefill_zmq_endpoint"] = impl_->config.prefill_zmq_endpoint;
+  metrics["process"]["prefill_zmq_endpoint"] = impl_->config.ipc.prefill_zmq_endpoint;
   metrics["engine_pool"]["type"] = "zmq";
   {
     std::lock_guard<std::mutex> lock(impl_->mu);
@@ -315,7 +315,7 @@ MultiModelOnlineEnginePool::MultiModelOnlineEnginePool(const BenchConfig& config
       throw std::invalid_argument("Duplicate/empty model ID or endpoint");
     BenchConfig worker = config;
     worker.model_id = id;
-    worker.engine_zmq_endpoint = endpoint;
+    worker.ipc.engine_zmq_endpoint = endpoint;
     pools_[id] = std::make_unique<ZmqOnlineEnginePool>(worker);
     endpoints[endpoint] = true;
     if (default_model_.empty()) default_model_ = id;

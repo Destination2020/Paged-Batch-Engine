@@ -1,6 +1,6 @@
 #pragma once
 #include "base/shared_kv_arena.h"
-#include "serving/serving_zmq_rpc.h"
+#include "base/zmq_transport.h"
 #include <nlohmann/json.hpp>
 #include <limits>
 namespace base::shared_kv_detail {

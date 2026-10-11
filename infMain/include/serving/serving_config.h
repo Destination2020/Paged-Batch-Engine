@@ -42,7 +42,62 @@ struct PromptTokenStats {
   double mean_prompt_tokens = 0.0;
 };
 
+struct HttpConfig {
+  std::string listen_host = "127.0.0.1";
+  int32_t listen_port = 8080;
+  int32_t http_worker_threads = 0;   // 0 auto-selects a bounded worker pool
+  int32_t http_listen_backlog = 1024;
+  int32_t http_io_timeout_ms = 5000;
+  int32_t http_max_pending_connections = 128;
+};
+
+struct PDConfig {
+  std::string pd_mode = "off";
+  int32_t prefill_device_id = 0;
+  int32_t decode_device_id = 1;
+};
+
+struct ProcessConfig {
+  std::string online_process_role = "inproc";
+  std::string engine_zmq_endpoint = "tcp://127.0.0.1:19090";
+  std::string prefill_zmq_endpoint = "tcp://127.0.0.1:19091";
+  int32_t engine_zmq_timeout_ms = 30000;
+};
+
+struct KVMemoryConfig {
+  double kv_cache_memory_utilization = kDefaultKVCacheMemoryUtilization;
+  int32_t kv_cache_blocks_per_layer = 0;
+  bool radix_cache_config_explicit = false;
+  bool radix_cache_enabled = true;
+  bool host_cache_enabled = false;
+  size_t host_cache_bytes = 0;
+  size_t host_cache_pages = 0;
+  size_t host_cache_inflight_pages = 2;
+  bool host_demote_after_warmup = false;
+  std::string shared_kv_endpoint;
+  int32_t kv_cache_budget_mib = 0;
+  int32_t private_memory_budget_mib = 0;
+  int32_t shared_kv_hard_limit_mib = 0;
+  int32_t shared_kv_chunk_mib = 2;
+  std::string data_service_endpoint;
+};
+
+struct BenchmarkConfig {
+  int32_t warmup_rounds = 0;
+  bool quiet = false;
+  bool print_step_profile = false;
+  bool print_step_trace = false;
+  bool print_final_summary = true;
+};
+
+// Launch composition: CLI spelling is stable; each domain owns its configuration.
 struct BenchConfig {
+  HttpConfig http;
+  PDConfig pd;
+  ProcessConfig ipc;
+  KVMemoryConfig kv;
+  BenchmarkConfig benchmark;
+
   SamplingConfig sampling;
   bool ignore_eos = false;
   int32_t max_new_tokens = 256;
@@ -53,58 +108,22 @@ struct BenchConfig {
   int32_t long_prefill_token_threshold = 0;
   int32_t max_partial_prefills = 0;
   int32_t max_long_partial_prefills = 0;
-  int32_t warmup_rounds = 0;
-  double kv_cache_memory_utilization = kDefaultKVCacheMemoryUtilization;
-  int32_t kv_cache_blocks_per_layer = 0;
   std::string max_num_batched_tokens_request = "auto";
   std::string prefill_chunk_cap_request = "auto";
   bool auto_max_num_batched_tokens = true;
   bool auto_prefill_chunk_cap = true;
-  bool radix_cache_config_explicit = false;
-  bool radix_cache_enabled = true;
-  bool host_cache_enabled = false;
-  size_t host_cache_bytes = 0;
-  size_t host_cache_pages = 0;
-  size_t host_cache_inflight_pages = 2;
-  bool host_demote_after_warmup = false;
   PromptTokenStats prompt_token_stats;
   AutoScheduleEstimate auto_estimate;
   ServingCapacityInfo capacity_info;
-  bool quiet = false;
-  bool print_step_profile = false;
-  bool print_step_trace = false;
-  bool print_final_summary = true;
   bool online_server = false;
-  std::string listen_host = "127.0.0.1";
-  int32_t listen_port = 8080;
-  int32_t http_worker_threads = 0;   // 0 auto-selects a bounded worker pool
-  int32_t http_listen_backlog = 1024;
-  int32_t http_io_timeout_ms = 5000;
-  int32_t http_max_pending_connections = 128;
   int32_t max_queue_size = 128;
   int32_t request_timeout_ms = 0;  // 0 disables request timeout
   int32_t max_prompt_tokens = 0;   // 0 disables prompt length check
   int32_t device_id = 0;
   std::string model_id;
   std::string model_registry_path;
-  std::string shared_kv_endpoint;
-  int32_t kv_cache_budget_mib = 0;
-  int32_t private_memory_budget_mib = 0;
-  int32_t shared_kv_hard_limit_mib = 0;
-  int32_t shared_kv_chunk_mib = 2;
   int32_t max_output_tokens = 0;
   int32_t max_active_requests = 0; // zero preserves the model batch limit
-  std::string pd_mode = "off";
-  int32_t prefill_device_id = 0;
-  int32_t decode_device_id = 1;
-  std::string online_process_role = "inproc";
-  std::string engine_zmq_endpoint = "tcp://127.0.0.1:19090";
-  std::string prefill_zmq_endpoint = "tcp://127.0.0.1:19091";
-  int32_t engine_zmq_timeout_ms = 30000;
-  // Optional node data service that owns the physical CUDA KV allocation.
-  // When set, a single-role Qwen serving process imports this pool before
-  // model initialization instead of allocating a process-owned KV pool.
-  std::string data_service_endpoint;
 };
 
 inline bool is_dual_gpu_pd_mode(const std::string& pd_mode) {

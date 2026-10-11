@@ -1,3 +1,4 @@
+#include "serving/pd_executor.h"
 #include "serving/serving_benchmark_app.h"
 #include "serving/serving_config_parser.h"
 #include "serving/serving_online_server.h"
@@ -237,28 +238,28 @@ void print_config_summary(const BenchConfig& config) {
             << " device_id=" << config.device_id
             << " request_timeout_ms=" << config.request_timeout_ms
             << " max_prompt_tokens=" << config.max_prompt_tokens
-            << " pd_mode=" << config.pd_mode
-            << " online_process_role=" << config.online_process_role
-            << " engine_zmq_endpoint=" << config.engine_zmq_endpoint
-            << " prefill_zmq_endpoint=" << config.prefill_zmq_endpoint
-            << " engine_zmq_timeout_ms=" << config.engine_zmq_timeout_ms
-            << " prefill_device_id=" << config.prefill_device_id
-            << " decode_device_id=" << config.decode_device_id
-            << " http_worker_threads=" << config.http_worker_threads
-            << " http_listen_backlog=" << config.http_listen_backlog
+            << " pd_mode=" << config.pd.pd_mode
+            << " online_process_role=" << config.ipc.online_process_role
+            << " engine_zmq_endpoint=" << config.ipc.engine_zmq_endpoint
+            << " prefill_zmq_endpoint=" << config.ipc.prefill_zmq_endpoint
+            << " engine_zmq_timeout_ms=" << config.ipc.engine_zmq_timeout_ms
+            << " prefill_device_id=" << config.pd.prefill_device_id
+            << " decode_device_id=" << config.pd.decode_device_id
+            << " http_worker_threads=" << config.http.http_worker_threads
+            << " http_listen_backlog=" << config.http.http_listen_backlog
             << " kv_cache_memory_utilization="
-            << format_double(config.kv_cache_memory_utilization, 3)
+            << format_double(config.kv.kv_cache_memory_utilization, 3)
             << " kv_cache_blocks_per_layer_request="
-            << config.kv_cache_blocks_per_layer
-            << " warmup_rounds=" << config.warmup_rounds
+            << config.kv.kv_cache_blocks_per_layer
+            << " warmup_rounds=" << config.benchmark.warmup_rounds
             << " radix_cache_config_explicit="
-            << (config.radix_cache_config_explicit ? 1 : 0)
-            << " radix_cache_enabled=" << (config.radix_cache_enabled ? 1 : 0)
-            << " host_cache_enabled=" << (config.host_cache_enabled ? 1 : 0)
-            << " host_cache_bytes=" << config.host_cache_bytes
-            << " host_cache_pages=" << config.host_cache_pages
-            << " host_cache_inflight_pages=" << config.host_cache_inflight_pages
-            << " host_demote_after_warmup=" << (config.host_demote_after_warmup ? 1 : 0)
+            << (config.kv.radix_cache_config_explicit ? 1 : 0)
+            << " radix_cache_enabled=" << (config.kv.radix_cache_enabled ? 1 : 0)
+            << " host_cache_enabled=" << (config.kv.host_cache_enabled ? 1 : 0)
+            << " host_cache_bytes=" << config.kv.host_cache_bytes
+            << " host_cache_pages=" << config.kv.host_cache_pages
+            << " host_cache_inflight_pages=" << config.kv.host_cache_inflight_pages
+            << " host_demote_after_warmup=" << (config.kv.host_demote_after_warmup ? 1 : 0)
             << " prompt_count=" << config.prompt_token_stats.prompt_count
             << " prompt_min_tokens=" << config.prompt_token_stats.min_prompt_tokens
             << " prompt_p50_tokens=" << config.prompt_token_stats.p50_prompt_tokens
@@ -392,11 +393,14 @@ void print_final_summary(const SummaryStats& stats,
 }  // namespace
 
 int ServingBenchmarkApp::run(int argc, char* argv[]) {
-  if (!parse_args(argc, argv)) {
+  try {
+    if (!parse_args(argc, argv)) return -1;
+  } catch (const std::exception& error) {
+    LOG(ERROR) << "Invalid serving configuration: " << error.what();
     return -1;
   }
   if (bench_config_.online_server &&
-      bench_config_.online_process_role == kOnlineProcessRoleZmqHttpApi) {
+      bench_config_.ipc.online_process_role == kOnlineProcessRoleZmqHttpApi) {
     return serving::run_online_server(nullptr, bench_config_);
   }
   if (!initialize_model(model_path_, tokenizer_path_, bench_config_)) {
@@ -405,7 +409,7 @@ int ServingBenchmarkApp::run(int argc, char* argv[]) {
 
   prepare_benchmark_config();
   run_warmup();
-  if (bench_config_.host_demote_after_warmup) {
+  if (bench_config_.kv.host_demote_after_warmup) {
     CHECK(kv_cache_manager()->host_cache_enabled())
         << "--host-demote-after-warmup requires --host-cache=1";
     int32_t admitted = 0;
@@ -422,7 +426,7 @@ int ServingBenchmarkApp::run(int argc, char* argv[]) {
   }
   kv_cache_manager()->reset_radix_cache_stats();
   if (bench_config_.online_server) {
-    if (is_zmq_engine_core_role(bench_config_.online_process_role)) {
+    if (is_zmq_engine_core_role(bench_config_.ipc.online_process_role)) {
       auto status = serving::run_zmq_engine_core_server(this, bench_config_);
       if (!status) {
         LOG(ERROR) << status.get_err_msg();
@@ -432,7 +436,7 @@ int ServingBenchmarkApp::run(int argc, char* argv[]) {
     }
     return serving::run_online_server(this);
   }
-  if (is_dual_gpu_pd_mode(bench_config_.pd_mode)) {
+  if (is_dual_gpu_pd_mode(bench_config_.pd.pd_mode)) {
     return run_dual_gpu_pd_offline();
   }
   create_scheduler();
@@ -443,12 +447,12 @@ int ServingBenchmarkApp::run(int argc, char* argv[]) {
 
 int ServingBenchmarkApp::run_dual_gpu_pd_offline() {
   if (!pd_dual_gpu_supported()) {
-    LOG(ERROR) << "pd-mode=" << bench_config_.pd_mode
+    LOG(ERROR) << "pd-mode=" << bench_config_.pd.pd_mode
                << " requested, but this app does not provide P/D models";
     return -1;
   }
-  if (!bench_config_.quiet) {
-    std::cout << "\n=== Starting " << bench_config_.pd_mode
+  if (!bench_config_.benchmark.quiet) {
+    std::cout << "\n=== Starting " << bench_config_.pd.pd_mode
               << " PD offline ===" << std::endl;
   }
   summary_.request_ttft_ms.reserve(prompts_.size());
@@ -461,7 +465,7 @@ int ServingBenchmarkApp::run_dual_gpu_pd_offline() {
     GenerationConfig config(bench_config_.max_new_tokens);
     config.sampling = bench_config_.sampling;
     config.ignore_eos = bench_config_.ignore_eos;
-    PDGenerationResult generation = run_dual_gpu_pd_generation(std::move(tokens), config);
+    PDExecutor::PDGenerationResult generation = PDExecutor(*this).run_dual_gpu_pd_generation(std::move(tokens), config);
     const auto request_end = Clock::now();
     if (generation.failed) {
       ++summary_.failed_requests;
@@ -479,7 +483,7 @@ int ServingBenchmarkApp::run_dual_gpu_pd_offline() {
               << " finish_reason="
               << (generation.error.empty() ? "completed" : generation.error)
               << "\n";
-    if (!bench_config_.quiet) {
+    if (!bench_config_.benchmark.quiet) {
       std::cout << "\n--- Request " << i
                 << (generation.failed ? " failed" : " finished") << " ---\n";
       if (generation.failed) {
@@ -495,7 +499,7 @@ int ServingBenchmarkApp::run_dual_gpu_pd_offline() {
   const double wall_ms = Duration(end - start).count();
   const double throughput = duration > 0.0 ? total_decode_steps_ / duration : 0.0;
   print_done(duration, throughput);
-  if (bench_config_.print_final_summary) {
+  if (bench_config_.benchmark.print_final_summary) {
     const auto* kv_manager = pd_decode_kv_cache_manager();
     print_final_summary(summary_, wall_ms, throughput,
                         kv_manager->radix_cache_stats(),
@@ -602,7 +606,7 @@ void ServingBenchmarkApp::prepare_benchmark_config() {
       estimate_auto_schedule(bench_config_.capacity_info,
                              bench_config_.prompt_token_stats,
                              bench_config_.max_new_tokens,
-                             bench_config_.kv_cache_memory_utilization);
+                             bench_config_.kv.kv_cache_memory_utilization);
 
   if (bench_config_.auto_max_num_batched_tokens) {
     bench_config_.max_num_batched_tokens = bench_config_.auto_estimate.raw_max_batched_tokens;
@@ -634,13 +638,13 @@ void ServingBenchmarkApp::prepare_benchmark_config() {
       std::max(1, std::min(bench_config_.prefill_chunk_cap,
                            bench_config_.max_num_batched_tokens));
 
-  if (bench_config_.print_final_summary) {
+  if (bench_config_.benchmark.print_final_summary) {
     print_config_summary(bench_config_);
   }
 }
 
 void ServingBenchmarkApp::run_warmup() {
-  if (bench_config_.warmup_rounds <= 0 || prompts_.empty()) {
+  if (bench_config_.benchmark.warmup_rounds <= 0 || prompts_.empty()) {
     return;
   }
 
@@ -655,7 +659,7 @@ void ServingBenchmarkApp::run_warmup() {
   sched_config.max_long_partial_prefills = bench_config_.max_long_partial_prefills;
 
   void* stream = model_stream();
-  for (int32_t round = 0; round < bench_config_.warmup_rounds; ++round) {
+  for (int32_t round = 0; round < bench_config_.benchmark.warmup_rounds; ++round) {
     Scheduler warmup_scheduler(sched_config, kv_cache_manager());
     submit_requests_to(warmup_scheduler, 1, true);
     warmup_scheduler.reset_request_arrival_times();
@@ -701,7 +705,7 @@ void ServingBenchmarkApp::create_scheduler() {
 }
 
 void ServingBenchmarkApp::submit_all_requests() {
-  submit_requests_to(*scheduler_, bench_config_.max_new_tokens, bench_config_.quiet);
+  submit_requests_to(*scheduler_, bench_config_.max_new_tokens, bench_config_.benchmark.quiet);
 }
 
 void ServingBenchmarkApp::submit_requests_to(Scheduler& scheduler,
@@ -724,7 +728,7 @@ void ServingBenchmarkApp::submit_requests_to(Scheduler& scheduler,
 }
 
 void ServingBenchmarkApp::run_serving_loop() {
-  if (!bench_config_.quiet) {
+  if (!bench_config_.benchmark.quiet) {
     std::cout << "\n=== Starting continuous batching ===" << std::endl;
   }
 
@@ -745,7 +749,7 @@ void ServingBenchmarkApp::run_serving_loop() {
   const double throughput = duration > 0.0 ? total_decode_steps_ / duration : 0.0;
 
   print_done(duration, throughput);
-  if (bench_config_.print_final_summary) {
+  if (bench_config_.benchmark.print_final_summary) {
     const auto* kv_manager = kv_cache_manager();
     print_final_summary(summary_, wall_ms, throughput,
                         kv_manager->radix_cache_stats(),
@@ -884,7 +888,7 @@ void ServingBenchmarkApp::process_finished(const std::vector<SequenceState>& fin
     summary_.request_latency_ms.push_back(seq.latency_ms());
     print_request_metric(seq);
 
-    if (!bench_config_.quiet) {
+    if (!bench_config_.benchmark.quiet) {
       std::string text = postprocess_decoded_text(decode_tokens(seq.output_tokens));
       std::cout << "\n--- Request " << seq.client_request_id
                 << (seq.failed ? " failed" : " finished") << " ---\n";
@@ -949,11 +953,11 @@ void ServingBenchmarkApp::record_step_profile(const StepProfile& profile,
 void ServingBenchmarkApp::maybe_print_step_profile(const StepProfile& profile,
                                                    const MixedBatchMetadata& batch,
                                                    size_t sampled_token_count) const {
-  if (bench_config_.print_step_profile) {
+  if (bench_config_.benchmark.print_step_profile) {
     print_step_profile(profile);
   }
 
-  if (bench_config_.print_step_trace && !bench_config_.quiet) {
+  if (bench_config_.benchmark.print_step_trace && !bench_config_.benchmark.quiet) {
     std::cout << "[step " << step_ << "]"
               << " requests=" << batch.num_requests
               << " tokens=" << batch.num_tokens
@@ -973,7 +977,7 @@ void ServingBenchmarkApp::maybe_print_step_profile(const StepProfile& profile,
 }
 
 void ServingBenchmarkApp::print_done(double duration, double throughput) const {
-  if (bench_config_.quiet) {
+  if (bench_config_.benchmark.quiet) {
     return;
   }
   std::cout << "\n=== Done ===" << std::endl;

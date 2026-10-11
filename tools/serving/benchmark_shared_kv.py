@@ -64,7 +64,8 @@ def main():
         for bucket in summaries.values():
             for metric, values in bucket.items():
                 bucket[metric] = dict(p50=statistics.median(values),
-                    p95=sorted(values)[math.ceil(.95 * len(values)) - 1], samples=len(values))
+                    p95=sorted(values)[math.ceil(.95 * len(values)) - 1],
+                    p99=sorted(values)[math.ceil(.99 * len(values)) - 1], samples=len(values))
         report = dict(arena_bytes=84 << 20, iterations=args.iterations, repeats=args.repeats,
                       library_dir=str(args.library_dir) if args.library_dir else None,
                       summary=summaries, raw=results)

@@ -5,6 +5,11 @@
 #include "base/global_chunk_allocator.h"
 
 namespace base {
+struct SharedKVRpcTiming {
+  uint64_t calls = 0;
+  double mutex_wait_us = 0;
+  double exchange_us = 0;
+};
 // One process maps the owner allocation once. All layer views share this lifetime.
 class SharedKVArenaClient {
  public:
@@ -18,6 +23,9 @@ class SharedKVArenaClient {
   void* data() const;
   uint64_t bytes() const;
   uint64_t hard_limit() const;
+  // Opt-in diagnostics; disabled in serving to avoid clock reads on the hot path.
+  void enable_rpc_timing();
+  SharedKVRpcTiming rpc_timing() const;
  private:
   struct Impl;
   std::unique_ptr<Impl> impl_;

@@ -1,0 +1,110 @@
+[
+  {
+    "phase": "before",
+    "repeat": 0,
+    "results": {
+      "control_us": {
+        "p50": 506.559,
+        "p95": 758.504,
+        "p99": 885.416,
+        "samples": 1000
+      },
+      "persistent_us": {
+        "p50": 91.663,
+        "p95": 198.225,
+        "p99": 263.769,
+        "samples": 1000
+      }
+    }
+  },
+  {
+    "phase": "after",
+    "repeat": 0,
+    "results": {
+      "control_us": {
+        "p50": 223.153,
+        "p95": 470.723,
+        "p99": 600.366,
+        "samples": 1000
+      },
+      "persistent_us": {
+        "p50": 68.77,
+        "p95": 150.355,
+        "p99": 213.444,
+        "samples": 1000
+      }
+    }
+  },
+  {
+    "phase": "after",
+    "repeat": 1,
+    "results": {
+      "control_us": {
+        "p50": 230.657,
+        "p95": 472.497,
+        "p99": 582.402,
+        "samples": 1000
+      },
+      "persistent_us": {
+        "p50": 68.499,
+        "p95": 138.751,
+        "p99": 228.663,
+        "samples": 1000
+      }
+    }
+  },
+  {
+    "phase": "before",
+    "repeat": 1,
+    "results": {
+      "control_us": {
+        "p50": 512.372,
+        "p95": 772.808,
+        "p99": 1006.135,
+        "samples": 1000
+      },
+      "persistent_us": {
+        "p50": 92.675,
+        "p95": 192.391,
+        "p99": 299.171,
+        "samples": 1000
+      }
+    }
+  },
+  {
+    "phase": "before",
+    "repeat": 2,
+    "results": {
+      "control_us": {
+        "p50": 506.958,
+        "p95": 773.452,
+        "p99": 966.68,
+        "samples": 1000
+      },
+      "persistent_us": {
+        "p50": 92.065,
+        "p95": 185.042,
+        "p99": 273.137,
+        "samples": 1000
+      }
+    }
+  },
+  {
+    "phase": "after",
+    "repeat": 2,
+    "results": {
+      "control_us": {
+        "p50": 224.765,
+        "p95": 448.459,
+        "p99": 555.501,
+        "samples": 1000
+      },
+      "persistent_us": {
+        "p50": 69.883,
+        "p95": 142.34,
+        "p99": 211.731,
+        "samples": 1000
+      }
+    }
+  }
+]

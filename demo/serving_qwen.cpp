@@ -54,67 +54,67 @@ class QwenServingBenchmarkApp final : public serving::ServingBenchmarkApp {
   bool initialize_model(const std::string& model_path,
                         const std::string& tokenizer_path,
                         const serving::BenchConfig& bench_config) override {
-    CHECK_GE(bench_config.private_memory_budget_mib, 0);
-    if (bench_config.private_memory_budget_mib > 0) {
-      CHECK_EQ(bench_config.pd_mode, "off");
+    CHECK_GE(bench_config.kv.private_memory_budget_mib, 0);
+    if (bench_config.kv.private_memory_budget_mib > 0) {
+      CHECK_EQ(bench_config.pd.pd_mode, "off");
       base::CUDADeviceAllocatorFactory::get_instance()->set_byte_limit(
-          bench_config.device_id, static_cast<size_t>(bench_config.private_memory_budget_mib) << 20);
+          bench_config.device_id, static_cast<size_t>(bench_config.kv.private_memory_budget_mib) << 20);
     }
     const bool remote_prefill_core =
-        bench_config.online_process_role ==
+        bench_config.ipc.online_process_role ==
         serving::kOnlineProcessRoleZmqPrefillEngineCore;
     const bool remote_decode_core =
-        bench_config.online_process_role ==
+        bench_config.ipc.online_process_role ==
         serving::kOnlineProcessRoleZmqDecodeEngineCore;
     const bool dual_gpu_local_pd =
-        serving::is_dual_gpu_pd_mode(bench_config.pd_mode) &&
+        serving::is_dual_gpu_pd_mode(bench_config.pd.pd_mode) &&
         !remote_prefill_core && !remote_decode_core;
     model_ = std::make_unique<model::Qwen2Model>(
         base::TokenizerType::kEncodeBpe, tokenizer_path, model_path, false);
     const double per_model_kv_utilization =
         dual_gpu_local_pd
-            ? std::min(bench_config.kv_cache_memory_utilization, 0.45)
-            : bench_config.kv_cache_memory_utilization;
+            ? std::min(bench_config.kv.kv_cache_memory_utilization, 0.45)
+            : bench_config.kv.kv_cache_memory_utilization;
     model_->set_kv_cache_memory_utilization(per_model_kv_utilization);
     model_->set_kv_cache_blocks_per_layer(
-        bench_config.kv_cache_blocks_per_layer);
-    CHECK_GE(bench_config.kv_cache_budget_mib, 0);
-    model_->set_kv_cache_budget_bytes(static_cast<size_t>(bench_config.kv_cache_budget_mib) << 20);
-    if (!bench_config.shared_kv_endpoint.empty()) {
-      CHECK(bench_config.data_service_endpoint.empty())
+        bench_config.kv.kv_cache_blocks_per_layer);
+    CHECK_GE(bench_config.kv.kv_cache_budget_mib, 0);
+    model_->set_kv_cache_budget_bytes(static_cast<size_t>(bench_config.kv.kv_cache_budget_mib) << 20);
+    if (!bench_config.kv.shared_kv_endpoint.empty()) {
+      CHECK(bench_config.kv.data_service_endpoint.empty())
           << "Choose either the V4 external KV pool or the shared Chunk arena";
-      CHECK_EQ(bench_config.kv_cache_blocks_per_layer, 0)
+      CHECK_EQ(bench_config.kv.kv_cache_blocks_per_layer, 0)
           << "Shared Chunk capacity is controlled by model byte quotas";
-      CHECK_EQ(bench_config.pd_mode, "off") << "Shared arena V1 uses one mixed worker per model";
-      CHECK_GT(bench_config.shared_kv_hard_limit_mib, 0);
-      CHECK_GT(bench_config.shared_kv_chunk_mib, 0);
+      CHECK_EQ(bench_config.pd.pd_mode, "off") << "Shared arena V1 uses one mixed worker per model";
+      CHECK_GT(bench_config.kv.shared_kv_hard_limit_mib, 0);
+      CHECK_GT(bench_config.kv.shared_kv_chunk_mib, 0);
       CHECK(!fp8_kv_cache_enabled()) << "Shared arena requires BF16 KV";
       CHECK(!bench_config.model_id.empty());
       model_->set_runtime_data_type(base::DataType::kDataTypeBf16);
-      model_->set_shared_kv_arena(bench_config.shared_kv_endpoint, bench_config.model_id,
-          static_cast<uint64_t>(bench_config.shared_kv_hard_limit_mib) << 20,
-          static_cast<uint64_t>(bench_config.shared_kv_chunk_mib) << 20);
+      model_->set_shared_kv_arena(bench_config.kv.shared_kv_endpoint, bench_config.model_id,
+          static_cast<uint64_t>(bench_config.kv.shared_kv_hard_limit_mib) << 20,
+          static_cast<uint64_t>(bench_config.kv.shared_kv_chunk_mib) << 20);
     }
     model_->set_serving_workspace_token_capacity(bench_config.max_num_batched_tokens);
-    if (!bench_config.data_service_endpoint.empty()) {
-      CHECK(!dual_gpu_local_pd && bench_config.pd_mode == "off")
+    if (!bench_config.kv.data_service_endpoint.empty()) {
+      CHECK(!dual_gpu_local_pd && bench_config.pd.pd_mode == "off")
           << "--data-service-endpoint currently supports the single-role "
              "serving path; use the multi-role launcher for PD";
-      if (!bind_external_kv_pool(model_.get(), bench_config.data_service_endpoint,
+      if (!bind_external_kv_pool(model_.get(), bench_config.kv.data_service_endpoint,
                                  remote_decode_core
-                                     ? bench_config.decode_device_id
+                                     ? bench_config.pd.decode_device_id
                                      : remote_prefill_core
-                                           ? bench_config.prefill_device_id
+                                           ? bench_config.pd.prefill_device_id
                                            : bench_config.device_id)) {
         return false;
       }
     }
-    if (bench_config.radix_cache_config_explicit) {
-      model_->set_radix_cache_enabled(bench_config.radix_cache_enabled);
+    if (bench_config.kv.radix_cache_config_explicit) {
+      model_->set_radix_cache_enabled(bench_config.kv.radix_cache_enabled);
     }
-    if (bench_config.host_cache_enabled) {
-      model_->set_host_cache_config({true, bench_config.host_cache_bytes,
-          bench_config.host_cache_pages, bench_config.host_cache_inflight_pages});
+    if (bench_config.kv.host_cache_enabled) {
+      model_->set_host_cache_config({true, bench_config.kv.host_cache_bytes,
+          bench_config.kv.host_cache_pages, bench_config.kv.host_cache_inflight_pages});
     }
     if (fp8_kv_cache_enabled()) {
       model_->set_use_fp8_kv_cache(true);
@@ -123,11 +123,11 @@ class QwenServingBenchmarkApp final : public serving::ServingBenchmarkApp {
 
     auto init_status = model_->init(base::DeviceType::kDeviceCUDA,
                                     remote_decode_core
-                                        ? bench_config.decode_device_id
+                                        ? bench_config.pd.decode_device_id
                                         : remote_prefill_core
-                                        ? bench_config.prefill_device_id
+                                        ? bench_config.pd.prefill_device_id
                                         : dual_gpu_local_pd
-                                        ? bench_config.prefill_device_id
+                                        ? bench_config.pd.prefill_device_id
                                         : bench_config.device_id);
     if (!init_status) {
       LOG(FATAL) << "Model init failed: " << init_status.get_err_msg();
@@ -139,14 +139,14 @@ class QwenServingBenchmarkApp final : public serving::ServingBenchmarkApp {
           base::TokenizerType::kEncodeBpe, tokenizer_path, model_path, false);
       decode_model_->set_kv_cache_memory_utilization(per_model_kv_utilization);
       decode_model_->set_kv_cache_blocks_per_layer(
-          bench_config.kv_cache_blocks_per_layer);
+          bench_config.kv.kv_cache_blocks_per_layer);
       decode_model_->set_serving_workspace_token_capacity(bench_config.max_num_batched_tokens);
-      if (bench_config.radix_cache_config_explicit) {
-        decode_model_->set_radix_cache_enabled(bench_config.radix_cache_enabled);
+      if (bench_config.kv.radix_cache_config_explicit) {
+        decode_model_->set_radix_cache_enabled(bench_config.kv.radix_cache_enabled);
       }
-      if (bench_config.host_cache_enabled) {
-        decode_model_->set_host_cache_config({true, bench_config.host_cache_bytes,
-            bench_config.host_cache_pages, bench_config.host_cache_inflight_pages});
+      if (bench_config.kv.host_cache_enabled) {
+        decode_model_->set_host_cache_config({true, bench_config.kv.host_cache_bytes,
+            bench_config.kv.host_cache_pages, bench_config.kv.host_cache_inflight_pages});
       }
       if (fp8_kv_cache_enabled()) {
         decode_model_->set_use_fp8_kv_cache(true);
@@ -154,7 +154,7 @@ class QwenServingBenchmarkApp final : public serving::ServingBenchmarkApp {
       }
 
       auto decode_status = decode_model_->init(base::DeviceType::kDeviceCUDA,
-                                               bench_config.decode_device_id);
+                                               bench_config.pd.decode_device_id);
       if (!decode_status) {
         LOG(FATAL) << "Decode model init failed: " << decode_status.get_err_msg();
         return false;

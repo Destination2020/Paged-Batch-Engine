@@ -73,3 +73,8 @@ set_target_properties(mps_kv_probe PROPERTIES CUDA_STANDARD 17)
 add_executable(cuda_ipc_event_probe cuda_ipc_event_probe.cu)
 target_link_libraries(cuda_ipc_event_probe llama)
 set_target_properties(cuda_ipc_event_probe PROPERTIES CUDA_STANDARD 17)
+
+if(KUIPER_HAS_ZMQ)
+  add_executable(zmq_transport_bench zmq_transport_bench.cpp)
+  target_link_libraries(zmq_transport_bench llama)
+endif()

@@ -1,0 +1,89 @@
+{
+  "scenario": "cancel",
+  "backend": "process",
+  "owner_refuses_live_leases": true,
+  "epoch": 88005189626660,
+  "leases_when_stop_requested": 1,
+  "cancel_acknowledged_after_gpu_sync": true,
+  "supervisor_exit": 1,
+  "shutdown": {
+    "backend": "process",
+    "events": [
+      {
+        "event": "fault",
+        "monotonic_ns": 88010512563440,
+        "reason": "qwen25-1.5b exited (0); see /tmp/pbe-r2-cancel/domain/qwen25-1.5b.log"
+      },
+      {
+        "event": "fault",
+        "monotonic_ns": 88010512573780,
+        "reason": "qwen25-1.5b exited unexpectedly (0)"
+      },
+      {
+        "event": "shutdown_phase",
+        "monotonic_ns": 88010512584360,
+        "phase": "api"
+      },
+      {
+        "event": "fault",
+        "monotonic_ns": 88010512589189,
+        "reason": "forced process exit: api"
+      },
+      {
+        "event": "forced_exit",
+        "monotonic_ns": 88010528580756,
+        "name": "api",
+        "pid": 30252
+      },
+      {
+        "event": "shutdown_phase",
+        "monotonic_ns": 88010528600052,
+        "phase": "workers"
+      },
+      {
+        "event": "worker_stopped",
+        "monotonic_ns": 88010744595681,
+        "name": "qwen25-0.5b",
+        "pid": 30115,
+        "mode": "cancel",
+        "gpu_synchronized": true
+      },
+      {
+        "event": "fault",
+        "monotonic_ns": 88010744609548,
+        "reason": "qwen25-1.5b exited before shutdown acknowledgement (0)"
+      },
+      {
+        "event": "shutdown_phase",
+        "monotonic_ns": 88010744621360,
+        "phase": "auxiliary"
+      },
+      {
+        "event": "shutdown_phase",
+        "monotonic_ns": 88010744631199,
+        "phase": "owner"
+      },
+      {
+        "event": "arena_before_exit",
+        "monotonic_ns": 88010745974102,
+        "free_bytes": 536870912,
+        "arena_bytes": 536870912,
+        "lease_count": 0
+      },
+      {
+        "event": "owner_stopped",
+        "monotonic_ns": 88010861605249,
+        "pid": 30068,
+        "arena_freed": true
+      },
+      {
+        "event": "shutdown_phase",
+        "monotonic_ns": 88010861627501,
+        "phase": "complete"
+      }
+    ],
+    "graceful": false,
+    "mps_recovery_required": false
+  },
+  "all_gpu_processes_exited": true
+}

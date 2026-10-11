@@ -391,6 +391,18 @@ def run_service(domain, build, config, binary):
         time.sleep(0.5)
 
 
+def deployment_environment(source, gpu_uuid, directory, backend):
+    """Keep daemon routing, but let deployment config own client resource limits."""
+    routing = {'CUDA_MPS_PIPE_DIRECTORY', 'CUDA_MPS_LOG_DIRECTORY'}
+    env = {key: value for key, value in source.items()
+           if not key.startswith('CUDA_MPS_') or
+           (backend == 'mps_process' and key in routing)}
+    env['CUDA_VISIBLE_DEVICES'] = gpu_uuid
+    if backend == 'process':
+        env['CUDA_MPS_PIPE_DIRECTORY'] = str(directory / 'mps-disabled')
+    return env
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--config", type=Path)
@@ -429,17 +441,14 @@ def main():
     if args.check or issues:
         print(json.dumps(dict(gpu=gpu, backend=backend, mps_control=binary,
                               wsl="microsoft" in Path("/proc/sys/kernel/osrelease").read_text().lower(),
-                              ready=not issues, issues=issues), indent=2))
+                              ready=not issues, check_scope="static",
+                              mps_runtime_verified=False, issues=issues), indent=2))
         return 2 if issues else 0
     directory = args.runtime_dir or Path(tempfile.mkdtemp(prefix="pbe-domain-"))
     if args.runtime_dir:
         directory.mkdir(parents=True, mode=0o700)
     os.chmod(directory, 0o700)
-    env = os.environ.copy()
-    env["CUDA_VISIBLE_DEVICES"] = gpu["uuid"]
-    if backend == 'process':
-        env = {key: value for key, value in env.items() if not key.startswith('CUDA_MPS_')}
-        env['CUDA_MPS_PIPE_DIRECTORY'] = str(directory / 'mps-disabled')
+    env = deployment_environment(os.environ, gpu['uuid'], directory, backend)
     daemon_owned = False
     domain = Domain(directory, env)
     try:

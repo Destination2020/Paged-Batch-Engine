@@ -96,3 +96,18 @@ if(Python3_Interpreter_FOUND AND PBE_PYTHON_HAS_ZMQ EQUAL 0 AND KUIPER_BUILD_DEM
   set_tests_properties(pbe.shared_kv_reuse PROPERTIES LABELS "gpu;integration;kv"
     TIMEOUT 120 RUN_SERIAL TRUE)
 endif()
+
+# Historical suites are independently visible, and included in default CTest.
+add_test(NAME pbe.legacy COMMAND test_llm "--gtest_filter=test_*.*")
+set_tests_properties(pbe.legacy PROPERTIES WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+  LABELS "gpu;legacy" RUN_SERIAL TRUE TIMEOUT 120)
+
+if(Python3_Interpreter_FOUND)
+  add_test(NAME pbe.bundle_fixture
+    COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/test/data_core/generate_bundle_fixture.py
+      ${CMAKE_CURRENT_BINARY_DIR}/python-bundle-golden.bin)
+  set_tests_properties(pbe.bundle_fixture PROPERTIES LABELS "cpu;data"
+    FIXTURES_SETUP python_bundle TIMEOUT 10)
+  set_tests_properties(pbe.unit PROPERTIES FIXTURES_REQUIRED python_bundle
+    ENVIRONMENT "PBE_PYTHON_BUNDLE_GOLDEN=${CMAKE_CURRENT_BINARY_DIR}/python-bundle-golden.bin")
+endif()

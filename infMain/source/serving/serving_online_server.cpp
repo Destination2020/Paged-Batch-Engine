@@ -340,7 +340,7 @@ int run_online_server(ServingRuntime* app) {
 
 int run_online_server(ServingRuntime* app, const BenchConfig& config) {
   std::unique_ptr<OnlineEnginePool> engine_pool;
-  if (config.online_process_role == kOnlineProcessRoleZmqHttpApi) {
+  if (config.ipc.online_process_role == kOnlineProcessRoleZmqHttpApi) {
     if (!config.model_registry_path.empty()) engine_pool = std::make_unique<MultiModelOnlineEnginePool>(config);
     else engine_pool = std::make_unique<ZmqOnlineEnginePool>(config);
   } else {
@@ -350,31 +350,31 @@ int run_online_server(ServingRuntime* app, const BenchConfig& config) {
   engine_pool->start();
 
   HttpServerConfig http_config;
-  http_config.host = config.listen_host;
-  http_config.port = config.listen_port;
-  http_config.listen_backlog = config.http_listen_backlog;
-  http_config.worker_threads = config.http_worker_threads;
-  http_config.io_timeout_ms = config.http_io_timeout_ms;
-  http_config.max_pending_connections = config.http_max_pending_connections;
+  http_config.host = config.http.listen_host;
+  http_config.port = config.http.listen_port;
+  http_config.listen_backlog = config.http.http_listen_backlog;
+  http_config.worker_threads = config.http.http_worker_threads;
+  http_config.io_timeout_ms = config.http.http_io_timeout_ms;
+  http_config.max_pending_connections = config.http.http_max_pending_connections;
 
   EpollHttpServer server(
       http_config,
       [&engine_pool](int client_fd) { handle_http_client(client_fd, engine_pool.get()); },
       [&config]() {
-        LOG(INFO) << "Online serving listening on http://" << config.listen_host
-                  << ":" << config.listen_port
+        LOG(INFO) << "Online serving listening on http://" << config.http.listen_host
+                  << ":" << config.http.listen_port
                   << " endpoints: GET /health, GET /metrics, POST /generate, "
                   << "POST /v1/completions, POST /v1/chat/completions"
-                  << " http_workers=" << config.http_worker_threads
-                  << " listen_backlog=" << config.http_listen_backlog
-                  << " process_role=" << config.online_process_role
-                  << " engine_zmq_endpoint=" << config.engine_zmq_endpoint
-                  << " prefill_zmq_endpoint=" << config.prefill_zmq_endpoint;
-        std::cout << "ONLINE_SERVER_READY host=" << config.listen_host
-                  << " port=" << config.listen_port
-                  << " role=" << config.online_process_role
-                  << " engine_zmq_endpoint=" << config.engine_zmq_endpoint
-                  << " prefill_zmq_endpoint=" << config.prefill_zmq_endpoint
+                  << " http_workers=" << config.http.http_worker_threads
+                  << " listen_backlog=" << config.http.http_listen_backlog
+                  << " process_role=" << config.ipc.online_process_role
+                  << " engine_zmq_endpoint=" << config.ipc.engine_zmq_endpoint
+                  << " prefill_zmq_endpoint=" << config.ipc.prefill_zmq_endpoint;
+        std::cout << "ONLINE_SERVER_READY host=" << config.http.listen_host
+                  << " port=" << config.http.listen_port
+                  << " role=" << config.ipc.online_process_role
+                  << " engine_zmq_endpoint=" << config.ipc.engine_zmq_endpoint
+                  << " prefill_zmq_endpoint=" << config.ipc.prefill_zmq_endpoint
                   << std::endl;
       });
   return server.run();

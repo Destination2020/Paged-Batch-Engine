@@ -14,7 +14,7 @@
 #include <vector>
 #include <unistd.h>
 #include <nlohmann/json.hpp>
-#include "serving/serving_zmq_rpc.h"
+#include "base/zmq_transport.h"
 
 #include "shared_kv_protocol.h"
 namespace base {
@@ -43,6 +43,7 @@ struct SharedKVPageGroup::Impl {
   std::deque<Page*> retiring;
   std::vector<cudaEvent_t> events;
   uint64_t leased_bytes = 0;
+  bool failed = false; // An unacknowledged release can never become locally reusable.
   std::vector<std::deque<int>> pending;
   mutable std::mutex mu;
   uint64_t leased() const {
@@ -82,6 +83,7 @@ void SharedKVPageGroup::collect() {
   collect_locked();
 }
 void SharedKVPageGroup::collect_locked() {
+  if (impl_->failed) throw std::runtime_error("shared KV page group failed; stop GPU domain");
   while (!impl_->retiring.empty()) {
     auto* page = impl_->retiring.front();
     const auto status = cudaEventQuery(page->retired);
@@ -94,7 +96,12 @@ void SharedKVPageGroup::collect_locked() {
     impl_->free_pages.insert(static_cast<int>(page->offset / impl_->half_bytes));
     auto* chunk = page->chunk;
     if (++chunk->free_pages == chunk->pages.size()) {
-      impl_->arena->release(chunk->lease);
+      try {
+        impl_->arena->release(chunk->lease);
+      } catch (...) {
+        impl_->failed = true;
+        throw;
+      }
       for (const auto& item : chunk->pages) {
         const int id = static_cast<int>(item.offset / impl_->half_bytes);
         impl_->free_pages.erase(id);
@@ -107,6 +114,7 @@ void SharedKVPageGroup::collect_locked() {
 }
 int SharedKVPageGroup::allocate(int layer) {
   std::lock_guard<std::mutex> lock(impl_->mu);
+  if (impl_->failed) throw std::runtime_error("shared KV page group failed; stop GPU domain");
   if (layer < 0 || layer >= impl_->layers) throw std::invalid_argument("invalid layer");
   if (layer > 0) {
     auto& pending = impl_->pending[layer];
@@ -163,6 +171,7 @@ int SharedKVPageGroup::allocate(int layer) {
 }
 void SharedKVPageGroup::retire(int layer, int id) {
   std::lock_guard<std::mutex> lock(impl_->mu);
+  if (impl_->failed) throw std::runtime_error("shared KV page group failed; stop GPU domain");
   auto found = impl_->pages.find(id);
   if (found == impl_->pages.end()) throw std::logic_error("page does not belong to current chunk generation");
   auto& page = *found->second;

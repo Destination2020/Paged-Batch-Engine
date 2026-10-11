@@ -1,3 +1,4 @@
+#include "serving/pd_executor.h"
 #include "serving/serving_online_engine.h"
 #include "base/utf8_stream.h"
 
@@ -29,8 +30,8 @@ namespace {
 
 void set_online_worker_device_or_die(const BenchConfig& config) {
   int32_t device_id = config.device_id;
-  if (is_remote_pd_mode(config.pd_mode)) {
-    device_id = config.decode_device_id;
+  if (is_remote_pd_mode(config.pd.pd_mode)) {
+    device_id = config.pd.decode_device_id;
   }
   const cudaError_t status = cudaSetDevice(device_id);
   CHECK_EQ(status, cudaSuccess)
@@ -68,17 +69,17 @@ int64_t OnlineRequestHandle::request_id() const {
 
 void OnlineRequestHandle::mark_cancelled() {
   std::lock_guard<std::mutex> lock(mu_);
-  cancelled_ = true;
+  if (state_ == State::Open) state_ = State::Cancelling;
 }
 
 bool OnlineRequestHandle::cancelled() const {
   std::lock_guard<std::mutex> lock(mu_);
-  return cancelled_;
+  return state_ == State::Cancelling || state_ == State::Cancelled;
 }
 
 void OnlineRequestHandle::push_token(const std::string& token_text) {
   std::lock_guard<std::mutex> lock(mu_);
-  if (finished_ || cancelled_) return;
+  if (state_ != State::Open) return;
   pending_utf8_ += token_text;
   auto complete = base::drain_utf8(&pending_utf8_);
   if (!complete.empty()) token_texts_.push_back(std::move(complete));
@@ -87,20 +88,21 @@ void OnlineRequestHandle::push_token(const std::string& token_text) {
 
 void OnlineRequestHandle::finish(std::string full_text, bool failed, std::string error) {
   std::lock_guard<std::mutex> lock(mu_);
-  if (finished_) return;
+  if (terminal_locked()) return;
   auto tail = base::drain_utf8(&pending_utf8_, true);
   if (!tail.empty()) token_texts_.push_back(std::move(tail));
   full_text_ = base::drain_utf8(&full_text, true);
   failed_ = failed;
   error_ = std::move(error);
-  finished_ = true;
+  state_ = state_ == State::Cancelling ? State::Cancelled
+      : (failed ? State::Failed : State::Completed);
   cv_.notify_all();
 }
 
 bool OnlineRequestHandle::wait_next_token(std::string* token_text, bool* finished,
                                           bool* failed, std::string* error) {
   std::unique_lock<std::mutex> lock(mu_);
-  cv_.wait(lock, [&]() { return next_idx_ < token_texts_.size() || finished_; });
+  cv_.wait(lock, [&]() { return next_idx_ < token_texts_.size() || terminal_locked(); });
   if (next_idx_ < token_texts_.size()) {
     *token_text = token_texts_[next_idx_++];
     *finished = false;
@@ -122,7 +124,7 @@ bool OnlineRequestHandle::wait_next_token_for(int32_t timeout_ms,
   std::unique_lock<std::mutex> lock(mu_);
   const bool ready = cv_.wait_for(
       lock, std::chrono::milliseconds(std::max(0, timeout_ms)),
-      [&]() { return next_idx_ < token_texts_.size() || finished_; });
+      [&]() { return next_idx_ < token_texts_.size() || terminal_locked(); });
   if (!ready) {
     *finished = false;
     *failed = false;
@@ -146,8 +148,8 @@ bool OnlineRequestHandle::wait_full_text(int32_t timeout_ms, std::string* text,
                                          bool* failed, std::string* error) {
   std::unique_lock<std::mutex> lock(mu_);
   const bool ready = timeout_ms > 0
-      ? cv_.wait_for(lock, std::chrono::milliseconds(timeout_ms), [&]() { return finished_; })
-      : (cv_.wait(lock, [&]() { return finished_; }), true);
+      ? cv_.wait_for(lock, std::chrono::milliseconds(timeout_ms), [&]() { return terminal_locked(); })
+      : (cv_.wait(lock, [&]() { return terminal_locked(); }), true);
   if (!ready) {
     return false;
   }
@@ -158,15 +160,15 @@ bool OnlineRequestHandle::wait_full_text(int32_t timeout_ms, std::string* text,
 }
 
 OnlineServingEngine::OnlineServingEngine(ServingRuntime* app, const BenchConfig& config)
-    : app_(app), config_(config) {}
+    : pd_executor_(std::make_unique<PDExecutor>(*app)), app_(app), config_(config) {}
 
 OnlineServingEngine::~OnlineServingEngine() { stop(); }
 
 void OnlineServingEngine::start() {
-  if (is_pd_mode(config_.pd_mode)) {
-    if (is_dual_gpu_pd_mode(config_.pd_mode)) {
+  if (is_pd_mode(config_.pd.pd_mode)) {
+    if (is_dual_gpu_pd_mode(config_.pd.pd_mode)) {
       CHECK(app_->pd_dual_gpu_supported())
-          << "pd-mode=" << config_.pd_mode << " requires app-provided P/D models";
+          << "pd-mode=" << config_.pd.pd_mode << " requires app-provided P/D models";
     }
     worker_ = std::thread([this]() { run_pd_loop(); });
     return;
@@ -232,7 +234,7 @@ std::shared_ptr<OnlineRequestHandle> OnlineServingEngine::submit(
     submission.stop = request.generation_config.sampling.stop;
     submission.generation_config.normalize();
     submission.handle = handle;
-    if (is_pd_mode(config_.pd_mode)) {
+    if (is_pd_mode(config_.pd.pd_mode)) {
       handle->set_request_id(next_pd_request_id_++);
     }
     submissions_.push_back(std::move(submission));
@@ -252,20 +254,20 @@ nlohmann::json OnlineServingEngine::metrics_json() const {
                         {"global_arena_bytes", capacity.shared_arena_bytes},
                         {"model_leased_chunk_bytes", capacity.kv_leased_chunk_bytes},
                         {"model_capacity_bytes", capacity.total_kv_pool_bytes}};
-  if (is_pd_mode(config_.pd_mode)) {
+  if (is_pd_mode(config_.pd.pd_mode)) {
     std::lock_guard<std::mutex> lock(mu_);
-    body["engine"]["mode"] = config_.pd_mode;
+    body["engine"]["mode"] = config_.pd.pd_mode;
     body["engine"]["queued_requests"] = pending_submissions_;
     body["engine"]["active_requests"] = pd_active_requests_;
     body["engine"]["completed_requests"] = pd_completed_requests_;
     body["engine"]["failed_requests"] = pd_failed_requests_;
     body["engine"]["generated_tokens"] = pd_generated_tokens_;
-    body["pd"]["mode"] = config_.pd_mode;
-    body["pd"]["transfer_backend"] = pd_transfer_backend(config_.pd_mode);
-    body["pd"]["prefill_device_id"] = config_.prefill_device_id;
-    body["pd"]["decode_device_id"] = config_.decode_device_id;
-    if (is_remote_pd_mode(config_.pd_mode)) {
-      body["pd"]["prefill_zmq_endpoint"] = config_.prefill_zmq_endpoint;
+    body["pd"]["mode"] = config_.pd.pd_mode;
+    body["pd"]["transfer_backend"] = pd_transfer_backend(config_.pd.pd_mode);
+    body["pd"]["prefill_device_id"] = config_.pd.prefill_device_id;
+    body["pd"]["decode_device_id"] = config_.pd.decode_device_id;
+    if (is_remote_pd_mode(config_.pd.pd_mode)) {
+      body["pd"]["prefill_zmq_endpoint"] = config_.ipc.prefill_zmq_endpoint;
     }
     return body;
   }
@@ -323,9 +325,9 @@ void OnlineServingEngine::run_loop() {
 
 void OnlineServingEngine::run_pd_loop() {
   set_online_worker_device_or_die(config_);
-  if (is_remote_pd_mode(config_.pd_mode) &&
-      (config_.pd_mode == "remote-zmq-nccl" ||
-       config_.pd_mode == "remote-zmq-nccl-layer")) {
+  if (is_remote_pd_mode(config_.pd.pd_mode) &&
+      (config_.pd.pd_mode == "remote-zmq-nccl" ||
+       config_.pd.pd_mode == "remote-zmq-nccl-layer")) {
     run_remote_pd_batch_loop();
     return;
   }
@@ -881,16 +883,16 @@ void OnlineServingEngine::run_pd_submission(PendingSubmission submission) {
     submission.handle->push_token(token_text);
   };
   const auto result =
-      is_remote_pd_mode(config_.pd_mode)
-          ? (config_.pd_mode == "remote-zmq-nccl" ||
-                     config_.pd_mode == "remote-zmq-nccl-layer"
-                 ? app_->run_remote_zmq_nccl_pd_generation(
+      is_remote_pd_mode(config_.pd.pd_mode)
+          ? (config_.pd.pd_mode == "remote-zmq-nccl" ||
+                     config_.pd.pd_mode == "remote-zmq-nccl-layer"
+                 ? pd_executor_->run_remote_zmq_nccl_pd_generation(
                        std::move(submission.prompt_tokens),
                        submission.generation_config, on_token)
-                 : app_->run_remote_zmq_cpu_pd_generation(
+                 : pd_executor_->run_remote_zmq_cpu_pd_generation(
                        std::move(submission.prompt_tokens),
                        submission.generation_config, on_token))
-          : app_->run_dual_gpu_pd_generation(
+          : pd_executor_->run_dual_gpu_pd_generation(
                 std::move(submission.prompt_tokens), submission.generation_config,
                 on_token);
 

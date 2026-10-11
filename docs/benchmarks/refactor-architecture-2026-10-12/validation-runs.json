@@ -1,0 +1,62 @@
+[
+  {
+    "name": "ctest",
+    "exit_code": 0,
+    "expected": 0,
+    "seconds": 10.299368280990166
+  },
+  {
+    "name": "python-transport",
+    "exit_code": 0,
+    "expected": 0,
+    "seconds": 0.21485183598997537
+  },
+  {
+    "name": "python-data",
+    "exit_code": 0,
+    "expected": 0,
+    "seconds": 0.2147085160104325
+  },
+  {
+    "name": "models",
+    "exit_code": 0,
+    "expected": 0,
+    "seconds": 19.276240924999
+  },
+  {
+    "name": "drain",
+    "exit_code": 0,
+    "expected": 0,
+    "seconds": 8.69411769299768
+  },
+  {
+    "name": "cancel",
+    "exit_code": 0,
+    "expected": 0,
+    "seconds": 6.2916595889983
+  },
+  {
+    "name": "owner-failure",
+    "exit_code": 0,
+    "expected": 0,
+    "seconds": 7.396935043987469
+  },
+  {
+    "name": "kv-benchmark",
+    "exit_code": 0,
+    "expected": 0,
+    "seconds": 24.626349641999695
+  },
+  {
+    "name": "mps-probe",
+    "exit_code": 1,
+    "expected": 1,
+    "seconds": 2.872500106008374
+  },
+  {
+    "name": "final-ctest-with-generated-fixture",
+    "exit_code": 0,
+    "expected": 0,
+    "groups": 8
+  }
+]

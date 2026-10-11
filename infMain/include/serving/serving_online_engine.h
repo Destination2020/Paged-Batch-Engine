@@ -21,6 +21,7 @@
 namespace serving {
 
 class ServingRuntime;
+class PDExecutor;
 
 struct OnlineGenerateRequest {
   std::string model_id;
@@ -54,9 +55,12 @@ class OnlineRequestHandle {
   size_t next_idx_ = 0;
   int64_t request_id_ = -1;
   std::string full_text_;
-  bool finished_ = false;
+  enum class State { Open, Cancelling, Completed, Failed, Cancelled };
+  bool terminal_locked() const {
+    return state_ == State::Completed || state_ == State::Failed || state_ == State::Cancelled;
+  }
+  State state_ = State::Open;
   bool failed_ = false;
-  bool cancelled_ = false;
   std::string error_;
 };
 
@@ -95,6 +99,7 @@ class OnlineServingEngine {
                               const SampledTokenView& sampled_tokens);
   void publish_finished();
 
+  std::unique_ptr<PDExecutor> pd_executor_;
   ServingRuntime* app_ = nullptr;
   BenchConfig config_;
   std::unique_ptr<Scheduler> scheduler_;

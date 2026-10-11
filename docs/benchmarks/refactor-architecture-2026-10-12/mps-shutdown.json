@@ -1,0 +1,116 @@
+{
+  "backend": "mps_process",
+  "events": [
+    {
+      "event": "fault",
+      "monotonic_ns": 88045496187468,
+      "reason": "Both clients are not registered with the same MPS server"
+    },
+    {
+      "event": "shutdown_phase",
+      "monotonic_ns": 88045496212165,
+      "phase": "api"
+    },
+    {
+      "event": "shutdown_phase",
+      "monotonic_ns": 88045496214810,
+      "phase": "workers"
+    },
+    {
+      "event": "shutdown_phase",
+      "monotonic_ns": 88045496216373,
+      "phase": "auxiliary"
+    },
+    {
+      "event": "fault",
+      "monotonic_ns": 88045497940468,
+      "reason": "MPS client 32434 not registered; GPU termination unconfirmed"
+    },
+    {
+      "event": "gpu_termination_unconfirmed",
+      "monotonic_ns": 88045497941911,
+      "name": "probe-a",
+      "pid": 32434
+    },
+    {
+      "event": "fault",
+      "monotonic_ns": 88045497943293,
+      "reason": "forced process exit: probe-a"
+    },
+    {
+      "event": "forced_exit",
+      "monotonic_ns": 88045612226192,
+      "name": "probe-a",
+      "pid": 32434
+    },
+    {
+      "event": "fault",
+      "monotonic_ns": 88045614666715,
+      "reason": "MPS client 32435 not registered; GPU termination unconfirmed"
+    },
+    {
+      "event": "gpu_termination_unconfirmed",
+      "monotonic_ns": 88045614670071,
+      "name": "probe-b",
+      "pid": 32435
+    },
+    {
+      "event": "fault",
+      "monotonic_ns": 88045614671955,
+      "reason": "forced process exit: probe-b"
+    },
+    {
+      "event": "forced_exit",
+      "monotonic_ns": 88045679614259,
+      "name": "probe-b",
+      "pid": 32435
+    },
+    {
+      "event": "shutdown_phase",
+      "monotonic_ns": 88045679634447,
+      "phase": "owner"
+    },
+    {
+      "event": "arena_before_exit",
+      "monotonic_ns": 88045681626538,
+      "free_bytes": 29097984,
+      "arena_bytes": 33554432,
+      "lease_count": 2
+    },
+    {
+      "event": "fault",
+      "monotonic_ns": 88045682786417,
+      "reason": "arena_has_live_leases"
+    },
+    {
+      "event": "fault",
+      "monotonic_ns": 88045685205239,
+      "reason": "MPS client 32346 not registered; GPU termination unconfirmed"
+    },
+    {
+      "event": "gpu_termination_unconfirmed",
+      "monotonic_ns": 88045685207082,
+      "name": "kv-owner",
+      "pid": 32346
+    },
+    {
+      "event": "fault",
+      "monotonic_ns": 88045685208475,
+      "reason": "forced process exit: kv-owner"
+    },
+    {
+      "event": "forced_exit",
+      "monotonic_ns": 88045799664531,
+      "name": "kv-owner",
+      "pid": 32346
+    },
+    {
+      "event": "shutdown_phase",
+      "monotonic_ns": 88045799775201,
+      "phase": "complete"
+    }
+  ],
+  "graceful": false,
+  "mps_recovery_required": true,
+  "owned_mps_daemon_stopped": true
+}

@@ -1,0 +1,100 @@
+{
+  "date": "2026-10-12",
+  "base_commit": "b11637146e7638ba16a68bbe9d9861e52d868833",
+  "library_sha256": "52faf5aa0b4834cb290906cfce54c00e74f622f8348861c3ac11a0ed4be732f9",
+  "ctest": {
+    "groups": 8,
+    "passed": 8,
+    "main_cpp_passed": 211,
+    "main_cpp_skipped": 11,
+    "legacy_cpp_passed": 43,
+    "python_test_cases": 28,
+    "python_cpp_fixture_generated": true
+  },
+  "real_models": {
+    "baseline_matches": true,
+    "cancelled_records_reclaimed": true,
+    "alternating_reuse_requests": 10,
+    "arena_returned_bytes": 536870912,
+    "drain_cancel_owner_failure": true
+  },
+  "rpc_microbenchmark": {
+    "summary": {
+      "before": {
+        "control_us": {
+          "p50": 506.958,
+          "p95": 772.808,
+          "p99": 966.68
+        },
+        "persistent_us": {
+          "p50": 92.065,
+          "p95": 192.391,
+          "p99": 273.137
+        }
+      },
+      "after": {
+        "control_us": {
+          "p50": 224.765,
+          "p95": 470.723,
+          "p99": 582.402
+        },
+        "persistent_us": {
+          "p50": 68.77,
+          "p95": 142.34,
+          "p99": 213.444
+        }
+      }
+    },
+    "samples_per_run": 1000,
+    "repeats": 3,
+    "aggregation": "median of the per-run percentiles; alternating before/after order",
+    "before_library_sha256": "d0574b2d104f62340dad35a7cf536856a2be5a10273512e078b5d9b1fcb4b1b3",
+    "scope": "Local CPU-only IPC round trips; no claim of model throughput improvement."
+  },
+  "kv_microbenchmark": {
+    "samples_per_bucket": 300,
+    "geometry": "Four all-layer pages per sample, two Qwen layouts, empty/90%/full quotas",
+    "timing": "Opt-in client mutex wait and request/reply time. Owner RPC runs under page-management lock. This is not a multi-thread contention benchmark.",
+    "optimization": "Keep synchronous release acknowledgement and immediate empty-chunk return; no speculative asynchronous release or retained empty-chunk cache."
+  },
+  "hardware_acceptance": {
+    "mps": "BLOCKED: same-server registration fails on current WSL driver; probe exited 1, no fallback; owned daemon and clients exited.",
+    "nccl": "PENDING: syntax checks passed with KUIPER_ENABLE_NCCL=1 for changed PD/worker sources; actual build has NCCL OFF and only one GPU is available.",
+    "remaining_skips": "11 multi-GPU or missing vision-fixture tests; not counted as passes."
+  },
+  "scope_notes": [
+    "CLI flags stay compatible; C++ callers must use BenchConfig.http/pd/ipc/kv/benchmark and PDExecutor for orchestration.",
+    "Each process shares a ZMQ context; socket ownership and no-replay-on-lost-reply behavior are unchanged. CUDA workers must still be exec-spawned.",
+    "Request state and KV failure handling are explicit. A failed release acknowledgement poisons the page group and prohibits subsequent local reuse."
+  ],
+  "validation_setup_corrections": [
+    "Standalone benchmark initially pointed at unrelated legacy lib/ output; measured runs use build-mps/lib and a frozen copy.",
+    "Initial pytest collection lacked PYTHONPATH; corrected to repository python/, then all tests passed."
+  ],
+  "test_processes_stopped": true,
+  "evidence_sha256": {
+    "build-final.log": "0fd29d43fa0ce2f553bcda62ba5608138a6ad94027a506cb1e15fcabb6a59308",
+    "build.log": "f13eede048fd8448cfa2ea7af2045dc6fb7d9161c2c7f4076c8c6aface473967",
+    "cancel.json": "e3b01a39f3742e368ec3566b04d1408a1c6607f7b98f0908bfbd93f394f5ecb8",
+    "cancel.log": "e3b01a39f3742e368ec3566b04d1408a1c6607f7b98f0908bfbd93f394f5ecb8",
+    "ctest.log": "c475b9c1f6540aa0d70d6bbaa6ad6007bb51a151329349b21654610ab952ee47",
+    "drain.json": "92780f6ac16c956d76edda4e9f6b3fa958fdcb0606b779b1c13680d133707726",
+    "drain.log": "92780f6ac16c956d76edda4e9f6b3fa958fdcb0606b779b1c13680d133707726",
+    "kv-after.json": "33a858ea850c9d8c674629e26a79a665332ea2305e5a64607be98e0164dd1423",
+    "kv-before.json": "d824c94a919263ab76e9440f7bf2e3c932393f68655ee19161917b4046330d39",
+    "kv-benchmark.log": "397350f093c92509741edcb40e81c5c72f4f5173daaeeb938b2ee9762073a05c",
+    "model-shutdown.json": "2e53cb072191a5ff7b8718cc0638796fa44607c9a2bc5711266672fe2bdf684a",
+    "models.json": "9a1cbcdb162e40cd8ee1f93cdb99d7e483f9a36a51b0ec01e78eefa16802ad7d",
+    "models.log": "610650742c20e12be9864f41b689507d174b36b3dcc7f2d65448bb81fc102dcb",
+    "mps-probe.log": "668807a88987c5f8994aac00237861a91cde08a4cffd520bcf5cb738da88d1cc",
+    "mps-shutdown.json": "9a71e7698d0e15a03f13ebd6c4f1b2e79a1cf1871aea6e6820f7e043439b6ca3",
+    "mps-static-check.json": "92f124474470634de6a53ac30578ac33d86c065eb6a4f01b787e33fe1a78197d",
+    "nccl-compile.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "owner-failure.json": "3aca7bb4fec17793922bbae447f5073259685f72b771ce08cbac93b7fd63807b",
+    "owner-failure.log": "3aca7bb4fec17793922bbae447f5073259685f72b771ce08cbac93b7fd63807b",
+    "python-data.log": "0e96d7ca7406320840ee2e704cbada03e2fe4b6d6aea1d667b4f685b07e7e24d",
+    "python-transport.log": "a313f951d2777a35ddd6eb0a192117cc682272bfa2c24bba9792b87759556e4c",
+    "rpc-comparison.json": "59bce8d5e523934b60313c43df567823aab36b4897fe9a841f9281167e1db665",
+    "validation-runs.json": "2980def7686836313bf0ec6acbde001950660ef6d217ef893c4c6f296d4baa22"
+  }
+}

@@ -3,10 +3,17 @@
 #include <glog/logging.h>
 #include <algorithm>
 #include <stdexcept>
+#include <charconv>
+#include <cmath>
 namespace serving {
 namespace {
-bool parse_bool_flag(std::string_view value) {
-  return value == "1" || value == "true" || value == "TRUE" || value == "yes" || value == "on";
+template<class Integer>
+Integer parse_integer(std::string_view value) {
+  Integer result{};
+  const auto parsed = std::from_chars(value.data(), value.data() + value.size(), result);
+  if (parsed.ec != std::errc() || parsed.ptr != value.data() + value.size())
+    throw std::invalid_argument("invalid integer: " + std::string(value));
+  return result;
 }
 
 bool parse_scheduling_policy(std::string_view value, SchedulingPolicy* policy) {
@@ -64,7 +71,7 @@ BenchConfig parse_bench_config(int argc, char* argv[], int prompt_start_index) {
         return false;
       }
       const std::string value(arg.substr(prefix.size()));
-      out = std::stoi(value);
+      out = parse_integer<int32_t>(value);
       return true;
     };
 
@@ -80,7 +87,7 @@ BenchConfig parse_bench_config(int argc, char* argv[], int prompt_start_index) {
         out = auto_value;
       } else {
         is_auto = false;
-        out = std::stoi(value);
+        out = parse_integer<int32_t>(value);
       }
       return true;
     };
@@ -90,13 +97,16 @@ BenchConfig parse_bench_config(int argc, char* argv[], int prompt_start_index) {
         return false;
       }
       const std::string value(arg.substr(prefix.size()));
-      out = std::stod(value);
+      size_t consumed = 0;
+      out = std::stod(value, &consumed);
+      if (consumed != value.size() || !std::isfinite(out))
+        throw std::invalid_argument("invalid finite number: " + value);
       return true;
     };
 
     auto read_size = [&](std::string_view prefix, size_t& out) {
       if (!starts_with(arg, prefix)) return false;
-      out = static_cast<size_t>(std::stoull(std::string(arg.substr(prefix.size()))));
+      out = parse_integer<size_t>(arg.substr(prefix.size()));
       return true;
     };
 
@@ -104,7 +114,8 @@ BenchConfig parse_bench_config(int argc, char* argv[], int prompt_start_index) {
       if (!starts_with(arg, prefix)) {
         return false;
       }
-      out = parse_bool_flag(arg.substr(prefix.size()));
+      if (!parse_toggle_flag(arg.substr(prefix.size()), &out))
+        throw std::invalid_argument("invalid boolean: " + std::string(arg));
       return true;
     };
 
@@ -113,15 +124,14 @@ BenchConfig parse_bench_config(int argc, char* argv[], int prompt_start_index) {
         return false;
       }
       const std::string_view value = arg.substr(prefix.size());
-      CHECK(parse_toggle_flag(value, &out))
-          << "Invalid value for " << prefix << value
-          << ". Expected one of: on/off, 1/0, true/false.";
+      if (!parse_toggle_flag(value, &out))
+        throw std::invalid_argument("invalid toggle: " + std::string(arg));
       seen = true;
       return true;
     };
 
     if (starts_with(arg, "--seed=")) {
-      config.sampling.seed = std::stoull(std::string(arg.substr(7)));
+      config.sampling.seed = parse_integer<uint64_t>(arg.substr(7));
       continue;
     }
     if (read_double("--temperature=", config.sampling.temperature) ||
@@ -143,42 +153,42 @@ BenchConfig parse_bench_config(int argc, char* argv[], int prompt_start_index) {
         read_int("--long-prefill-token-threshold=", config.long_prefill_token_threshold) ||
         read_int("--max-partial-prefills=", config.max_partial_prefills) ||
         read_int("--max-long-partial-prefills=", config.max_long_partial_prefills) ||
-        read_int("--warmup-rounds=", config.warmup_rounds) ||
-        read_int("--kv-cache-blocks-per-layer=", config.kv_cache_blocks_per_layer) ||
-        read_double("--kv-cache-memory-utilization=", config.kv_cache_memory_utilization) ||
-        read_double("--gpu-memory-utilization=", config.kv_cache_memory_utilization) ||
-        read_toggle("--radix-cache=", config.radix_cache_enabled,
-                    config.radix_cache_config_explicit) ||
-        read_toggle("--enable-radix-cache=", config.radix_cache_enabled,
-                    config.radix_cache_config_explicit) ||
-        read_bool("--host-cache=", config.host_cache_enabled) ||
-        read_size("--host-cache-bytes=", config.host_cache_bytes) ||
-        read_size("--host-cache-pages=", config.host_cache_pages) ||
-        read_size("--host-cache-inflight-pages=", config.host_cache_inflight_pages) ||
-        read_bool("--host-demote-after-warmup=", config.host_demote_after_warmup) ||
-        read_bool("--quiet=", config.quiet) ||
-        read_bool("--step-profile=", config.print_step_profile) ||
-        read_bool("--step-trace=", config.print_step_trace) ||
-        read_bool("--final-summary=", config.print_final_summary) ||
+        read_int("--warmup-rounds=", config.benchmark.warmup_rounds) ||
+        read_int("--kv-cache-blocks-per-layer=", config.kv.kv_cache_blocks_per_layer) ||
+        read_double("--kv-cache-memory-utilization=", config.kv.kv_cache_memory_utilization) ||
+        read_double("--gpu-memory-utilization=", config.kv.kv_cache_memory_utilization) ||
+        read_toggle("--radix-cache=", config.kv.radix_cache_enabled,
+                    config.kv.radix_cache_config_explicit) ||
+        read_toggle("--enable-radix-cache=", config.kv.radix_cache_enabled,
+                    config.kv.radix_cache_config_explicit) ||
+        read_bool("--host-cache=", config.kv.host_cache_enabled) ||
+        read_size("--host-cache-bytes=", config.kv.host_cache_bytes) ||
+        read_size("--host-cache-pages=", config.kv.host_cache_pages) ||
+        read_size("--host-cache-inflight-pages=", config.kv.host_cache_inflight_pages) ||
+        read_bool("--host-demote-after-warmup=", config.kv.host_demote_after_warmup) ||
+        read_bool("--quiet=", config.benchmark.quiet) ||
+        read_bool("--step-profile=", config.benchmark.print_step_profile) ||
+        read_bool("--step-trace=", config.benchmark.print_step_trace) ||
+        read_bool("--final-summary=", config.benchmark.print_final_summary) ||
         read_bool("--online-server=", config.online_server) ||
-        read_int("--listen-port=", config.listen_port) ||
-        read_int("--http-worker-threads=", config.http_worker_threads) ||
-        read_int("--http-listen-backlog=", config.http_listen_backlog) ||
-        read_int("--http-io-timeout-ms=", config.http_io_timeout_ms) ||
-        read_int("--http-max-pending-connections=", config.http_max_pending_connections) ||
+        read_int("--listen-port=", config.http.listen_port) ||
+        read_int("--http-worker-threads=", config.http.http_worker_threads) ||
+        read_int("--http-listen-backlog=", config.http.http_listen_backlog) ||
+        read_int("--http-io-timeout-ms=", config.http.http_io_timeout_ms) ||
+        read_int("--http-max-pending-connections=", config.http.http_max_pending_connections) ||
         read_int("--max-queue-size=", config.max_queue_size) ||
         read_int("--request-timeout-ms=", config.request_timeout_ms) ||
         read_int("--max-prompt-tokens=", config.max_prompt_tokens) ||
-        read_int("--kv-cache-budget-mib=", config.kv_cache_budget_mib) ||
-        read_int("--private-memory-budget-mib=", config.private_memory_budget_mib) ||
-        read_int("--shared-kv-hard-limit-mib=", config.shared_kv_hard_limit_mib) ||
-        read_int("--shared-kv-chunk-mib=", config.shared_kv_chunk_mib) ||
+        read_int("--kv-cache-budget-mib=", config.kv.kv_cache_budget_mib) ||
+        read_int("--private-memory-budget-mib=", config.kv.private_memory_budget_mib) ||
+        read_int("--shared-kv-hard-limit-mib=", config.kv.shared_kv_hard_limit_mib) ||
+        read_int("--shared-kv-chunk-mib=", config.kv.shared_kv_chunk_mib) ||
         read_int("--max-output-tokens=", config.max_output_tokens) ||
         read_int("--max-active-requests=", config.max_active_requests) ||
         read_int("--device-id=", config.device_id) ||
-        read_int("--prefill-device-id=", config.prefill_device_id) ||
-        read_int("--decode-device-id=", config.decode_device_id) ||
-        read_int("--engine-zmq-timeout-ms=", config.engine_zmq_timeout_ms)) {
+        read_int("--prefill-device-id=", config.pd.prefill_device_id) ||
+        read_int("--decode-device-id=", config.pd.decode_device_id) ||
+        read_int("--engine-zmq-timeout-ms=", config.ipc.engine_zmq_timeout_ms)) {
       continue;
     }
     auto read_string = [&](std::string_view prefix, std::string& value) {
@@ -188,55 +198,54 @@ BenchConfig parse_bench_config(int argc, char* argv[], int prompt_start_index) {
     };
     if (read_string("--model-id=", config.model_id) ||
         read_string("--model-registry=", config.model_registry_path) ||
-        read_string("--shared-kv-endpoint=", config.shared_kv_endpoint)) continue;
+        read_string("--shared-kv-endpoint=", config.kv.shared_kv_endpoint)) continue;
     const std::string_view online_process_role_prefix = "--online-process-role=";
     if (starts_with(arg, online_process_role_prefix)) {
-      config.online_process_role =
+      config.ipc.online_process_role =
           std::string(arg.substr(online_process_role_prefix.size()));
       continue;
     }
     const std::string_view engine_zmq_endpoint_prefix = "--engine-zmq-endpoint=";
     if (starts_with(arg, engine_zmq_endpoint_prefix)) {
-      config.engine_zmq_endpoint =
+      config.ipc.engine_zmq_endpoint =
           std::string(arg.substr(engine_zmq_endpoint_prefix.size()));
       continue;
     }
     const std::string_view prefill_zmq_endpoint_prefix = "--prefill-zmq-endpoint=";
     if (starts_with(arg, prefill_zmq_endpoint_prefix)) {
-      config.prefill_zmq_endpoint =
+      config.ipc.prefill_zmq_endpoint =
           std::string(arg.substr(prefill_zmq_endpoint_prefix.size()));
       continue;
     }
     const std::string_view data_service_endpoint_prefix =
         "--data-service-endpoint=";
     if (starts_with(arg, data_service_endpoint_prefix)) {
-      config.data_service_endpoint =
+      config.kv.data_service_endpoint =
           std::string(arg.substr(data_service_endpoint_prefix.size()));
       continue;
     }
     const std::string_view pd_mode_prefix = "--pd-mode=";
     if (starts_with(arg, pd_mode_prefix)) {
-      config.pd_mode = std::string(arg.substr(pd_mode_prefix.size()));
+      config.pd.pd_mode = std::string(arg.substr(pd_mode_prefix.size()));
       continue;
     }
     const std::string_view listen_host_prefix = "--listen-host=";
     if (starts_with(arg, listen_host_prefix)) {
-      config.listen_host = std::string(arg.substr(listen_host_prefix.size()));
+      config.http.listen_host = std::string(arg.substr(listen_host_prefix.size()));
       continue;
     }
     const std::string_view scheduling_policy_prefix = "--scheduling-policy=";
     if (starts_with(arg, scheduling_policy_prefix)) {
       const std::string_view value = arg.substr(scheduling_policy_prefix.size());
-      CHECK(parse_scheduling_policy(value, &config.scheduling_policy))
-          << "Invalid --scheduling-policy=" << value << ". Expected fcfs or priority.";
+      if (!parse_scheduling_policy(value, &config.scheduling_policy))
+        throw std::invalid_argument("invalid scheduling policy: " + std::string(value));
       continue;
     }
     const std::string_view preemption_policy_prefix = "--preemption-policy=";
     if (starts_with(arg, preemption_policy_prefix)) {
       const auto value = arg.substr(preemption_policy_prefix.size());
-      CHECK(parse_preemption_policy(value, &config.preemption_policy))
-          << "Invalid --preemption-policy=" << value
-          << ". Expected recompute, checkpoint, or auto.";
+      if (!parse_preemption_policy(value, &config.preemption_policy))
+        throw std::invalid_argument("invalid preemption policy: " + std::string(value));
       continue;
     }
   }
@@ -246,46 +255,40 @@ BenchConfig parse_bench_config(int argc, char* argv[], int prompt_start_index) {
   config.long_prefill_token_threshold = std::max(0, config.long_prefill_token_threshold);
   config.max_partial_prefills = std::max(0, config.max_partial_prefills);
   config.max_long_partial_prefills = std::max(0, config.max_long_partial_prefills);
-  config.warmup_rounds = std::max(0, config.warmup_rounds);
-  config.kv_cache_blocks_per_layer =
-      std::max(0, config.kv_cache_blocks_per_layer);
-  config.http_worker_threads = std::max(0, config.http_worker_threads);
-  config.http_listen_backlog = std::max(1, config.http_listen_backlog);
-  if (config.http_io_timeout_ms <= 0 || config.http_max_pending_connections <= 0)
+  config.benchmark.warmup_rounds = std::max(0, config.benchmark.warmup_rounds);
+  config.kv.kv_cache_blocks_per_layer =
+      std::max(0, config.kv.kv_cache_blocks_per_layer);
+  config.http.http_worker_threads = std::max(0, config.http.http_worker_threads);
+  config.http.http_listen_backlog = std::max(1, config.http.http_listen_backlog);
+  if (config.http.http_io_timeout_ms <= 0 || config.http.http_max_pending_connections <= 0)
     throw std::invalid_argument("HTTP I/O timeout and pending connection limit must be positive");
-  config.kv_cache_memory_utilization =
-      std::min(1.0, std::max(0.01, config.kv_cache_memory_utilization));
-  if (config.host_cache_enabled) {
-    CHECK_GT(config.host_cache_bytes, 0u) << "--host-cache-bytes must be positive";
-    CHECK_GT(config.host_cache_pages, 0u) << "--host-cache-pages must be positive";
-    CHECK_GT(config.host_cache_inflight_pages, 0u)
-        << "--host-cache-inflight-pages must be positive";
-  }
-  config.listen_port = std::max(1, std::min(65535, config.listen_port));
+  config.kv.kv_cache_memory_utilization =
+      std::min(1.0, std::max(0.01, config.kv.kv_cache_memory_utilization));
+  if (config.kv.host_cache_enabled && (!config.kv.host_cache_bytes ||
+      !config.kv.host_cache_pages || !config.kv.host_cache_inflight_pages))
+    throw std::invalid_argument("host cache requires positive bytes, pages and inflight pages");
+  config.http.listen_port = std::max(1, std::min(65535, config.http.listen_port));
   config.max_queue_size = std::max(1, config.max_queue_size);
   config.request_timeout_ms = std::max(0, config.request_timeout_ms);
   config.max_prompt_tokens = std::max(0, config.max_prompt_tokens);
   config.device_id = std::max(0, config.device_id);
-  config.prefill_device_id = std::max(0, config.prefill_device_id);
-  config.decode_device_id = std::max(0, config.decode_device_id);
-  config.engine_zmq_timeout_ms = std::max(1, config.engine_zmq_timeout_ms);
-  if (config.online_process_role.empty()) {
-    config.online_process_role = kOnlineProcessRoleInProc;
+  config.pd.prefill_device_id = std::max(0, config.pd.prefill_device_id);
+  config.pd.decode_device_id = std::max(0, config.pd.decode_device_id);
+  config.ipc.engine_zmq_timeout_ms = std::max(1, config.ipc.engine_zmq_timeout_ms);
+  if (config.ipc.online_process_role.empty()) {
+    config.ipc.online_process_role = kOnlineProcessRoleInProc;
   }
-  CHECK(config.online_process_role == kOnlineProcessRoleInProc ||
-        config.online_process_role == kOnlineProcessRoleZmqHttpApi ||
-        config.online_process_role == kOnlineProcessRoleZmqEngineCore ||
-        config.online_process_role == kOnlineProcessRoleZmqPrefillEngineCore ||
-        config.online_process_role == kOnlineProcessRoleZmqDecodeEngineCore)
-      << "Invalid --online-process-role=" << config.online_process_role
-      << ". Expected inproc, zmq-http-api, zmq-engine-core, "
-      << "zmq-prefill-engine-core, or zmq-decode-engine-core.";
-  if (config.pd_mode.empty()) {
-    config.pd_mode = "off";
+  if (config.ipc.online_process_role != kOnlineProcessRoleInProc &&
+      !is_zmq_online_process_role(config.ipc.online_process_role))
+    throw std::invalid_argument("invalid online process role: " + config.ipc.online_process_role);
+  if (config.pd.pd_mode.empty()) {
+    config.pd.pd_mode = "off";
   }
-  if (config.pd_mode == "off") {
-    config.prefill_device_id = config.device_id;
-    config.decode_device_id = config.device_id;
+  if (config.pd.pd_mode != "off" && !is_pd_mode(config.pd.pd_mode))
+    throw std::invalid_argument("invalid PD mode: " + config.pd.pd_mode);
+  if (config.pd.pd_mode == "off") {
+    config.pd.prefill_device_id = config.device_id;
+    config.pd.decode_device_id = config.device_id;
   }
   return config;
 }

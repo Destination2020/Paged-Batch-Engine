@@ -32,6 +32,7 @@ int main(int argc, char** argv) {
     if (std::string(argv[1]) != "private") {
       arena = std::make_shared<base::SharedKVArenaClient>(argv[1],
           "bench-" + std::to_string(getpid()), bytes, 0);
+      arena->enable_rpc_timing();
       group = std::make_shared<base::SharedKVPageGroup>(arena, layers, half, 2ull << 20, stream);
     }
     std::vector<std::unique_ptr<base::BlockAllocator>> pools;
@@ -58,6 +59,7 @@ int main(int argc, char** argv) {
     drain();
     nlohmann::json samples = nlohmann::json::array();
     for (int round = -3; round < iterations; ++round) {
+      const auto rpc_before = arena ? arena->rpc_timing() : base::SharedKVRpcTiming{};
       auto start = Clock::now();
       if (held == capacity) {
         if (pools[0]->allocate() != -1) throw std::runtime_error("full pool accepted allocation");
@@ -81,8 +83,12 @@ int main(int argc, char** argv) {
       double release_cpu = us(start);
       drain();
       double release_complete = us(start);
+      const auto rpc_after = arena ? arena->rpc_timing() : base::SharedKVRpcTiming{};
       if (round >= 0) samples.push_back({{"allocate_us", alloc}, {"write_us", write},
-          {"release_cpu_us", release_cpu}, {"release_complete_us", release_complete}});
+          {"release_cpu_us", release_cpu}, {"release_complete_us", release_complete},
+          {"owner_rpc_calls", rpc_after.calls - rpc_before.calls},
+          {"owner_rpc_us", rpc_after.exchange_us - rpc_before.exchange_us},
+          {"rpc_mutex_wait_us", rpc_after.mutex_wait_us - rpc_before.mutex_wait_us}});
     }
     for (const auto& row : resident) release(row);
     drain();

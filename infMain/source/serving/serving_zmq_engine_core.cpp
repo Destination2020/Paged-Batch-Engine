@@ -1,3 +1,4 @@
+#include "serving/pd_executor.h"
 #include "serving/serving_zmq_engine_core.h"
 #include "serving/serving_stop_signal.h"
 #include "base/alloc.h"
@@ -80,7 +81,7 @@ int32_t additional_blocks_needed_for_tokens(int32_t current_tokens,
 class RemotePrefillBatchWorker {
  public:
   RemotePrefillBatchWorker(ServingRuntime* app, BenchConfig config)
-      : app_(app), config_(std::move(config)) {
+      : app_(app), pd_executor_(*app), config_(std::move(config)) {
     CHECK_NE(app_, nullptr);
   }
 
@@ -180,14 +181,19 @@ class RemotePrefillBatchWorker {
     base::nvtx::ScopedRange range("prefill_kv_send_nccl",
                                   base::nvtx::kColorMemcpy);
     std::lock_guard<std::mutex> lock(exec_mu_);
-    return app_->run_remote_nccl_kv_send(manifest, nccl_unique_id);
+    return pd_executor_.run_remote_nccl_kv_send(manifest, nccl_unique_id);
+  }
+
+  RemotePrefillResult run_prefill(std::vector<int32_t> tokens, GenerationConfig config) {
+    std::lock_guard<std::mutex> lock(exec_mu_);
+    return pd_executor_.run_remote_prefill_generation(std::move(tokens), std::move(config));
   }
 
   void release(HandoffId handoff_id) {
     base::nvtx::ScopedRange range("prefill_release_kv",
                                   base::nvtx::kColorProcess);
     std::lock_guard<std::mutex> lock(exec_mu_);
-    app_->release_remote_prefill(handoff_id);
+    pd_executor_.release_remote_prefill(handoff_id);
   }
 
   nlohmann::json metrics_json() const {
@@ -222,9 +228,9 @@ class RemotePrefillBatchWorker {
   };
 
   void run_loop() {
-    const cudaError_t cuda_status = cudaSetDevice(config_.prefill_device_id);
+    const cudaError_t cuda_status = cudaSetDevice(config_.pd.prefill_device_id);
     if (cuda_status != cudaSuccess) {
-      LOG(ERROR) << "cudaSetDevice(" << config_.prefill_device_id
+      LOG(ERROR) << "cudaSetDevice(" << config_.pd.prefill_device_id
                  << ") failed in prefill worker: "
                  << cudaGetErrorString(cuda_status);
     }
@@ -404,7 +410,7 @@ class RemotePrefillBatchWorker {
         ++failed_requests_;
         free_source_request_unlocked(*request);
       } else {
-        app_->retain_remote_prefill(request->handoff_id,
+        pd_executor_.retain_remote_prefill(request->handoff_id,
                                    request->seq.request_id);
         ++completed_requests_;
       }
@@ -465,6 +471,7 @@ class RemotePrefillBatchWorker {
   }
 
   ServingRuntime* app_ = nullptr;
+  PDExecutor pd_executor_;
   BenchConfig config_;
   std::thread worker_;
   mutable std::mutex mu_;
@@ -520,9 +527,9 @@ base::Status run_zmq_prefill_engine_core_server(ServingRuntime* app,
       response["metrics"]["process"]["role"] =
           kOnlineProcessRoleZmqPrefillEngineCore;
       response["metrics"]["process"]["zmq_endpoint"] = rpc_config.endpoint;
-      response["metrics"]["pd"]["mode"] = config.pd_mode;
+      response["metrics"]["pd"]["mode"] = config.pd.pd_mode;
       response["metrics"]["pd"]["transfer_backend"] =
-          pd_transfer_backend(config.pd_mode);
+          pd_transfer_backend(config.pd.pd_mode);
     } else if (type == ZmqRpcMessageType::kPrefill) {
       std::vector<int32_t> prompt_tokens;
       if (request.contains("prompt_tokens")) {
@@ -542,7 +549,7 @@ base::Status run_zmq_prefill_engine_core_server(ServingRuntime* app,
             request.at("request").at("generation_config"));
       }
       RemotePrefillResult result =
-          app->run_remote_prefill_generation(std::move(prompt_tokens),
+          prefill_worker.run_prefill(std::move(prompt_tokens),
                                              generation_config);
       response = make_ok_response();
       response["type"] =
@@ -639,7 +646,7 @@ base::Status run_zmq_prefill_engine_core_server(ServingRuntime* app,
 base::Status run_zmq_engine_core_server(ServingRuntime* app,
                                         const BenchConfig& config) {
   CHECK_NE(app, nullptr);
-  if (config.online_process_role == kOnlineProcessRoleZmqPrefillEngineCore) {
+  if (config.ipc.online_process_role == kOnlineProcessRoleZmqPrefillEngineCore) {
     return run_zmq_prefill_engine_core_server(app, config);
   }
   ScopedServingStopSignals stop_signals;
@@ -661,7 +668,7 @@ base::Status run_zmq_engine_core_server(ServingRuntime* app,
 
   LOG(INFO) << "ZMQ EngineCore listening on " << rpc_config.endpoint;
   std::cout << "ZMQ_ENGINE_CORE_READY endpoint=" << rpc_config.endpoint
-            << " role=" << config.online_process_role << std::endl;
+            << " role=" << config.ipc.online_process_role << std::endl;
 
   bool shutdown_reply = false;
   bool cancel_on_stop = false;
@@ -711,7 +718,7 @@ base::Status run_zmq_engine_core_server(ServingRuntime* app,
         response = make_ok_response();
         response["metrics"] = engine_pool.metrics_json();
         response["metrics"]["remote_requests"] = active_requests.size();
-        response["metrics"]["process"]["role"] = config.online_process_role;
+        response["metrics"]["process"]["role"] = config.ipc.online_process_role;
         response["metrics"]["process"]["zmq_endpoint"] = rpc_config.endpoint;
       } else if (type == ZmqRpcMessageType::kGenerate) {
         OnlineGenerateRequest generate_request =

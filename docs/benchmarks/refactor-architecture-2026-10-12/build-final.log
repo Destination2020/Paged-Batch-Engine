@@ -1,0 +1,61 @@
+-- Found CUDA Toolkit v12.6.85
+-- Using preconfigured CMAKE_CUDA_ARCHITECTURES: 89
+-- CMAKE_CUDA_ARCHITECTURES: 89
+-- QWEN2 SUPPORT
+-- GTest package root: /usr/local/lib/cmake/GTest
+-- nlohmann_json package root: /home/nowcoder/miniconda3/share/cmake/nlohmann_json
+-- Found NVTX library: /usr/local/cuda/lib64/libnvToolsExt.so
+-- NCCL support disabled
+-- Found ZeroMQ: include=/usr/include library=/usr/lib/x86_64-linux-gnu/libzmq.so
+-- Found CUDA Toolkit v12.6.85
+-- Using preconfigured CMAKE_CUDA_ARCHITECTURES: 89
+-- CMAKE_CUDA_ARCHITECTURES: 89
+-- LINK LLAMA3 SUPPORT
+-- LINK QWEN2 SUPPORT
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /home/nowcoder/PagedBatchEngine/build-mps
+Consolidate compiler generated dependencies of target test_http_protocol
+[  1%] Built target test_http_protocol
+Consolidate compiler generated dependencies of target llama
+[ 53%] Built target llama
+Consolidate compiler generated dependencies of target paged_attention_fast_bench
+Consolidate compiler generated dependencies of target paged_attention_fp8_bench
+Consolidate compiler generated dependencies of target llama_infer
+[ 55%] Built target paged_attention_fast_bench
+[ 55%] Built target paged_attention_fp8_bench
+[ 56%] Built target llama_infer
+Consolidate compiler generated dependencies of target pbe_data_service
+Consolidate compiler generated dependencies of target pbe_ipc_pool_probe
+Consolidate compiler generated dependencies of target pbe_lane_cuda_benchmark
+[ 58%] Built target pbe_ipc_pool_probe
+[ 57%] Built target pbe_data_service
+[ 59%] Built target pbe_lane_cuda_benchmark
+Consolidate compiler generated dependencies of target qwen_infer
+Consolidate compiler generated dependencies of target qwen_instruct_infer
+Consolidate compiler generated dependencies of target qwen_instruct_chat
+[ 61%] Built target qwen_infer
+[ 61%] Built target qwen_instruct_infer
+[ 62%] Built target qwen_instruct_chat
+Consolidate compiler generated dependencies of target pbe_multi_role_vlm
+Consolidate compiler generated dependencies of target pbe_multi_role_text
+Consolidate compiler generated dependencies of target pbe_vlm_language_role
+[ 63%] Built target pbe_multi_role_vlm
+[ 63%] Built target pbe_multi_role_text
+[ 64%] Built target pbe_vlm_language_role
+Consolidate compiler generated dependencies of target shared_kv_owner
+Consolidate compiler generated dependencies of target serving_qwen
+Consolidate compiler generated dependencies of target shared_kv_reuse_probe
+[ 65%] Built target shared_kv_owner
+[ 66%] Built target serving_qwen
+[ 67%] Built target shared_kv_reuse_probe
+Consolidate compiler generated dependencies of target shared_kv_bench
+Consolidate compiler generated dependencies of target test_llm
+Consolidate compiler generated dependencies of target mps_kv_probe
+Consolidate compiler generated dependencies of target cuda_ipc_event_probe
+[ 68%] Built target shared_kv_bench
+[ 69%] Built target mps_kv_probe
+[ 69%] Built target cuda_ipc_event_probe
+Consolidate compiler generated dependencies of target zmq_transport_bench
+[ 70%] Built target zmq_transport_bench
+[100%] Built target test_llm

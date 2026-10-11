@@ -1,3 +1,4 @@
+#include "serving/pd_executor.h"
 #include <gtest/gtest.h>
 
 #include <cuda_runtime_api.h>
@@ -305,7 +306,7 @@ TEST(Qwen2DeviceInitTest, DualGpuP2PMatchesSingleModelGreedyTokens) {
 
   DualQwenTestApp pd_app(std::move(prefill_model), std::move(decode_model));
 
-  auto pd = pd_app.run_dual_gpu_p2p_generation(prompt_tokens, generation_config);
+  auto pd = serving::PDExecutor(pd_app).run_dual_gpu_p2p_generation(prompt_tokens, generation_config);
   ASSERT_FALSE(pd.failed) << pd.error;
   EXPECT_EQ(pd.output_tokens, baseline_tokens);
 }
@@ -383,7 +384,7 @@ TEST(Qwen2DeviceInitTest, DualGpuNcclMatchesSingleModelGreedyTokens) {
 
   DualQwenTestApp pd_app(std::move(prefill_model), std::move(decode_model));
 
-  auto pd = pd_app.run_dual_gpu_nccl_generation(prompt_tokens, generation_config);
+  auto pd = serving::PDExecutor(pd_app).run_dual_gpu_nccl_generation(prompt_tokens, generation_config);
   ASSERT_FALSE(pd.failed) << pd.error;
   EXPECT_EQ(pd.output_tokens, baseline_tokens);
 }
@@ -425,7 +426,7 @@ TEST(Qwen2DeviceInitTest, DualGpuNcclLayerMatchesSingleModelGreedyTokens) {
 
   DualQwenTestApp pd_app(std::move(prefill_model), std::move(decode_model));
 
-  auto pd = pd_app.run_dual_gpu_nccl_layer_generation(prompt_tokens, generation_config);
+  auto pd = serving::PDExecutor(pd_app).run_dual_gpu_nccl_layer_generation(prompt_tokens, generation_config);
   ASSERT_FALSE(pd.failed) << pd.error;
   EXPECT_EQ(pd.output_tokens, baseline_tokens);
 }

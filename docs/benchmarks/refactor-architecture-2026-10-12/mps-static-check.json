@@ -1,0 +1,16 @@
+{
+  "gpu": {
+    "uuid": "GPU-a8bb12ba-dc90-9390-41e2-d8e3b86ed574",
+    "free_mib": 6678,
+    "total_mib": 8188,
+    "name": "NVIDIA GeForce RTX 4060 Laptop GPU",
+    "driver": "566.26"
+  },
+  "backend": "mps_process",
+  "mps_control": "/usr/local/bin/nvidia-cuda-mps-control",
+  "wsl": true,
+  "ready": true,
+  "check_scope": "static",
+  "mps_runtime_verified": false,
+  "issues": []
+}

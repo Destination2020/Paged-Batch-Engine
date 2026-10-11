@@ -20,6 +20,18 @@ class DeploymentContractTests(unittest.TestCase):
             dict(id="large", private_memory_mib=3584, kv_hard_limit_mib=512,
                  weights="pending-large.bin", tokenizer="pending-large.json")])
 
+    def test_environment_does_not_inherit_client_resource_caps(self):
+        source = {'PATH': '/bin', 'CUDA_MPS_PIPE_DIRECTORY': '/external',
+                  'CUDA_MPS_ACTIVE_THREAD_PERCENTAGE': '1',
+                  'CUDA_MPS_PINNED_DEVICE_MEM_LIMIT': '0=1M'}
+        env = deploy.deployment_environment(source, 'GPU-test', Path('/domain'), 'mps_process')
+        self.assertEqual(env['CUDA_MPS_PIPE_DIRECTORY'], '/external')
+        self.assertEqual(env['CUDA_VISIBLE_DEVICES'], 'GPU-test')
+        self.assertNotIn('CUDA_MPS_ACTIVE_THREAD_PERCENTAGE', env)
+        self.assertNotIn('CUDA_MPS_PINNED_DEVICE_MEM_LIMIT', env)
+        env = deploy.deployment_environment(source, 'GPU-test', Path('/domain'), 'process')
+        self.assertEqual(env['CUDA_MPS_PIPE_DIRECTORY'], '/domain/mps-disabled')
+
     def test_arena_is_counted_once_not_for_each_importer(self):
         self.assertEqual(deploy.validate_config(self.config, require_files=False), 5632)
 

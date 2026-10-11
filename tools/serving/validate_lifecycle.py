@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Exercise real process shutdown with CUDA IPC; MPS control is tested separately."""
+"""Exercise CUDA IPC shutdown on process or real MPS backends."""
 import argparse
 import json
 import os
@@ -19,22 +19,34 @@ def main():
     parser.add_argument('--output-dir', type=Path, required=True)
     parser.add_argument('--scenario', choices=('drain', 'cancel', 'owner-failure'), default='drain')
     parser.add_argument('--port', type=int, default=18083)
+    parser.add_argument('--backend', choices=('process', 'mps_process'), default='process')
+    parser.add_argument('--start-mps', action='store_true')
     args = parser.parse_args()
+    if args.start_mps and args.backend != 'mps_process':
+        parser.error('--start-mps requires --backend mps_process')
+    if args.backend == 'mps_process' and args.scenario == 'owner-failure' and not args.start_mps:
+        parser.error('MPS owner fault injection requires an isolated --start-mps daemon')
     directory = args.output_dir.resolve()
     directory.mkdir(parents=True, exist_ok=False)
     config = json.loads(args.config.read_text())
-    config.update(backend='process', listen_port=args.port, shutdown_timeout_s=20)
+    config.update(backend=args.backend, listen_port=args.port, shutdown_timeout_s=20)
     (directory / 'config.json').write_text(json.dumps(config, indent=2))
     runtime = directory / 'domain'
     log = open(directory / 'supervisor.log', 'w')
-    supervisor = subprocess.Popen([os.sys.executable, str(ROOT / 'tools/serving/deploy_multi_model.py'),
-        '--config', str(directory / 'config.json'), '--build-dir', str(args.build_dir),
-        '--runtime-dir', str(runtime)], cwd=ROOT, stdout=log, stderr=subprocess.STDOUT,
-        start_new_session=True)
+    command = [os.sys.executable, str(ROOT / 'tools/serving/deploy_multi_model.py'),
+               '--config', str(directory / 'config.json'), '--build-dir', str(args.build_dir),
+               '--runtime-dir', str(runtime)]
+    if args.start_mps:
+        command.append('--start-mps')
+    supervisor = subprocess.Popen(command, cwd=ROOT, stdout=log,
+                                  stderr=subprocess.STDOUT, start_new_session=True)
     registry = None
     try:
         ready_http(args.port, supervisor)
         registry = json.loads((runtime / 'registry.json').read_text())
+        assert registry['backend'] == args.backend
+        if args.backend == 'mps_process':
+            assert registry['mps_server'], registry
         endpoint = f'ipc://{runtime}/kv.sock'
         health = rpc(endpoint, {'type': 'health'})
         identity = dict(epoch=health['epoch'], model='shutdown-guard-test')
@@ -48,7 +60,7 @@ def main():
         else:
             raise AssertionError('owner accepted shutdown with a live lease')
         rpc(endpoint, dict(type='release', lease=lease, gpu_complete=True, **identity))
-        report = dict(scenario=args.scenario, owner_refuses_live_leases=True,
+        report = dict(scenario=args.scenario, backend=args.backend, owner_refuses_live_leases=True,
                       epoch=health['epoch'])
         if args.scenario == 'owner-failure':
             os.kill(registry['arena_owner_pid'], signal.SIGKILL)

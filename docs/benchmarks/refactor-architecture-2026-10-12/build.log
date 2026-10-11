@@ -1,0 +1,53 @@
+[  1%] Built target test_http_protocol
+Consolidate compiler generated dependencies of target llama
+[  2%] Building CXX object CMakeFiles/llama.dir/infMain/source/serving/serving_config_parser.cpp.o
+[  2%] Building CXX object CMakeFiles/llama.dir/infMain/source/serving/serving_benchmark_app.cpp.o
+[  3%] Linking CUDA device code CMakeFiles/llama.dir/cmake_device_link.o
+[  3%] Linking CXX shared library lib/libllama.so
+[ 53%] Built target llama
+[ 54%] Linking CXX executable llama_infer
+[ 54%] Linking CXX executable paged_attention_fp8_bench
+[ 54%] Linking CXX executable paged_attention_fast_bench
+[ 54%] Building CXX object test/CMakeFiles/test_llm.dir/test_serving/test_online_handle.cpp.o
+[ 55%] Built target llama_infer
+[ 56%] Built target paged_attention_fast_bench
+[ 56%] Built target paged_attention_fp8_bench
+[ 57%] Linking CXX executable pbe_data_service
+[ 58%] Linking CXX executable pbe_ipc_pool_probe
+[ 59%] Linking CXX executable pbe_lane_cuda_benchmark
+[ 59%] Built target pbe_data_service
+[ 59%] Built target pbe_lane_cuda_benchmark
+[ 59%] Linking CXX executable qwen_infer
+[ 59%] Linking CXX executable qwen_instruct_infer
+[ 59%] Built target pbe_ipc_pool_probe
+[ 59%] Linking CXX executable qwen_instruct_chat
+[ 61%] Built target qwen_infer
+[ 61%] Built target qwen_instruct_infer
+[ 62%] Linking CXX executable pbe_multi_role_text
+[ 62%] Linking CXX executable pbe_multi_role_vlm
+[ 63%] Built target qwen_instruct_chat
+[ 63%] Linking CXX executable pbe_vlm_language_role
+[ 63%] Built target pbe_multi_role_vlm
+[ 63%] Built target pbe_multi_role_text
+Consolidate compiler generated dependencies of target shared_kv_owner
+[ 64%] Linking CXX executable shared_kv_owner
+[ 64%] Linking CXX executable serving_qwen
+[ 65%] Built target pbe_vlm_language_role
+Consolidate compiler generated dependencies of target shared_kv_reuse_probe
+[ 66%] Linking CXX executable shared_kv_reuse_probe
+[ 66%] Built target shared_kv_owner
+[ 67%] Built target serving_qwen
+Consolidate compiler generated dependencies of target shared_kv_bench
+Consolidate compiler generated dependencies of target mps_kv_probe
+[ 68%] Linking CXX executable shared_kv_bench
+[ 68%] Linking CUDA executable mps_kv_probe
+[ 68%] Built target shared_kv_reuse_probe
+[ 68%] Linking CUDA executable cuda_ipc_event_probe
+[ 68%] Built target shared_kv_bench
+[ 69%] Built target mps_kv_probe
+[ 70%] Linking CXX executable zmq_transport_bench
+[ 70%] Built target cuda_ipc_event_probe
+[ 70%] Built target zmq_transport_bench
+[ 70%] Linking CUDA device code CMakeFiles/test_llm.dir/cmake_device_link.o
+[ 71%] Linking CXX executable test_llm
+[100%] Built target test_llm
